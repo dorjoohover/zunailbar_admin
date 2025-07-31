@@ -3,7 +3,33 @@
 
 @custom-variant dark (&:is(.dark *));
 
-@theme inline {
+@utility flex-center {
+    @apply flex justify-center items-center;
+}
+
+@utility col-center {
+    @apply flex flex-col justify-center items-center;
+}
+
+@utility container {
+  @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8
+}
+
+@theme {
+
+  /* Brand */
+  --color-brand: #000000;
+
+  /* System colors */
+  --color-system-success-primary: #2cb59e;
+  --color-system-success-secondary: #2cb59e33;
+  --color-system-error-primary: #ff5c69;
+  --color-system-error-secondary: #ff5c6933;
+  --color-system-warning-primary: #ff9800;
+  --color-system-warning-secondary: #ff980033;
+
+    --font-size-asd: 5px;
+
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
@@ -117,6 +143,8 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-[#f6f5fa];
   }
 }
+
+
