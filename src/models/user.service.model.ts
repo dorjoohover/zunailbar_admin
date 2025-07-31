@@ -7,3 +7,5 @@ export interface IUserService {
   updated_at?: Date;
   created_at?: Date;
 }
+
+// ajiltnii service

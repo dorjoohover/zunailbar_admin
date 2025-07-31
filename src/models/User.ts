@@ -8,3 +8,5 @@ export interface IUser {
   user_status: number;
   description: string;
 }
+
+// AJiltan, users
