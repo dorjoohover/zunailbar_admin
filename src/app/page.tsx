@@ -21,40 +21,42 @@ export default function Home() {
       <Button>submit</Button> */}
       <div className="w-full container py-2">
         <div className="flex gap-6">
-          <div className="w-[60%] bg-[#e9a6b5] rounded-2xl min-h-[640px]"></div>
+          <div className="w-[60%] bg-[#e9a6b5] rounded-2xl min-h-[640px] flex items-end p-20">
+            <button className="border p-4 border-black">Zahialga</button>
+          </div>
           <div className="w-[40%] border border-black bg-[#e9a6b5] rounded-2xl min-h-[640px]"></div>
         </div>
         <div className="grid grid-cols-4 py-20 gap-6">
-          <div className="border border-black bg-[#e9a6b5] min-h-[150px] col-center">1</div>
-          <div className="border border-black bg-[#e9a6b5] min-h-[150px] col-center">1</div>
-          <div className="border border-black bg-[#e9a6b5] min-h-[150px] col-center">1</div>
-          <div className="border border-black bg-[#e9a6b5] min-h-[150px] col-center">1</div>
+          <div className="border border-black bg-[#e9a6b5] min-h-[150px] col-center">Feature 1</div>
+          <div className="border border-black bg-[#e9a6b5] min-h-[150px] col-center">Feature 2</div>
+          <div className="border border-black bg-[#e9a6b5] min-h-[150px] col-center">Feature 3</div>
+          <div className="border border-black bg-[#e9a6b5] min-h-[150px] col-center">Feature 4</div>
         </div>
         <div className="py-20 border-t border-black">
-          <h1 className="text-5xl font-medium pb-10">Lorem, ipsum dolor.</h1>
+          <h1 className="text-5xl font-medium pb-10">Yu hiideg ve</h1>
           <div className="grid grid-cols-2 gap-6">
             <div className="flex flex-col gap-4">
               <div className="border border-black bg-[#e9a6b5] aspect-[16/9]"></div>
-              <h1 className="font-medium text-2xl">Lorem ipsum dolor sit.</h1>
+              <h1 className="font-medium text-2xl">Manicure</h1>
               <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Expedita, quam.</p>
             </div>
             <div className="flex flex-col gap-4">
               <div className="border border-black bg-[#e9a6b5] aspect-[16/9]"></div>
-              <h1 className="font-medium text-2xl">Lorem ipsum dolor sit.</h1>
+              <h1 className="font-medium text-2xl">Pedicure</h1>
               <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Expedita, quam.</p>
             </div>
           </div>
         </div>
         <div className="py-20 flex-center flex-col">
           <div className="grid grid-cols-4 py-20 gap-6 w-full">
-            <div className="border border-black bg-[#e9a6b5] min-h-[150px] col-center">1</div>
-            <div className="border border-black bg-[#e9a6b5] min-h-[150px] col-center">1</div>
-            <div className="border border-black bg-[#e9a6b5] min-h-[150px] col-center">1</div>
-            <div className="border border-black bg-[#e9a6b5] min-h-[150px] col-center">1</div>
-            <div className="border border-black bg-[#e9a6b5] min-h-[150px] col-center">1</div>
-            <div className="border border-black bg-[#e9a6b5] min-h-[150px] col-center">1</div>
-            <div className="border border-black bg-[#e9a6b5] min-h-[150px] col-center">1</div>
-            <div className="border border-black bg-[#e9a6b5] min-h-[150px] col-center">1</div>
+            <div className="border border-black bg-[#e9a6b5] min-h-[150px] col-center">Gelen budalt - une</div>
+            <div className="border border-black bg-[#e9a6b5] min-h-[150px] col-center">Smart humstai budal</div>
+            <div className="border border-black bg-[#e9a6b5] min-h-[150px] col-center">Pedicure</div>
+            <div className="border border-black bg-[#e9a6b5] min-h-[150px] col-center">Nuhult gar</div>
+            <div className="border border-black bg-[#e9a6b5] min-h-[150px] col-center">Nuhult hul</div>
+            <div className="border border-black bg-[#e9a6b5] min-h-[150px] col-center">Arilgalt</div>
+            <div className="border border-black bg-[#e9a6b5] min-h-[150px] col-center">Salgalt</div>
+            {/* <div className="border border-black bg-[#e9a6b5] min-h-[150px] col-center">1</div> */}
           </div>
           <button className="border border-black bg-[#e9a6b5] rounded py-3 px-10">Button</button>
         </div>
@@ -84,14 +86,14 @@ export default function Home() {
         <div className="container">
           <div className="grid grid-cols-5 gap-6">
             <div className="col-span-2 text-white h-64 col-center">
-              <h1 className="text-4xl">Do you need help? Contact our consultant</h1>
+              <h1 className="text-4xl">Uilchilgeenii assistant</h1>
             </div>
             <div className="col-span-1 bg-[#e9a6b5] h-64">
-              <h1>Lorem, ipsum dolor.</h1>
+              <h1>Assistance zurag || logo</h1>
             </div>
             <div className="col-span-2 text-white h-64 col-center items-start gap-4">
-              <h1 className="text-3xl">Lorem, ipsum dolor.</h1>
-              <button className="px-10 py-3 border border-white rounded-xl">Button</button>
+              <h1 className="text-3xl">Utasnii dugaar</h1>
+              <button className="px-10 py-3 border border-white rounded-xl">Zalgah</button>
             </div>
           </div>
         </div>
