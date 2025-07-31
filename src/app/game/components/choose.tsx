@@ -1,6 +1,6 @@
 "use client";
 import { Button } from "@/components/ui/button";
-import { IGame } from "@/models/Game";
+import { IGame } from "@/models/service.model";
 import Link from "next/link";
 
 export const ChooseGame = ({ game }: { game: IGame }) => {
