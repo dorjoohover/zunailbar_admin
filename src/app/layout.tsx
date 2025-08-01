@@ -1,8 +1,11 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
+import { AppSidebar } from "@/components/app-sidebar";
 
 // Mongoose bhgu bnshu
 // import connect from '../lib/mongoose';
@@ -28,14 +31,16 @@ export default async function RootLayout({
 }>) {
   // await connect();
   return (
-    <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        <Navbar />
-          {children}
-        <Footer />
-      </body>
-    </html>
+    <SidebarProvider>
+      <AppSidebar />
+        <html lang="en">
+          <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+            {/* <Navbar /> */}
+            <SidebarTrigger />
+            {children}
+            {/* <Footer /> */}
+          </body>
+        </html>
+    </SidebarProvider>
   );
 }
