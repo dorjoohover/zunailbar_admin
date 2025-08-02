@@ -1,6 +1,6 @@
 "use client";
 import { IGame } from "@/models/service.model";
-import { IUser } from "@/models/user";
+import { IUser } from "@/models/user.model";
 import { ChooseUsers } from "./choose.user";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";

@@ -1,7 +1,7 @@
 "use client";
 import { Button } from "@/components/ui/button";
 import { IGame } from "@/models/service.model";
-import { IUser } from "@/models/user";
+import { IUser } from "@/models/user.model";
 import Link from "next/link";
 import { useState } from "react";
 
