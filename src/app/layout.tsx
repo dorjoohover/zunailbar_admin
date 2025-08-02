@@ -34,11 +34,10 @@ export default async function RootLayout({
     <SidebarProvider>
       <AppSidebar />
       <html lang="en">
-        <body
-          className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-        >
+        <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
           {/* <Navbar /> */}
           <SidebarTrigger />
+
           {children}
           {/* <Footer /> */}
         </body>
