@@ -22,7 +22,7 @@ const items = [
     icon: SquareUserRound,
   },
   {
-    title: "Бүтээгдэхүүн",
+    title: "Бараа",
     url: "/products",
     icon: Milk,
   },
@@ -37,7 +37,7 @@ const items = [
     icon: ArrowLeftRight,
   },
   {
-    title: "Үйлчлүүлэгчид",
+    title: "Хэрэглэгчид",
     url: "/customers",
     icon: User,
   },
@@ -52,7 +52,7 @@ export function AppSidebar() {
   const pathname = usePathname();
 
   return (
-    <Sidebar variant="floating" collapsible="icon">
+    <Sidebar variant="sidebar" collapsible="icon">
       {/* Header */}
       <SidebarHeader>
         <SidebarMenu>

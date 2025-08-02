@@ -4,6 +4,7 @@ import { Bar, BarChart, CartesianGrid, XAxis } from "recharts";
 import { ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { ChartConfig, ChartContainer } from "@/components/ui/chart";
 import { ChartLegend, ChartLegendContent } from "@/components/ui/chart";
+import ContainerHeader from "@/components/containerHeader";
 
 const chartData = [
   { month: "January", manicure: 186, pedicure: 80 },
@@ -28,7 +29,7 @@ const chartConfig = {
 export default function DashboardPage() {
   return (
     <div className="admin-container">
-      <h1 className="text-2xl font-bold">Хянах самбар</h1>
+      <ContainerHeader title="Хянах самбар" />
       <div className="grid grid-cols-2 gap-x-8">
         <div className="p-8 py-6 rounded-lg bg-white shadow-md space-y-8">
           <div className="space-y-1">

@@ -1,9 +1,11 @@
-import React from "react";
+import { DataTable } from "@/components/data-table";
+import { columns } from "./components/columns";
+import ContainerHeader from "@/components/containerHeader";
 
-export default function TransactionsPage() {
+export default function UsersPage() {
   return (
     <div className="admin-container">
-      <h1 className="text-2xl font-bold">Transaction page</h1>
+      <ContainerHeader title="Гүйлгээ" />
     </div>
   );
 }
