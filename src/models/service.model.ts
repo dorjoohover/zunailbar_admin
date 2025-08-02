@@ -12,6 +12,8 @@ export interface IService {
   max_price: number;
   min_price: number;
   duration: number;
+  created_by: string;
+  created_at?: Date;
   min: Discounted;
   max?: Discounted;
 }
