@@ -22,6 +22,6 @@ export default function Template({
       console.log(error);
     }
   };
-  if (error) deleteCookie();
+  // if (error) deleteCookie();
   return <div>{children}</div>;
 }
