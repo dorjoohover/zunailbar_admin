@@ -1,0 +1,86 @@
+"use client";
+
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+
+import { Button } from "@/components/ui/button";
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { ILoginUser } from "@/models";
+import { login } from "@/app/(api)/auth";
+import { baseUrl, METHOD } from "@/utils/api";
+
+const formSchema = z.object({
+  mobile: z.string().min(2, {
+    message: "mobile must be at least 2 characters.",
+  }),
+  password: z.string().min(2, {
+    message: "password must be at least 2 characters.",
+  }),
+});
+
+export function LoginPage({
+  save,
+}: {
+  save: (token: string, branch: string, merchant: string) => void;
+}) {
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      mobile: "",
+      password: "",
+    },
+  });
+  const onSubmit = async (value: ILoginUser) => {
+    const { data, error } = await login(value);
+    save(data.accessToken, data.branch_id, data.merchant_id);
+  };
+  return (
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+        <FormField
+          control={form.control}
+          name="mobile"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>mobile</FormLabel>
+              <FormControl>
+                <Input placeholder="shadcn" {...field} />
+              </FormControl>
+              <FormDescription>
+                This is your public display name.
+              </FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="password"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Password</FormLabel>
+              <FormControl>
+                <Input placeholder="shadcn" {...field} />
+              </FormControl>
+              <FormDescription>
+                This is your public display name.
+              </FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <Button type="submit">Submit</Button>
+      </form>
+    </Form>
+  );
+}

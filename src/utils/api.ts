@@ -22,3 +22,6 @@ export const API = {
   [Api.user]: BASE + "user",
   [Api.product]: BASE + "product",
 };
+
+export const baseUrl =
+  process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";

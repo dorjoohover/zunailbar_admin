@@ -2,8 +2,8 @@ import { DataTable } from "@/components/data-table";
 import { columns } from "./components/columns";
 import { User } from "@/models";
 import ContainerHeader from "@/components/containerHeader";
-import { find } from "../api";
 import { Api } from "@/utils/api";
+import { find } from "../(api)";
 const users: User[] = [
   {
     id: "1",
@@ -34,7 +34,7 @@ const users: User[] = [
 ];
 
 export default async function EmployeesPage() {
-  const data = await find<User>(Api.user);
+  const { data, error } = await find<User>(Api.user);
   const { count, items } = data;
   return (
     <div className="admin-container">

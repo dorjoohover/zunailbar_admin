@@ -1,11 +1,36 @@
 "use client";
 
-import { ChevronUp, LayoutDashboard, ArrowLeftRight, CircleDollarSign, User, Wallet, SquareUserRound, Milk, ShieldUserIcon } from "lucide-react";
+import {
+  ChevronUp,
+  LayoutDashboard,
+  ArrowLeftRight,
+  CircleDollarSign,
+  User,
+  Wallet,
+  SquareUserRound,
+  Milk,
+  ShieldUserIcon,
+} from "lucide-react";
 
-import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from "@/components/ui/sidebar";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "./ui/dropdown-menu";
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarHeader,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+} from "@/components/ui/sidebar";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "./ui/dropdown-menu";
 import Image from "next/image";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 
@@ -55,15 +80,27 @@ const items = [
 
 export function AppSidebar() {
   const pathname = usePathname();
-
+  const router = useRouter();
+  const logout = async () => {
+    await fetch("/api/logout").then((d) => router.push("/login"));
+  };
   return (
     <Sidebar variant="sidebar" collapsible="icon">
       {/* Header */}
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem className="flex items-center gap-2">
-            <SidebarMenuButton size={"logo"} className="pointer-events-none px-0 py-2">
-              <Image src={"/logo.png"} alt="logo" width={40} height={40} className="rounded-lg object-cover" />
+            <SidebarMenuButton
+              size={"logo"}
+              className="pointer-events-none px-0 py-2"
+            >
+              <Image
+                src={"/logo.png"}
+                alt="logo"
+                width={40}
+                height={40}
+                className="rounded-lg object-cover"
+              />
               <span className="text-slate-800 font-bold">Zu Nailbar</span>
             </SidebarMenuButton>
           </SidebarMenuItem>
@@ -77,9 +114,20 @@ export function AppSidebar() {
           <SidebarGroupContent>
             <SidebarMenu>
               {items.map((item) => (
-                <SidebarMenuItem key={item.title} className="text-slate-500 hover:text-blue-600">
-                  <SidebarMenuButton asChild isActive={item.url == pathname ? true : false} size={"lg"}>
-                    <Link key={item.url} href={item.url} className={cn(item.url == pathname && "text-sky-600")}>
+                <SidebarMenuItem
+                  key={item.title}
+                  className="text-slate-500 hover:text-blue-600"
+                >
+                  <SidebarMenuButton
+                    asChild
+                    isActive={item.url == pathname ? true : false}
+                    size={"lg"}
+                  >
+                    <Link
+                      key={item.url}
+                      href={item.url}
+                      className={cn(item.url == pathname && "text-sky-600")}
+                    >
                       <item.icon />
                       <span>{item.title}</span>
                     </Link>
@@ -98,15 +146,18 @@ export function AppSidebar() {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <SidebarMenuButton size={"lg"}>
-                    <ShieldUserIcon /> Админ
+                  <ShieldUserIcon /> Админ
                   <ChevronUp className="ml-auto" />
                 </SidebarMenuButton>
               </DropdownMenuTrigger>
-              <DropdownMenuContent side="top" className="w-[--radix-popper-anchor-width]">
+              <DropdownMenuContent
+                side="top"
+                className="w-[--radix-popper-anchor-width]"
+              >
                 <DropdownMenuItem>
                   <span>Profile</span>
                 </DropdownMenuItem>
-                <DropdownMenuItem>
+                <DropdownMenuItem onClick={logout}>
                   <span>Гарах</span>
                 </DropdownMenuItem>
               </DropdownMenuContent>

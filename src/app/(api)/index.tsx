@@ -9,33 +9,44 @@ export const find = async <T,>(
   uri: keyof typeof API,
   p: Pagination = {},
   route?: string
-): Promise<ListType<T>> => {
-  const store = await cookies();
-  const token = store.get("token")?.value;
-  const branch = store.get("branch_id")?.value;
-  const merchant = store.get("merchant_id")?.value;
+): Promise<{ data: ListType<T>; error?: string }> => {
+  try {
+    const store = await cookies();
+    const token = store.get("token")?.value;
+    const branch = store.get("branch_id")?.value;
+    const merchant = store.get("merchant_id")?.value;
 
-  const merged: Pagination = {
-    ...defaultPagination,
-    ...p,
-  };
+    const merged: Pagination = {
+      ...defaultPagination,
+      ...p,
+    };
 
-  const url = paginationToQuery(uri, merged, route);
+    const url = paginationToQuery(uri, merged, route);
 
-  const res = await fetch(url, {
-    cache: "no-store",
-    headers: {
-      Authorization: token ? `Bearer ${token}` : "",
-      "branch-id": branch || "",
-      "merchant-id": merchant || "",
-    },
-  });
+    const res = await fetch(url, {
+      cache: "no-store",
+      headers: {
+        Authorization: token ? `Bearer ${token}` : "",
+        "branch-id": branch || "",
+        "merchant-id": merchant || "",
+      },
+    });
 
-  if (!res.ok) {
-    throw new Error(`Failed to fetch: ${res.status} ${res.statusText}`);
+    if (!res.ok) {
+      return {
+        data: { count: 0, items: [] },
+        error: `Failed to fetch: ${res.status} ${res.statusText}`,
+      };
+    }
+
+    const data = (await res.json()).payload;
+    return { data: data as ListType<T> };
+  } catch (err) {
+    return {
+      data: { count: 0, items: [] },
+      error: (err as Error).message || "Unknown error occurred",
+    };
   }
-
-  return (await res.json()).payload;
 };
 export const findOne = async (
   uri: keyof typeof API,
@@ -49,7 +60,6 @@ export const findOne = async (
   const url = `${API[uri as keyof typeof API]}${
     route ? `/${route}/` : "/"
   }${id}`;
-  console.log(merchant, "branch", branch);
   const res = await fetch(url, {
     cache: "no-store",
     headers: {
