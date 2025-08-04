@@ -27,6 +27,11 @@ const items = [
     icon: Milk,
   },
   {
+    title: "Зардал",
+    url: "/cost",
+    icon: Milk,
+  },
+  {
     title: "Нэхэмжлэх",
     url: "/invoices",
     icon: CircleDollarSign,

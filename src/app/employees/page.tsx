@@ -1,21 +1,20 @@
-"use client";
-
 import { DataTable } from "@/components/data-table";
 import { columns } from "./components/columns";
-import { IUser } from "@/models";
+import { User } from "@/models";
 import ContainerHeader from "@/components/containerHeader";
-
-const users: IUser[] = [
+import { find } from "../api";
+import { Api } from "@/utils/api";
+const users: User[] = [
   {
     id: "1",
     firstname: "Dorjoo",
     lastname: "Hover",
-    role: 1,
+    role: 10,
     mobile: "99112233",
     birthday: new Date("2000-01-01"),
     added_by: "admin",
     branch_id: "A",
-    user_status: 1,
+    user_status: 10,
     description: "Dev",
     created_at: new Date("2025-08-01"),
   },
@@ -23,23 +22,25 @@ const users: IUser[] = [
     id: "2",
     firstname: "Bishu",
     lastname: "Hover",
-    role: 2,
+    role: 20,
     mobile: "88110022",
     birthday: new Date("2003-09-09"),
     added_by: "admin",
     branch_id: "A",
-    user_status: 0,
+    user_status: 20,
     description: "Dev",
     created_at: new Date("2025-08-01"),
   },
 ];
 
-export default function EmployeesPage() {
+export default async function EmployeesPage() {
+  const data = await find<User>(Api.user);
+  const { count, items } = data;
   return (
     <div className="admin-container">
-    <ContainerHeader title="Ажилчидын жагсаалт" />
+      <ContainerHeader title="Ажилчидын жагсаалт" />
       <div className="w-full">
-        <DataTable columns={columns} data={users} />
+        <DataTable columns={columns} data={items} />
       </div>
     </div>
   );

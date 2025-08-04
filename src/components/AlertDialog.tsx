@@ -9,7 +9,8 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { ReactNode } from "react";
+import { ReactNode, useState } from "react";
+
 
 interface ReusableAlertDialogProps {
   title: string;
@@ -17,7 +18,7 @@ interface ReusableAlertDialogProps {
   cancelText?: string;
   confirmText?: string;
   onConfirm: () => void;
-  trigger: ReactNode; 
+  trigger: ReactNode;
 }
 
 export function ReusableAlertDialog({
@@ -38,9 +39,13 @@ export function ReusableAlertDialog({
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>{cancelText}</AlertDialogCancel>
-          <AlertDialogAction onClick={onConfirm}>{confirmText}</AlertDialogAction>
+          <AlertDialogAction onClick={onConfirm}>
+            {confirmText}
+          </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
   );
 }
+
+

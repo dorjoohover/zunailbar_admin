@@ -1,3 +1,5 @@
+import { defaultPagination, Pagination } from "@/base/query";
+import { Api, API } from "@/utils/api";
 import { Dispatch, SetStateAction } from "react";
 
 const formatDate = (value: string, limit = 10) => {
@@ -31,3 +33,38 @@ export const changeValue = (
 ) => {
   if (value != null) set((prev) => ({ ...prev, [key]: value }));
 };
+
+export const mobileFormatter = (mobile: string) => {
+  return mobile.replace("+976", "");
+};
+
+export function paginationToQuery(
+  uri: string,
+  pagination: Pagination,
+  route?: string
+): string {
+  const { limit, page, sort } = { ...defaultPagination, ...pagination };
+  const filtersOnly = { ...pagination };
+  delete filtersOnly.limit;
+  delete filtersOnly.page;
+  delete filtersOnly.sort;
+  const url = API[uri as keyof typeof API];
+  const params = new URLSearchParams();
+
+  // Default pagination values
+  params.append("limit", String(limit));
+  params.append("page", String(page));
+  params.append("sort", String(sort));
+
+  // Other filters
+  Object.entries(filtersOnly).forEach(([key, value]) => {
+    if (value !== undefined && value !== null) {
+      params.append(key, String(value));
+    }
+  });
+
+  const queryString = params.toString();
+  return `${url}${route ? `/${route}` : ""}${
+    queryString ? `?${queryString}` : ""
+  }`;
+}

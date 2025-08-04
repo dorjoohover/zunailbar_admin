@@ -1,11 +1,11 @@
-import { Api } from "@/utils/api";
-import { find, findOne } from "../api";
 import { ProductPage } from "./components";
-import { IProduct, Product } from "@/models";
+import { Cost, Product } from "@/models";
+import { find } from "../api";
+import { Api } from "@/utils/api";
 
 export default async function Page() {
   const data = await find<Product>(Api.product, {
-    isCost: false,
+    isCost: true,
   });
 
   return (

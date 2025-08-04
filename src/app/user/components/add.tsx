@@ -27,8 +27,12 @@ export default function AddUserForm() {
     }
   }
 
-  const changeValue = (key: string, value: string | null) => {
-    if (value != null) setPayload((prev) => ({ ...prev, [key]: value }));
+  const changeValue = (key: string, value: string | null | number) => {
+    if (value != null)
+      setPayload((prev) => ({
+        ...prev,
+        [key]: key == "role" ? +value : value,
+      }));
   };
 
   return (
@@ -37,7 +41,7 @@ export default function AddUserForm() {
       <Input
         type="name"
         id="name"
-        value={payload?.name}
+        value={payload?.firstname}
         placeholder="name"
         onChange={(e) => changeValue("name", e.target.value)}
       />
@@ -45,7 +49,7 @@ export default function AddUserForm() {
       <Input
         type="phone"
         id="phone"
-        value={payload?.phone}
+        value={payload?.mobile}
         placeholder="phone"
         onChange={(e) => changeValue("phone", e.target.value)}
       />
