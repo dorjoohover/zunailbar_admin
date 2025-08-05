@@ -59,7 +59,7 @@ export const ProductPage = ({ data }: { data: ListType<Product> }) => {
   return (
     <div className="admin-container">
       <ContainerHeader title="Барааны жагсаалт" />
-      <DataTable columns={columns} data={products} />
+      {/* <DataTable columns={columns} data={products} /> */}
       <ProductDialog
         editingProduct={editingProduct}
         onChange={onChange}

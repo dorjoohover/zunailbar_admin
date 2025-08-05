@@ -1,6 +1,6 @@
 "use server";
 import { defaultPagination, Pagination } from "@/base/query";
-import { ListType } from "@/lib/constants";
+import { ListType, PPDT } from "@/lib/constants";
 import { paginationToQuery } from "@/lib/functions";
 import { API, METHOD } from "@/utils/api";
 import { cookies } from "next/headers";
@@ -97,9 +97,9 @@ export const deleteOne = async (
     },
   });
 
-  if (!res.ok) {
-    throw new Error(`Failed to fetch: ${res.status} ${res.statusText}`);
-  }
+  // if (!res.ok) {
+  //   throw new Error(`Failed to fetch: ${res.status} ${res.statusText}`);
+  // }
 
   return await res.json();
 };
@@ -108,7 +108,7 @@ export const updateOne = async <T,>(
   id: string,
   body: T,
   route?: string
-): Promise<any> => {
+): Promise<PPDT> => {
   try {
     const store = await cookies();
     const token = store.get("token")?.value;
@@ -131,17 +131,21 @@ export const updateOne = async <T,>(
     const data = await res.json();
     if (!res.ok) {
       console.log(data);
-      return { error: (data as Error).message };
+      return { error: (data as Error).message, success: false };
     }
 
-    return data;
-  } catch (error) {}
+    return {
+      success: true,
+    };
+  } catch (error) {
+    return { error: (error as Error).message, success: false };
+  }
 };
 export const create = async <T,>(
   uri: keyof typeof API,
   body: T,
   route?: string
-): Promise<any> => {
+): Promise<PPDT> => {
   try {
     const store = await cookies();
     const token = store.get("token")?.value;
@@ -167,11 +171,14 @@ export const create = async <T,>(
     const data = await res.json();
     if (!res.ok) {
       console.log(data);
-      return { error: (data as Error).message };
+      return { error: (data as Error).message, success: false };
     }
 
-    return data;
+    return {
+      success: true,
+    };
   } catch (error) {
     console.log(error);
+    return { error: (error as Error).message, success: false };
   }
 };

@@ -54,3 +54,6 @@ export const DEFAULT_PG: Required<PG> = {
 //   ...DEFAULT_PG,
 //   ...dto,
 // });
+
+// patch put delete type
+export type PPDT = { success: boolean; error?: string };

@@ -123,7 +123,7 @@ export const ProductPage = ({
   const onSubmit = async <T,>(e: T) => {
     setAction(ACTION.RUNNING);
     const res = await create<IProduct>(Api.product, e as IProduct);
-    if (res.succeed) {
+    if (res.success) {
       refresh();
       setOpen(false);
       form.reset({});

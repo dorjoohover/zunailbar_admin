@@ -43,7 +43,8 @@ export const getColumns = (
     accessorKey: "firstname",
     header: ({ column }) => (
       <Button
-        variant="table_head"
+        // variant="table_head"
+        variant="default"
         onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
       >
         First Name <ArrowUpDown className="ml-2 h-4 w-4" />
@@ -54,7 +55,8 @@ export const getColumns = (
     accessorKey: "lastname",
     header: ({ column }) => (
       <Button
-        variant="table_head"
+        // variant="table_head"
+        variant="default"
         onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
       >
         Last Name <ArrowUpDown className="ml-2 h-4 w-4" />

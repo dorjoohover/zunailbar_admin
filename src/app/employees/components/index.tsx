@@ -62,7 +62,7 @@ export const EmployeePage = ({
   const [editingUser, setEditingUser] = useState<IUser | null>(null);
   const onSubmit = async <T,>(e: T) => {
     const res = await create<IUser>(Api.user, e as IUser);
-    if (res.succeed) {
+    if (res.success) {
       refresh();
       setOpen(false);
       form.reset();
