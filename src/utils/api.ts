@@ -13,6 +13,8 @@ export enum Api {
   login = "login",
   register = "register",
   user = "user",
+  branch = "branch",
+  category = "category",
   product = "product",
 }
 
@@ -21,6 +23,8 @@ export const API = {
   [Api.register]: BASE + "register",
   [Api.user]: BASE + "user",
   [Api.product]: BASE + "product",
+  [Api.branch]: BASE + "branch",
+  [Api.category]: BASE + "category",
 };
 
 export const baseUrl =

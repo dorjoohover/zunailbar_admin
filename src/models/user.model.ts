@@ -1,7 +1,9 @@
+import { ROLE } from "@/lib/enum";
+
 export interface IUser {
   firstname?: string;
   lastname?: string;
-  role?: number;
+  role?: ROLE;
   mobile?: string;
   birthday?: Date;
   added_by?: string;
@@ -15,7 +17,7 @@ export interface User {
   id: string;
   firstname?: string;
   lastname?: string;
-  role: number;
+  role: ROLE;
   mobile: string;
   birthday?: Date;
   added_by?: string;

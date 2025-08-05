@@ -5,7 +5,7 @@ import { Dispatch, SetStateAction } from "react";
 const formatDate = (value: string, limit = 10) => {
   return parseInt(value) < limit ? `0${value}` : `${value}`;
 };
-export const parseDate = (date = new Date()) => {
+export const parseDate = (date = new Date(), isHour = true) => {
   const year = date.getFullYear();
   let month = (date.getMonth() + 1).toString();
   let day = date.getDate().toString();
@@ -17,7 +17,9 @@ export const parseDate = (date = new Date()) => {
   hour = formatDate(hour);
   minute = formatDate(minute);
   second = formatDate(second);
-  return `${year}/${month}/${day} ${hour}:${minute}:${second}`;
+  return `${year}/${month}/${day}${
+    isHour ? ` ${hour}:${minute}:${second}` : ""
+  }`;
 };
 
 export const changeValue = (
@@ -68,3 +70,8 @@ export function paginationToQuery(
     queryString ? `?${queryString}` : ""
   }`;
 }
+
+export const firstLetterUpper = (value: string) => {
+  if (value.length == 0) return value;
+  return `${value.substring(0, 1).toUpperCase()}${value.substring(1)}`;
+};

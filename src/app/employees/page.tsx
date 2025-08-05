@@ -1,9 +1,10 @@
 import { DataTable } from "@/components/data-table";
 import { columns } from "./components/columns";
-import { User } from "@/models";
+import { Branch, User } from "@/models";
 import ContainerHeader from "@/components/containerHeader";
 import { Api } from "@/utils/api";
 import { find } from "../(api)";
+import { EmployeePage } from "./components";
 const users: User[] = [
   {
     id: "1",
@@ -34,14 +35,15 @@ const users: User[] = [
 ];
 
 export default async function EmployeesPage() {
-  const { data, error } = await find<User>(Api.user);
-  const { count, items } = data;
+  const [userRes, branchRes] = await Promise.all([
+    find<User>(Api.user),
+    find<Branch>(Api.branch),
+  ]);
+
   return (
     <div className="admin-container">
       <ContainerHeader title="Ажилчидын жагсаалт" />
-      <div className="w-full">
-        <DataTable columns={columns} data={items} />
-      </div>
+      <EmployeePage data={userRes.data} branches={branchRes.data} />
     </div>
   );
 }

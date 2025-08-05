@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Span } from "next/dist/trace";
 import { IBranch } from "@/models";
-import { mobileFormatter } from "@/lib/functions";
+import { mobileFormatter, parseDate } from "@/lib/functions";
 import { ROLE, UserStatus } from "@/lib/enum";
 import { roleIconMap, RoleValue, UserStatusValue } from "@/lib/constants";
 
@@ -76,8 +76,8 @@ export const columns: ColumnDef<IUser>[] = [
     accessorKey: "birthday",
     header: "Birthday",
     cell: ({ row }) => {
-      const date = new Date(row.getValue("birthday"));
-      return date.toLocaleDateString();
+      const date = parseDate(new Date(row.getValue("birthday")), false);
+      return date;
     },
   },
   {
