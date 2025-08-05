@@ -1,3 +1,5 @@
+import { DEFAULT_LIMIT, DEFAULT_PAGE, DEFAULT_SORT } from "@/lib/constants";
+
 export interface Pagination {
   limit?: number;
   page?: number;
@@ -6,7 +8,7 @@ export interface Pagination {
 }
 
 export const defaultPagination: Pagination = {
-  limit: 20,
-  page: 0,
-  sort: false,
+  limit: DEFAULT_LIMIT,
+  page: DEFAULT_PAGE,
+  sort: DEFAULT_SORT,
 };

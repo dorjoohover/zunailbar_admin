@@ -37,7 +37,7 @@ export const changeValue = (
 };
 
 export const mobileFormatter = (mobile: string) => {
-  return mobile.replace("+976", "");
+  return mobile ? mobile.replace("+976", "") : "";
 };
 
 export function paginationToQuery(

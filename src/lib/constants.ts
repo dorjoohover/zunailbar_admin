@@ -27,3 +27,30 @@ export interface ListType<T> {
   count: number;
   items: T[];
 }
+
+export enum ACTION {
+  DEFAULT = 10,
+  PENDING = 20,
+  RUNNING = 30,
+}
+
+export const DEFAULT_LIMIT = 2;
+export const DEFAULT_PAGE = 0;
+export const DEFAULT_SORT = true;
+
+export type PG = {
+  page?: number;
+  limit?: number;
+  sort?: boolean;
+};
+
+export const DEFAULT_PG: Required<PG> = {
+  page: 1,
+  limit: 20,
+  sort: false,
+};
+
+// export const PG = (dto: PgDto = {}): Required<PgDto> => ({
+//   ...DEFAULT_PG,
+//   ...dto,
+// });

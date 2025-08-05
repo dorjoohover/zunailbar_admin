@@ -1,5 +1,4 @@
 import { DataTable } from "@/components/data-table";
-import { columns } from "./components/columns";
 import { Branch, User } from "@/models";
 import ContainerHeader from "@/components/containerHeader";
 import { Api } from "@/utils/api";
@@ -39,7 +38,6 @@ export default async function EmployeesPage() {
     find<User>(Api.user),
     find<Branch>(Api.branch),
   ]);
-
   return (
     <div className="admin-container">
       <ContainerHeader title="Ажилчидын жагсаалт" />

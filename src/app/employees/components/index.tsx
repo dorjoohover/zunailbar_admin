@@ -1,8 +1,8 @@
 "use client";
 import { DataTable } from "@/components/data-table";
-import { ListType, RoleValue } from "@/lib/constants";
+import { ACTION, DEFAULT_PG, ListType, PG, RoleValue } from "@/lib/constants";
 import { Branch, IUser, User } from "@/models";
-import { columns } from "./columns";
+import { getColumns } from "./columns";
 import { Modal } from "@/shared/components/modal";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -20,6 +20,7 @@ import { DatePicker } from "@/shared/components/date.picker";
 import { create } from "@/app/(api)";
 import { Api, API } from "@/utils/api";
 import { FormItems } from "@/shared/components/form.field";
+import { fetcher } from "@/hooks/fetcher";
 
 const formSchema = z.object({
   firstname: z.string().min(1),
@@ -48,7 +49,8 @@ export const EmployeePage = ({
   data: ListType<User>;
   branches: ListType<Branch>;
 }) => {
-  const [success, setSuccess] = useState(false);
+  const [action, setAction] = useState(ACTION.DEFAULT);
+  const [open, setOpen] = useState(false);
   const form = useForm<UserType>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -56,29 +58,52 @@ export const EmployeePage = ({
       password: "string@123",
     },
   });
-  const { count, items } = data;
-  const [user, setUser] = useState<IUser>({
-    mobile: undefined,
-    password: "string@123",
-    role: undefined,
-  });
-
+  const [users, setUsers] = useState<ListType<User>>(data);
+  const [editingUser, setEditingUser] = useState<IUser | null>(null);
   const onSubmit = async <T,>(e: T) => {
-    await create<IUser>(Api.user, e as IUser).then((d) => console.log(d));
-    setSuccess(true);
+    const res = await create<IUser>(Api.user, e as IUser);
+    if (res.succeed) {
+      refresh();
+      setOpen(false);
+      form.reset();
+    }
+    setAction(ACTION.DEFAULT);
   };
   const onInvalid = async <T,>(e: T) => {
     console.log("error", e);
-    setSuccess(false);
+    // setSuccess(false);
   };
+
+  const refresh = async (pg: PG = DEFAULT_PG) => {
+    setAction(ACTION.RUNNING);
+    const { page, limit, sort } = pg;
+    await fetcher<User>(Api.user, {
+      page,
+      limit,
+      sort,
+      isCost: false,
+    }).then((d) => {
+      setUsers(d);
+      form.reset(undefined);
+    });
+    setAction(ACTION.DEFAULT);
+  };
+
+  const columns = getColumns((e) => {
+    setOpen(true);
+    setEditingUser(e);
+    form.reset(e);
+  });
 
   return (
     <div className="w-full">
       <Modal
-        submit={async () => {
-          await form.handleSubmit(onSubmit, onInvalid)();
-          return success;
+        submit={() => {
+          form.handleSubmit(onSubmit, onInvalid)();
         }}
+        open={open}
+        setOpen={setOpen}
+        loading={action == ACTION.RUNNING}
       >
         <FormProvider {...form}>
           <FormItems control={form.control} name="branch_id">
@@ -142,7 +167,14 @@ export const EmployeePage = ({
           </FormItems>
         </FormProvider>
       </Modal>
-      <DataTable columns={columns} data={items} />
+
+      <DataTable
+        columns={columns}
+        data={users.items}
+        refresh={refresh}
+        loading={action === ACTION.RUNNING}
+        count={users.count}
+      />
     </div>
   );
 };

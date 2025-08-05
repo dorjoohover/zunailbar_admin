@@ -9,9 +9,16 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { ACTION } from "@/lib/constants";
 import { Loader2Icon } from "lucide-react";
 
-import { BaseSyntheticEvent, ReactNode, useState } from "react";
+import {
+  BaseSyntheticEvent,
+  Dispatch,
+  ReactNode,
+  SetStateAction,
+  useState,
+} from "react";
 export const Modal = ({
   name = "Open",
   title = "Title",
@@ -19,28 +26,31 @@ export const Modal = ({
   description,
   children,
   submit,
+  open,
+  setOpen,
+  loading,
+  reset,
 }: {
   name?: string;
   title?: string;
   description?: string;
   children?: ReactNode;
   btn?: ReactNode;
-  submit?: () => Promise<boolean>;
+  submit?: () => void;
+  reset?: () => void;
+  open: boolean;
+  loading?: boolean;
+  setOpen: Dispatch<SetStateAction<boolean>>;
 }) => {
-  const [isLoading, setIsLoading] = useState(false);
-  const [open, setOpen] = useState(false);
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
     if (submit) {
-      setIsLoading(true);
-      const res = await submit();
-      setIsLoading(false);
-      if (res) setOpen(false);
+      submit();
     }
   };
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={(v) => setOpen(v)}>
       <DialogTrigger asChild>
         <Button variant="outline">{name}</Button>
       </DialogTrigger>
@@ -56,8 +66,18 @@ export const Modal = ({
           </DialogClose>
           {submit && (
             <Button onClick={(e) => handleSubmit(e)}>
-              {isLoading && btn}
-              {isLoading ? "Please wait..." : "Submit"}
+              {loading && btn}
+              {loading ? "Please wait..." : "Submit"}
+            </Button>
+          )}
+          {reset && (
+            <Button
+              onClick={(e) => {
+                e.preventDefault();
+                reset();
+              }}
+            >
+              reset
             </Button>
           )}
         </DialogFooter>

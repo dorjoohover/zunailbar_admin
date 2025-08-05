@@ -17,7 +17,9 @@ const branches: IBranch[] = [
   { id: "3", name: "Airport Branch", address: "Buyant Ukhaa", user_id: "102" },
 ];
 
-export const columns: ColumnDef<IUser>[] = [
+export const getColumns = (
+  onEdit: (product: IUser) => void
+): ColumnDef<IUser>[] => [
   {
     id: "select",
     header: ({ table }) => (
