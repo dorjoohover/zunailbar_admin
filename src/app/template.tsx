@@ -10,18 +10,17 @@ export default function Template({
   children: React.ReactNode;
   error: boolean;
 }) {
-  // const pathname = usePathname();
-  // const router = useRouter();
-  // const deleteCookie = async () => {
-  //   try {
-  //     if (pathname != "/login") {
-    
-  //       await fetch(baseUrl + "/api/logout").then((d) => router.push("/login"));
-  //     }
-  //   } catch (error) {
-  //     console.log(error);
-  //   }
-  // };
-  // if (error) deleteCookie();
+  const pathname = usePathname();
+  const router = useRouter();
+  const deleteCookie = async () => {
+    try {
+      if (pathname != "/login") {
+        await fetch(baseUrl + "/api/logout").then((d) => router.push("/login"));
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+  if (error) deleteCookie();
   return <div>{children}</div>;
 }
