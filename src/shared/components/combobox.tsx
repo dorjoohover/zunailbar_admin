@@ -47,7 +47,7 @@ export function ComboBox<T extends FieldValues>({
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className="w-[200px] justify-between"
+          className="min-w-24 justify-between bg-white"
         >
           {value
             ? items.find((framework) => framework.value == value)?.label
@@ -55,7 +55,7 @@ export function ComboBox<T extends FieldValues>({
           <ChevronsUpDown className="opacity-50" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[200px] p-0">
+      <PopoverContent className="min-w-24 max-w-56 p-0 bg-white">
         <Command>
           {search && <CommandInput placeholder={search} className="h-9" />}
           <CommandList>

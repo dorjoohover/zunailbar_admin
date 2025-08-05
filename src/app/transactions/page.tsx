@@ -4,8 +4,9 @@ import ContainerHeader from "@/components/containerHeader";
 
 export default function UsersPage() {
   return (
-    <div className="admin-container">
+    <section>
       <ContainerHeader title="Гүйлгээ" />
-    </div>
+      <div className="admin-container"></div>
+    </section>
   );
 }

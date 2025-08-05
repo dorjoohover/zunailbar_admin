@@ -46,19 +46,16 @@ export function LoginPage({
   };
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5 w-full">
         <FormField
           control={form.control}
           name="mobile"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>mobile</FormLabel>
+              <FormLabel>Утасны дугаар</FormLabel>
               <FormControl>
-                <Input placeholder="shadcn" {...field} />
+                <Input placeholder="xxxx-xxxx" {...field} className="bg-white h-10" />
               </FormControl>
-              <FormDescription>
-                This is your public display name.
-              </FormDescription>
               <FormMessage />
             </FormItem>
           )}
@@ -68,18 +65,15 @@ export function LoginPage({
           name="password"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Password</FormLabel>
+              <FormLabel>Нууц үг</FormLabel>
               <FormControl>
-                <Input placeholder="shadcn" {...field} />
+                <Input placeholder="********" {...field} className="bg-white h-10" />
               </FormControl>
-              <FormDescription>
-                This is your public display name.
-              </FormDescription>
               <FormMessage />
             </FormItem>
           )}
         />
-        <Button type="submit">Submit</Button>
+        <Button type="submit" className="w-full h-10">Нэвтрэх</Button>
       </form>
     </Form>
   );

@@ -17,14 +17,14 @@ export const TextField = <T extends FieldValues>({
 }) => {
   const id = `${label}_${Math.round(Math.random() * 10)}`;
   return (
-    <div className="relative space-y-1">
+    <div className="relative space-y-2">
       <Label htmlFor={id}>{label}</Label>
       <Input
         {...props}
         type={type}
         id={id}
         placeholder={pl}
-        className="pr-10"
+        className="pr-10 bg-white h-10"
       />
     </div>
   );

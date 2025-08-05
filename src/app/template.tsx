@@ -23,5 +23,5 @@ export default function Template({
   //   }
   // };
   // if (error) deleteCookie();
-  return <div>{children}</div>;
+  return <div className="w-full min-h-screen">{children}</div>;
 }

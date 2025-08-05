@@ -10,7 +10,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { ACTION } from "@/lib/constants";
-import { Loader2Icon } from "lucide-react";
+import { Loader2Icon, Plus } from "lucide-react";
 
 import {
   BaseSyntheticEvent,
@@ -26,6 +26,7 @@ export const Modal = ({
   description,
   children,
   submit,
+  submitTxt = 'Submit',
   open,
   setOpen,
   loading,
@@ -34,6 +35,7 @@ export const Modal = ({
   name?: string;
   title?: string;
   description?: string;
+  submitTxt?: string;
   children?: ReactNode;
   btn?: ReactNode;
   submit?: () => void;
@@ -52,22 +54,24 @@ export const Modal = ({
   return (
     <Dialog open={open} onOpenChange={(v) => setOpen(v)}>
       <DialogTrigger asChild>
-        <Button variant="outline">{name}</Button>
+        <Button variant="default" className="cursor-pointer uppercase text-xs font-bold">
+          <Plus />
+          {name}</Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
-        <DialogHeader>
+      <DialogContent className="max-w-sm">
+        <DialogHeader className="mb-3">
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
-        <div className="grid gap-4">{children}</div>
-        <DialogFooter>
+        <div className="grid gap-4 grid-cols-2">{children}</div>
+        <DialogFooter className="mt-3">
           <DialogClose asChild>
-            <Button variant="outline">Cancel</Button>
+            <Button variant="outline">Цуцлах</Button>
           </DialogClose>
           {submit && (
             <Button onClick={(e) => handleSubmit(e)}>
               {loading && btn}
-              {loading ? "Please wait..." : "Submit"}
+              {loading ? "Please wait..." : submitTxt}
             </Button>
           )}
           {reset && (

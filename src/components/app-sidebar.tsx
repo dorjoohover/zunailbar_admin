@@ -22,6 +22,7 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarTrigger,
 } from "@/components/ui/sidebar";
 import {
   DropdownMenu,
@@ -85,7 +86,8 @@ export function AppSidebar() {
     await fetch("/api/logout").then((d) => router.push("/login"));
   };
   return (
-    <Sidebar variant="sidebar" collapsible="icon">
+    <Sidebar variant="sidebar" collapsible="icon" className="relative">
+       <SidebarTrigger className="absolute top-1.5 -right-8 z-50" />
       {/* Header */}
       <SidebarHeader>
         <SidebarMenu>

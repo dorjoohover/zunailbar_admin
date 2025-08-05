@@ -1,22 +1,18 @@
 import { Api } from "@/utils/api";
-import { find, findOne } from "../(api)";
+import { find } from "../(api)";
 import { ProductPage } from "./components";
-import { Branch, Category, IProduct, Product } from "@/models";
+import { Branch, Category, Product } from "@/models";
+import ContainerHeader from "@/components/containerHeader";
 
 export default async function Page() {
-  const [res, category, branch] = await Promise.all([
-    find<Product>(Api.product),
-    find<Category>(Api.category, { isCost: false }),
-    find<Branch>(Api.branch),
-  ]);
+  const [res, category, branch] = await Promise.all([find<Product>(Api.product), find<Category>(Api.category, { isCost: false }), find<Branch>(Api.branch)]);
 
   return (
-    <div className="w-full">
-      <ProductPage
-        data={res.data}
-        categories={category.data}
-        branches={branch.data}
-      />
-    </div>
+    <section>
+      <ContainerHeader title="Барааны жагсаалт" />
+      <div className="admin-container">
+        <ProductPage data={res.data} categories={category.data} branches={branch.data} />
+      </div>
+    </section>
   );
 }
