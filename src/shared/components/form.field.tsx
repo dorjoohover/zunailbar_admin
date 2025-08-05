@@ -10,9 +10,11 @@ import {
 export const FormItems = <T extends FieldValues>({
   control,
   name,
+  className,
   children,
 }: {
   name: Path<T>;
+  className?: string;
   control: Control<T, any, T>;
   children: (field: ControllerRenderProps<T>) => ReactNode;
 }) => {
@@ -21,7 +23,7 @@ export const FormItems = <T extends FieldValues>({
       control={control}
       name={name}
       render={({ field }) => (
-        <FormItem>
+        <FormItem className={className}>
           {children(field)}
           <FormMessage />
         </FormItem>

@@ -28,9 +28,9 @@ const chartConfig = {
 
 export default function DashboardPage() {
   return (
-    <div className="admin-container">
+    <section>
       <ContainerHeader title="Хянах самбар" />
-      <div className="grid grid-cols-2 gap-x-8">
+      <div className="admin-container grid grid-cols-2 gap-x-8">
         <div className="p-8 py-6 rounded-lg bg-white shadow-md space-y-8">
           <div className="space-y-1">
             <h1 className="font-semibold text-lg">Жишээ чарт</h1>
@@ -48,6 +48,6 @@ export default function DashboardPage() {
           </ChartContainer>
         </div>
       </div>
-    </div>
+    </section>
   );
 }

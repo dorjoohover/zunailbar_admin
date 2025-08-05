@@ -1,6 +1,5 @@
 "use client";
 
-import ContainerHeader from "@/components/containerHeader";
 import { DataTable } from "@/components/data-table";
 import { Branch, Category, IProduct, Product } from "@/models";
 import { getColumns } from "./columns";
@@ -9,15 +8,14 @@ import { toast } from "sonner";
 import { ProductDialog } from "./dialog";
 import { ListType, ACTION, PG, DEFAULT_PG } from "@/lib/constants";
 import { Modal } from "@/shared/components/modal";
-import z, { keyof } from "zod";
+import z from "zod";
 import { FormProvider, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { API, Api } from "@/utils/api";
-import { create, find } from "@/app/(api)";
+import { Api } from "@/utils/api";
+import { create } from "@/app/(api)";
 import { FormItems } from "@/shared/components/form.field";
 import { ComboBox } from "@/shared/components/combobox";
 import { TextField } from "@/shared/components/text.field";
-import useSWR from "swr";
 import { fetcher } from "@/hooks/fetcher";
 const initialProduct: IProduct = {
   id: "1",
@@ -42,27 +40,13 @@ const formSchema = z.object({
   branch_id: z.string().min(1),
   category_id: z.string().min(1),
   name: z.string().min(1),
-  quantity: z.preprocess(
-    (val) => (typeof val === "string" ? parseFloat(val) : val),
-    z.number()
-  ) as unknown as number,
-  price: z.preprocess(
-    (val) => (typeof val === "string" ? parseFloat(val) : val),
-    z.number()
-  ) as unknown as number,
+  quantity: z.preprocess((val) => (typeof val === "string" ? parseFloat(val) : val), z.number()) as unknown as number,
+  price: z.preprocess((val) => (typeof val === "string" ? parseFloat(val) : val), z.number()) as unknown as number,
   color: z.string(),
   size: z.string(),
 });
 type ProductType = z.infer<typeof formSchema>;
-export const ProductPage = ({
-  data,
-  categories,
-  branches,
-}: {
-  data: ListType<Product>;
-  categories: ListType<Category>;
-  branches: ListType<Branch>;
-}) => {
+export const ProductPage = ({ data, categories, branches }: { data: ListType<Product>; categories: ListType<Category>; branches: ListType<Branch> }) => {
   const [action, setAction] = useState(ACTION.DEFAULT);
   const [open, setOpen] = useState(false);
   const form = useForm<ProductType>({
@@ -76,9 +60,7 @@ export const ProductPage = ({
     if (!editingProduct || !editingProduct.id) return;
     setProducts((prev) => ({
       ...prev,
-      items: prev.items.map((p) =>
-        p.id === editingProduct.id ? (editingProduct as Product) : p
-      ),
+      items: prev.items.map((p) => (p.id === editingProduct.id ? (editingProduct as Product) : p)),
     }));
     setEditingProduct(null);
 
@@ -93,10 +75,7 @@ export const ProductPage = ({
   const columns = getColumns((e) => {
     setEditingProduct(e);
   });
-  const onChange = (
-    key: string | null,
-    value: string | null | number | undefined
-  ) => {
+  const onChange = (key: string | null, value: string | null | number | undefined) => {
     key == null
       ? setEditingProduct(null)
       : setEditingProduct((prev) => {
@@ -135,11 +114,11 @@ export const ProductPage = ({
   };
 
   return (
-    <div className="admin-container">
-      <ContainerHeader title="Барааны жагсаалт" />
-      {JSON.stringify(form.getValues())}
-      {JSON.stringify(open)}
+    <div className="">
+      {/* {JSON.stringify(form.getValues())}
+      {JSON.stringify(open)} */}
       <Modal
+        name="Бараа нэмэх"
         submit={() => form.handleSubmit(onSubmit, onInvalid)()}
         open={open}
         reset={() => {
@@ -185,52 +164,42 @@ export const ProductPage = ({
           {[
             {
               key: "name",
+              label: "Нэр",
             },
             {
               key: "quantity",
               type: "number",
+              label: "Тоо ширхэг",
             },
             {
               key: "price",
               type: "number",
+              label: "Үнэ",
             },
             {
               key: "color",
+              label: "Өнгө",
             },
             {
               key: "size",
+              label: "Хэмжээ  ",
             },
           ].map((item, i) => {
             const name = item.key as keyof ProductType;
+            const label = item.label as keyof ProductType;
             return (
-              <FormItems control={form.control} name={name} key={i}>
+              <FormItems control={form.control} name={name} key={i} className={item.key === "name" ? "col-span-2" : ""}>
                 {(field) => {
-                  return (
-                    <TextField
-                      props={{ ...field }}
-                      type={item.type}
-                      label={name}
-                    />
-                  );
+                  return <TextField props={{ ...field }} type={item.type} label={label} />;
                 }}
               </FormItems>
             );
           })}
         </FormProvider>
       </Modal>
-      <DataTable
-        columns={columns}
-        count={products.count}
-        data={products.items}
-        refresh={refresh}
-        loading={action == ACTION.RUNNING}
-      />
+      <DataTable columns={columns} count={products.count} data={products.items} refresh={refresh} loading={action == ACTION.RUNNING} />
       {action}
-      <ProductDialog
-        editingProduct={editingProduct}
-        onChange={onChange}
-        save={handleSave}
-      />
+      <ProductDialog editingProduct={editingProduct} onChange={onChange} save={handleSave} />
     </div>
   );
 };

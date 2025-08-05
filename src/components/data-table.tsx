@@ -1,26 +1,8 @@
 "use client";
 
-import {
-  flexRender,
-  getCoreRowModel,
-  getPaginationRowModel,
-  getSortedRowModel,
-  getFilteredRowModel,
-  useReactTable,
-  ColumnDef,
-  OnChangeFn,
-  PaginationState,
-} from "@tanstack/react-table";
+import { flexRender, getCoreRowModel, getPaginationRowModel, getSortedRowModel, getFilteredRowModel, useReactTable, ColumnDef, OnChangeFn, PaginationState } from "@tanstack/react-table";
 
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableFooter,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -33,25 +15,10 @@ interface DataTableProps<TData, TValue> {
   limit?: number;
   count?: number;
   loading?: boolean;
-  refresh: ({
-    page,
-    limit,
-    sort,
-  }: {
-    page?: number;
-    limit?: number;
-    sort?: boolean;
-  }) => void;
+  refresh: ({ page, limit, sort }: { page?: number; limit?: number; sort?: boolean }) => void;
 }
 
-export function DataTable<TData, TValue>({
-  columns,
-  data,
-  count = 0,
-  limit = DEFAULT_LIMIT,
-  refresh,
-  loading = false,
-}: DataTableProps<TData, TValue>) {
+export function DataTable<TData, TValue>({ columns, data, count = 0, limit = DEFAULT_LIMIT, refresh, loading = false }: DataTableProps<TData, TValue>) {
   const [globalFilter, setGlobalFilter] = useState("");
   const [pagination, setPagination] = useState({
     pageIndex: 0,
@@ -59,8 +26,7 @@ export function DataTable<TData, TValue>({
   });
   const onPaginationChange = (updater: any) => {
     setPagination((old) => {
-      const newPagination =
-        typeof updater === "function" ? updater(old) : updater;
+      const newPagination = typeof updater === "function" ? updater(old) : updater;
       return newPagination;
     });
   };
@@ -93,28 +59,16 @@ export function DataTable<TData, TValue>({
   return (
     <div className="w-full">
       <div className="flex items-center justify-between py-4 ">
-        <Input
-          placeholder="Хайх..."
-          value={globalFilter}
-          onChange={(e) => setGlobalFilter(e.target.value)}
-          className="max-w-sm bg-white"
-        />
+        <Input placeholder="Хайх..." value={globalFilter} onChange={(e) => setGlobalFilter(e.target.value)} className="max-w-sm bg-white border-slate-200" />
       </div>
 
-      <div className="overflow-hidden rounded-md border">
+      <div className="overflow-hidden rounded-md border border-slate-200">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => (
-                  <TableHead key={header.id}>
-                    {header.isPlaceholder
-                      ? null
-                      : flexRender(
-                          header.column.columnDef.header,
-                          header.getContext()
-                        )}
-                  </TableHead>
+                  <TableHead key={header.id}>{header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}</TableHead>
                 ))}
               </TableRow>
             ))}
@@ -128,26 +82,15 @@ export function DataTable<TData, TValue>({
               </tr>
             ) : table.getRowModel().rows.length ? (
               table.getRowModel().rows.map((row) => (
-                <TableRow
-                  key={row.id}
-                  data-state={row.getIsSelected() && "selected"}
-                >
+                <TableRow key={row.id} data-state={row.getIsSelected() && "selected"}>
                   {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext()
-                      )}
-                    </TableCell>
+                    <TableCell key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</TableCell>
                   ))}
                 </TableRow>
               ))
             ) : (
               <TableRow>
-                <TableCell
-                  colSpan={columns.length}
-                  className="h-24 text-center"
-                >
+                <TableCell colSpan={columns.length} className="h-24 text-center">
                   No results.
                 </TableCell>
               </TableRow>
@@ -157,35 +100,17 @@ export function DataTable<TData, TValue>({
       </div>
 
       <div className="flex items-center justify-between py-4">
-        <p className="text-sm text-muted-foreground">
-          {table.getSelectedRowModel().rows.length} мөр сонгогдсон.
-        </p>
+        <p className="text-sm text-muted-foreground">{table.getSelectedRowModel().rows.length} мөр сонгогдсон.</p>
 
-        <div className="space-x-2">
-          <Button
-            variant="outline"
-            size="sm"
-            className="bg-white"
-            onClick={() => table.previousPage()}
-            disabled={!table.getCanPreviousPage()}
-          >
+        <div className="space-x-2 flex items-center">
+          <div className="flex items-center">
+          {/* {" page:"} / {"total: "} */}
+            {pagination.pageIndex} / {count}
+          </div>
+          <Button variant="outline" size="sm" className="bg-white" onClick={() => table.previousPage()} disabled={!table.getCanPreviousPage()}>
             Өмнөх
           </Button>
-          {"totol:"}
-          {count}
-          {" page:"}
-          {pagination.pageIndex}
-
-          <Button
-            variant="outline"
-            size="sm"
-            className="bg-white"
-            onClick={() => table.nextPage()}
-            disabled={
-              Math.ceil(count / limit) == pagination.pageIndex + 1 ||
-              !table.getCanNextPage()
-            }
-          >
+          <Button variant="outline" size="sm" className="bg-white" onClick={() => table.nextPage()} disabled={Math.ceil(count / limit) == pagination.pageIndex + 1 || !table.getCanNextPage()}>
             Дараах
           </Button>
         </div>

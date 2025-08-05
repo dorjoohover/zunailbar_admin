@@ -14,7 +14,7 @@ import {
 import { ControllerRenderProps, FieldValues } from "react-hook-form";
 
 export function DatePicker<T extends FieldValues>({
-  pl = "select",
+  pl = "Select",
   name = "Choose",
   props,
 }: {
@@ -26,7 +26,7 @@ export function DatePicker<T extends FieldValues>({
 
   const { value, onChange } = props;
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col space-y-2">
       <Label htmlFor="date" className="px-1">
         {name}
       </Label>
@@ -35,7 +35,7 @@ export function DatePicker<T extends FieldValues>({
           <Button
             variant="outline"
             id="date"
-            className="w-48 justify-between font-normal"
+            className="min-w-32 justify-between font-normal h-10 bg-white"
           >
             {value ? value.toLocaleDateString() : pl}
             <ChevronDownIcon />

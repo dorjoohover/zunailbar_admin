@@ -16,14 +16,14 @@
 }
 
 @utility admin-container {
-  @apply p-4 pt-2 space-y-5 w-full;
+  @apply p-6 space-y-5 w-full;
 }
 
 @theme {
 
   /* Brand */
   --color-brand: #1e293b;
-  --color-brand-500: red;
+  --color-brand-blue: #1a80f8;
 
   /* System colors */
   --color-system-success-primary: #2cb59e;
@@ -76,7 +76,7 @@
 
 :root {
   --radius: 0.625rem;
-  --background: #f8fafc;
+  --background: #f6f9ff;
    /* --foreground: oklch(0.145 0 0); */
   --foreground: #1e293b;
   --card: oklch(1 0 0);
@@ -151,7 +151,7 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-[#f6f5fa];
+    @apply bg-[#f3f5f7];
   }
 }
 

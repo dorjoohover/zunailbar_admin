@@ -1,4 +1,3 @@
-import { DataTable } from "@/components/data-table";
 import { Branch, User } from "@/models";
 import ContainerHeader from "@/components/containerHeader";
 import { Api } from "@/utils/api";
@@ -34,14 +33,13 @@ const users: User[] = [
 ];
 
 export default async function EmployeesPage() {
-  const [userRes, branchRes] = await Promise.all([
-    find<User>(Api.user),
-    find<Branch>(Api.branch),
-  ]);
+  const [userRes, branchRes] = await Promise.all([find<User>(Api.user), find<Branch>(Api.branch)]);
   return (
-    <div className="admin-container">
+    <section>
       <ContainerHeader title="Ажилчидын жагсаалт" />
-      <EmployeePage data={userRes.data} branches={branchRes.data} />
-    </div>
+      <div className="admin-container">
+        <EmployeePage data={userRes.data} branches={branchRes.data} />
+      </div>
+    </section>
   );
 }

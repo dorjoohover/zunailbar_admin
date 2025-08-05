@@ -3,8 +3,9 @@ import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, Tabl
 
 export default function InvoicesPage() {
   return (
-    <div className="admin-container">
-      <ContainerHeader title="Ажилчдын жагсаалт" />
-    </div>
+    <section>
+      <ContainerHeader title="Нэхэмжлэл" />
+      <div className="admin-container"></div>
+    </section>
   );
 }

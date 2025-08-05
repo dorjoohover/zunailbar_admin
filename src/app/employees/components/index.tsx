@@ -4,10 +4,9 @@ import { ACTION, DEFAULT_PG, ListType, PG, RoleValue } from "@/lib/constants";
 import { Branch, IUser, User } from "@/models";
 import { getColumns } from "./columns";
 import { Modal } from "@/shared/components/modal";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ComboBox } from "@/shared/components/combobox";
-import { ReactNode, useState } from "react";
+import { useState } from "react";
 import { ROLE } from "@/lib/enum";
 import { PasswordField } from "@/shared/components/password.field";
 import z from "zod";
@@ -18,7 +17,7 @@ import { TextField } from "@/shared/components/text.field";
 import { firstLetterUpper } from "@/lib/functions";
 import { DatePicker } from "@/shared/components/date.picker";
 import { create } from "@/app/(api)";
-import { Api, API } from "@/utils/api";
+import { Api } from "@/utils/api";
 import { FormItems } from "@/shared/components/form.field";
 import { fetcher } from "@/hooks/fetcher";
 
@@ -27,10 +26,7 @@ const formSchema = z.object({
   lastname: z.string().min(1),
   branch_id: z.string().min(1),
   mobile: z.string().length(8, { message: "8 тэмдэгт байх ёстой" }),
-  birthday: z.preprocess(
-    (val) => (typeof val === "string" ? new Date(val) : val),
-    z.date()
-  ) as unknown as Date,
+  birthday: z.preprocess((val) => (typeof val === "string" ? new Date(val) : val), z.date()) as unknown as Date,
   password: z.string().min(6),
   role: z
     .preprocess(
@@ -42,13 +38,7 @@ const formSchema = z.object({
     .optional() as unknown as number,
 });
 type UserType = z.infer<typeof formSchema>;
-export const EmployeePage = ({
-  data,
-  branches,
-}: {
-  data: ListType<User>;
-  branches: ListType<Branch>;
-}) => {
+export const EmployeePage = ({ data, branches }: { data: ListType<User>; branches: ListType<Branch> }) => {
   const [action, setAction] = useState(ACTION.DEFAULT);
   const [open, setOpen] = useState(false);
   const form = useForm<UserType>({
@@ -96,11 +86,14 @@ export const EmployeePage = ({
   });
 
   return (
-    <div className="w-full">
+    <div className="w-full relative">
       <Modal
         submit={() => {
           form.handleSubmit(onSubmit, onInvalid)();
         }}
+        name="Шинээр нэмэх"
+        title="Ажилтан нэмэх"
+        submitTxt="Нэмэх"
         open={open}
         setOpen={setOpen}
         loading={action == ACTION.RUNNING}
@@ -109,36 +102,40 @@ export const EmployeePage = ({
           <FormItems control={form.control} name="branch_id">
             {(field) => {
               return (
-                <ComboBox
-                  props={{ ...field }}
-                  items={branches.items.map((branch) => {
-                    return {
-                      value: branch.id,
-                      label: branch.name,
-                    };
-                  })}
-                />
+                <>
+                  <Label>Салбар</Label>
+                  <ComboBox
+                    props={{ ...field }}
+                    items={branches.items.map((branch) => {
+                      return {
+                        value: branch.id,
+                        label: branch.name,
+                      };
+                    })}
+                  />
+                </>
               );
             }}
           </FormItems>
           <FormItems control={form.control} name="role">
             {(field) => {
               return (
-                <ComboBox
-                  items={[ROLE.ADMIN, ROLE.EMPLOYEE, ROLE.MANAGER].map(
-                    (role) => {
+                <>
+                  <Label>Role</Label>
+                  <ComboBox
+                    items={[ROLE.ADMIN, ROLE.EMPLOYEE, ROLE.MANAGER].map((role) => {
                       return {
                         label: RoleValue[role],
                         value: role.toString(),
                       };
-                    }
-                  )}
-                  props={{ ...field }}
-                />
+                    })}
+                    props={{ ...field }}
+                  />
+                </>
               );
             }}
           </FormItems>
-          <FormItems control={form.control} name="password">
+          <FormItems control={form.control} name="password" className="col-span-2">
             {(field) => {
               return <PasswordField props={{ ...field }} view={true} />;
             }}
@@ -146,15 +143,12 @@ export const EmployeePage = ({
           {["lastname", "firstname", "mobile"].map((i, index) => {
             const item = i as keyof UserType;
             return (
-              <FormItems control={form.control} name={item}>
+              <FormItems control={form.control} name={item} className={item == "mobile" ? "col-span-1" : "col-span-2"}>
                 {(field) => {
                   return (
-                    <TextField
-                      type={"mobile" == item ? "number" : "text"}
-                      props={{ ...field }}
-                      label={firstLetterUpper(item)}
-                      key={index}
-                    />
+                    <>
+                      <TextField type={"mobile" == item ? "number" : "text"} props={{ ...field }} label={firstLetterUpper(item)} key={index} />
+                    </>
                   );
                 }}
               </FormItems>
@@ -162,19 +156,13 @@ export const EmployeePage = ({
           })}
           <FormItems control={form.control} name="birthday">
             {(field) => {
-              return <DatePicker props={{ ...field }} />;
+              return <DatePicker pl="Огноо сонгох" props={{ ...field }} />;
             }}
           </FormItems>
         </FormProvider>
       </Modal>
 
-      <DataTable
-        columns={columns}
-        data={users.items}
-        refresh={refresh}
-        loading={action === ACTION.RUNNING}
-        count={users.count}
-      />
+      <DataTable columns={columns} data={users.items} refresh={refresh} loading={action === ACTION.RUNNING} count={users.count} />
     </div>
   );
 };
