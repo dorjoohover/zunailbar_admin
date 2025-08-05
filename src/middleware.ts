@@ -8,9 +8,10 @@ export function middleware(req: NextRequest) {
   if (pathname === "/login" && merchant_id && token) {
     return NextResponse.redirect(new URL("/", req.url));
   }
-  if (pathname === "/login") return NextResponse.next();
+  if (pathname === "/login" || pathname === '/api/login') return NextResponse.next();
 
-  if (!token || !merchant_id) {
+  if (!token || !merchant_id ) {
+    
     return NextResponse.redirect(new URL("/login", req.url));
   }
 

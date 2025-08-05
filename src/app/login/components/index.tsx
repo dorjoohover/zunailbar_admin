@@ -18,6 +18,7 @@ import { Input } from "@/components/ui/input";
 import { ILoginUser } from "@/models";
 import { login } from "@/app/(api)/auth";
 import { baseUrl, METHOD } from "@/utils/api";
+import { useRouter } from "next/navigation";
 
 const formSchema = z.object({
   mobile: z.string().min(2, {
@@ -28,11 +29,12 @@ const formSchema = z.object({
   }),
 });
 
-export function LoginPage({
-  save,
-}: {
-  save: (token: string, branch: string, merchant: string) => void;
-}) {
+export function LoginPage() {
+  // {
+  // save,
+  // }: {
+  // save: (token: string, branch: string, merchant: string) => void;
+  // }
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -40,6 +42,21 @@ export function LoginPage({
       password: "",
     },
   });
+  const router = useRouter();
+  const save = async (token: string, branch: string, merchant: string) => {
+    await fetch("/api/login", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        token,
+        branch,
+        merchant,
+      }),
+    });
+    router.push("/");
+  };
   const onSubmit = async (value: ILoginUser) => {
     const { data, error } = await login(value);
     save(data.accessToken, data.branch_id, data.merchant_id);
@@ -54,7 +71,11 @@ export function LoginPage({
             <FormItem>
               <FormLabel>Утасны дугаар</FormLabel>
               <FormControl>
-                <Input placeholder="xxxx-xxxx" {...field} className="bg-white h-10" />
+                <Input
+                  placeholder="xxxx-xxxx"
+                  {...field}
+                  className="bg-white h-10"
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -67,13 +88,19 @@ export function LoginPage({
             <FormItem>
               <FormLabel>Нууц үг</FormLabel>
               <FormControl>
-                <Input placeholder="********" {...field} className="bg-white h-10" />
+                <Input
+                  placeholder="********"
+                  {...field}
+                  className="bg-white h-10"
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
-        <Button type="submit" className="w-full h-10">Нэвтрэх</Button>
+        <Button type="submit" className="w-full h-10">
+          Нэвтрэх
+        </Button>
       </form>
     </Form>
   );
