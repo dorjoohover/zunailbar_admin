@@ -5,6 +5,7 @@ import { saveCookie } from "./actions";
 
 const Page = async () => {
   const handleLogin = async (props: any) => {
+    "use server"
     await saveCookie(props.token, props.branch, props.merchant);
   };
   return (
