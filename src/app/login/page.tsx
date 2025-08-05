@@ -4,10 +4,14 @@ import { redirect } from "next/navigation";
 import { saveCookie } from "./actions";
 
 const Page = async () => {
-  return <LoginPage save={(token, branch, merchant) => {
-    saveCookie(token, branch, merchant)
-    redirect('/')
-  }}/>;
+  const handleLogin = async (props: any) => {
+    await saveCookie(props.token, props.branch, props.merchant);
+  };
+  return (
+    <LoginPage
+      save={handleLogin}
+    />
+  );
 };
 
 export default Page;
