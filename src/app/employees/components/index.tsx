@@ -169,6 +169,7 @@ export const EmployeePage = ({
               <FormItems
                 control={form.control}
                 name={item}
+                key={index}
                 className={item == "mobile" ? "col-span-1" : "col-span-2"}
               >
                 {(field) => {

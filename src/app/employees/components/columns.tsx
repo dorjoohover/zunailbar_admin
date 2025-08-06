@@ -3,21 +3,15 @@
 import { ColumnDef } from "@tanstack/react-table";
 import { IUser } from "@/models/user.model";
 import {
-  ArrowUpDown,
-  Crown,
-  Pencil,
-  Shield,
-  ShieldUser,
-  Trash2,
+  ArrowUpDown, Pencil, Trash2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Span } from "next/dist/trace";
 import { IBranch } from "@/models";
 import { mobileFormatter, parseDate } from "@/lib/functions";
 import { ROLE, UserStatus } from "@/lib/enum";
 import { roleIconMap, RoleValue, UserStatusValue } from "@/lib/constants";
-import { ReusableAlertDialog } from "@/components/AlertDialog";
+import { AppAlertDialog } from "@/components/AlertDialog";
 import { toast } from "sonner";
 
 const branches: IBranch[] = [
@@ -55,7 +49,7 @@ export const getColumns = (
     header: ({ column }) => (
       <Button
         // variant="table_head"
-        variant="default"
+        variant="table_header"
         onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
       >
         First Name <ArrowUpDown className="ml-2 h-4 w-4" />
@@ -67,7 +61,7 @@ export const getColumns = (
     header: ({ column }) => (
       <Button
         // variant="table_head"
-        variant="default"
+        variant="table_header"
         onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
       >
         Last Name <ArrowUpDown className="ml-2 h-4 w-4" />
@@ -131,7 +125,7 @@ export const getColumns = (
           <Pencil className="w-4 h-4" />
         </Button>
 
-        <ReusableAlertDialog
+        <AppAlertDialog
           title="status solih"
           description="dropdown ."
           onConfirm={() => {

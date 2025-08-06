@@ -40,7 +40,7 @@ export default async function RootLayout({
       <html lang="en">
         <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
           <AppSidebar />
-          <SidebarTrigger className="absolute top-0 left-0 z-50" />
+          <SidebarTrigger />
           <Template token={token}>
             {/* <Navbar /> */}
             <Toaster />

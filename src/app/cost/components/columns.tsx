@@ -3,8 +3,8 @@ import { IProduct, Product } from "@/models/product.model";
 import { ArrowUpDown, Pencil, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { ReusableAlertDialog } from "@/components/AlertDialog";
 import { toast } from "sonner";
+import { AppAlertDialog } from "@/components/AlertDialog";
 
 export function getColumns(onEdit: (product: IProduct) => void): ColumnDef<IProduct>[] {
   return [
@@ -78,7 +78,7 @@ export function getColumns(onEdit: (product: IProduct) => void): ColumnDef<IProd
             <Pencil className="w-4 h-4" />
           </Button>
 
-          <ReusableAlertDialog
+          <AppAlertDialog
             title="Итгэлтэй байна уу?"
             description="Бүр устгана шүү."
             onConfirm={() => {

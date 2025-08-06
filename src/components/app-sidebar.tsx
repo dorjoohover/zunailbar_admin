@@ -1,38 +1,9 @@
 "use client";
 
-import {
-  ChevronUp,
-  LayoutDashboard,
-  ArrowLeftRight,
-  CircleDollarSign,
-  User,
-  Wallet,
-  SquareUserRound,
-  Milk,
-  ShieldUserIcon,
-} from "lucide-react";
+import { ChevronUp, LayoutDashboard, ArrowLeftRight, CircleDollarSign, User, Wallet, SquareUserRound, Milk, ShieldUserIcon, ChevronDown, ChevronRight } from "lucide-react";
 
-import {
-  Sidebar,
-  SidebarContent,
-  SidebarFooter,
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarHeader,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  SidebarMenuSub,
-  SidebarMenuSubButton,
-  SidebarMenuSubItem,
-  SidebarTrigger,
-} from "@/components/ui/sidebar";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "./ui/dropdown-menu";
+import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarMenuSub, SidebarMenuSubButton, SidebarMenuSubItem, SidebarTrigger } from "@/components/ui/sidebar";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "./ui/dropdown-menu";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
@@ -43,6 +14,7 @@ import { TooltipContent, TooltipTrigger, Tooltip } from "./ui/tooltip";
 import { useSidebarStore } from "@/stores/sidebar.store";
 import { MODAL_ACTION } from "@/lib/constants";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "./ui/collapsible";
+import { useState } from "react";
 
 // Menu items.
 const items = [
@@ -53,9 +25,14 @@ const items = [
   },
   {
     title: "Ажилчид",
-    url: "/employees",
+    url: "",
     icon: SquareUserRound,
     children: [
+      {
+        title: "Жагсаалт",
+        icon: SquareUserRound,
+        url: "/employees",
+      },
       {
         title: "Ажилтан нэмэх",
         icon: SquareUserRound,
@@ -90,11 +67,16 @@ const items = [
   },
   {
     title: "Бүтээгдэхүүн",
-    url: "/products",
+    url: "",
     icon: Milk,
     children: [
       {
         title: "Бүтээгдэхүүн нэмэх",
+        icon: Milk,
+      },
+      {
+        title: "Жагсаалт",
+        url: "/products",
         icon: Milk,
       },
       {
@@ -118,7 +100,7 @@ const items = [
 
   {
     title: "Үйлчилгээ",
-    url: "/servises",
+    url: "",
     icon: ArrowLeftRight,
     children: [
       // {
@@ -126,6 +108,11 @@ const items = [
       //   id: MODAL_ACTION.add_service,
       //   icon: Milk,
       // },
+      {
+        title: "Жагсаалт",
+        url: "/services",
+        icon: Milk,
+      },
       {
         title: "Ажилчдын үйлчилгээ",
         url: "/services/employee",
@@ -140,9 +127,14 @@ const items = [
   },
   {
     title: "Хэрэглэгчид",
-    url: "/users",
+    url: "",
     icon: User,
     children: [
+      {
+        title: "Жагсаалт",
+        url: "/users",
+        icon: Milk,
+      },
       {
         title: "Хэрэглэгчийн хөнгөлөлт",
         url: "/users/voucher",
@@ -158,9 +150,14 @@ const items = [
   },
   {
     title: "Цагийн хуваарь",
-    url: "/schedules",
+    url: "",
     icon: User,
     children: [
+      {
+        title: "Цагийн хуваарь",
+        url: "/schedules",
+        icon: Milk,
+      },
       {
         title: "Нэгдсэн хуваарь",
         url: "/schedules/combined",
@@ -207,24 +204,17 @@ export function AppSidebar() {
     await fetch("/api/logout").then((d) => router.push("/login"));
   };
   const { value, setValue } = useSidebarStore();
+  // const [openIndex, setOpenIndex] = useState(null)
+
   return (
     <Sidebar variant="sidebar" collapsible="icon" className="relative">
-      <SidebarTrigger className="absolute top-1.5 -right-8 z-50" />
+      {/* <SidebarTrigger className="absolute top-1.5 -right-8 z-50" /> */}
       {/* Header */}
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem className="flex items-center gap-2">
-            <SidebarMenuButton
-              size={"logo"}
-              className="pointer-events-none px-0 py-2"
-            >
-              <Image
-                src={"/logo.png"}
-                alt="logo"
-                width={40}
-                height={40}
-                className="rounded-lg object-cover"
-              />
+            <SidebarMenuButton size={"logo"} className="pointer-events-none px-0 py-2">
+              <Image src={"/logo.png"} alt="logo" width={40} height={40} className="rounded-lg object-cover" />
               <span className="text-slate-800 font-bold">Zu Nailbar</span>
             </SidebarMenuButton>
           </SidebarMenuItem>
@@ -237,103 +227,74 @@ export function AppSidebar() {
           {/* <SidebarGroupLabel>Админ талбар</SidebarGroupLabel> */}
           <SidebarGroupContent>
             <SidebarMenu>
-                <Collapsible defaultOpen className="group/collapsible">
-    <SidebarMenuItem>
-      <CollapsibleTrigger asChild>
-        <SidebarMenuButton />
-      </CollapsibleTrigger>
-      <CollapsibleContent>
-        <SidebarMenuSub>
-          <SidebarMenuSubItem />
-        </SidebarMenuSub>
-      </CollapsibleContent>
-    </SidebarMenuItem>
-  </Collapsible>
-              {items.map((item) => (
-                <SidebarMenuItem
-                  key={item.title}
-                  className="text-slate-500 hover:text-blue-600"
-                >
-                  <SidebarMenuButton
-                    asChild
-                    isActive={item.url == pathname ? true : false}
-                    size={"lg"}
-                  >
-                    <Link
-                      key={item.url}
-                      href={item.url}
-                      className={cn(item.url == pathname && "text-sky-600")}
-                    >
-                      <item.icon />
-                      <span>{item.title}</span>
-                    </Link>
-                  </SidebarMenuButton>
 
-                  {item?.children?.map((child, i) => {
-                    return (
-                      <SidebarMenuSub className="w-full" key={i}>
-                        <SidebarMenuSubItem className="w-full">
-                          {child.url && (
-                            <SidebarMenuSubButton
-                              asChild
-                              className="w-full"
-                              isActive={child.url == pathname}
-                            >
-                              <Link
-                                href={child.url}
-                                className={cn(
-                                  child.url == pathname && "text-sky-600 ",
-                                  "w-full justify-between"
+              {items.map((item) => {
+                // Collapsible shalgah
+                const hasChildren = !!item.children?.length;
+                return (
+                  <Collapsible key={item.title} defaultOpen className="group/collapsible">
+                    <SidebarMenuItem className="text-slate-500 hover:text-blue-600">
+                      {hasChildren ? (
+                        <CollapsibleTrigger asChild>
+                          <SidebarMenuButton asChild isActive={item.url == pathname ? true : false} size={"lg"}>
+                            <div>
+                              <item.icon />
+                              <span>{item.title}</span>
+                              {item?.children && (
+                                // Chevron
+                                <ChevronRight className="ml-auto transition-transform group-data-[state=open]/collapsible:rotate-90" />
+                              )}
+                            </div>
+                          </SidebarMenuButton>
+                        </CollapsibleTrigger>
+                      ) : (
+                        <SidebarMenuButton asChild size="lg" isActive={item.url === pathname ? true : false}>
+                          <Link href={item.url} className={cn(item.url === pathname && "text-sky-600")}>
+                            <item.icon />
+                            <span>{item.title}</span>
+                          </Link>
+                        </SidebarMenuButton>
+                      )}
+
+                      <CollapsibleContent>
+                        {item?.children?.map((child, i) => {
+                          return (
+                            <SidebarMenuSub className="w-full" key={i}>
+                              <SidebarMenuSubItem className="w-full">
+                                {child.url && (
+                                  <SidebarMenuSubButton asChild className="w-full" isActive={child.url == pathname}>
+                                    <Link href={child.url} className={cn(child.url == pathname && "text-sky-600 ", "w-full justify-between px-0")}>
+                                      {child.title}
+                                    </Link>
+                                  </SidebarMenuSubButton>
                                 )}
-                              >
-                                <Tooltip>
-                                  <TooltipTrigger asChild>
-                                    <div className="truncate max-w-[200px] cursor-default">
+                                {"id" in child && (
+                                  <SidebarMenuSubButton>
+                                    <Button
+                                      // size={"icon"}
+                                      className={"w-full justify-between px-0 mx-0 hover:bg-transparent"}
+                                      variant="ghost"
+                                      onClick={(e) => {
+                                        e.preventDefault();
+
+                                        if (value != child.title) {
+                                          setValue(child.id);
+                                        }
+                                      }}
+                                    >
                                       {child.title}
-                                    </div>
-                                  </TooltipTrigger>
-                                  <child.icon />
-
-                                  <TooltipContent>{child.title}</TooltipContent>
-                                </Tooltip>
-                              </Link>
-                            </SidebarMenuSubButton>
-                          )}
-                          {"id" in child && (
-                            <SidebarMenuSubButton>
-                              <Button
-                                size={"icon"}
-                                className={
-                                  "w-full justify-between  px-0 mx-0 text-inherit hover:bg-transparent"
-                                }
-                                variant="ghost"
-                                onClick={(e) => {
-                                  e.preventDefault();
-
-                                  if (value != child.title) {
-                                    setValue(child.id);
-                                  }
-                                }}
-                              >
-                                <Tooltip>
-                                  <TooltipTrigger asChild>
-                                    <div className="truncate max-w-[200px] cursor-default">
-                                      {child.title}
-                                    </div>
-                                  </TooltipTrigger>
-                                  <child.icon />
-
-                                  <TooltipContent>{child.title}</TooltipContent>
-                                </Tooltip>
-                              </Button>
-                            </SidebarMenuSubButton>
-                          )}
-                        </SidebarMenuSubItem>
-                      </SidebarMenuSub>
-                    );
-                  })}
-                </SidebarMenuItem>
-              ))}
+                                    </Button>
+                                  </SidebarMenuSubButton>
+                                )}
+                              </SidebarMenuSubItem>
+                            </SidebarMenuSub>
+                          );
+                        })}
+                      </CollapsibleContent>
+                    </SidebarMenuItem>
+                  </Collapsible>
+                );
+              })}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
@@ -350,10 +311,7 @@ export function AppSidebar() {
                   <ChevronUp className="ml-auto" />
                 </SidebarMenuButton>
               </DropdownMenuTrigger>
-              <DropdownMenuContent
-                side="top"
-                className="w-[--radix-popper-anchor-width]"
-              >
+              <DropdownMenuContent side="top" className="w-[--radix-popper-anchor-width]">
                 <DropdownMenuItem>
                   <span>Profile</span>
                 </DropdownMenuItem>
