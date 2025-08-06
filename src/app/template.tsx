@@ -17,13 +17,14 @@ export default function Template({
   const deleteCookie = async () => {
     try {
       if (pathname != "/login") {
-        await fetch(baseUrl + "/api/logout").then((d) => router.push("/login"));
+        await fetch("/api/logout").then((d) => router.push("/login"));
       }
     } catch (error) {
       console.log(error);
     }
   };
   const me = async () => {
+    console.log(token);
     if (token) {
       try {
         console.log(`${API["user"]}/me`);
@@ -35,15 +36,15 @@ export default function Template({
           cache: "no-store",
         });
         const data = await res.json();
-
+        console.log(data);
         if (!res.ok) {
-          deleteCookie();
+          // deleteCookie();
         } else {
           data.payload.user.role > ROLE.ADMIN ? deleteCookie() : null;
         }
       } catch (error) {
         console.log("error", error);
-        deleteCookie();
+        // deleteCookie();
       }
     }
   };

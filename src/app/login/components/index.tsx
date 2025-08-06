@@ -59,6 +59,7 @@ export function LoginPage() {
   };
   const onSubmit = async (value: ILoginUser) => {
     const { data, error } = await login(value);
+    console.log(data, error)
     save(data.accessToken, data.branch_id, data.merchant_id);
   };
   return (
