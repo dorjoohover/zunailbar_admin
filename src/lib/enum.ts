@@ -18,3 +18,11 @@ export enum UserStatus {
 
   BANNED = 20,
 }
+
+export enum UserProductStatus {
+  Active = 10,
+  Returned = 20,
+  Lost = 30,
+  Damaged = 40,
+  Replaced = 50,
+}
