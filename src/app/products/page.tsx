@@ -9,7 +9,7 @@ export default async function Page() {
 
   return (
     <section>
-      <ContainerHeader title="Барааны жагсаалт" />
+      {/* <ContainerHeader title="Барааны жагсаалт" /> */}
       <div className="admin-container">
         <ProductPage data={res.data} categories={category.data} branches={branch.data} />
       </div>

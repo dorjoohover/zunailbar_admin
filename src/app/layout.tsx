@@ -6,6 +6,10 @@ import { Toaster } from "@/components/ui/sonner";
 
 import { AppSidebar } from "@/components/app-sidebar";
 import Template from "./template";
+import { cookies, headers } from "next/headers";
+import { API } from "@/utils/api";
+import ModalContainer from "@/components/modal/modal.container";
+import { ROLE } from "@/lib/enum";
 // Mongoose bhgu bnshu
 // import connect from '../lib/mongoose';
 const geistSans = Geist({
@@ -28,31 +32,22 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  // const store = await cookies();
-  // const token = store.get("token")?.value;
+  const store = await cookies();
+  const token = store.get("token")?.value;
 
-  // const host = (await headers()).get("host");
-  // const protocol = process.env.NODE_ENV === "development" ? "http" : "https";
-  // const baseUrl = `${protocol}://${host}`;
-
-  // const res = await fetch(`${API["user"]}/me`, {
-  //   headers: { Authorization: `Bearer ${token}` },
-  //   cache: "no-store",
-  // });
-  let error = false;
-  // if (!res.ok) {
-  //   error = true;
-  // }
   return (
     <SidebarProvider>
       {/* <SidebarTrigger className="absolute top-0 left-0 z-50" /> */}
       <html lang="en">
-        <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+        <body
+          className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        >
           <AppSidebar />
-          <Template error={error}>
+          <Template token={token}>
             {/* <Navbar /> */}
             <Toaster />
             {children}
+            <ModalContainer />
             {/* <Footer /> */}
           </Template>
         </body>

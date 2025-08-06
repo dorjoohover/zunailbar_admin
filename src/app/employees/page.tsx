@@ -33,7 +33,7 @@ const users: User[] = [
 ];
 
 export default async function EmployeesPage() {
-  const [userRes, branchRes] = await Promise.all([find<User>(Api.user), find<Branch>(Api.branch)]);
+  const [userRes, branchRes] = await Promise.all([find<User>(Api.user, {role: 35}), find<Branch>(Api.branch)]);
   return (
     <section>
       <ContainerHeader title="Ажилчидын жагсаалт" />

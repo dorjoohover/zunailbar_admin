@@ -38,12 +38,10 @@ import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { Button } from "./ui/button";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@radix-ui/react-collapsible";
+
 import { TooltipContent, TooltipTrigger, Tooltip } from "./ui/tooltip";
+import { useSidebarStore } from "@/stores/sidebar.store";
+import { MODAL_ACTION } from "@/lib/constants";
 
 // Menu items.
 const items = [
@@ -60,33 +58,33 @@ const items = [
       {
         title: "Ажилтан нэмэх",
         icon: SquareUserRound,
-        onClick: () => console.log("add emp"),
+        id: MODAL_ACTION.add_emp,
       },
-      {
-        title: "Ажилтаны мэдээлэл засах",
-        icon: SquareUserRound,
-        onClick: () => console.log("set emp"),
-      },
+      // {
+      //   title: "Ажилтаны мэдээлэл засах",
+      //   icon: SquareUserRound,
+      //   id: MODAL_ACTION.edit_emp,
+      // },
       {
         title: "Олгосон бүтээгдэхүүн харах",
         icon: SquareUserRound,
         url: "/employees/product",
       },
-      {
-        title: "Бүтээгдэхүүн олгох",
-        icon: SquareUserRound,
-        onClick: () => console.log("give pro to emp"),
-      },
+      // {
+      //   title: "Бүтээгдэхүүн олгох",
+      //   icon: SquareUserRound,
+      //   id: MODAL_ACTION.give_product,
+      // },
       {
         title: "Ажилтны үйлчилгээ харах",
         icon: SquareUserRound,
         url: "/employees/service",
       },
-      {
-        title: "Ажилтны үйлчилгээ нэмэх",
-        icon: SquareUserRound,
-        onClick: () => console.log("add service to emp"),
-      },
+      // {
+      //   title: "Ажилтны үйлчилгээ нэмэх",
+      //   icon: SquareUserRound,
+      //   id: MODAL_ACTION.add_service_to_emp,
+      // },
     ],
   },
   {
@@ -96,7 +94,6 @@ const items = [
     children: [
       {
         title: "Бүтээгдэхүүн нэмэх",
-        onClick: () => console.log("add pro"),
         icon: Milk,
       },
       {
@@ -123,26 +120,21 @@ const items = [
     url: "/servises",
     icon: ArrowLeftRight,
     children: [
-      {
-        title: "Үйлчилгээ нэмэх",
-        onClick: () => console.log("add service"),
-        icon: Milk,
-      },
+      // {
+      //   title: "Үйлчилгээ нэмэх",
+      //   id: MODAL_ACTION.add_service,
+      //   icon: Milk,
+      // },
       {
         title: "Ажилчдын үйлчилгээ",
         url: "/services/employee",
         icon: Milk,
       },
-      {
-        title: "Ажилчдын үйлчилгээ нэмэх",
-        onClick: () => console.log("add service to emp"),
-        icon: Milk,
-      },
-      {
-        title: "Урамшуулал нэмэх",
-        onClick: () => console.log("add discount"),
-        icon: Milk,
-      },
+      // {
+      //   title: "Урамшуулал нэмэх",
+      //   id: MODAL_ACTION.add_discount,
+      //   icon: Milk,
+      // },
     ],
   },
   {
@@ -156,11 +148,11 @@ const items = [
         // onClick: () => console.log("voucher discount"),
         icon: Milk,
       },
-      {
-        title: "Хэрэглэчид хөнгөлөлт өгөх",
-        onClick: () => console.log("give voucher to user"),
-        icon: Milk,
-      },
+      // {
+      //   title: "Хэрэглэчид хөнгөлөлт өгөх",
+      //   id: MODAL_ACTION.add_voucher_to_user,
+      //   icon: Milk,
+      // },
     ],
   },
   {
@@ -180,11 +172,11 @@ const items = [
         // onClick: () => console.log("voucher discount"),
         icon: Milk,
       },
-      {
-        title: "Ажилчдын хуваарь нэмэх",
-        onClick: () => console.log("give voucher to user"),
-        icon: Milk,
-      },
+      // {
+      //   title: "Ажилчдын хуваарь нэмэх",
+      //   id: MODAL_ACTION.add_schedule_to_emp,
+      //   icon: Milk,
+      // },
     ],
   },
 
@@ -193,16 +185,16 @@ const items = [
     url: "/salaries",
     icon: Wallet,
     children: [
-      {
-        title: "Цалингийн статус солих",
-        onClick: () => console.log("set status salary"),
-        icon: Milk,
-      },
-      {
-        title: "Цалингийн лог үүсгэх",
-        onClick: () => console.log("give voucher to user"),
-        icon: Milk,
-      },
+      // {
+      //   title: "Цалингийн статус солих",
+      //   id: MODAL_ACTION.set_status_salary,
+      //   icon: Milk,
+      // },
+      // {
+      //   title: "Цалингийн лог үүсгэх",
+      //   id: MODAL_ACTION.add_salary,
+      //   icon: Milk,
+      // },
     ],
   },
 ];
@@ -213,6 +205,7 @@ export function AppSidebar() {
   const logout = async () => {
     await fetch("/api/logout").then((d) => router.push("/login"));
   };
+  const { value, setValue } = useSidebarStore();
   return (
     <Sidebar variant="sidebar" collapsible="icon" className="relative">
       <SidebarTrigger className="absolute top-1.5 -right-8 z-50" />
@@ -242,96 +235,93 @@ export function AppSidebar() {
         <SidebarGroup>
           {/* <SidebarGroupLabel>Админ талбар</SidebarGroupLabel> */}
           <SidebarGroupContent>
-            <Collapsible defaultOpen className="group/collapsible">
-              <SidebarMenu>
-                {items.map((item) => (
-                  <SidebarMenuItem
-                    key={item.title}
-                    className="text-slate-500 hover:text-blue-600"
+            <SidebarMenu>
+              {items.map((item) => (
+                <SidebarMenuItem
+                  key={item.title}
+                  className="text-slate-500 hover:text-blue-600"
+                >
+                  <SidebarMenuButton
+                    asChild
+                    isActive={item.url == pathname ? true : false}
+                    size={"lg"}
                   >
-                    <CollapsibleTrigger asChild>
-                      <SidebarMenuButton
-                        asChild
-                        isActive={item.url == pathname ? true : false}
-                        size={"lg"}
-                      >
-                        <Link
-                          key={item.url}
-                          href={item.url}
-                          className={cn(item.url == pathname && "text-sky-600")}
-                        >
-                          <item.icon />
-                          <span>{item.title}</span>
-                        </Link>
-                      </SidebarMenuButton>
-                    </CollapsibleTrigger>
-                    {item?.children?.map((child, i) => {
-                      return (
-                        <CollapsibleContent key={i} className="w-full">
-                          <SidebarMenuSub className="w-full">
-                            <SidebarMenuSubItem className="w-full">
-                              {child.url && (
-                                <SidebarMenuSubButton
-                                  asChild
-                                  className="w-full"
-                                  isActive={child.url == pathname}
-                                >
-                                  <Link
-                                    href={child.url}
-                                    className={cn(
-                                      child.url == pathname && "text-sky-600 ",
-                                      "w-full justify-between"
-                                    )}
-                                  >
-                                    <Tooltip>
-                                      <TooltipTrigger asChild>
-                                        <div className="truncate max-w-[200px] cursor-default">
-                                          {child.title}
-                                        </div>
-                                      </TooltipTrigger>
-                                      <child.icon />
+                    <Link
+                      key={item.url}
+                      href={item.url}
+                      className={cn(item.url == pathname && "text-sky-600")}
+                    >
+                      <item.icon />
+                      <span>{item.title}</span>
+                    </Link>
+                  </SidebarMenuButton>
 
-                                      <TooltipContent>
-                                        {child.title}
-                                      </TooltipContent>
-                                    </Tooltip>
-                                  </Link>
-                                </SidebarMenuSubButton>
-                              )}
-                              {child.onClick && (
-                                <SidebarMenuSubButton>
-                                  <Button
-                                    size={"icon"}
-                                    className={
-                                      "w-full justify-between  px-0 mx-0 text-inherit hover:bg-transparent"
-                                    }
-                                    variant="ghost"
-                                    onClick={child.onClick}
-                                  >
-                                    <Tooltip>
-                                      <TooltipTrigger asChild>
-                                        <div className="truncate max-w-[200px] cursor-default">
-                                          {child.title}
-                                        </div>
-                                      </TooltipTrigger>
-                                      <child.icon />
+                  {item?.children?.map((child, i) => {
+                    return (
+                      <SidebarMenuSub className="w-full" key={i}>
+                        <SidebarMenuSubItem className="w-full">
+                          {child.url && (
+                            <SidebarMenuSubButton
+                              asChild
+                              className="w-full"
+                              isActive={child.url == pathname}
+                            >
+                              <Link
+                                href={child.url}
+                                className={cn(
+                                  child.url == pathname && "text-sky-600 ",
+                                  "w-full justify-between"
+                                )}
+                              >
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <div className="truncate max-w-[200px] cursor-default">
+                                      {child.title}
+                                    </div>
+                                  </TooltipTrigger>
+                                  <child.icon />
 
-                                      <TooltipContent>
-                                        {child.title}
-                                      </TooltipContent>
-                                    </Tooltip>
-                                  </Button>
-                                </SidebarMenuSubButton>
-                              )}
-                            </SidebarMenuSubItem>
-                          </SidebarMenuSub>
-                        </CollapsibleContent>
-                      );
-                    })}
-                  </SidebarMenuItem>
-                ))}
-              </SidebarMenu>
-            </Collapsible>
+                                  <TooltipContent>{child.title}</TooltipContent>
+                                </Tooltip>
+                              </Link>
+                            </SidebarMenuSubButton>
+                          )}
+                          {"id" in child && (
+                            <SidebarMenuSubButton>
+                              <Button
+                                size={"icon"}
+                                className={
+                                  "w-full justify-between  px-0 mx-0 text-inherit hover:bg-transparent"
+                                }
+                                variant="ghost"
+                                onClick={(e) => {
+                                  e.preventDefault();
+
+                                  if (value != child.title) {
+                                    setValue(child.id);
+                                  }
+                                }}
+                              >
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <div className="truncate max-w-[200px] cursor-default">
+                                      {child.title}
+                                    </div>
+                                  </TooltipTrigger>
+                                  <child.icon />
+
+                                  <TooltipContent>{child.title}</TooltipContent>
+                                </Tooltip>
+                              </Button>
+                            </SidebarMenuSubButton>
+                          )}
+                        </SidebarMenuSubItem>
+                      </SidebarMenuSub>
+                    );
+                  })}
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>

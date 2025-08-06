@@ -26,7 +26,10 @@ const formSchema = z.object({
   lastname: z.string().min(1),
   branch_id: z.string().min(1),
   mobile: z.string().length(8, { message: "8 тэмдэгт байх ёстой" }),
-  birthday: z.preprocess((val) => (typeof val === "string" ? new Date(val) : val), z.date()) as unknown as Date,
+  birthday: z.preprocess(
+    (val) => (typeof val === "string" ? new Date(val) : val),
+    z.date()
+  ) as unknown as Date,
   password: z.string().min(6),
   role: z
     .preprocess(
@@ -38,9 +41,15 @@ const formSchema = z.object({
     .optional() as unknown as number,
 });
 type UserType = z.infer<typeof formSchema>;
-export const EmployeePage = ({ data, branches }: { data: ListType<User>; branches: ListType<Branch> }) => {
+export const EmployeePage = ({
+  data,
+  branches,
+}: {
+  data: ListType<User>;
+  branches: ListType<Branch>;
+}) => {
   const [action, setAction] = useState(ACTION.DEFAULT);
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState<boolean | undefined>(false);
   const form = useForm<UserType>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -72,6 +81,7 @@ export const EmployeePage = ({ data, branches }: { data: ListType<User>; branche
       limit,
       sort,
       isCost: false,
+      role: 35,
     }).then((d) => {
       setUsers(d);
       form.reset(undefined);
@@ -84,7 +94,7 @@ export const EmployeePage = ({ data, branches }: { data: ListType<User>; branche
     setEditingUser(e);
     form.reset(e);
   });
-
+  // zasah button
   return (
     <div className="w-full relative">
       <Modal
@@ -94,7 +104,7 @@ export const EmployeePage = ({ data, branches }: { data: ListType<User>; branche
         name="Шинээр нэмэх"
         title="Ажилтан нэмэх"
         submitTxt="Нэмэх"
-        open={open}
+        open={!open ? false : open}
         setOpen={setOpen}
         loading={action == ACTION.RUNNING}
       >
@@ -123,19 +133,25 @@ export const EmployeePage = ({ data, branches }: { data: ListType<User>; branche
                 <>
                   <Label>Role</Label>
                   <ComboBox
-                    items={[ROLE.ADMIN, ROLE.EMPLOYEE, ROLE.MANAGER].map((role) => {
-                      return {
-                        label: RoleValue[role],
-                        value: role.toString(),
-                      };
-                    })}
+                    items={[ROLE.ADMIN, ROLE.EMPLOYEE, ROLE.MANAGER].map(
+                      (role) => {
+                        return {
+                          label: RoleValue[role],
+                          value: role.toString(),
+                        };
+                      }
+                    )}
                     props={{ ...field }}
                   />
                 </>
               );
             }}
           </FormItems>
-          <FormItems control={form.control} name="password" className="col-span-2">
+          <FormItems
+            control={form.control}
+            name="password"
+            className="col-span-2"
+          >
             {(field) => {
               return <PasswordField props={{ ...field }} view={true} />;
             }}
@@ -143,11 +159,20 @@ export const EmployeePage = ({ data, branches }: { data: ListType<User>; branche
           {["lastname", "firstname", "mobile"].map((i, index) => {
             const item = i as keyof UserType;
             return (
-              <FormItems control={form.control} name={item} className={item == "mobile" ? "col-span-1" : "col-span-2"}>
+              <FormItems
+                control={form.control}
+                name={item}
+                className={item == "mobile" ? "col-span-1" : "col-span-2"}
+              >
                 {(field) => {
                   return (
                     <>
-                      <TextField type={"mobile" == item ? "number" : "text"} props={{ ...field }} label={firstLetterUpper(item)} key={index} />
+                      <TextField
+                        type={"mobile" == item ? "number" : "text"}
+                        props={{ ...field }}
+                        label={firstLetterUpper(item)}
+                        key={index}
+                      />
                     </>
                   );
                 }}
@@ -162,7 +187,13 @@ export const EmployeePage = ({ data, branches }: { data: ListType<User>; branche
         </FormProvider>
       </Modal>
 
-      <DataTable columns={columns} data={users.items} refresh={refresh} loading={action === ACTION.RUNNING} count={users.count} />
+      <DataTable
+        columns={columns}
+        data={users.items}
+        refresh={refresh}
+        loading={action === ACTION.RUNNING}
+        count={users.count}
+      />
     </div>
   );
 };

@@ -17,7 +17,6 @@ import {
 import { Input } from "@/components/ui/input";
 import { ILoginUser } from "@/models";
 import { login } from "@/app/(api)/auth";
-import { baseUrl, METHOD } from "@/utils/api";
 import { useRouter } from "next/navigation";
 
 const formSchema = z.object({
@@ -56,6 +55,7 @@ export function LoginPage() {
       }),
     });
     router.push("/");
+    router.refresh();
   };
   const onSubmit = async (value: ILoginUser) => {
     const { data, error } = await login(value);

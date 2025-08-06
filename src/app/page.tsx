@@ -26,7 +26,8 @@ export default function HomePage() {
         setToken(deviceToken);
 
         // Backend NestJS рүү token илгээх
-        await fetch("http://192.168.1.15:5000/api/v1/register", {
+        await fetch("http://srv654666.hstgr.cloud:4000/api/v1/register", {
+        // await fetch("http://192.168.1.15:4000/api/v1/register", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({

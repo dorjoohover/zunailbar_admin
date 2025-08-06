@@ -57,3 +57,17 @@ export const DEFAULT_PG: Required<PG> = {
 
 // patch put delete type
 export type PPDT = { success: boolean; error?: string };
+
+export const MODAL_ACTION = {
+  add_emp: "add_emp",
+  edit_emp: "edit_emp",
+  give_product: "give_product",
+  add_service_to_emp: "add_service_to_emp",
+  add_product: "add_product",
+  add_service: "add_service",
+  add_discount: "add_discount",
+  add_voucher_to_user: "add_voucher_to_user",
+  add_schedule_to_emp: "add_schedule_to_emp",
+  set_status_salary: "set_status_salary",
+  add_salary: "add_salary",
+};

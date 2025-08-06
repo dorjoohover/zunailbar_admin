@@ -1,3 +1,4 @@
+"use client";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -9,16 +10,9 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { ACTION } from "@/lib/constants";
 import { Loader2Icon, Plus } from "lucide-react";
 
-import {
-  BaseSyntheticEvent,
-  Dispatch,
-  ReactNode,
-  SetStateAction,
-  useState,
-} from "react";
+import { Dispatch, ReactNode, SetStateAction } from "react";
 export const Modal = ({
   name = "Open",
   title = "Title",
@@ -26,7 +20,7 @@ export const Modal = ({
   description,
   children,
   submit,
-  submitTxt = 'Submit',
+  submitTxt = "Submit",
   open,
   setOpen,
   loading,
@@ -42,7 +36,7 @@ export const Modal = ({
   reset?: () => void;
   open: boolean;
   loading?: boolean;
-  setOpen: Dispatch<SetStateAction<boolean>>;
+  setOpen: Dispatch<SetStateAction<boolean | undefined>>;
 }) => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -53,11 +47,17 @@ export const Modal = ({
   };
   return (
     <Dialog open={open} onOpenChange={(v) => setOpen(v)}>
-      <DialogTrigger asChild>
-        <Button variant="default" className="cursor-pointer uppercase text-xs font-bold">
-          <Plus />
-          {name}</Button>
-      </DialogTrigger>
+      {name && name !== "" && (
+        <DialogTrigger asChild>
+          <Button
+            variant="default"
+            className="cursor-pointer uppercase text-xs font-bold"
+          >
+            <Plus />
+            {name}
+          </Button>
+        </DialogTrigger>
+      )}
       <DialogContent className="max-w-sm">
         <DialogHeader className="mb-3">
           <DialogTitle>{title}</DialogTitle>
