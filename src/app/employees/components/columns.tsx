@@ -2,7 +2,14 @@
 
 import { ColumnDef } from "@tanstack/react-table";
 import { IUser } from "@/models/user.model";
-import { ArrowUpDown, Crown, Shield, ShieldUser } from "lucide-react";
+import {
+  ArrowUpDown,
+  Crown,
+  Pencil,
+  Shield,
+  ShieldUser,
+  Trash2,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Span } from "next/dist/trace";
@@ -10,6 +17,8 @@ import { IBranch } from "@/models";
 import { mobileFormatter, parseDate } from "@/lib/functions";
 import { ROLE, UserStatus } from "@/lib/enum";
 import { roleIconMap, RoleValue, UserStatusValue } from "@/lib/constants";
+import { ReusableAlertDialog } from "@/components/AlertDialog";
+import { toast } from "sonner";
 
 const branches: IBranch[] = [
   { id: "1", name: "Head Office", address: "UB Center", user_id: "100" },
@@ -106,5 +115,33 @@ export const getColumns = (
       const status = row.getValue<number>("user_status") as UserStatus;
       return UserStatusValue[status].name;
     },
+  },
+  {
+    id: "actions",
+    header: "Actions",
+    cell: ({ row }) => (
+      <div className="flex items-center gap-2">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => onEdit(row.original)}
+        >
+          <Pencil className="w-4 h-4" />
+        </Button>
+
+        <ReusableAlertDialog
+          title="Итгэлтэй байна уу?"
+          description="Бүр устгана шүү."
+          onConfirm={() => {
+            toast("Амжилттай устгалаа!", {});
+          }}
+          trigger={
+            <Button variant="ghost" size="icon">
+              <Trash2 className="w-4 h-4 text-red-500" />
+            </Button>
+          }
+        />
+      </div>
+    ),
   },
 ];

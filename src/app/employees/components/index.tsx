@@ -54,7 +54,7 @@ export const EmployeePage = ({
     resolver: zodResolver(formSchema),
     defaultValues: {
       role: ROLE.EMPLOYEE,
-      password: "string@123",
+      password: "string",
     },
   });
   const [users, setUsers] = useState<ListType<User>>(data);
