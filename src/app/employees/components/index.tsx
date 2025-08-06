@@ -88,12 +88,15 @@ export const EmployeePage = ({
     });
     setAction(ACTION.DEFAULT);
   };
-
-  const columns = getColumns((e) => {
+  const edit = (e: IUser) => {
     setOpen(true);
     setEditingUser(e);
     form.reset(e);
-  });
+  };
+  const setStatus = (status: number) => {
+    console.log(status);
+  };
+  const columns = getColumns(edit, setStatus);
   // zasah button
   return (
     <div className="w-full relative">

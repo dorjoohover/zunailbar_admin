@@ -135,6 +135,7 @@ export const getColumns = (
           description="dropdown ."
           onConfirm={() => {
             toast("Амжилттай устгалаа!", {});
+            setStatus(UserStatus.ACTIVE)
           }}
           trigger={
             <Button variant="ghost" size="icon">
