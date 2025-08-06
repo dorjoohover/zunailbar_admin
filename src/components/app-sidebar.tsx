@@ -42,6 +42,7 @@ import { Button } from "./ui/button";
 import { TooltipContent, TooltipTrigger, Tooltip } from "./ui/tooltip";
 import { useSidebarStore } from "@/stores/sidebar.store";
 import { MODAL_ACTION } from "@/lib/constants";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "./ui/collapsible";
 
 // Menu items.
 const items = [
@@ -236,6 +237,18 @@ export function AppSidebar() {
           {/* <SidebarGroupLabel>Админ талбар</SidebarGroupLabel> */}
           <SidebarGroupContent>
             <SidebarMenu>
+                <Collapsible defaultOpen className="group/collapsible">
+    <SidebarMenuItem>
+      <CollapsibleTrigger asChild>
+        <SidebarMenuButton />
+      </CollapsibleTrigger>
+      <CollapsibleContent>
+        <SidebarMenuSub>
+          <SidebarMenuSubItem />
+        </SidebarMenuSub>
+      </CollapsibleContent>
+    </SidebarMenuItem>
+  </Collapsible>
               {items.map((item) => (
                 <SidebarMenuItem
                   key={item.title}
