@@ -61,7 +61,7 @@ export function getColumns(onEdit: (product: IProduct) => void): ColumnDef<IProd
       ),
       cell: ({ row }) => {
         const date = new Date(row.getValue("created_at"));
-        return date.toLocaleDateString();
+        return date.toString()
       },
       sortingFn: (rowA, rowB, columnId) => {
         const dateA = new Date(rowA.getValue(columnId)).getTime();

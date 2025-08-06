@@ -37,7 +37,7 @@ export function DatePicker<T extends FieldValues>({
             id="date"
             className="min-w-32 justify-between font-normal h-10 bg-white"
           >
-            {value ? value.toLocaleDateString() : pl}
+            {value ? new Date(value).toLocaleDateString() : pl}
             <ChevronDownIcon />
           </Button>
         </PopoverTrigger>

@@ -40,13 +40,13 @@ const formSchema = z.object({
     .optional() as unknown as UserProductStatus,
 });
 type UserType = z.infer<typeof formSchema>;
-export const EmployeeProductModal = ({ id }: { id: string }) => {
+export const EmployeeProductModal = ({ id }: { id?: string }) => {
   const form = useForm<UserType>({
     resolver: zodResolver(formSchema),
     defaultValues: {},
   });
   const [action, setAction] = useState(ACTION.DEFAULT);
-  const [open, setOpen] = useState<boolean | undefined>(true);
+  const [open, setOpen] = useState<boolean | undefined>(false);
   const [userProducts, setUserProducts] =
     useState<ListType<UserProduct> | null>(null);
   const [products, setProducts] = useState<ListType<Product> | null>(null);
@@ -69,8 +69,11 @@ export const EmployeeProductModal = ({ id }: { id: string }) => {
     setAction(ACTION.DEFAULT);
   };
   useEffect(() => {
-    refresh();
-  }, []);
+    if (id != undefined) {
+      refresh();
+      setOpen(true);
+    }
+  }, [id]);
 
   const onSubmit = async <T,>(e: T) => {
     // const res = await create<IUser>(Api.user, e as IUser);

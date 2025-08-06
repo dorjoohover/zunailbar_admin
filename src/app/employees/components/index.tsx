@@ -20,6 +20,7 @@ import { create } from "@/app/(api)";
 import { Api } from "@/utils/api";
 import { FormItems } from "@/shared/components/form.field";
 import { fetcher } from "@/hooks/fetcher";
+import { EmployeeProductModal } from "./employee.product";
 
 const formSchema = z.object({
   firstname: z.string().min(1),
@@ -59,6 +60,7 @@ export const EmployeePage = ({
   });
   const [users, setUsers] = useState<ListType<User>>(data);
   const [editingUser, setEditingUser] = useState<IUser | null>(null);
+  const [userProduct, setUserProduct] = useState<string | undefined>(undefined);
   const onSubmit = async <T,>(e: T) => {
     const res = await create<IUser>(Api.user, e as IUser);
     if (res.success) {
@@ -97,8 +99,7 @@ export const EmployeePage = ({
     console.log(status);
   };
   const giveProduct = (index: number) => {
-    console.log(index)
-    console.log(users.items[index].id)
+    setUserProduct(users.items[index].id);
   };
   const columns = getColumns(edit, setStatus, giveProduct);
   // zasah button
@@ -169,6 +170,7 @@ export const EmployeePage = ({
               <FormItems
                 control={form.control}
                 name={item}
+                key={index}
                 className={item == "mobile" ? "col-span-1" : "col-span-2"}
               >
                 {(field) => {
@@ -178,7 +180,6 @@ export const EmployeePage = ({
                         type={"mobile" == item ? "number" : "text"}
                         props={{ ...field }}
                         label={firstLetterUpper(item)}
-                        key={index}
                       />
                     </>
                   );
@@ -193,7 +194,7 @@ export const EmployeePage = ({
           </FormItems>
         </FormProvider>
       </Modal>
-
+      <EmployeeProductModal id={userProduct} />
       <DataTable
         columns={columns}
         data={users.items}
