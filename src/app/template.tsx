@@ -26,6 +26,7 @@ export default function Template({
   const me = async () => {
     if (token) {
       try {
+        console.log(`${API["user"]}/me`);
         const res = await fetch(`${API["user"]}/me`, {
           headers: {
             Authorization: `Bearer ${token}`,
