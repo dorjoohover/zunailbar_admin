@@ -18,6 +18,13 @@ export const RoleValue = {
   [ROLE.ANY]: "ANY",
 };
 
+// export const EmployeeStatusValue = {
+//   [EmployeeStatus.ACTIVE]: { name: "Идэвхтэй", color: "green" },
+//   [EmployeeStatus.DEKIRIT]: { name: "Декирит", color: "orange" },
+//   [EmployeeStatus.VACATION]: { name: "Амралт", color: "yellow" },
+//   [EmployeeStatus.FIRED]: { name: "Халагдсан", color: "red" },
+// };
+
 export const UserStatusValue = {
   [UserStatus.ACTIVE]: { name: "Active" },
   [UserStatus.BANNED]: { name: "Banned" },
