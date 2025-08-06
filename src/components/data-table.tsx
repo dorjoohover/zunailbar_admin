@@ -7,25 +7,21 @@ import {
   getSortedRowModel,
   getFilteredRowModel,
   useReactTable,
-  ColumnDef,
-  OnChangeFn,
-  PaginationState,
+  ColumnDef
 } from "@tanstack/react-table";
 
 import {
   Table,
   TableBody,
-  TableCell,
-  TableFooter,
-  TableHead,
+  TableCell, TableHead,
   TableHeader,
-  TableRow,
+  TableRow
 } from "@/components/ui/table";
 
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useEffect, useRef, useState } from "react";
-import { DEFAULT_LIMIT, DEFAULT_PAGE } from "@/lib/constants";
+import { DEFAULT_LIMIT } from "@/lib/constants";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];

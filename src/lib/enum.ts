@@ -19,6 +19,13 @@ export enum UserStatus {
   BANNED = 20,
 }
 
+// export enum EmployeeStatus {
+//   ACTIVE = 10,
+//   DEKIRIT = 20,
+//   VACATION = 30,
+//   FIRED = 40,
+// }
+
 export enum UserProductStatus {
   Active = 10,
   Returned = 20,

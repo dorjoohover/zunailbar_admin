@@ -1,24 +1,19 @@
 "use client";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 import { ColumnDef } from "@tanstack/react-table";
 import { IUser } from "@/models/user.model";
-import {
-  ArrowUpDown,
-  Crown,
-  Pencil,
-  Shield,
-  ShieldUser,
-  Trash2,
-} from "lucide-react";
+import { ArrowUpDown, Hammer, Pencil, UserRoundCog } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Span } from "next/dist/trace";
 import { IBranch } from "@/models";
 import { mobileFormatter, parseDate } from "@/lib/functions";
 import { ROLE, UserStatus } from "@/lib/enum";
 import { roleIconMap, RoleValue, UserStatusValue } from "@/lib/constants";
-import { ReusableAlertDialog } from "@/components/AlertDialog";
-import { toast } from "sonner";
+import { AppAlertDialog } from "@/components/AlertDialog";
+import { useState } from "react";
+import { Input } from "@/components/ui/input";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 const branches: IBranch[] = [
   { id: "1", name: "Head Office", address: "UB Center", user_id: "100" },
@@ -26,27 +21,11 @@ const branches: IBranch[] = [
   { id: "3", name: "Airport Branch", address: "Buyant Ukhaa", user_id: "102" },
 ];
 
-export const getColumns = (
-  onEdit: (product: IUser) => void,
-  setStatus: (status: UserStatus) => void,
-  giveProduct: (index: number) => void
-): ColumnDef<IUser>[] => [
+export const getColumns = (onEdit: (product: IUser) => void, setStatus: (status: UserStatus) => void, giveProduct: (index: number) => void): ColumnDef<IUser>[] => [
   {
     id: "select",
-    header: ({ table }) => (
-      <Checkbox
-        checked={table.getIsAllPageRowsSelected()}
-        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-        aria-label="Select all"
-      />
-    ),
-    cell: ({ row }) => (
-      <Checkbox
-        checked={row.getIsSelected()}
-        onCheckedChange={(value) => row.toggleSelected(!!value)}
-        aria-label="Select row"
-      />
-    ),
+    header: ({ table }) => <Checkbox checked={table.getIsAllPageRowsSelected()} onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)} aria-label="Select all" />,
+    cell: ({ row }) => <Checkbox checked={row.getIsSelected()} onCheckedChange={(value) => row.toggleSelected(!!value)} aria-label="Select row" />,
     enableSorting: false,
     enableHiding: false,
   },
@@ -55,7 +34,7 @@ export const getColumns = (
     header: ({ column }) => (
       <Button
         // variant="table_head"
-        variant="default"
+        variant="table_header"
         onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
       >
         First Name <ArrowUpDown className="ml-2 h-4 w-4" />
@@ -67,7 +46,7 @@ export const getColumns = (
     header: ({ column }) => (
       <Button
         // variant="table_head"
-        variant="default"
+        variant="table_header"
         onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
       >
         Last Name <ArrowUpDown className="ml-2 h-4 w-4" />
@@ -121,37 +100,64 @@ export const getColumns = (
   {
     id: "actions",
     header: "Actions",
-    cell: ({ row }) => (
-      <div className="flex items-center gap-2">
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => onEdit(row.original)}
-        >
-          <Pencil className="w-4 h-4" />
-        </Button>
+    cell: ({ row }) => {
+      const [count, setCount] = useState(0);
 
-        <ReusableAlertDialog
-          title="status solih"
-          description="dropdown ."
-          onConfirm={() => {
-            toast("Амжилттай устгалаа!", {});
-            setStatus(UserStatus.ACTIVE);
-          }}
-          trigger={
-            <Button variant="ghost" size="icon">
-              <Trash2 className="w-4 h-4 text-red-500" />
-            </Button>
-          }
-        />
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => giveProduct(row.index)}
-        >
-          <Pencil className="w-4 h-4" />
-        </Button>
-      </div>
-    ),
+      return (
+        <div className="flex items-center gap-2">
+          <Button variant="ghost" size="icon" onClick={() => onEdit(row.original)}>
+            <Pencil className="size-4" />
+          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger onClick={() => onEdit(row.original)}>
+              <UserRoundCog className="size-4" />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+              <DropdownMenuLabel>Статус солих</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem className="text-green-600">Active</DropdownMenuItem>
+              <DropdownMenuItem className="text-yellow-500">Амарсан</DropdownMenuItem>
+              <DropdownMenuItem className="text-red-500">Декирит</DropdownMenuItem>
+              <DropdownMenuItem className="text-gray-600">Халагдсан</DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          <AppAlertDialog
+            title="Бараа олгох"
+            trigger={
+              <Button variant="ghost" size="icon" onClick={() => giveProduct(row.index)}>
+                <Hammer className="size-4" />
+              </Button>
+            }
+            onConfirm={() => {}}
+            children={
+              <div>
+                baraagaa haigaad nemdeg heseg bh ymu
+                <ScrollArea className="h-[400px] w-full rounded-md border p-4 my-6">
+                  <div className="flex items-center justify-between gap-4">
+                    <span className="text-sm font-medium text-gray-700">Бараа нэр</span>
+
+                    <div className="flex items-center gap-2">
+                      {/* decrease */}
+                      <Button variant="outline" size="icon" onClick={() => setCount((c) => Math.max(0, c - 1))}>
+                        -
+                      </Button>
+
+                      {/* number */}
+                      <Input type="number" className="w-16 text-center bg-white no-spinner" value={count} onChange={(e) => setCount(Number(e.target.value))} />
+
+                      {/* increase */}
+                      <Button variant="outline" size="icon" onClick={() => setCount((c) => c + 1)}>
+                        +
+                      </Button>
+                    </div>
+                  </div>
+                </ScrollArea>
+              </div>
+            }
+          />
+        </div>
+      );
+    },
   },
 ];
