@@ -5,6 +5,7 @@ import { API, METHOD } from "@/utils/api";
 
 export const login = async (dto: ILoginUser) => {
   try {
+    console.log(API.login)
     const res = await fetch(`${API.login}`, {
       cache: "no-store",
       method: METHOD.post,
