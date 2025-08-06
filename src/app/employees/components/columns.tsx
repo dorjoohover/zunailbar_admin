@@ -28,7 +28,8 @@ const branches: IBranch[] = [
 
 export const getColumns = (
   onEdit: (product: IUser) => void,
-  setStatus: (status: UserStatus) => void
+  setStatus: (status: UserStatus) => void,
+  giveProduct: (index: number) => void
 ): ColumnDef<IUser>[] => [
   {
     id: "select",
@@ -135,7 +136,7 @@ export const getColumns = (
           description="dropdown ."
           onConfirm={() => {
             toast("Амжилттай устгалаа!", {});
-            setStatus(UserStatus.ACTIVE)
+            setStatus(UserStatus.ACTIVE);
           }}
           trigger={
             <Button variant="ghost" size="icon">
@@ -143,19 +144,13 @@ export const getColumns = (
             </Button>
           }
         />
-
-        <ReusableAlertDialog
-          title="Итгэлтэй байна уу?"
-          description="Бүр устгана шүү."
-          onConfirm={() => {
-            toast("Амжилттай устгалаа!", {});
-          }}
-          trigger={
-            <Button variant="ghost" size="icon">
-              <Trash2 className="w-4 h-4 text-red-500" />
-            </Button>
-          }
-        />
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => giveProduct(row.index)}
+        >
+          <Pencil className="w-4 h-4" />
+        </Button>
       </div>
     ),
   },

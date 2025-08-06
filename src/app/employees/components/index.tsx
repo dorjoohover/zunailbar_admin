@@ -96,7 +96,11 @@ export const EmployeePage = ({
   const setStatus = (status: number) => {
     console.log(status);
   };
-  const columns = getColumns(edit, setStatus);
+  const giveProduct = (index: number) => {
+    console.log(index)
+    console.log(users.items[index].id)
+  };
+  const columns = getColumns(edit, setStatus, giveProduct);
   // zasah button
   return (
     <div className="w-full relative">

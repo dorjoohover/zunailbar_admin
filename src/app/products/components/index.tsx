@@ -48,7 +48,7 @@ const formSchema = z.object({
 type ProductType = z.infer<typeof formSchema>;
 export const ProductPage = ({ data, categories, branches }: { data: ListType<Product>; categories: ListType<Category>; branches: ListType<Branch> }) => {
   const [action, setAction] = useState(ACTION.DEFAULT);
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState<undefined | boolean>(false);
   const form = useForm<ProductType>({
     resolver: zodResolver(formSchema),
     defaultValues: {},
@@ -120,7 +120,7 @@ export const ProductPage = ({ data, categories, branches }: { data: ListType<Pro
       <Modal
         name="Бараа нэмэх"
         submit={() => form.handleSubmit(onSubmit, onInvalid)()}
-        open={open}
+        open={open == true}
         reset={() => {
           form.reset({});
           console.log("asdf");
