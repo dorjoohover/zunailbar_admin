@@ -4,6 +4,8 @@ export interface IUser {
   firstname?: string;
   lastname?: string;
   role?: ROLE;
+  nickname?: string;
+  profile_img?: string;
   mobile?: string;
   birthday?: Date;
   added_by?: string;
@@ -11,12 +13,14 @@ export interface IUser {
   user_status?: number;
   description?: string;
   password?: string;
+  experience?: number;
   created_at?: Date;
 }
 export interface User {
   id: string;
   firstname?: string;
   lastname?: string;
+  nickname?: string;
   role: ROLE;
   mobile?: string;
   birthday?: Date;
@@ -24,6 +28,8 @@ export interface User {
   branch_id: string;
   branch_name?: string;
   user_status: number;
+  experience?: number;
+  profile_img?: string;
   description?: string;
   created_at?: Date;
 }

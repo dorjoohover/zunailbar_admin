@@ -21,6 +21,8 @@ import { Api } from "@/utils/api";
 import { FormItems } from "@/shared/components/form.field";
 import { fetcher } from "@/hooks/fetcher";
 import { EmployeeProductModal } from "./employee.product";
+import { imageUploader } from "@/app/(api)/base";
+import { Input } from "@/components/ui/input";
 
 const formSchema = z.object({
   firstname: z.string().min(1),
@@ -32,6 +34,12 @@ const formSchema = z.object({
     z.date()
   ) as unknown as Date,
   password: z.string().min(6),
+  experience: z.preprocess(
+    (val) => (typeof val === "string" ? parseFloat(val) : val),
+    z.number()
+  ) as unknown as number,
+  nickname: z.string().min(1),
+
   role: z
     .preprocess(
       (val) => (typeof val === "string" ? parseInt(val, 10) : val),
@@ -40,6 +48,9 @@ const formSchema = z.object({
       })
     )
     .optional() as unknown as number,
+  file: z
+    .instanceof(File)
+    .refine((f) => f.size > 0, { message: "Файл заавал оруулна" }),
 });
 type UserType = z.infer<typeof formSchema>;
 export const EmployeePage = ({
@@ -58,11 +69,20 @@ export const EmployeePage = ({
       password: "string",
     },
   });
+  const [previewImages, setPreviewImages] = useState<string[]>([]);
   const [users, setUsers] = useState<ListType<User>>(data);
   const [editingUser, setEditingUser] = useState<IUser | null>(null);
   const [userProduct, setUserProduct] = useState<string | undefined>(undefined);
   const onSubmit = async <T,>(e: T) => {
-    const res = await create<IUser>(Api.user, e as IUser);
+    const file = form.getValues("file");
+    const formData = new FormData();
+    formData.append("files", file);
+    const uploadResult = await imageUploader(formData);
+    console.log(uploadResult);
+    const res = await create<IUser>(Api.user, {
+      ...(e as IUser),
+      profile_img: uploadResult[0],
+    });
     if (res.success) {
       refresh();
       setOpen(false);
@@ -72,6 +92,7 @@ export const EmployeePage = ({
   };
   const onInvalid = async <T,>(e: T) => {
     console.log("error", e);
+
     // setSuccess(false);
   };
 
@@ -107,7 +128,7 @@ export const EmployeePage = ({
     setUserProduct(users.items[index].id);
   };
   const columns = getColumns(edit, setStatus, giveProduct);
-  // zasah button
+
   return (
     <div className="w-full relative">
       <Modal
@@ -140,6 +161,56 @@ export const EmployeePage = ({
               );
             }}
           </FormItems>
+          <FormItems control={form.control} name="file">
+            {(field) => {
+              return (
+                <>
+                  <Input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        field.onChange(file); // Set into react-hook-form
+                      }
+                    }}
+                  />
+                  {field.value && (
+                    <img
+                      src={URL.createObjectURL(field.value as any)}
+                      alt="preview"
+                      className="w-32 h-32 mt-2 object-cover"
+                    />
+                  )}
+                </>
+              );
+            }}
+          </FormItems>
+
+          {/* <Dragger
+            beforeUpload={beforeUpload}
+            accept=".pdf"
+            maxCount={1}
+            showUploadList={{
+              showRemoveIcon: true,
+              showDownloadIcon: true, // Enable download for existing files
+            }}
+            fileList={fileList}
+            onChange={handleChange}
+            onRemove={handleRemove}
+            disabled={uploading}
+            style={{ marginBottom: 16, borderRadius: "16px" }}
+          >
+            <p className="ant-upload-drag-icon">
+              <InboxOutlined />
+            </p>
+            <p className="ant-upload-text">
+              {uploading ? "Илгээж байна..." : "Жишиг тайлан оруулах"}
+            </p>
+            <p className="ant-upload-hint">
+              Зөвхөн PDF өргөтгөлтэй файлыг энд дарж эсвэл чирж оруулна уу.
+            </p>
+          </Dragger> */}
           <FormItems control={form.control} name="role">
             {(field) => {
               return (
@@ -169,29 +240,35 @@ export const EmployeePage = ({
               return <PasswordField props={{ ...field }} view={true} />;
             }}
           </FormItems>
-          {["lastname", "firstname", "mobile"].map((i, index) => {
-            const item = i as keyof UserType;
-            return (
-              <FormItems
-                control={form.control}
-                name={item}
-                key={index}
-                className={item == "mobile" ? "col-span-1" : "col-span-2"}
-              >
-                {(field) => {
-                  return (
-                    <>
-                      <TextField
-                        type={"mobile" == item ? "number" : "text"}
-                        props={{ ...field }}
-                        label={firstLetterUpper(item)}
-                      />
-                    </>
-                  );
-                }}
-              </FormItems>
-            );
-          })}
+          {["lastname", "firstname", "mobile", "nickname", "experience"].map(
+            (i, index) => {
+              const item = i as keyof UserType;
+              return (
+                <FormItems
+                  control={form.control}
+                  name={item}
+                  key={index}
+                  className={
+                    item == "mobile" || item == "experience"
+                      ? "col-span-1"
+                      : "col-span-2"
+                  }
+                >
+                  {(field) => {
+                    return (
+                      <>
+                        <TextField
+                          type={"mobile" == item ? "number" : "text"}
+                          props={{ ...field }}
+                          label={firstLetterUpper(item)}
+                        />
+                      </>
+                    );
+                  }}
+                </FormItems>
+              );
+            }
+          )}
           <FormItems control={form.control} name="birthday">
             {(field) => {
               return <DatePicker pl="Огноо сонгох" props={{ ...field }} />;

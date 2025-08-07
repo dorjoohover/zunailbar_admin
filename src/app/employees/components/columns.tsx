@@ -27,6 +27,7 @@ import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { EmployeeProductModal } from "./employee.product";
+import Image from "next/image";
 
 const branches: IBranch[] = [
   { id: "1", name: "Head Office", address: "UB Center", user_id: "100" },
@@ -104,16 +105,41 @@ export const getColumns = (
     },
   },
   {
+    accessorKey: "profile_img",
+    header: "Img",
+    cell: ({ row }) => {
+      const role = (row.getValue<number>("role") ?? ROLE.ANY) as ROLE;
+      const profile = row.getValue<string | null>("profile_img");
+      const { icon: Icon, color } = roleIconMap[role] ?? {};
+      return (
+        <span className={`flex gap-2 items-center font-bold`}>
+          {profile ? (
+            <Image
+              src={`/api/file/${profile}`}
+              width={100}
+              height={100}
+              className="rounded-full"
+              alt={role.toString()}
+            />
+          ) : (
+            <Icon className="size-5" />
+          )}
+        </span>
+      );
+    },
+  },
+  {
     accessorKey: "role",
     header: "Role",
     cell: ({ row }) => {
       const role = (row.getValue<number>("role") ?? ROLE.ANY) as ROLE;
+
       const name = RoleValue[role];
-      const { icon: Icon, color } = roleIconMap[role] ?? {};
+      const { color } = roleIconMap[role] ?? {};
 
       return (
         <span className={`flex gap-2 items-center text-${color}-500 font-bold`}>
-          <Icon className="size-5" /> {name}
+          {name}
         </span>
       );
     },
