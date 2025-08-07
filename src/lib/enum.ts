@@ -15,8 +15,10 @@ export enum ROLE {
 
 export enum UserStatus {
   ACTIVE = 10,
-
-  BANNED = 20,
+  DEKIRIT = 20,
+  VACATION = 30,
+  FIRED = 40,
+  BANNED = 50,
 }
 
 // export enum EmployeeStatus {

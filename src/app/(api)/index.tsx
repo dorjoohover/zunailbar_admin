@@ -1,6 +1,6 @@
 "use server";
 import { defaultPagination, Pagination } from "@/base/query";
-import { ListType, PPDT } from "@/lib/constants";
+import { ListType, PPDT, SearchType } from "@/lib/constants";
 import { paginationToQuery } from "@/lib/functions";
 import { API, METHOD } from "@/utils/api";
 import { cookies } from "next/headers";
@@ -114,7 +114,7 @@ export const updateOne = async <T,>(
     const token = store.get("token")?.value;
     const branch = store.get("branch_id")?.value;
     const merchant = store.get("merchant_id")?.value;
-
+    console.log(id);
     const url = `${API[uri]}${route ? `/${route}` : ""}/${id}`;
 
     const res = await fetch(url, {
@@ -180,5 +180,47 @@ export const create = async <T,>(
   } catch (error) {
     console.log(error);
     return { error: (error as Error).message, success: false };
+  }
+};
+
+export const search = async <T,>(
+  uri: keyof typeof API,
+  p = {},
+  route?: string
+): Promise<{ data: SearchType<T>[]; error?: string }> => {
+  try {
+    const store = await cookies();
+    const token = store.get("token")?.value;
+    const branch = store.get("branch_id")?.value;
+    const merchant = store.get("merchant_id")?.value;
+
+    const merged = {
+      ...p,
+    };
+
+    const url = paginationToQuery(uri, merged, `search/{id}${route ?? ""}`);
+    const res = await fetch(url, {
+      cache: "no-store",
+      headers: {
+        Authorization: token ? `Bearer ${token}` : "",
+        "branch-id": branch || "",
+        "merchant-id": merchant || "",
+      },
+    });
+
+    if (!res.ok) {
+      return {
+        data: [],
+        error: `Failed to fetch: ${res.status} ${res.statusText}`,
+      };
+    }
+
+    const data = (await res.json()).payload;
+    return { data: data as SearchType<T>[] };
+  } catch (err) {
+    return {
+      data: [],
+      error: (err as Error).message || "Unknown error occurred",
+    };
   }
 };

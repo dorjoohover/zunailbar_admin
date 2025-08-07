@@ -40,7 +40,7 @@ export default function HomePage() {
       }
     }
 
-    setupFCM();
+    // setupFCM();
   }, []);
 
   // 🔔 Foreground push popup харуулах
@@ -64,7 +64,7 @@ export default function HomePage() {
       });
     }
 
-    listenForForegroundPush();
+    // listenForForegroundPush();
   }, []);
 
   return (

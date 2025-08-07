@@ -24,10 +24,8 @@ export default function Template({
     }
   };
   const me = async () => {
-    console.log(token);
     if (token) {
       try {
-        console.log(`${API["user"]}/me`);
         const res = await fetch(`${API["user"]}/me`, {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -36,7 +34,6 @@ export default function Template({
           cache: "no-store",
         });
         const data = await res.json();
-        console.log(data);
         if (!res.ok) {
           // deleteCookie();
         } else {

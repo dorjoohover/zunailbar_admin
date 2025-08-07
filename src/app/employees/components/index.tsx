@@ -16,7 +16,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { TextField } from "@/shared/components/text.field";
 import { firstLetterUpper } from "@/lib/functions";
 import { DatePicker } from "@/shared/components/date.picker";
-import { create } from "@/app/(api)";
+import { create, updateOne } from "@/app/(api)";
 import { Api } from "@/utils/api";
 import { FormItems } from "@/shared/components/form.field";
 import { fetcher } from "@/hooks/fetcher";
@@ -95,8 +95,13 @@ export const EmployeePage = ({
     setEditingUser(e);
     form.reset(e);
   };
-  const setStatus = (status: number) => {
-    console.log(status);
+  const setStatus = async (index: number, status: number) => {
+    console.log(users.items[index].id);
+    const res = await updateOne(Api.user, users.items[index].id, {
+      user_status: status,
+    });
+    console.log(res);
+    refresh();
   };
   const giveProduct = (index: number) => {
     setUserProduct(users.items[index].id);
@@ -194,7 +199,10 @@ export const EmployeePage = ({
           </FormItems>
         </FormProvider>
       </Modal>
-      <EmployeeProductModal id={userProduct} />
+      <EmployeeProductModal
+        id={userProduct}
+        clear={() => setUserProduct(undefined)}
+      />
       <DataTable
         columns={columns}
         data={users.items}

@@ -26,13 +26,21 @@ export const RoleValue = {
 // };
 
 export const UserStatusValue = {
-  [UserStatus.ACTIVE]: { name: "Active" },
-  [UserStatus.BANNED]: { name: "Banned" },
+  [UserStatus.ACTIVE]: { name: "Active", color: "text-green-600" },
+  [UserStatus.FIRED]: { name: "Халагдсан", color: "text-gray-600" },
+  [UserStatus.DEKIRIT]: { name: "Декирит", color: "text-red-500" },
+  [UserStatus.VACATION]: { name: "Амарсан", color: "text-yellow-500" },
+  [UserStatus.BANNED]: { name: "Banned", color: "text-red-500" },
 };
 
 export interface ListType<T> {
   count: number;
   items: T[];
+}
+export interface SearchType<T> {
+  id: string;
+  value: string;
+  item?: T;
 }
 
 export enum ACTION {
@@ -52,8 +60,8 @@ export type PG = {
 };
 
 export const DEFAULT_PG: Required<PG> = {
-  page: 1,
-  limit: 20,
+  page: 0,
+  limit: DEFAULT_LIMIT,
   sort: false,
 };
 

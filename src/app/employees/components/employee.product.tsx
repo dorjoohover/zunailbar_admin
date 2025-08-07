@@ -1,162 +1,362 @@
+import { useEffect, useState } from "react";
+import { useForm, FormProvider, useFieldArray } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Switch } from "@/components/ui/switch";
+import { AppAlertDialog } from "@/components/AlertDialog";
+import { Hammer } from "lucide-react";
+
 import { searchProduct } from "@/app/(api)/product";
 import { fetcher } from "@/hooks/fetcher";
 import {
   ACTION,
   DEFAULT_PG,
-  getEnumValues,
-  getValuesUserProductStatus,
-  ListType,
   PG,
-  RoleValue,
+  ListType,
+  SearchType,
+  DEFAULT_LIMIT,
 } from "@/lib/constants";
-import { ROLE, UserProductStatus } from "@/lib/enum";
-import { firstLetterUpper } from "@/lib/functions";
-import { Product, UserProduct } from "@/models";
-import { ComboBox } from "@/shared/components/combobox";
-import { DatePicker } from "@/shared/components/date.picker";
-import { FormItems } from "@/shared/components/form.field";
+import { UserProductStatus } from "@/lib/enum";
+import { IUserProduct, Product, UserProduct } from "@/models";
+import { API, Api } from "@/utils/api";
+import { create, search } from "@/app/(api)";
+import { toast } from "sonner";
 import { Modal } from "@/shared/components/modal";
-import { PasswordField } from "@/shared/components/password.field";
-import { TextField } from "@/shared/components/text.field";
-import { Api } from "@/utils/api";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useEffect, useState } from "react";
-import { useForm, FormProvider } from "react-hook-form";
-import { Label } from "recharts";
-import z from "zod";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
+import { getPaginationRange } from "@/lib/functions";
 
-const formSchema = z.object({
+const productItemSchema = z.object({
   quantity: z.preprocess(
     (val) => (typeof val === "string" ? parseFloat(val) : val),
-    z.number()
+    z.number().nullable()
   ) as unknown as number,
-
-  product_id: z.string().min(1),
+  product_id: z.string().min(1, "Бүтээгдэхүүн заавал сонгоно").nullable(),
   status: z
     .preprocess(
       (val) => (typeof val === "string" ? parseInt(val, 10) : val),
-      z.nativeEnum(UserProductStatus)
+      z.nativeEnum(UserProductStatus).nullable()
     )
-    .optional() as unknown as UserProductStatus,
+    .optional() as unknown as number,
 });
-type UserType = z.infer<typeof formSchema>;
-export const EmployeeProductModal = ({ id }: { id?: string }) => {
-  const form = useForm<UserType>({
+
+const formSchema = z.object({
+  compare: z.boolean(),
+  products: z
+    .array(productItemSchema)
+    .min(1, "Хамгийн багадаа 1 бүтээгдэхүүн нэмнэ"),
+});
+
+type UserProductType = z.infer<typeof formSchema>;
+
+export const EmployeeProductModal = ({
+  id,
+  clear,
+}: {
+  id?: string;
+  clear: () => void;
+}) => {
+  const form = useForm<UserProductType>({
     resolver: zodResolver(formSchema),
-    defaultValues: {},
+    defaultValues: {
+      compare: false,
+    },
   });
+
   const [action, setAction] = useState(ACTION.DEFAULT);
   const [open, setOpen] = useState<boolean | undefined>(false);
   const [userProducts, setUserProducts] =
     useState<ListType<UserProduct> | null>(null);
-  const [products, setProducts] = useState<ListType<Product> | null>(null);
-  const getProducts = async (pg: PG = DEFAULT_PG) => {
-    const { page, limit, sort } = pg;
-    // await searchProduct()
+  const [products, setProducts] = useState<SearchType<number>[]>([]);
+
+  const { fields, append, replace } = useFieldArray({
+    control: form.control,
+    name: "products",
+  });
+
+  const compare = form.watch("compare");
+  const selectedIds = form.watch("products")?.map((p) => p.product_id);
+  const userProductIds = new Set(
+    userProducts?.items.map((up) => up.product_id)
+  );
+
+  const visibleProducts = products.filter((p) => {
+    if (compare && !userProductIds.has(p.id)) return false;
+    return true;
+  });
+
+  const searchProduct = async (name = "") => {
+    const result = await search<number>(Api.product, { id: name });
+    setProducts(result.data);
   };
+
   const refresh = async (pg: PG = DEFAULT_PG) => {
     setAction(ACTION.RUNNING);
     const { page, limit, sort } = pg;
-    await fetcher<UserProduct>(Api.user_product, {
+    const d = await fetcher<UserProduct>(Api.user_product, {
       page,
-      limit,
+      limit: 100,
       sort,
       user_id: id,
-    }).then((d) => {
-      setUserProducts(d);
-      form.reset(undefined);
     });
+    setUserProducts(d);
+    form.reset(undefined);
+    if (d?.items) {
+      const items = d.items
+        .filter((item) => products.some((p) => p.id === item.product_id))
+        .map((item) => ({
+          product_id: item.product_id,
+          quantity: item.quantity,
+          status: item.user_product_status,
+        }));
+      console.log(items);
+      replace(items);
+    }
     setAction(ACTION.DEFAULT);
   };
+
   useEffect(() => {
-    if (id != undefined) {
-      refresh();
+    if (id !== undefined) {
       setOpen(true);
+      searchProduct();
+    } else {
+      setOpen(false);
     }
   }, [id]);
+  useEffect(() => {
+    if (products.length > 0) {
+      refresh();
+    }
+  }, [products]);
 
-  const onSubmit = async <T,>(e: T) => {
-    // const res = await create<IUser>(Api.user, e as IUser);
-    // if (res.success) {
-    //   refresh();
-    //   setOpen(false);
-    //   form.reset();
-    // }
-    setAction(ACTION.DEFAULT);
-  };
-  const onInvalid = async <T,>(e: T) => {
-    console.log("error", e);
-    // setSuccess(false);
+  const handleProductClickOnce = (productId: string) => {
+    const existing = form.getValues("products");
+    const alreadyExists = existing?.some((p) => p.product_id === productId);
+
+    if (!alreadyExists) {
+      append({
+        product_id: productId,
+        quantity: 1,
+        status: UserProductStatus.Active,
+      });
+    }
   };
 
+  const handleProductQuantityChange = (productId: string, change: number) => {
+    const products = form.getValues("products");
+    const index = products.findIndex((p) => p.product_id === productId);
+
+    if (index !== -1) {
+      const updated = [...products];
+      const currentQty = (updated[index].quantity as number) ?? 0;
+      const newQty = currentQty + change;
+
+      if (newQty <= 0) {
+        updated.splice(index, 1);
+      } else {
+        updated[index] = {
+          ...updated[index],
+          quantity: newQty,
+        };
+      }
+
+      form.setValue("products", updated);
+    } else {
+      if (change > 0) {
+        append({
+          product_id: productId,
+          quantity: change,
+          status: UserProductStatus.Active,
+        });
+      }
+    }
+  };
+
+  const onConfirm = async () => {
+    const data = fields.map((field) => {
+      return {
+        quantity: field.quantity,
+        product_id: field.product_id,
+        user_product_status: field.status,
+        user_id: id,
+      };
+    }) as IUserProduct[];
+    const res = await create<{ items: IUserProduct[] }>(Api.user_product, {
+      items: data,
+    });
+    if (res.success) {
+      form.reset(undefined);
+      setUserProducts(null);
+      clear();
+    }
+    toast(`${res.success} ${res.error}`);
+  };
+  const totalPages = Math.ceil(visibleProducts.length / DEFAULT_LIMIT);
+  // const paginationRange = getPaginationRange(page + 1, totalPages);
   return (
     <Modal
-      submit={() => {
-        form.handleSubmit(onSubmit, onInvalid)();
+      open={open === true}
+      setOpen={(v) => {
+        setOpen(v);
+        clear();
       }}
-      name={""}
-      title="Ажилтан нэмэх"
-      submitTxt="Нэмэх"
-      open={!open ? false : open}
-      setOpen={setOpen}
-      loading={action == ACTION.RUNNING}
+      name={``}
+      title="Бараа олгох"
+      submit={onConfirm}
     >
       <FormProvider {...form}>
-        {/* <FormItems control={form.control} name="product_id">
-          {(field) => {
-            return (
-              <>
-                <Label>Бүтээгдэхүүн</Label>
-                <ComboBox
-                  props={{ ...field }}
-                  search="Хайх"
-                  items={products.items.map((product) => {
-                    return {
-                      value: product.id,
-                      label: product.name,
-                    };
-                  })}
-                />
-              </>
-            );
-          }}
-        </FormItems> */}
-        <FormItems control={form.control} name="product_id">
-          {(field) => {
-            return (
-              <>
-                <Label>status</Label>
-                <ComboBox
-                  props={{ ...field }}
-                  items={getEnumValues(UserProductStatus).map((product) => {
-                    return {
-                      value: product.toString(),
-                      label: getValuesUserProductStatus[product],
-                    };
-                  })}
-                />
-              </>
-            );
-          }}
-        </FormItems>
+        <div className="w-full">
+          <div className="flex flex-col gap-4">
+            {visibleProducts.length}
+            <Input
+              placeholder="Бүтээгдэхүүн хайх..."
+              onChange={(e) => {
+                const value = e.target.value;
+                if (value.length >= 2) searchProduct(value);
+                else searchProduct("");
+              }}
+              className="w-auto max-w-md"
+            />
+            {userProducts?.items?.length}
 
-        <FormItems
-          control={form.control}
-          name={"quantity"}
-          className={"col-span-2"}
-        >
-          {(field) => {
-            return (
-              <>
-                <TextField
-                  type={"number"}
-                  props={{ ...field }}
-                  label={"quantity"}
-                />
-              </>
-            );
-          }}
-        </FormItems>
+            <div className="flex items-center gap-2 mt-2">
+              <Switch
+                checked={compare}
+                onCheckedChange={(val) => form.setValue("compare", val)}
+                id="compare-switch"
+              />
+              <label
+                htmlFor="compare-switch"
+                className="text-sm text-muted-foreground"
+              >
+                Зөвхөн хэрэглэгчийн авсан бүтээгдэхүүнүүд (
+                {visibleProducts.length})
+              </label>
+            </div>
+            {form.getValues("products")?.length}
+          </div>
+
+          <ScrollArea className="h-[400px] w-full rounded-md border p-4 my-6">
+            {visibleProducts.map((product, index) => {
+              const [brand, category, name] = product.value.split("__");
+
+              return (
+                <div
+                  className="flex items-center justify-between gap-4 py-2 border-b"
+                  key={product.id}
+                >
+                  <span className="text-sm font-medium text-gray-700">
+                    {brand}
+                  </span>
+                  <span className="text-sm font-medium text-gray-700">
+                    {category}
+                  </span>
+                  <span className="text-sm font-medium text-gray-700">
+                    {name}
+                  </span>
+
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() =>
+                        handleProductQuantityChange(product.id, -1)
+                      }
+                    >
+                      −
+                    </Button>
+
+                    <Input
+                      type="number"
+                      className="w-16 text-center bg-white no-spinner"
+                      value={
+                        (form
+                          .watch("products")
+                          ?.find((p) => p.product_id === product.id)
+                          ?.quantity as number) ?? ""
+                      }
+                      onClick={() => handleProductClickOnce(product.id)}
+                      onChange={(e) => {
+                        const val = parseInt(e.target.value || "0", 10);
+                        const existing = form.getValues("products");
+                        const index = existing.findIndex(
+                          (p) => p.product_id === product.id
+                        );
+
+                        const updated = [...existing];
+
+                        if (val <= 0 && index !== -1) {
+                          updated.splice(index, 1);
+                        } else if (index !== -1) {
+                          updated[index] = { ...updated[index], quantity: val };
+                        } else if (val > 0) {
+                          updated.push({
+                            product_id: product.id,
+                            quantity: val,
+                            status: UserProductStatus.Active,
+                          });
+                        }
+
+                        form.setValue("products", updated);
+                      }}
+                    />
+
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => handleProductQuantityChange(product.id, 1)}
+                    >
+                      +
+                    </Button>
+                  </div>
+                </div>
+              );
+            })}
+          </ScrollArea>
+        </div>
+        {/* oor ymand ashiglana aa */}
+        {/* <Pagination>
+          <PaginationContent>
+            {totalPages > 0 && page > 0 && (
+              <PaginationItem>
+                <PaginationPrevious onClick={() => setPage(page - 1)} />
+              </PaginationItem>
+            )}
+
+            {paginationRange.map((pageNum, index) => (
+              <PaginationItem key={index}>
+                {pageNum === "..." ? (
+                  <PaginationEllipsis />
+                ) : (
+                  <PaginationLink
+                    href="#"
+                    isActive={pageNum === page + 1}
+                    onClick={() => setPage(pageNum - 1)} // 0-based рүү хөрвүүлж байна
+                  >
+                    {pageNum}
+                  </PaginationLink>
+                )}
+              </PaginationItem>
+            ))}
+
+            {page < totalPages - 1 && (
+              <PaginationItem>
+                <PaginationNext onClick={() => setPage(page + 1)} />
+              </PaginationItem>
+            )}
+          </PaginationContent>
+        </Pagination> */}
       </FormProvider>
     </Modal>
   );

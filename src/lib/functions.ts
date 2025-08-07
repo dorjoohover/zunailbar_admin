@@ -54,14 +54,16 @@ export function paginationToQuery(
   const params = new URLSearchParams();
 
   // Default pagination values
-  params.append("limit", String(limit));
-  params.append("page", String(page));
-  params.append("sort", String(sort));
+  if (pagination.limit) {
+    params.append("limit", String(limit));
+    params.append("page", String(page));
+    params.append("sort", String(sort));
+  }
 
   // Other filters
   Object.entries(filtersOnly).forEach(([key, value]) => {
     if (value !== undefined && value !== null) {
-      params.append(key, String(value));
+      params.append(key, String(value == "" ? "" : value));
     }
   });
 
@@ -75,3 +77,25 @@ export const firstLetterUpper = (value: string) => {
   if (value.length == 0) return value;
   return `${value.substring(0, 1).toUpperCase()}${value.substring(1)}`;
 };
+
+export function getPaginationRange(
+  current: number,
+  total: number
+): (number | "...")[] {
+  const delta = 1; // current-ийг тойрсон хуудасны тоо
+  const range: (number | "...")[] = [];
+
+  for (let i = 1; i <= total; i++) {
+    if (
+      i === 1 || // эхний
+      i === total || // сүүлийн
+      (i >= current - delta && i <= current + delta) // current орчмын 3 хуудас
+    ) {
+      range.push(i);
+    } else if (range[range.length - 1] !== "...") {
+      range.push("...");
+    }
+  }
+
+  return range;
+}

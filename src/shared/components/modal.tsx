@@ -63,7 +63,7 @@ export const Modal = ({
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
-        <div className="grid gap-4 grid-cols-2">{children}</div>
+        <div>{children}</div>
         <DialogFooter className="mt-3">
           <DialogClose asChild>
             <Button variant="outline">Цуцлах</Button>

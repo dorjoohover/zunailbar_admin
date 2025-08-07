@@ -15,8 +15,8 @@ export interface UserProduct {
   user_id: string;
   branch_id: string;
   product_id: string;
-  product_name: string;
-  user_name: string;
+  product_name?: string;
+  user_name?: string;
   quantity: number;
   user_product_status: number;
   created_at?: Date;

@@ -18,10 +18,10 @@ export interface User {
   firstname?: string;
   lastname?: string;
   role: ROLE;
-  mobile: string;
+  mobile?: string;
   birthday?: Date;
-  added_by?: string;
-  branch_id?: string;
+  added_by: string;
+  branch_id: string;
   branch_name?: string;
   user_status: number;
   description?: string;
