@@ -1,0 +1,28 @@
+import { Api } from "@/utils/api";
+import {
+  Branch,
+  Brand,
+  Category,
+  Product,
+  ProductLog,
+  ProductTransaction,
+} from "@/models";
+import { find } from "@/app/(api)";
+import { ProductHistoryPage } from "./components";
+import ContainerHeader from "@/components/containerHeader";
+// import { ProductTransactionPage } from "./components";
+
+export default async function Page() {
+  const [res, product] = await Promise.all([
+    find<ProductLog>(Api.product_log),
+    find<Product>(Api.product, { isCost: false, limit: -1 }),
+  ]);
+  return (
+    <section>
+      <ContainerHeader title="Барааны түүх" />
+      <div className="admin-container">
+        <ProductHistoryPage data={res.data} products={product.data} />
+      </div>
+    </section>
+  );
+}

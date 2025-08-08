@@ -6,11 +6,13 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { AppAlertDialog } from "@/components/AlertDialog";
 import { toast } from "sonner";
 import { parseDate } from "@/lib/functions";
+import { ProductLogStatus, ProductTransactionStatus } from "@/lib/enum";
+import { IProductLog } from "@/models";
 
 export function getColumns(
-  onEdit: (product: IProduct) => void,
+  onEdit: (product: IProductLog) => void,
   remove: (index: number) => Promise<boolean>
-): ColumnDef<IProduct>[] {
+): ColumnDef<IProductLog>[] {
   return [
     {
       id: "select",
@@ -32,30 +34,14 @@ export function getColumns(
       enableHiding: false,
     },
     {
-      accessorKey: "name",
+      accessorKey: "product_name",
       header: ({ column }) => (
         <Button
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           className="font-bold"
         >
-          Name <ArrowUpDown className="w-4 h-4 ml-2" />
-        </Button>
-      ),
-    },
-    {
-      accessorKey: "ref",
-      header: "Reference",
-    },
-    {
-      accessorKey: "quantity",
-      header: ({ column }) => (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          className="font-bold"
-        >
-          Quantity <ArrowUpDown className="w-4 h-4 ml-2" />
+          Branch <ArrowUpDown className="w-4 h-4 ml-2" />
         </Button>
       ),
     },
@@ -70,15 +56,51 @@ export function getColumns(
           Price <ArrowUpDown className="w-4 h-4 ml-2" />
         </Button>
       ),
-      cell: ({ row }) => `${row.getValue("price")}₮`,
     },
     {
-      accessorKey: "color",
-      header: "Color",
+      accessorKey: "quantity",
+      header: ({ column }) => (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          className="font-bold"
+        >
+          Quantity <ArrowUpDown className="w-4 h-4 ml-2" />
+        </Button>
+      ),
     },
     {
-      accessorKey: "size",
-      header: "Size",
+      accessorKey: "total_amount",
+      header: ({ column }) => (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          className="font-bold"
+        >
+          Total Amount <ArrowUpDown className="w-4 h-4 ml-2" />
+        </Button>
+      ),
+    },
+
+    {
+      accessorKey: "product_log_status",
+      header: "Status",
+      cell: ({ row }) => {
+        const status =
+          ProductLogStatus[
+            row.getValue<number>("product_log_status") as ProductLogStatus
+          ];
+        return <span>{status}</span>;
+      },
+    },
+
+    {
+      accessorKey: "date",
+      header: "date",
+      cell: ({ row }) => {
+        const date = parseDate(new Date(row.getValue("date")), false);
+        return date;
+      },
     },
     {
       accessorKey: "created_at",

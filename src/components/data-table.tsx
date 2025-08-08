@@ -7,15 +7,16 @@ import {
   getSortedRowModel,
   getFilteredRowModel,
   useReactTable,
-  ColumnDef
+  ColumnDef,
 } from "@tanstack/react-table";
 
 import {
   Table,
   TableBody,
-  TableCell, TableHead,
+  TableCell,
+  TableHead,
   TableHeader,
-  TableRow
+  TableRow,
 } from "@/components/ui/table";
 
 import { Input } from "@/components/ui/input";
@@ -29,14 +30,16 @@ interface DataTableProps<TData, TValue> {
   limit?: number;
   count?: number;
   loading?: boolean;
-  refresh: ({
+  refresh: <T>({
     page,
     limit,
     sort,
+    filter,
   }: {
     page?: number;
     limit?: number;
     sort?: boolean;
+    filter?: T;
   }) => void;
 }
 
@@ -66,9 +69,21 @@ export function DataTable<TData, TValue>({
       ? refresh({
           page: pagination.pageIndex,
           limit: pagination.pageSize,
+          filter: globalFilter,
         })
       : (mounted.current = true);
   }, [pagination.pageIndex, pagination.pageSize]);
+  useEffect(() => {
+    mounted.current
+      ? globalFilter.length > 1 || globalFilter.length == 0
+        ? refresh({
+            page: pagination.pageIndex,
+            limit: pagination.pageSize,
+            filter: globalFilter,
+          })
+        : null
+      : (mounted.current = true);
+  }, [globalFilter]);
   const table = useReactTable({
     data,
     columns,

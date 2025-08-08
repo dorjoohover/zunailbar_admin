@@ -1,28 +1,14 @@
 "use client";
 import { DataTable } from "@/components/data-table";
 import { ACTION, DEFAULT_PG, ListType, PG, RoleValue } from "@/lib/constants";
-import { Branch, IUser, User } from "@/models";
-import { getColumns } from "./columns";
-import { Modal } from "@/shared/components/modal";
-import { Label } from "@/components/ui/label";
-import { ComboBox } from "@/shared/components/combobox";
 import { useState } from "react";
 import { ROLE } from "@/lib/enum";
-import { PasswordField } from "@/shared/components/password.field";
 import z from "zod";
-import { FormProvider, useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
 
-import { TextField } from "@/shared/components/text.field";
-import { firstLetterUpper } from "@/lib/functions";
-import { DatePicker } from "@/shared/components/date.picker";
-import { create, updateOne } from "@/app/(api)";
 import { Api } from "@/utils/api";
-import { FormItems } from "@/shared/components/form.field";
 import { fetcher } from "@/hooks/fetcher";
-import { EmployeeProductModal } from "./employee.product";
-import { imageUploader } from "@/app/(api)/base";
-import { Input } from "@/components/ui/input";
+import { UserProduct } from "@/models";
+import { getColumns } from "./columns";
 
 const formSchema = z.object({
   firstname: z.string().min(1),
@@ -55,91 +41,89 @@ const formSchema = z.object({
     .nullable(),
 });
 type UserType = z.infer<typeof formSchema>;
-export const EmployeePage = ({
+export const EmployeeProductPage = ({
   data,
-  branches,
-}: {
-  data: ListType<User>;
-  branches: ListType<Branch>;
+}: //   branches,
+{
+  data: ListType<UserProduct>;
+  //   branches: ListType<Branch>;
 }) => {
   const [action, setAction] = useState(ACTION.DEFAULT);
-  const [open, setOpen] = useState<boolean | undefined>(false);
-  const form = useForm<UserType>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      role: ROLE.EMPLOYEE,
-      password: "string",
-    },
-  });
-  const [users, setUsers] = useState<ListType<User>>(data);
-  const [editingUser, setEditingUser] = useState<IUser | null>(null);
-  const [userProduct, setUserProduct] = useState<string | undefined>(undefined);
-  const onSubmit = async <T,>(e: T) => {
-    const { file, ...body } = form.getValues();
-    const formData = new FormData();
-    let payload = {};
-    if (file != null) {
-      formData.append("files", file);
-      const uploadResult = await imageUploader(formData);
-      payload = {
-        ...(body as IUser),
-        profile_img: uploadResult[0],
-      };
-    } else {
-      payload = {
-        ...(body as IUser),
-      };
-    }
-    const res = editingUser
-      ? await updateOne<IUser>(Api.user, editingUser?.id as string, payload)
-      : await create<IUser>(Api.user, payload);
-    if (res.success) {
-      refresh();
-      setOpen(false);
-      form.reset();
-    }
-    setAction(ACTION.DEFAULT);
-  };
-  const onInvalid = async <T,>(e: T) => {
-    console.log("error", e);
+  //   const [open, setOpen] = useState<boolean | undefined>(false);
+  //   const form = useForm<UserType>({
+  //     resolver: zodResolver(formSchema),
+  //     defaultValues: {
+  //       role: ROLE.EMPLOYEE,
+  //       password: "string",
+  //     },
+  //   });
+  const [userProduct, setUserProduct] = useState<ListType<UserProduct>>(data);
+  //   const [editingUser, setEditingUser] = useState<IUser | null>(null);
+  //   const onSubmit = async <T,>(e: T) => {
+  //     const { file, ...body } = form.getValues();
+  //     const formData = new FormData();
+  //     let payload = {};
+  //     if (file != null) {
+  //       formData.append("files", file);
+  //       const uploadResult = await imageUploader(formData);
+  //       payload = {
+  //         ...(body as IUser),
+  //         profile_img: uploadResult[0],
+  //       };
+  //     } else {
+  //       payload = {
+  //         ...(body as IUser),
+  //       };
+  //     }
+  //     const res = editingUser
+  //       ? await updateOne<IUser>(Api.user, editingUser?.id as string, payload)
+  //       : await create<IUser>(Api.user, payload);
+  //     if (res.success) {
+  //       refresh();
+  //       setOpen(false);
+  //       form.reset();
+  //     }
+  //     setAction(ACTION.DEFAULT);
+  //   };
+  //   const onInvalid = async <T,>(e: T) => {
+  //     console.log("error", e);
 
-    // setSuccess(false);
-  };
+  //     // setSuccess(false);
+  //   };
 
   const refresh = async (pg: PG = DEFAULT_PG) => {
     setAction(ACTION.RUNNING);
     const { page, limit, sort } = pg;
-    await fetcher<User>(Api.user, {
+    await fetcher<UserProduct>(Api.user_product, {
       page,
       limit,
       sort,
-      isCost: false,
-      role: 35,
-      mobile: pg.filter,
     }).then((d) => {
-      setUsers(d);
-      form.reset(undefined);
+      setUserProduct(d);
+      // form.reset(undefined);
     });
     setAction(ACTION.DEFAULT);
   };
-  const edit = (e: IUser) => {
-    setOpen(true);
-    setEditingUser(e);
-    form.reset(e);
-  };
-  const setStatus = async (index: number, status: number) => {
-    const res = await updateOne(Api.user, users.items[index].id, {
-      user_status: status,
-    });
-    refresh();
-  };
-  const giveProduct = (index: number) => {
-    setUserProduct(users.items[index].id);
-  };
-  const columns = getColumns(edit, setStatus, giveProduct);
+  //   const edit = (e: IUser) => {
+  //     setOpen(true);
+  //     setEditingUser(e);
+  //     form.reset(e);
+  //   };
+  //   const setStatus = async (index: number, status: number) => {
+  //     const res = await updateOne(Api.user, users.items[index].id, {
+  //       user_status: status,
+  //     });
+  //     refresh();
+  //   };
+  //   const giveProduct = (index: number) => {
+  //     setUserProduct(users.items[index].id);
+  //   };
+  const columns = getColumns();
+  //   const columns = getColumns(edit, setStatus, giveProduct);
   return (
     <div className="w-full relative">
-      <Modal
+      {data.count}
+      {/* <Modal
         submit={() => {
           form.handleSubmit(onSubmit, onInvalid)();
         }}
@@ -197,7 +181,7 @@ export const EmployeePage = ({
               );
             }}
           </FormItems>
-          {/* odoogiin */}
+   
           <FormItems control={form.control} name="profile_img">
             {(field) => {
               return (
@@ -281,13 +265,13 @@ export const EmployeePage = ({
       <EmployeeProductModal
         id={userProduct}
         clear={() => setUserProduct(undefined)}
-      />
+      /> */}
       <DataTable
         columns={columns}
-        data={users.items}
+        data={userProduct.items}
         refresh={refresh}
         loading={action === ACTION.RUNNING}
-        count={users.count}
+        count={userProduct.count}
       />
     </div>
   );

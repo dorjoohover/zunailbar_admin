@@ -1,12 +1,15 @@
 "use client";
 
 import { DataTable } from "@/components/data-table";
-import { Branch, Brand, Category, IProduct, Product } from "@/models";
-import { getColumns } from "./columns";
-import { useEffect, useState } from "react";
-import { toast } from "sonner";
-import { ProductDialog } from "./dialog";
-import { ListType, ACTION, PG, DEFAULT_PG } from "@/lib/constants";
+import { Branch, Brand, Category, IProduct, Product, User } from "@/models";
+import { useEffect, useMemo, useState } from "react";
+import {
+  ListType,
+  ACTION,
+  PG,
+  DEFAULT_PG,
+  getEnumValues,
+} from "@/lib/constants";
 import { Modal } from "@/shared/components/modal";
 import z from "zod";
 import { FormProvider, useForm } from "react-hook-form";
@@ -17,97 +20,115 @@ import { FormItems } from "@/shared/components/form.field";
 import { ComboBox } from "@/shared/components/combobox";
 import { TextField } from "@/shared/components/text.field";
 import { fetcher } from "@/hooks/fetcher";
-const initialProduct: IProduct = {
-  id: "1",
-  brand_id: "1",
-  category_id: "man",
-  name: "Ягаан будаг",
-  ref: "asd",
-  quantity: 12,
-  price: 15000,
-  color: "Pink",
-  size: "50ml",
-  created_at: new Date("2025-07-20"),
-};
-
-const initialProducts: IProduct[] = Array.from({ length: 40 }, (_, i) => ({
-  ...initialProduct,
-  id: (i + 1).toString(),
-  name: `Ягаан будаг ${i + 1}`,
-}));
+import { getColumns } from "./columns";
+import { usernameFormatter } from "@/lib/functions";
+import { IService, Service } from "@/models/service.model";
 
 const formSchema = z.object({
-  brand_id: z.string().min(1),
-  category_id: z.string().min(1),
+  branch_id: z.string().min(1),
   name: z.string().min(1),
-  quantity: z.preprocess(
+  max_price: z
+    .preprocess(
+      (val) => (typeof val === "string" ? parseFloat(val) : val),
+      z.number()
+    )
+    .nullable()
+    .optional() as unknown as number,
+  min_price: z.preprocess(
     (val) => (typeof val === "string" ? parseFloat(val) : val),
     z.number()
   ) as unknown as number,
-  price: z.preprocess(
+  duration: z.preprocess(
     (val) => (typeof val === "string" ? parseFloat(val) : val),
     z.number()
   ) as unknown as number,
-  color: z.string(),
-  size: z.string(),
-  edit: z.string().nullable(),
+  edit: z.string().nullable().optional(),
 });
-type ProductType = z.infer<typeof formSchema>;
-export const ProductPage = ({
+const defaultValues: ServiceType = {
+  branch_id: "",
+  name: "",
+  max_price: null,
+  min_price: 0,
+  duration: 0,
+  edit: undefined,
+};
+type ServiceType = z.infer<typeof formSchema>;
+export const ServicePage = ({
   data,
-  categories,
-  brands,
+  branches,
 }: {
-  data: ListType<Product>;
-  categories: ListType<Category>;
-  brands: ListType<Brand>;
+  data: ListType<Service>;
+  branches: ListType<Branch>;
 }) => {
   const [action, setAction] = useState(ACTION.DEFAULT);
   const [open, setOpen] = useState<undefined | boolean>(false);
-  const form = useForm<ProductType>({
+  const form = useForm<ServiceType>({
     resolver: zodResolver(formSchema),
-    defaultValues: {
-      edit: undefined,
-    },
+    defaultValues,
   });
-  const [products, setProducts] = useState<ListType<Product>>(data);
-  const deleteProduct = async (index: number) => {
-    const id = products.items[index].id;
-    const res = await deleteOne(Api.product, id);
+  const [services, setServices] = useState<ListType<Service> | null>(null);
+  const branchMap = useMemo(
+    () => new Map(branches.items.map((b) => [b.id, b])),
+    [branches.items]
+  );
+
+  const serviceFormatter = (data: ListType<Service>) => {
+    const items: Service[] = data.items.map((item) => {
+      const branch = branchMap.get(item.branch_id);
+
+      return {
+        ...item,
+        branch_name: branch?.name ?? "",
+      };
+    });
+
+    setServices({ items, count: data.count });
+  };
+  useEffect(() => {
+    serviceFormatter(data);
+  }, [data]);
+  const clear = () => {
+    form.reset(defaultValues);
+    console.log(form.getValues());
+  };
+  const deleteService = async (index: number) => {
+    const id = services!.items[index].id;
+    const res = await deleteOne(Api.service, id);
     refresh();
     return res.success;
   };
-  const edit = async (e: IProduct) => {
+  const edit = async (e: IService) => {
     setOpen(true);
     form.reset({ ...e, edit: e.id });
   };
-  const columns = getColumns(edit, deleteProduct);
+  const columns = getColumns(edit, deleteService);
 
   const refresh = async (pg: PG = DEFAULT_PG) => {
     setAction(ACTION.RUNNING);
     const { page, limit, sort } = pg;
-    await fetcher<Product>(Api.product, {
+    await fetcher<Service>(Api.service, {
       page,
       limit,
       sort,
-      name: pg.filter,
+      //   name: pg.filter,
     }).then((d) => {
+      serviceFormatter(d);
       console.log(d);
-      setProducts(d);
     });
     setAction(ACTION.DEFAULT);
   };
   const onSubmit = async <T,>(e: T) => {
     setAction(ACTION.RUNNING);
-    const body = e as ProductType;
+    const body = e as ServiceType;
     const { edit, ...payload } = body;
     const res = edit
-      ? await updateOne<IProduct>(Api.product, edit ?? "", payload as IProduct)
-      : await create<IProduct>(Api.product, e as IProduct);
+      ? await updateOne<Service>(Api.service, edit ?? "", payload as Service)
+      : await create<Service>(Api.service, e as Service);
+    console.log(res);
     if (res.success) {
       refresh();
       setOpen(false);
-      form.reset({});
+      clear();
     }
     setAction(ACTION.DEFAULT);
   };
@@ -117,27 +138,24 @@ export const ProductPage = ({
 
   return (
     <div className="">
-      {/* {JSON.stringify(form.getValues())}
-      {JSON.stringify(open)} */}
       <Modal
-        name="Бараа нэмэх"
+        name={"Бараа нэмэх" + services?.count}
         submit={() => form.handleSubmit(onSubmit, onInvalid)()}
         open={open == true}
         reset={() => {
           setOpen(false);
-          form.reset({});
+          clear();
         }}
         setOpen={setOpen}
         loading={action == ACTION.RUNNING}
       >
         <FormProvider {...form}>
-          <FormItems control={form.control} name="category_id">
+          <FormItems control={form.control} name="branch_id">
             {(field) => {
-              console.log(field.value);
               return (
                 <ComboBox
                   props={{ ...field }}
-                  items={categories.items.map((item) => {
+                  items={branches.items.map((item) => {
                     return {
                       value: item.id,
                       label: item.name,
@@ -148,47 +166,25 @@ export const ProductPage = ({
             }}
           </FormItems>
 
-          <FormItems control={form.control} name="brand_id">
-            {(field) => {
-              return (
-                <ComboBox
-                  props={{ ...field }}
-                  items={brands.items.map((item) => {
-                    return {
-                      value: item.id,
-                      label: item.name,
-                    };
-                  })}
-                />
-              );
-            }}
-          </FormItems>
           {[
             {
-              key: "name",
-              label: "Нэр",
-            },
-            {
-              key: "quantity",
-              type: "number",
-              label: "Тоо ширхэг",
-            },
-            {
-              key: "price",
-              type: "number",
+              key: "min_price",
+              type: "money",
               label: "Үнэ",
             },
             {
-              key: "color",
-              label: "Өнгө",
+              key: "max_price",
+              type: "money",
+              label: "Их үнэ",
             },
             {
-              key: "size",
-              label: "Хэмжээ  ",
+              key: "duration",
+              type: "number",
+              label: "Хугацаа",
             },
           ].map((item, i) => {
-            const name = item.key as keyof ProductType;
-            const label = item.label as keyof ProductType;
+            const name = item.key as keyof ServiceType;
+            const label = item.label as keyof ServiceType;
             return (
               <FormItems
                 control={form.control}
@@ -212,8 +208,8 @@ export const ProductPage = ({
       </Modal>
       <DataTable
         columns={columns}
-        count={products.count}
-        data={products.items}
+        count={services?.count}
+        data={services?.items ?? []}
         refresh={refresh}
         loading={action == ACTION.RUNNING}
       />

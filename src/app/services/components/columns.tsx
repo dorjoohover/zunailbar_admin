@@ -5,12 +5,15 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { AppAlertDialog } from "@/components/AlertDialog";
 import { toast } from "sonner";
-import { parseDate } from "@/lib/functions";
+import { money, parseDate } from "@/lib/functions";
+import { IProductTransaction } from "@/models";
+import { ProductTransactionStatus } from "@/lib/enum";
+import { IService } from "@/models/service.model";
 
 export function getColumns(
-  onEdit: (product: IProduct) => void,
+  onEdit: (product: IService) => void,
   remove: (index: number) => Promise<boolean>
-): ColumnDef<IProduct>[] {
+): ColumnDef<IService>[] {
   return [
     {
       id: "select",
@@ -32,6 +35,18 @@ export function getColumns(
       enableHiding: false,
     },
     {
+      accessorKey: "branch_name",
+      header: ({ column }) => (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          className="font-bold"
+        >
+          Branch <ArrowUpDown className="w-4 h-4 ml-2" />
+        </Button>
+      ),
+    },
+    {
       accessorKey: "name",
       header: ({ column }) => (
         <Button
@@ -43,24 +58,22 @@ export function getColumns(
         </Button>
       ),
     },
+
     {
-      accessorKey: "ref",
-      header: "Reference",
-    },
-    {
-      accessorKey: "quantity",
+      accessorKey: "duration",
       header: ({ column }) => (
         <Button
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           className="font-bold"
         >
-          Quantity <ArrowUpDown className="w-4 h-4 ml-2" />
+          Duration <ArrowUpDown className="w-4 h-4 ml-2" />
         </Button>
       ),
+      cell: ({ row }) => `${row.getValue("duration")}мин`,
     },
     {
-      accessorKey: "price",
+      accessorKey: "min_price",
       header: ({ column }) => (
         <Button
           variant="ghost"
@@ -70,15 +83,20 @@ export function getColumns(
           Price <ArrowUpDown className="w-4 h-4 ml-2" />
         </Button>
       ),
-      cell: ({ row }) => `${row.getValue("price")}₮`,
+      cell: ({ row }) => money(row.getValue("min_price"), "₮"),
     },
     {
-      accessorKey: "color",
-      header: "Color",
-    },
-    {
-      accessorKey: "size",
-      header: "Size",
+      accessorKey: "max_price",
+      header: ({ column }) => (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          className="font-bold"
+        >
+          Max Price <ArrowUpDown className="w-4 h-4 ml-2" />
+        </Button>
+      ),
+      cell: ({ row }) => money(row.getValue("max_price"), "₮"),
     },
     {
       accessorKey: "created_at",

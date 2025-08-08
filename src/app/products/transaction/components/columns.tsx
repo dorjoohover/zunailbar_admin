@@ -6,11 +6,13 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { AppAlertDialog } from "@/components/AlertDialog";
 import { toast } from "sonner";
 import { parseDate } from "@/lib/functions";
+import { IProductTransaction } from "@/models";
+import { ProductTransactionStatus } from "@/lib/enum";
 
 export function getColumns(
-  onEdit: (product: IProduct) => void,
+  onEdit: (product: IProductTransaction) => void,
   remove: (index: number) => Promise<boolean>
-): ColumnDef<IProduct>[] {
+): ColumnDef<IProductTransaction>[] {
   return [
     {
       id: "select",
@@ -32,20 +34,24 @@ export function getColumns(
       enableHiding: false,
     },
     {
-      accessorKey: "name",
+      accessorKey: "branch_name",
       header: ({ column }) => (
         <Button
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           className="font-bold"
         >
-          Name <ArrowUpDown className="w-4 h-4 ml-2" />
+          Branch <ArrowUpDown className="w-4 h-4 ml-2" />
         </Button>
       ),
     },
     {
-      accessorKey: "ref",
-      header: "Reference",
+      accessorKey: "user_name",
+      header: "Username",
+    },
+    {
+      accessorKey: "product_name",
+      header: "product",
     },
     {
       accessorKey: "quantity",
@@ -60,26 +66,32 @@ export function getColumns(
       ),
     },
     {
-      accessorKey: "price",
-      header: ({ column }) => (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          className="font-bold"
-        >
-          Price <ArrowUpDown className="w-4 h-4 ml-2" />
-        </Button>
-      ),
-      cell: ({ row }) => `${row.getValue("price")}₮`,
+      accessorKey: "product_transaction_status",
+      header: "Status",
+      cell: ({ row }) => {
+        const status =
+          ProductTransactionStatus[
+            row.getValue<number>(
+              "product_transaction_status"
+            ) as ProductTransactionStatus
+          ];
+        return <span>{status}</span>;
+      },
     },
-    {
-      accessorKey: "color",
-      header: "Color",
-    },
-    {
-      accessorKey: "size",
-      header: "Size",
-    },
+    ,
+    // {
+    //   accessorKey: "price",
+    //   header: ({ column }) => (
+    //     <Button
+    //       variant="ghost"
+    //       onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+    //       className="font-bold"
+    //     >
+    //       Price <ArrowUpDown className="w-4 h-4 ml-2" />
+    //     </Button>
+    //   ),
+    //   cell: ({ row }) => `${row.getValue("price")}₮`,
+    // },
     {
       accessorKey: "created_at",
       header: ({ column }) => (

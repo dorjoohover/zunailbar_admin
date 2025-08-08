@@ -35,3 +35,14 @@ export enum UserProductStatus {
   Damaged = 40,
   Replaced = 50,
 }
+export enum ProductTransactionStatus {
+  Used = 10,
+  Sold = 20,
+  Damaged = 30,
+}
+
+export enum ProductLogStatus {
+  Bought = 10,
+  Remainder = 20,
+  // Damaged = 30,
+}

@@ -1,5 +1,11 @@
 import { Crown, Shield, User2 } from "lucide-react";
-import { ROLE, UserProductStatus, UserStatus } from "./enum";
+import {
+  ProductLogStatus,
+  ProductTransactionStatus,
+  ROLE,
+  UserProductStatus,
+  UserStatus,
+} from "./enum";
 
 export const roleIconMap = {
   [ROLE.SYSTEM]: { icon: Crown, color: "yellow" },
@@ -57,12 +63,14 @@ export type PG = {
   page?: number;
   limit?: number;
   sort?: boolean;
+  filter?: any;
 };
 
 export const DEFAULT_PG: Required<PG> = {
   page: DEFAULT_PAGE,
   limit: DEFAULT_LIMIT,
   sort: DEFAULT_SORT,
+  filter: undefined,
 };
 
 // export const PG = (dto: PgDto = {}): Required<PgDto> => ({
@@ -99,4 +107,15 @@ export const getValuesUserProductStatus = {
   [UserProductStatus.Lost]: ".Lost",
   [UserProductStatus.Replaced]: ".Replaced",
   [UserProductStatus.Returned]: ".Returned",
+};
+
+export const getValuesProductTransactionStatus = {
+  [ProductTransactionStatus.Used]: "Хэрэглэсэн",
+  [ProductTransactionStatus.Sold]: "Зарсан",
+  [ProductTransactionStatus.Damaged]: "Эвдэрсэн",
+};
+export const getValuesProductLogStatus = {
+  [ProductLogStatus.Bought]: "Худалдаж авсан",
+  [ProductLogStatus.Remainder]: "Үлдэгдэлтэй",
+  // [ProductLogStatus.Damaged]: "Эвдэрсэн",
 };

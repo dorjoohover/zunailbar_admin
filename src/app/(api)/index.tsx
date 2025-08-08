@@ -79,29 +79,43 @@ export const deleteOne = async (
   uri: keyof typeof API,
   id: string,
   route?: string
-) => {
-  const store = await cookies();
-  const token = store.get("token")?.value;
-  const branch = store.get("branch_id")?.value;
-  const merchant = store.get("merchant_id")?.value;
-  const url = `${API[uri as keyof typeof API]}${
-    route ? `/${route}/` : "/"
-  }${id}`;
-  const res = await fetch(url, {
-    cache: "no-store",
-    method: METHOD.delete,
-    headers: {
-      Authorization: token ? `Bearer ${token}` : "",
-      "branch-id": branch || "",
-      "merchant-id": merchant || "",
-    },
-  });
+): Promise<PPDT> => {
+  try {
+    const store = await cookies();
+    const token = store.get("token")?.value;
+    const branch = store.get("branch_id")?.value;
+    const merchant = store.get("merchant_id")?.value;
+    const url = `${API[uri as keyof typeof API]}${
+      route ? `/${route}/` : "/"
+    }${id}`;
+    const res = await fetch(url, {
+      cache: "no-store",
+      method: METHOD.delete,
+      headers: {
+        Authorization: token ? `Bearer ${token}` : "",
+        "branch-id": branch || "",
+        "merchant-id": merchant || "",
+      },
+    });
 
-  // if (!res.ok) {
-  //   throw new Error(`Failed to fetch: ${res.status} ${res.statusText}`);
-  // }
+    // if (!res.ok) {
+    //   throw new Error(`Failed to fetch: ${res.status} ${res.statusText}`);
+    // }
+    const data = await res.json();
+    if (!res.ok) {
+      console.log(data);
+      return { error: (data as Error).message, success: false };
+    }
 
-  return await res.json();
+    return {
+      success: true,
+    };
+  } catch (error) {
+    console.log(error);
+    return {
+      success: false,
+    };
+  }
 };
 export const updateOne = async <T,>(
   uri: keyof typeof API,

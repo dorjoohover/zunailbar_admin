@@ -1,4 +1,5 @@
 import { defaultPagination, Pagination } from "@/base/query";
+import { User } from "@/models";
 import { Api, API } from "@/utils/api";
 import { Dispatch, SetStateAction } from "react";
 
@@ -38,6 +39,23 @@ export const changeValue = (
 
 export const mobileFormatter = (mobile: string) => {
   return mobile ? mobile.replace("+976", "") : "";
+};
+
+export const usernameFormatter = (user: User) => {
+  return (
+    user.nickname ??
+    `${user.lastname && `${firstLetterUpper(user.lastname)}.`}${
+      user.firstname ?? ""
+    }`
+  );
+};
+export const money = (value: string, currency = "", round = 1) => {
+  let v = Math.round(+value / round) * round;
+  return `${currency}${v
+    .toString()
+    .replaceAll(",", "")
+    .toString()
+    .replace(/\B(?=(\d{3})+(?!\d))/g, ",")}`;
 };
 
 export function paginationToQuery(
