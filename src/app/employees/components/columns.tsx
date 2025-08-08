@@ -86,7 +86,9 @@ export const getColumns = (
   {
     accessorKey: "mobile",
     header: "mobile",
-    cell: ({ row }) => <p>{mobileFormatter(row.getValue("mobile"))}</p>,
+    cell: ({ row }) => {
+      return <p>{mobileFormatter(row.getValue("mobile"))}</p>;
+    },
   },
   {
     accessorKey: "branch_name",

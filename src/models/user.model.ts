@@ -1,6 +1,7 @@
 import { ROLE } from "@/lib/enum";
 
 export interface IUser {
+  id?: string;
   firstname?: string;
   lastname?: string;
   role?: ROLE;

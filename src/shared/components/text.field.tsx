@@ -3,6 +3,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Eye, EyeOff } from "lucide-react";
 import { ControllerRenderProps, type FieldValues } from "react-hook-form";
+import { mobileFormatter } from "@/lib/functions";
 
 export const TextField = <T extends FieldValues>({
   props,

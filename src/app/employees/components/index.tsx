@@ -39,6 +39,7 @@ const formSchema = z.object({
     z.number()
   ) as unknown as number,
   nickname: z.string().min(1),
+  profile_img: z.string().nullable(),
 
   role: z
     .preprocess(
@@ -49,8 +50,9 @@ const formSchema = z.object({
     )
     .optional() as unknown as number,
   file: z
-    .instanceof(File)
-    .refine((f) => f.size > 0, { message: "Файл заавал оруулна" }),
+    .any()
+    // .refine((f) => f.size > 0, { message: "Файл заавал оруулна" })
+    .nullable(),
 });
 type UserType = z.infer<typeof formSchema>;
 export const EmployeePage = ({
@@ -69,20 +71,28 @@ export const EmployeePage = ({
       password: "string",
     },
   });
-  const [previewImages, setPreviewImages] = useState<string[]>([]);
   const [users, setUsers] = useState<ListType<User>>(data);
   const [editingUser, setEditingUser] = useState<IUser | null>(null);
   const [userProduct, setUserProduct] = useState<string | undefined>(undefined);
   const onSubmit = async <T,>(e: T) => {
-    const file = form.getValues("file");
+    const { file, ...body } = form.getValues();
     const formData = new FormData();
-    formData.append("files", file);
-    const uploadResult = await imageUploader(formData);
-    console.log(uploadResult);
-    const res = await create<IUser>(Api.user, {
-      ...(e as IUser),
-      profile_img: uploadResult[0],
-    });
+    let payload = {};
+    if (file != null) {
+      formData.append("files", file);
+      const uploadResult = await imageUploader(formData);
+      payload = {
+        ...(body as IUser),
+        profile_img: uploadResult[0],
+      };
+    } else {
+      payload = {
+        ...(body as IUser),
+      };
+    }
+    const res = editingUser
+      ? await updateOne<IUser>(Api.user, editingUser?.id as string, payload)
+      : await create<IUser>(Api.user, payload);
     if (res.success) {
       refresh();
       setOpen(false);
@@ -117,18 +127,15 @@ export const EmployeePage = ({
     form.reset(e);
   };
   const setStatus = async (index: number, status: number) => {
-    console.log(users.items[index].id);
     const res = await updateOne(Api.user, users.items[index].id, {
       user_status: status,
     });
-    console.log(res);
     refresh();
   };
   const giveProduct = (index: number) => {
     setUserProduct(users.items[index].id);
   };
   const columns = getColumns(edit, setStatus, giveProduct);
-
   return (
     <div className="w-full relative">
       <Modal
@@ -137,9 +144,12 @@ export const EmployeePage = ({
         }}
         name="Шинээр нэмэх"
         title="Ажилтан нэмэх"
-        submitTxt="Нэмэх"
+        submitTxt={editingUser ? "Засах" : "Нэмэх"}
         open={!open ? false : open}
-        setOpen={setOpen}
+        setOpen={(v) => {
+          setOpen(v);
+          setEditingUser(null);
+        }}
         loading={action == ACTION.RUNNING}
       >
         <FormProvider {...form}>
@@ -171,7 +181,7 @@ export const EmployeePage = ({
                     onChange={(e) => {
                       const file = e.target.files?.[0];
                       if (file) {
-                        field.onChange(file); // Set into react-hook-form
+                        field.onChange(file);
                       }
                     }}
                   />
@@ -186,31 +196,22 @@ export const EmployeePage = ({
               );
             }}
           </FormItems>
-
-          {/* <Dragger
-            beforeUpload={beforeUpload}
-            accept=".pdf"
-            maxCount={1}
-            showUploadList={{
-              showRemoveIcon: true,
-              showDownloadIcon: true, // Enable download for existing files
+          {/* odoogiin */}
+          <FormItems control={form.control} name="profile_img">
+            {(field) => {
+              return (
+                <>
+                  {field.value && (
+                    <img
+                      src={`/api/file/${field.value}`}
+                      alt="preview"
+                      className="w-32 h-32 mt-2 object-cover"
+                    />
+                  )}
+                </>
+              );
             }}
-            fileList={fileList}
-            onChange={handleChange}
-            onRemove={handleRemove}
-            disabled={uploading}
-            style={{ marginBottom: 16, borderRadius: "16px" }}
-          >
-            <p className="ant-upload-drag-icon">
-              <InboxOutlined />
-            </p>
-            <p className="ant-upload-text">
-              {uploading ? "Илгээж байна..." : "Жишиг тайлан оруулах"}
-            </p>
-            <p className="ant-upload-hint">
-              Зөвхөн PDF өргөтгөлтэй файлыг энд дарж эсвэл чирж оруулна уу.
-            </p>
-          </Dragger> */}
+          </FormItems>
           <FormItems control={form.control} name="role">
             {(field) => {
               return (

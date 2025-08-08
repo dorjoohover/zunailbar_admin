@@ -60,9 +60,9 @@ export type PG = {
 };
 
 export const DEFAULT_PG: Required<PG> = {
-  page: 0,
+  page: DEFAULT_PAGE,
   limit: DEFAULT_LIMIT,
-  sort: false,
+  sort: DEFAULT_SORT,
 };
 
 // export const PG = (dto: PgDto = {}): Required<PgDto> => ({
