@@ -93,6 +93,11 @@ const items = [
         icon: SquareUserRound,
         url: "/employees/service",
       },
+      {
+        title: "Ажилтны чөлөө авах хүсэлт",
+        icon: SquareUserRound,
+        url: "/employees/free",
+      },
       // {
       //   title: "Ажилтны үйлчилгээ нэмэх",
       //   icon: SquareUserRound,
@@ -128,9 +133,20 @@ const items = [
   },
   {
     title: "Захиалга",
-    url: "/orders",
+    url: "",
     icon: CircleDollarSign,
-    // children: [],
+    children: [
+      {
+        title: "Жагсаалт",
+        url: "/orders",
+        icon: Milk,
+      },
+      {
+        title: "Жагсаалт",
+        url: "/orders",
+        icon: Milk,
+      },
+    ],
   },
 
   {
@@ -189,19 +205,13 @@ const items = [
     icon: User,
     children: [
       {
-        title: "Цагийн хуваарь",
-        url: "/schedules",
-        icon: Milk,
-      },
-      {
-        title: "Нэгдсэн хуваарь",
-        url: "/schedules/combined",
-        // onClick: () => console.log("voucher discount"),
+        title: "Жагсаалт",
+        url: "/booking",
         icon: Milk,
       },
       {
         title: "Ажилчдын цагийн хуваарь",
-        url: "/schedules/employee",
+        url: "/booking/employee",
         // onClick: () => console.log("voucher discount"),
         icon: Milk,
       },

@@ -6,12 +6,14 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { AppAlertDialog } from "@/components/AlertDialog";
 import { toast } from "sonner";
 import { money, parseDate } from "@/lib/functions";
-import { IService } from "@/models";
+import { ISchedule } from "@/models";
+import { ScheduleStatus } from "@/lib/enum";
+import { ScheduleStatusValue } from "@/lib/constants";
 
 export function getColumns(
-  onEdit: (product: IService) => void,
+  onEdit: (product: ISchedule) => void,
   remove: (index: number) => Promise<boolean>
-): ColumnDef<IService>[] {
+): ColumnDef<ISchedule>[] {
   return [
     {
       id: "select",
@@ -40,12 +42,12 @@ export function getColumns(
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           className="font-bold"
         >
-          Branch <ArrowUpDown className="w-4 h-4 ml-2" />
+          branch <ArrowUpDown className="w-4 h-4 ml-2" />
         </Button>
       ),
     },
     {
-      accessorKey: "name",
+      accessorKey: "user_name",
       header: ({ column }) => (
         <Button
           variant="ghost"
@@ -58,43 +60,47 @@ export function getColumns(
     },
 
     {
-      accessorKey: "duration",
-      header: ({ column }) => (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          className="font-bold"
-        >
-          Duration <ArrowUpDown className="w-4 h-4 ml-2" />
-        </Button>
-      ),
-      cell: ({ row }) => `${row.getValue("duration")}мин`,
+      accessorKey: "date",
+      header: "date",
+      cell: ({ row }) => {
+        const date = parseDate(new Date(row.getValue("date")), false);
+        return date;
+      },
     },
     {
-      accessorKey: "min_price",
-      header: ({ column }) => (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          className="font-bold"
-        >
-          Price <ArrowUpDown className="w-4 h-4 ml-2" />
-        </Button>
-      ),
-      cell: ({ row }) => money(row.getValue("min_price"), "₮"),
+      accessorKey: "start_time",
+      header: "start_time",
+      cell: ({ row }) => {
+        const date = parseDate(new Date(row.getValue("start_time")), false);
+        return date;
+      },
     },
     {
-      accessorKey: "max_price",
-      header: ({ column }) => (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          className="font-bold"
-        >
-          Max Price <ArrowUpDown className="w-4 h-4 ml-2" />
-        </Button>
-      ),
-      cell: ({ row }) => money(row.getValue("max_price"), "₮"),
+      accessorKey: "end_time",
+      header: "end_time",
+      cell: ({ row }) => {
+        const date = parseDate(new Date(row.getValue("end_time")), false);
+        return date;
+      },
+    },
+    {
+      accessorKey: "times",
+      header: "times",
+      cell: ({ row }) => {
+        const times = row.getValue("times") as string;
+        return times;
+      },
+    },
+    {
+      accessorKey: "schedule_status",
+      header: "Status",
+      cell: ({ row }) => {
+        const status =
+          ScheduleStatusValue[
+            row.getValue<number>("schedule_status") as ScheduleStatus
+          ];
+        return <span className={status.color}>{status.name}</span>;
+      },
     },
     {
       accessorKey: "created_at",
@@ -109,6 +115,27 @@ export function getColumns(
       ),
       cell: ({ row }) => {
         const date = parseDate(new Date(row.getValue("created_at")), false);
+        return date;
+      },
+      sortingFn: (rowA, rowB, columnId) => {
+        const dateA = new Date(rowA.getValue(columnId)).getTime();
+        const dateB = new Date(rowB.getValue(columnId)).getTime();
+        return dateA - dateB;
+      },
+    },
+    {
+      accessorKey: "updated_at",
+      header: ({ column }) => (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          className="font-bold"
+        >
+          Created <ArrowUpDown className="w-4 h-4 ml-2" />
+        </Button>
+      ),
+      cell: ({ row }) => {
+        const date = parseDate(new Date(row.getValue("updated_at")), false);
         return date;
       },
       sortingFn: (rowA, rowB, columnId) => {

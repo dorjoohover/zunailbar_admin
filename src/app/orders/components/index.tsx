@@ -1,9 +1,15 @@
 "use client";
 
 import { DataTable } from "@/components/data-table";
-import { Branch, IService, Service } from "@/models";
+import { Branch, Brand, Category, IProduct, Product, User } from "@/models";
 import { useEffect, useMemo, useState } from "react";
-import { ListType, ACTION, PG, DEFAULT_PG } from "@/lib/constants";
+import {
+  ListType,
+  ACTION,
+  PG,
+  DEFAULT_PG,
+  getEnumValues,
+} from "@/lib/constants";
 import { Modal } from "@/shared/components/modal";
 import z from "zod";
 import { FormProvider, useForm } from "react-hook-form";
@@ -16,6 +22,7 @@ import { TextField } from "@/shared/components/text.field";
 import { fetcher } from "@/hooks/fetcher";
 import { getColumns } from "./columns";
 import { usernameFormatter } from "@/lib/functions";
+import { IService, Service } from "@/models/service.model";
 
 const formSchema = z.object({
   branch_id: z.string().min(1),
@@ -46,7 +53,7 @@ const defaultValues: ServiceType = {
   edit: undefined,
 };
 type ServiceType = z.infer<typeof formSchema>;
-export const ServicePage = ({
+export const OrderPage = ({
   data,
   branches,
 }: {
@@ -128,10 +135,41 @@ export const ServicePage = ({
   const onInvalid = async <T,>(e: T) => {
     console.log("error", e);
   };
+  const connect = () => (window.location.href = "/api/google/auth");
 
+  const createCalendar = async () => {
+    const now = new Date();
+    // Монголын цаг: +08:00
+    const startISO = new Date(now.getTime() + 60 * 60 * 1000)
+      .toISOString()
+      .replace("Z", "+08:00");
+    const endISO = new Date(now.getTime() + 2 * 60 * 60 * 1000)
+      .toISOString()
+      .replace("Z", "+08:00");
+
+    const res = await fetch("/api/calendar/events", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        summary: "Test booking – Salon",
+        description: "Demo from Next.js",
+        startISO,
+        endISO,
+        colorId: "7", // Google-ийн өнгө ID
+        meta: { source: "next-demo", appointmentId: "demo123" },
+      }),
+    });
+    alert(res.ok ? "Event created!" : await res.text());
+  };
   return (
     <div className="">
-      <Modal
+      <h1>Google Calendar – Demo</h1>
+      <p>1) Connect → 2) Create Event</p>
+      <div style={{ display: "flex", gap: 12 }}>
+        <button onClick={connect}>Connect Google Calendar</button>
+        <button onClick={createCalendar}>Create Test Event</button>
+      </div>
+      {/* <Modal
         name={"Бараа нэмэх" + services?.count}
         submit={() => form.handleSubmit(onSubmit, onInvalid)()}
         open={open == true}
@@ -205,12 +243,6 @@ export const ServicePage = ({
         data={services?.items ?? []}
         refresh={refresh}
         loading={action == ACTION.RUNNING}
-      />
-      {action}
-      {/* <ProductDialog
-        editingProduct={editingProduct}
-        onChange={onChange}
-        save={handleSave}
       /> */}
     </div>
   );

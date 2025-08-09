@@ -3,6 +3,7 @@ import {
   ProductLogStatus,
   ProductTransactionStatus,
   ROLE,
+  ScheduleStatus,
   UserProductStatus,
   UserStatus,
 } from "./enum";
@@ -14,6 +15,7 @@ export const roleIconMap = {
   [ROLE.CLIENT]: { icon: User2, color: "gray" },
   [ROLE.MANAGER]: { icon: User2, color: "gray" },
   [ROLE.ANY]: { icon: User2, color: "gray" },
+  [ROLE.E_M]: { icon: User2, color: "gray" },
 };
 export const RoleValue = {
   [ROLE.SYSTEM]: "SYSTEM",
@@ -22,6 +24,7 @@ export const RoleValue = {
   [ROLE.EMPLOYEE]: "EMPLOYEE",
   [ROLE.CLIENT]: "CLIENT",
   [ROLE.ANY]: "ANY",
+  [ROLE.E_M]: "ANY",
 };
 
 // export const EmployeeStatusValue = {
@@ -37,6 +40,12 @@ export const UserStatusValue = {
   [UserStatus.DEKIRIT]: { name: "Декирит", color: "text-red-500" },
   [UserStatus.VACATION]: { name: "Амарсан", color: "text-yellow-500" },
   [UserStatus.BANNED]: { name: "Banned", color: "text-red-500" },
+};
+export const ScheduleStatusValue = {
+  [ScheduleStatus.Active]: { name: "Active", color: "text-green-600" },
+  [ScheduleStatus.Pending]: { name: "Pending", color: "text-gray-600" },
+  [ScheduleStatus.Absent]: { name: "Absent", color: "text-red-500" },
+  [ScheduleStatus.Hidden]: { name: "Hidden", color: "text-red-500" },
 };
 
 export interface ListType<T> {

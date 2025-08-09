@@ -12,3 +12,5 @@ export * from "./schedule.model";
 export * from "./user.product.model";
 export * from "./user.service.model";
 export * from './product.log.model'
+export * from './voucher.model'
+export * from './service.model'

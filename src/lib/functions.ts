@@ -23,6 +23,74 @@ export const parseDate = (date = new Date(), isHour = true) => {
   }`;
 };
 
+export function formatTime(input: string | number): string {
+  let str = String(input).trim();
+
+  if (str.includes(":")) {
+    const parts = str.split(":");
+    const hour = parts[0].padStart(2, "0");
+    const minute = (parts[1] ?? "00").padStart(2, "0");
+    return `${hour}:${minute}`;
+  }
+
+  const hour = str.padStart(2, "0");
+  return `${hour}:00`;
+}
+
+export function getDayName(dayNumber: number): string {
+  const days: Record<number, string> = {
+    1: "Даваа",
+    2: "Мягмар",
+    3: "Лхагва",
+    4: "Пүрэв",
+    5: "Баасан",
+    6: "Бямба",
+    7: "Ням",
+  };
+
+  return days[dayNumber] || "";
+}
+export function getDayNameWithDate(
+  dayNumber: number,
+  date: Date
+): {
+  date: string;
+  day: string;
+} {
+  const days: Record<number, string> = {
+    1: "Даваа",
+    2: "Мягмар",
+    3: "Лхагва",
+    4: "Пүрэв",
+    5: "Баасан",
+    6: "Бямба",
+    7: "Ням",
+  };
+
+  if (dayNumber < 1 || dayNumber > 7) return { date: "", day: "" };
+
+  let today = new Date(date);
+
+  const currentDayISO = today.getDay() === 0 ? 7 : today.getDay(); // 1=Даваа, 7=Ням
+
+  // Яг энэ долоо хоногийн dayNumber-д тааруулах
+  const diff = dayNumber - currentDayISO;
+  const targetDate = new Date(today);
+  targetDate.setDate(today.getDate() + diff);
+
+  // const yyyy = targetDate.getFullYear();
+  const mm = String(targetDate.getMonth() + 1).padStart(2, "0");
+  const dd = String(targetDate.getDate()).padStart(2, "0");
+
+  return {
+    day: `${days[dayNumber]}`,
+    date: `${mm}-${dd}`,
+  };
+}
+export const numberArray = (count: number) => {
+  return Array.from({ length: count }, (_, i) => i + 1);
+};
+
 export const changeValue = (
   set: Dispatch<
     SetStateAction<{

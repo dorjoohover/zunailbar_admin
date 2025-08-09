@@ -6,12 +6,14 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { AppAlertDialog } from "@/components/AlertDialog";
 import { toast } from "sonner";
 import { money, parseDate } from "@/lib/functions";
-import { IService } from "@/models";
+import { IProductTransaction, IUserService } from "@/models";
+import { ProductTransactionStatus } from "@/lib/enum";
+import { IService } from "@/models/service.model";
 
 export function getColumns(
-  onEdit: (product: IService) => void,
+  onEdit: (product: IUserService) => void,
   remove: (index: number) => Promise<boolean>
-): ColumnDef<IService>[] {
+): ColumnDef<IUserService>[] {
   return [
     {
       id: "select",
@@ -33,7 +35,7 @@ export function getColumns(
       enableHiding: false,
     },
     {
-      accessorKey: "branch_name",
+      accessorKey: "user_name",
       header: ({ column }) => (
         <Button
           variant="ghost"
@@ -45,7 +47,7 @@ export function getColumns(
       ),
     },
     {
-      accessorKey: "name",
+      accessorKey: "service_name",
       header: ({ column }) => (
         <Button
           variant="ghost"
@@ -57,66 +59,6 @@ export function getColumns(
       ),
     },
 
-    {
-      accessorKey: "duration",
-      header: ({ column }) => (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          className="font-bold"
-        >
-          Duration <ArrowUpDown className="w-4 h-4 ml-2" />
-        </Button>
-      ),
-      cell: ({ row }) => `${row.getValue("duration")}мин`,
-    },
-    {
-      accessorKey: "min_price",
-      header: ({ column }) => (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          className="font-bold"
-        >
-          Price <ArrowUpDown className="w-4 h-4 ml-2" />
-        </Button>
-      ),
-      cell: ({ row }) => money(row.getValue("min_price"), "₮"),
-    },
-    {
-      accessorKey: "max_price",
-      header: ({ column }) => (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          className="font-bold"
-        >
-          Max Price <ArrowUpDown className="w-4 h-4 ml-2" />
-        </Button>
-      ),
-      cell: ({ row }) => money(row.getValue("max_price"), "₮"),
-    },
-    {
-      accessorKey: "created_at",
-      header: ({ column }) => (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          className="font-bold"
-        >
-          Created <ArrowUpDown className="w-4 h-4 ml-2" />
-        </Button>
-      ),
-      cell: ({ row }) => {
-        const date = parseDate(new Date(row.getValue("created_at")), false);
-        return date;
-      },
-      sortingFn: (rowA, rowB, columnId) => {
-        const dateA = new Date(rowA.getValue(columnId)).getTime();
-        const dateB = new Date(rowB.getValue(columnId)).getTime();
-        return dateA - dateB;
-      },
-    },
     {
       id: "actions",
       header: "Actions",

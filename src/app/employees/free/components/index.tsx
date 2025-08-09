@@ -1,7 +1,6 @@
 "use client";
 
 import { DataTable } from "@/components/data-table";
-import { Branch, IService, Service } from "@/models";
 import { useEffect, useMemo, useState } from "react";
 import { ListType, ACTION, PG, DEFAULT_PG } from "@/lib/constants";
 import { Modal } from "@/shared/components/modal";
@@ -15,7 +14,9 @@ import { ComboBox } from "@/shared/components/combobox";
 import { TextField } from "@/shared/components/text.field";
 import { fetcher } from "@/hooks/fetcher";
 import { getColumns } from "./columns";
+import { Schedule, User } from "@/models";
 import { usernameFormatter } from "@/lib/functions";
+import { ScheduleStatus } from "@/lib/enum";
 
 const formSchema = z.object({
   branch_id: z.string().min(1),
@@ -37,7 +38,7 @@ const formSchema = z.object({
   ) as unknown as number,
   edit: z.string().nullable().optional(),
 });
-const defaultValues: ServiceType = {
+const defaultValues: PendingScheduleType = {
   branch_id: "",
   name: "",
   max_price: null,
@@ -45,78 +46,84 @@ const defaultValues: ServiceType = {
   duration: 0,
   edit: undefined,
 };
-type ServiceType = z.infer<typeof formSchema>;
-export const ServicePage = ({
+type PendingScheduleType = z.infer<typeof formSchema>;
+export const PendingSchedulePage = ({
   data,
-  branches,
+  users,
 }: {
-  data: ListType<Service>;
-  branches: ListType<Branch>;
+  data: ListType<Schedule>;
+  users: ListType<User>;
 }) => {
   const [action, setAction] = useState(ACTION.DEFAULT);
   const [open, setOpen] = useState<undefined | boolean>(false);
-  const form = useForm<ServiceType>({
+  const form = useForm<PendingScheduleType>({
     resolver: zodResolver(formSchema),
     defaultValues,
   });
-  const [services, setServices] = useState<ListType<Service> | null>(null);
-  const branchMap = useMemo(
-    () => new Map(branches.items.map((b) => [b.id, b])),
-    [branches.items]
+  const [pendingSchedules, PendingSchedules] =
+    useState<ListType<Schedule> | null>(null);
+  const userMap = useMemo(
+    () => new Map(users.items.map((b) => [b.id, b])),
+    [users.items]
   );
 
-  const serviceFormatter = (data: ListType<Service>) => {
-    const items: Service[] = data.items.map((item) => {
-      const branch = branchMap.get(item.branch_id);
+  const pendingScheduleFormatter = (data: ListType<Schedule>) => {
+    const items: Schedule[] = data.items.map((item) => {
+      const user = userMap.get(item.user_id);
 
       return {
         ...item,
-        branch_name: branch?.name ?? "",
+        user_name: user ? usernameFormatter(user) : "",
       };
     });
 
-    setServices({ items, count: data.count });
+    PendingSchedules({ items, count: data.count });
   };
   useEffect(() => {
-    serviceFormatter(data);
+    pendingScheduleFormatter(data);
   }, [data]);
   const clear = () => {
     form.reset(defaultValues);
     console.log(form.getValues());
   };
-  const deleteService = async (index: number) => {
-    const id = services!.items[index].id;
-    const res = await deleteOne(Api.service, id);
+  const deletePendingSchedule = async (index: number) => {
+    const id = pendingSchedules!.items[index].id;
+    const res = await deleteOne(Api.schedule, id);
     refresh();
     return res.success;
   };
-  const edit = async (e: IService) => {
+  const edit = async (e: Schedule) => {
     setOpen(true);
     form.reset({ ...e, edit: e.id });
   };
-  const columns = getColumns(edit, deleteService);
+  const columns = getColumns(edit, deletePendingSchedule);
 
   const refresh = async (pg: PG = DEFAULT_PG) => {
     setAction(ACTION.RUNNING);
     const { page, limit, sort } = pg;
-    await fetcher<Service>(Api.service, {
+    await fetcher<Schedule>(Api.schedule, {
       page,
       limit,
       sort,
+      schedule_status: ScheduleStatus.Pending,
       //   name: pg.filter,
     }).then((d) => {
-      serviceFormatter(d);
+      pendingScheduleFormatter(d);
       console.log(d);
     });
     setAction(ACTION.DEFAULT);
   };
   const onSubmit = async <T,>(e: T) => {
     setAction(ACTION.RUNNING);
-    const body = e as ServiceType;
+    const body = e as PendingScheduleType;
     const { edit, ...payload } = body;
     const res = edit
-      ? await updateOne<Service>(Api.service, edit ?? "", payload as Service)
-      : await create<Service>(Api.service, e as Service);
+      ? await updateOne<Schedule>(
+          Api.schedule,
+          edit ?? "",
+          payload as unknown as Schedule
+        )
+      : await create<Schedule>(Api.schedule, e as Schedule);
     console.log(res);
     if (res.success) {
       refresh();
@@ -132,7 +139,7 @@ export const ServicePage = ({
   return (
     <div className="">
       <Modal
-        name={"Бараа нэмэх" + services?.count}
+        name={"Бараа нэмэх" + pendingSchedules?.count}
         submit={() => form.handleSubmit(onSubmit, onInvalid)()}
         open={open == true}
         reset={() => {
@@ -148,10 +155,10 @@ export const ServicePage = ({
               return (
                 <ComboBox
                   props={{ ...field }}
-                  items={branches.items.map((item) => {
+                  items={users.items.map((item) => {
                     return {
                       value: item.id,
-                      label: item.name,
+                      label: usernameFormatter(item),
                     };
                   })}
                 />
@@ -176,8 +183,8 @@ export const ServicePage = ({
               label: "Хугацаа",
             },
           ].map((item, i) => {
-            const name = item.key as keyof ServiceType;
-            const label = item.label as keyof ServiceType;
+            const name = item.key as keyof PendingScheduleType;
+            const label = item.label as keyof PendingScheduleType;
             return (
               <FormItems
                 control={form.control}
@@ -201,8 +208,8 @@ export const ServicePage = ({
       </Modal>
       <DataTable
         columns={columns}
-        count={services?.count}
-        data={services?.items ?? []}
+        count={pendingSchedules?.count}
+        data={pendingSchedules?.items ?? []}
         refresh={refresh}
         loading={action == ACTION.RUNNING}
       />

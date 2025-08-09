@@ -6,12 +6,14 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { AppAlertDialog } from "@/components/AlertDialog";
 import { toast } from "sonner";
 import { money, parseDate } from "@/lib/functions";
-import { IService } from "@/models";
+import { IProductTransaction, IUser } from "@/models";
+import { ProductTransactionStatus } from "@/lib/enum";
+import { IService } from "@/models/service.model";
 
 export function getColumns(
-  onEdit: (product: IService) => void,
+  onEdit: (product: IUser) => void,
   remove: (index: number) => Promise<boolean>
-): ColumnDef<IService>[] {
+): ColumnDef<IUser>[] {
   return [
     {
       id: "select",

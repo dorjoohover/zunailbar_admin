@@ -3,6 +3,7 @@ import ContainerHeader from "@/components/containerHeader";
 import { Api } from "@/utils/api";
 import { find } from "../(api)";
 import { EmployeePage } from "./components";
+import { ROLE } from "@/lib/enum";
 const users: User[] = [
   {
     id: "1",
@@ -33,7 +34,7 @@ const users: User[] = [
 ];
 
 export default async function EmployeesPage() {
-  const [userRes, branchRes] = await Promise.all([find<User>(Api.user, {role: 35}), find<Branch>(Api.branch)]);
+  const [userRes, branchRes] = await Promise.all([find<User>(Api.user, {role: ROLE.E_M}), find<Branch>(Api.branch)]);
   return (
     <section>
       <ContainerHeader title="Ажилчидын жагсаалт" />

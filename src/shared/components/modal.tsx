@@ -24,12 +24,14 @@ export const Modal = ({
   open,
   setOpen,
   loading,
+  w = "sm",
   reset,
 }: {
   name?: string;
   title?: string;
   description?: string;
   submitTxt?: string;
+  w?: string;
   children?: ReactNode;
   btn?: ReactNode;
   submit?: () => void;
@@ -58,7 +60,7 @@ export const Modal = ({
           </Button>
         </DialogTrigger>
       )}
-      <DialogContent className="max-w-sm">
+      <DialogContent  className={`max-w-${w}`}>
         <DialogHeader className="mb-3">
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription>{description}</DialogDescription>

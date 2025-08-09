@@ -1,9 +1,25 @@
 "use client";
 
 import { DataTable } from "@/components/data-table";
-import { Branch, IService, Service } from "@/models";
+import {
+  Branch,
+  Brand,
+  Category,
+  IProduct,
+  IVoucher,
+  Product,
+  Service,
+  User,
+  Voucher,
+} from "@/models";
 import { useEffect, useMemo, useState } from "react";
-import { ListType, ACTION, PG, DEFAULT_PG } from "@/lib/constants";
+import {
+  ListType,
+  ACTION,
+  PG,
+  DEFAULT_PG,
+  getEnumValues,
+} from "@/lib/constants";
 import { Modal } from "@/shared/components/modal";
 import z from "zod";
 import { FormProvider, useForm } from "react-hook-form";
@@ -37,7 +53,7 @@ const formSchema = z.object({
   ) as unknown as number,
   edit: z.string().nullable().optional(),
 });
-const defaultValues: ServiceType = {
+const defaultValues: VoucherType = {
   branch_id: "",
   name: "",
   max_price: null,
@@ -45,78 +61,82 @@ const defaultValues: ServiceType = {
   duration: 0,
   edit: undefined,
 };
-type ServiceType = z.infer<typeof formSchema>;
-export const ServicePage = ({
+type VoucherType = z.infer<typeof formSchema>;
+export const VoucherPage = ({
   data,
-  branches,
+  services,
 }: {
-  data: ListType<Service>;
-  branches: ListType<Branch>;
+  data: ListType<Voucher>;
+  services: ListType<Service>;
 }) => {
   const [action, setAction] = useState(ACTION.DEFAULT);
   const [open, setOpen] = useState<undefined | boolean>(false);
-  const form = useForm<ServiceType>({
+  const form = useForm<VoucherType>({
     resolver: zodResolver(formSchema),
     defaultValues,
   });
-  const [services, setServices] = useState<ListType<Service> | null>(null);
-  const branchMap = useMemo(
-    () => new Map(branches.items.map((b) => [b.id, b])),
-    [branches.items]
+  const [vouchers, setVouchers] = useState<ListType<Voucher> | null>(null);
+  const serviceMap = useMemo(
+    () => new Map(services.items.map((b) => [b.id, b])),
+    [services.items]
   );
 
-  const serviceFormatter = (data: ListType<Service>) => {
-    const items: Service[] = data.items.map((item) => {
-      const branch = branchMap.get(item.branch_id);
+  const voucherFormatter = (data: ListType<Voucher>) => {
+    const items: Voucher[] = data.items.map((item) => {
+      const service = serviceMap.get(item.service_id);
 
       return {
         ...item,
-        branch_name: branch?.name ?? "",
+        service_name: service?.name ?? "",
       };
     });
 
-    setServices({ items, count: data.count });
+    setVouchers({ items, count: data.count });
   };
   useEffect(() => {
-    serviceFormatter(data);
+    voucherFormatter(data);
   }, [data]);
   const clear = () => {
     form.reset(defaultValues);
     console.log(form.getValues());
   };
-  const deleteService = async (index: number) => {
-    const id = services!.items[index].id;
-    const res = await deleteOne(Api.service, id);
+  const deleteVoucher = async (index: number) => {
+    const id = vouchers!.items[index].id;
+    const res = await deleteOne(Api.voucher, id);
     refresh();
     return res.success;
   };
-  const edit = async (e: IService) => {
+  const edit = async (e: IVoucher) => {
     setOpen(true);
     form.reset({ ...e, edit: e.id });
   };
-  const columns = getColumns(edit, deleteService);
+  const columns = getColumns(edit, deleteVoucher);
 
   const refresh = async (pg: PG = DEFAULT_PG) => {
     setAction(ACTION.RUNNING);
     const { page, limit, sort } = pg;
-    await fetcher<Service>(Api.service, {
+    await fetcher<Voucher>(Api.voucher, {
       page,
       limit,
       sort,
       //   name: pg.filter,
     }).then((d) => {
-      serviceFormatter(d);
+      voucherFormatter(d);
       console.log(d);
     });
     setAction(ACTION.DEFAULT);
   };
   const onSubmit = async <T,>(e: T) => {
     setAction(ACTION.RUNNING);
-    const body = e as ServiceType;
+    const body = e as VoucherType;
     const { edit, ...payload } = body;
     const res = edit
-      ? await updateOne<Service>(Api.service, edit ?? "", payload as Service)
-      : await create<Service>(Api.service, e as Service);
+      ? await updateOne<Voucher>(
+          Api.voucher,
+          edit ?? "",
+          payload as unknown as Voucher
+        )
+      : await create<Voucher>(Api.voucher, e as Voucher);
     console.log(res);
     if (res.success) {
       refresh();
@@ -132,7 +152,7 @@ export const ServicePage = ({
   return (
     <div className="">
       <Modal
-        name={"Бараа нэмэх" + services?.count}
+        name={"Бараа нэмэх" + vouchers?.count}
         submit={() => form.handleSubmit(onSubmit, onInvalid)()}
         open={open == true}
         reset={() => {
@@ -148,10 +168,10 @@ export const ServicePage = ({
               return (
                 <ComboBox
                   props={{ ...field }}
-                  items={branches.items.map((item) => {
+                  items={services.items.map((item) => {
                     return {
-                      value: item.id,
-                      label: item.name,
+                      value: item.id ?? "",
+                      label: item.name ?? "",
                     };
                   })}
                 />
@@ -176,8 +196,8 @@ export const ServicePage = ({
               label: "Хугацаа",
             },
           ].map((item, i) => {
-            const name = item.key as keyof ServiceType;
-            const label = item.label as keyof ServiceType;
+            const name = item.key as keyof VoucherType;
+            const label = item.label as keyof VoucherType;
             return (
               <FormItems
                 control={form.control}
@@ -201,8 +221,8 @@ export const ServicePage = ({
       </Modal>
       <DataTable
         columns={columns}
-        count={services?.count}
-        data={services?.items ?? []}
+        count={vouchers?.count}
+        data={vouchers?.items ?? []}
         refresh={refresh}
         loading={action == ACTION.RUNNING}
       />
