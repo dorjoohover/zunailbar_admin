@@ -13,19 +13,55 @@ const days = numberArray(7);
 const today = new Date().getDay();
 export const ScheduleTable = ({
   edit,
-  date,
+  d,
   value,
 }: {
   edit: any;
-  date: Date;
+  d: Date;
   value: string[];
 }) => {
+  const date = new Date(d);
+  const today = new Date();
+
+  today.setHours(0, 0, 0, 0);
+
+  const checkDate = new Date(d);
+  checkDate.setHours(0, 0, 0, 0);
+  function stripTime(d: Date) {
+    return new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  }
+
+  function getDisabledDaysForWeek(weekSunday: Date, days: number[]) {
+    const start = stripTime(weekSunday); // тухайн 7 хоногийн Ням
+    const end = new Date(start);
+    end.setDate(start.getDate() + 6); // Бямба
+    const today = stripTime(new Date());
+
+    if (today < start) {
+      // Ирээдүйн 7 хоног → өнөөдрөөс өмнө гэж тооцогдох өдөр алга
+      return days.map(() => false);
+    }
+
+    if (today > end) {
+      // Өнгөрсөн 7 хоног → бүх өдөр өнөөдрөөс өмнө
+      return days.map(() => true);
+    }
+
+    // Өнөөдөр энэ 7 хоногт багтаж байна
+    const todayIdx = new Date().getDay(); // 0..6 (0=Ням)
+    return days.map((day) => day < todayIdx);
+  }
+
+  // Ашиглах нь
+  const disables = getDisabledDaysForWeek(
+    checkDate /* Ням */,
+    days /* [0..6] */
+  );
   return (
     <Table className="table-fixed ">
       <TableHeader>
         <TableRow>
           <TableHead className="w-[60px]" />
-
           {days.map((day) => {
             const d = getDayNameWithDate(day, date);
             return (
@@ -53,7 +89,6 @@ export const ScheduleTable = ({
 
                 const keyStr = String(hour);
                 const includes = times.includes(keyStr);
-
                 return (
                   <TableCell key={day}>
                     <Button
@@ -64,7 +99,7 @@ export const ScheduleTable = ({
                           : "bg-gray-300 text-black",
                         "w-full"
                       )}
-                      disabled={today > day}
+                      disabled={disables[day]}
                       onClick={() => {
                         let nextTimes = includes
                           ? times.filter((t) => t !== keyStr)
@@ -79,7 +114,7 @@ export const ScheduleTable = ({
                         // setValue(next);
                       }}
                     >
-                      {includes ? "✔" : ""}
+                      {includes ? "✔" : ``}
                     </Button>
                   </TableCell>
                 );
@@ -145,7 +180,11 @@ export const ScheduleForm = ({
                           : "bg-gray-300 text-black",
                         "w-full"
                       )}
-                      disabled={today > day}
+                      disabled={
+                        date &&
+                        new Date(date).getDate() == new Date().getDate() &&
+                        today > day
+                      }
                       onClick={() => {
                         let nextTimes = includes
                           ? times.filter((t) => t !== keyStr)

@@ -5,10 +5,11 @@ import { Booking, Branch, Schedule } from "@/models";
 import { BookingPage } from "./components";
 
 export default async function Page() {
-  const [res, branch] = await Promise.all([
-    find<Booking>(Api.booking, { limit: 7 }),
-    find<Branch>(Api.branch, { limit: -1 }),
-  ]);
+  const branch = await find<Branch>(Api.branch, { limit: -1 });
+  const res = await find<Booking>(Api.booking, {
+    limit: 7,
+    branch_id: branch.data.items[0].id,
+  });
   return (
     <section>
       <ContainerHeader title="Цагийн хуваарь" />

@@ -5,15 +5,14 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { AppAlertDialog } from "@/components/AlertDialog";
 import { toast } from "sonner";
-import { money, parseDate } from "@/lib/functions";
-import { IProductTransaction } from "@/models";
+import { formatTime, money, parseDate } from "@/lib/functions";
+import { IProductTransaction, IUser } from "@/models";
 import { ProductTransactionStatus } from "@/lib/enum";
-import { IService } from "@/models/service.model";
 
 export function getColumns(
-  onEdit: (product: IService) => void,
+  onEdit: (product: IUser) => void,
   remove: (index: number) => Promise<boolean>
-): ColumnDef<IService>[] {
+): ColumnDef<IUser>[] {
   return [
     {
       id: "select",
@@ -47,31 +46,38 @@ export function getColumns(
       ),
     },
     {
-      accessorKey: "name",
-      header: ({ column }) => (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          className="font-bold"
-        >
-          Name <ArrowUpDown className="w-4 h-4 ml-2" />
-        </Button>
-      ),
+      accessorKey: "date",
+      header: "Date",
+      cell: ({ row }) => {
+        const date = parseDate(new Date(row.getValue("date")), false);
+        return date;
+      },
+    },
+    {
+      accessorKey: "start_time",
+      header: "Start_time",
+      cell: ({ row }) => {
+        const time = row.getValue("start_time") as string;
+        return formatTime(time);
+      },
+    },
+    {
+      accessorKey: "end_time",
+      header: "end_time",
+      cell: ({ row }) => {
+        const time = row.getValue("end_time") as string;
+        return formatTime(time);
+      },
+    },
+    {
+      accessorKey: "times",
+      header: "times",
+      cell: ({ row }) => {
+        const time = row.getValue("times") as string;
+        return formatTime(time);
+      },
     },
 
-    {
-      accessorKey: "duration",
-      header: ({ column }) => (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          className="font-bold"
-        >
-          Duration <ArrowUpDown className="w-4 h-4 ml-2" />
-        </Button>
-      ),
-      cell: ({ row }) => `${row.getValue("duration")}мин`,
-    },
     {
       accessorKey: "min_price",
       header: ({ column }) => (

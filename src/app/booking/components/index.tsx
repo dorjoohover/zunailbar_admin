@@ -11,7 +11,7 @@ import {
   User,
   Booking,
 } from "@/models";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ListType,
   ACTION,
@@ -58,7 +58,7 @@ import {
 } from "@/components/ui/pagination";
 
 const hourLine = z.string();
-
+const limit = 7;
 const formSchema = z.object({
   branch_id: z.string().min(1),
   dates: z.array(hourLine).length(7), // 7 хоног
@@ -85,6 +85,8 @@ export const BookingPage = ({
   });
   const [bookings, setBookings] = useState<ListType<Booking> | null>(null);
   const [lastBooking, setLastBooking] = useState<Booking | null>(null);
+  const [page, setPage] = useState(0);
+  const [branch, setBranch] = useState(branches.items[0]);
   const branchMap = useMemo(
     () => new Map(branches.items.map((b) => [b.id, b])),
     [branches.items]
@@ -124,22 +126,23 @@ export const BookingPage = ({
 
   const refresh = async (pg: PG = DEFAULT_PG) => {
     setAction(ACTION.RUNNING);
-    const { page, limit, sort } = pg;
+    const { sort } = pg;
     await fetcher<Booking>(Api.booking, {
-      page,
-      limit: 7,
+      page: page,
+      limit,
       sort,
+      branch_id: branch.id,
       //   name: pg.filter,
     }).then((d) => {
       bookingFormatter(d);
-      console.log(d);
     });
     setAction(ACTION.DEFAULT);
   };
   const onSubmit = async <T,>(e: T) => {
-    const date = lastBooking
-      ? new Date(lastBooking.date.setDate(lastBooking.date.getDate() + 7))
-      : new Date();
+    let lastDate = lastBooking ? new Date(lastBooking?.date) : new Date();
+    if (lastBooking)
+      lastDate = new Date(lastDate.setDate(lastDate.getDate() + 7));
+    const date = lastDate;
     console.log(e, date);
     setAction(ACTION.RUNNING);
     const body = e as BookingType;
@@ -165,6 +168,11 @@ export const BookingPage = ({
   const onInvalid = async <T,>(e: T) => {
     console.log("error", e);
   };
+
+  const mounted = useRef(false);
+  useEffect(() => {
+    mounted.current ? refresh() : (mounted.current = true);
+  }, [page, branch]);
 
   return (
     <div className="">
@@ -199,7 +207,12 @@ export const BookingPage = ({
           <FormItems control={form.control} name={"dates"} className="">
             {(field) => {
               const value = (field.value as string[]) ?? Array(7).fill("");
-              const date = lastBooking ? lastBooking.date : new Date();
+              let date = new Date();
+              if (lastBooking) {
+                const lastDate = new Date(lastBooking.date);
+                date = new Date(lastDate.setDate(lastDate.getDate() + 7));
+              }
+
               return (
                 <ScheduleForm
                   date={date}
@@ -216,24 +229,46 @@ export const BookingPage = ({
           </FormItems>
         </FormProvider>
       </Modal>
+      <ComboBox
+        items={branches.items.map((b, i) => {
+          return {
+            label: b.name,
+            value: b.id,
+          };
+        })}
+        props={{
+          onChange: (v: string) => {
+            const selected = branches.items.filter((b) => b.id == v)[0];
+            setBranch(selected);
+          },
+          name: "",
+          onBlur: () => {},
+          ref: () => {},
+          value: branch?.id,
+        }}
+      />
       <Pagination>
         <PaginationContent>
-          <PaginationItem>
-            <PaginationPrevious href="#" />
-          </PaginationItem>
+          {page > 0 && (
+            <PaginationItem>
+              <PaginationNext onClick={() => setPage(page - 1)} />
+            </PaginationItem>
+          )}
 
-          <PaginationItem>
-            <PaginationNext href="#" />
-          </PaginationItem>
+          {bookings && Math.ceil(+bookings.count / limit) - 1 > page && (
+            <PaginationItem>
+              <PaginationPrevious onClick={() => setPage(page + 1)} />
+            </PaginationItem>
+          )}
         </PaginationContent>
       </Pagination>
-      {bookings?.items && (
+      {bookings?.items && bookings?.items?.length > 0 ? (
         <ScheduleTable
-          date={bookings.items[0].date}
+          d={bookings.items?.[0]?.date}
           value={bookings.items.map((item) => item.times).reverse()}
           edit={null}
         />
-      )}
+      ) : null}
       {/* <DataTable
         columns={columns}
         count={bookings?.count}
