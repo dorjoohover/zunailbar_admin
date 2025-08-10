@@ -1,7 +1,16 @@
 "use client";
 
 import { DataTable } from "@/components/data-table";
-import { Branch, Brand, Category, IProduct, Product, User } from "@/models";
+import {
+  Branch,
+  Brand,
+  Category,
+  IOrder,
+  IProduct,
+  Order,
+  Product,
+  User,
+} from "@/models";
 import { useEffect, useMemo, useState } from "react";
 import {
   ListType,
@@ -9,6 +18,7 @@ import {
   PG,
   DEFAULT_PG,
   getEnumValues,
+  ListDefault,
 } from "@/lib/constants";
 import { Modal } from "@/shared/components/modal";
 import z from "zod";
@@ -22,7 +32,9 @@ import { TextField } from "@/shared/components/text.field";
 import { fetcher } from "@/hooks/fetcher";
 import { getColumns } from "./columns";
 import { usernameFormatter } from "@/lib/functions";
-import { IService, Service } from "@/models/service.model";
+import SchedulerViewFilteration from "@/components/schedule/_components/view/schedular-view-filteration";
+import { SchedulerProvider } from "@/providers/schedular-provider";
+import SchedulerWrapper from "@/components/schedule/_components/wrapper/schedular-wrapper";
 
 const formSchema = z.object({
   branch_id: z.string().min(1),
@@ -44,7 +56,7 @@ const formSchema = z.object({
   ) as unknown as number,
   edit: z.string().nullable().optional(),
 });
-const defaultValues: ServiceType = {
+const defaultValues: OrderType = {
   branch_id: "",
   name: "",
   max_price: null,
@@ -52,78 +64,82 @@ const defaultValues: ServiceType = {
   duration: 0,
   edit: undefined,
 };
-type ServiceType = z.infer<typeof formSchema>;
+type OrderType = z.infer<typeof formSchema>;
 export const OrderPage = ({
   data,
   branches,
 }: {
-  data: ListType<Service>;
+  data: ListType<Order>;
   branches: ListType<Branch>;
 }) => {
   const [action, setAction] = useState(ACTION.DEFAULT);
   const [open, setOpen] = useState<undefined | boolean>(false);
-  const form = useForm<ServiceType>({
+  const form = useForm<OrderType>({
     resolver: zodResolver(formSchema),
     defaultValues,
   });
-  const [services, setServices] = useState<ListType<Service> | null>(null);
+  const [orders, setOrders] = useState<ListType<Order>>(ListDefault);
   const branchMap = useMemo(
     () => new Map(branches.items.map((b) => [b.id, b])),
     [branches.items]
   );
 
-  const serviceFormatter = (data: ListType<Service>) => {
-    const items: Service[] = data.items.map((item) => {
-      const branch = branchMap.get(item.branch_id);
+  const orderFormatter = (data: ListType<Order>) => {
+    const items: Order[] = data.items.map((item) => {
+      // const branch = branchMap.get(item.branch_id);
 
       return {
         ...item,
-        branch_name: branch?.name ?? "",
+        // branch_name: branch?.name ?? "",
       };
     });
 
-    setServices({ items, count: data.count });
+    setOrders({ items, count: data.count });
   };
   useEffect(() => {
-    serviceFormatter(data);
+    orderFormatter(data);
   }, [data]);
   const clear = () => {
     form.reset(defaultValues);
     console.log(form.getValues());
   };
-  const deleteService = async (index: number) => {
-    const id = services!.items[index].id;
-    const res = await deleteOne(Api.service, id);
+  const deleteOrder = async (index: number) => {
+    const id = orders!.items[index].id;
+    const res = await deleteOne(Api.order, id);
     refresh();
     return res.success;
   };
-  const edit = async (e: IService) => {
+  const edit = async (e: IOrder) => {
     setOpen(true);
     form.reset({ ...e, edit: e.id });
   };
-  const columns = getColumns(edit, deleteService);
+  // const columns = getColumns(edit, deleteOrder);
 
   const refresh = async (pg: PG = DEFAULT_PG) => {
     setAction(ACTION.RUNNING);
     const { page, limit, sort } = pg;
-    await fetcher<Service>(Api.service, {
+    await fetcher<Order>(Api.order, {
       page,
       limit,
       sort,
       //   name: pg.filter,
     }).then((d) => {
-      serviceFormatter(d);
+      orderFormatter(d);
       console.log(d);
     });
     setAction(ACTION.DEFAULT);
   };
   const onSubmit = async <T,>(e: T) => {
     setAction(ACTION.RUNNING);
-    const body = e as ServiceType;
+    const body = e as OrderType;
     const { edit, ...payload } = body;
     const res = edit
-      ? await updateOne<Service>(Api.service, edit ?? "", payload as Service)
-      : await create<Service>(Api.service, e as Service);
+      ? await updateOne<Order>(
+          Api.order,
+          edit ?? "",
+          payload as unknown as Order
+        )
+      : await create<Order>(Api.order, e as Order);
     console.log(res);
     if (res.success) {
       refresh();
@@ -132,118 +148,13 @@ export const OrderPage = ({
     }
     setAction(ACTION.DEFAULT);
   };
-  const onInvalid = async <T,>(e: T) => {
-    console.log("error", e);
-  };
-  const connect = () => (window.location.href = "/api/google/auth");
 
-  const createCalendar = async () => {
-    const now = new Date();
-    // Монголын цаг: +08:00
-    const startISO = new Date(now.getTime() + 60 * 60 * 1000)
-      .toISOString()
-      .replace("Z", "+08:00");
-    const endISO = new Date(now.getTime() + 2 * 60 * 60 * 1000)
-      .toISOString()
-      .replace("Z", "+08:00");
-
-    const res = await fetch("/api/calendar/events", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        summary: "Test booking – Salon",
-        description: "Demo from Next.js",
-        startISO,
-        endISO,
-        colorId: "7", // Google-ийн өнгө ID
-        meta: { source: "next-demo", appointmentId: "demo123" },
-      }),
-    });
-    alert(res.ok ? "Event created!" : await res.text());
-  };
   return (
     <div className="">
-      <h1>Google Calendar – Demo</h1>
-      <p>1) Connect → 2) Create Event</p>
-      <div style={{ display: "flex", gap: 12 }}>
-        <button onClick={connect}>Connect Google Calendar</button>
-        <button onClick={createCalendar}>Create Test Event</button>
-      </div>
-      {/* <Modal
-        name={"Бараа нэмэх" + services?.count}
-        submit={() => form.handleSubmit(onSubmit, onInvalid)()}
-        open={open == true}
-        reset={() => {
-          setOpen(false);
-          clear();
-        }}
-        setOpen={setOpen}
-        loading={action == ACTION.RUNNING}
-      >
-        <FormProvider {...form}>
-          <FormItems control={form.control} name="branch_id">
-            {(field) => {
-              return (
-                <ComboBox
-                  props={{ ...field }}
-                  items={branches.items.map((item) => {
-                    return {
-                      value: item.id,
-                      label: item.name,
-                    };
-                  })}
-                />
-              );
-            }}
-          </FormItems>
-
-          {[
-            {
-              key: "min_price",
-              type: "money",
-              label: "Үнэ",
-            },
-            {
-              key: "max_price",
-              type: "money",
-              label: "Их үнэ",
-            },
-            {
-              key: "duration",
-              type: "number",
-              label: "Хугацаа",
-            },
-          ].map((item, i) => {
-            const name = item.key as keyof ServiceType;
-            const label = item.label as keyof ServiceType;
-            return (
-              <FormItems
-                control={form.control}
-                name={name}
-                key={i}
-                className={item.key === "name" ? "col-span-2" : ""}
-              >
-                {(field) => {
-                  return (
-                    <TextField
-                      props={{ ...field }}
-                      type={item.type}
-                      label={label}
-                    />
-                  );
-                }}
-              </FormItems>
-            );
-          })}
-        </FormProvider>
-      </Modal>
-      <DataTable
-        columns={columns}
-        count={services?.count}
-        data={services?.items ?? []}
-        refresh={refresh}
-        loading={action == ACTION.RUNNING}
-      /> */}
+      <SchedulerProvider weekStartsOn="monday">
+        {JSON.stringify(orders)}
+        <SchedulerViewFilteration orders={orders} />
+      </SchedulerProvider>
     </div>
   );
 };

@@ -14,7 +14,9 @@ export async function POST(request: Request) {
 
     console.log("✅ Cookie set:", body);
 
-    return NextResponse.redirect(new URL("/"));
+    return NextResponse.redirect(
+      new URL("/", process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000")
+    );
   } catch (error) {
     console.error("⛔ Route error:", error);
     return NextResponse.json({ success: false });

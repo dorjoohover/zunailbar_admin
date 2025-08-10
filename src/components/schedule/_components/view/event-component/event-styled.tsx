@@ -99,7 +99,7 @@ export default function EventStyled({
 
   // Get background color class based on variant
   const getBackgroundColor = (variant: string | undefined) => {
-    const variantKey = variant as keyof typeof variantColors || "primary";
+    const variantKey = (variant as keyof typeof variantColors) || "primary";
     const colors = variantColors[variantKey] || variantColors.primary;
     return `${colors.bg} ${colors.text} ${colors.border}`;
   };
@@ -168,18 +168,18 @@ export default function EventStyled({
             <div className="font-semibold text-xs truncate mb-1">
               {event?.title || "Untitled Event"}
             </div>
-            
+
             {/* Show time in minimized mode */}
             {event?.minmized && (
               <div className="text-[10px] opacity-80">
                 {formatTime(event?.startDate)}
               </div>
             )}
-            
+
             {!event?.minmized && event?.description && (
-              <div className="my-2 text-sm">{event?.description}</div>
+              <div className="my-2 text-sm">{event?.description} </div>
             )}
-            
+
             {!event?.minmized && (
               <div className="text-xs space-y-1 mt-2">
                 <div className="flex items-center">
