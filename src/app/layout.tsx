@@ -40,14 +40,16 @@ export default async function RootLayout({
       <html lang="en">
         <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
           <AppSidebar />
-          <SidebarTrigger />
-          <Template token={token}>
-            {/* <Navbar /> */}
-            <Toaster />
-            {children}
-            <ModalContainer />
-            {/* <Footer /> */}
-          </Template>
+          <main className="relative size-full">
+            <SidebarTrigger />
+            <Template token={token}>
+              {/* <Navbar /> */}
+              <Toaster />
+              {children}
+              <ModalContainer />
+              {/* <Footer /> */}
+            </Template>
+          </main>
         </body>
       </html>
     </SidebarProvider>

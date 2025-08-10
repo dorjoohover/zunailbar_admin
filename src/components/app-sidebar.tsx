@@ -141,11 +141,6 @@ const items = [
         url: "/orders",
         icon: Milk,
       },
-      {
-        title: "Жагсаалт",
-        url: "/orders",
-        icon: Milk,
-      },
     ],
   },
 
@@ -164,11 +159,7 @@ const items = [
         url: "/services",
         icon: Milk,
       },
-      {
-        title: "Ажилчдын үйлчилгээ",
-        url: "/services/employee",
-        icon: Milk,
-      },
+
       // {
       //   title: "Урамшуулал нэмэх",
       //   id: MODAL_ACTION.add_discount,
@@ -194,7 +185,7 @@ const items = [
       },
       // {
       //   title: "Хэрэглэчид хөнгөлөлт өгөх",
-      //   id: MODAL_ACTION.add_voucher_to_user,
+      //   id: MODAL_ACTION.add_emp,
       //   icon: Milk,
       // },
     ],
@@ -353,7 +344,9 @@ export function AppSidebar() {
                                   <SidebarMenuSubButton>
                                     <Button
                                       // size={"icon"}
-                                      className={"w-full justify-between px-0 mx-0 hover:bg-transparent"}
+                                      className={
+                                        "w-full justify-between px-0 mx-0 hover:bg-transparent"
+                                      }
                                       variant="ghost"
                                       onClick={(e) => {
                                         e.preventDefault();
@@ -365,8 +358,8 @@ export function AppSidebar() {
                                     >
                                       {child.title}
                                     </Button>
-                                  </SidebarMenuSubButton>
-                                )} */}
+                                  </SidebarMenuSubButton> 
+                                )}*/}
                               </SidebarMenuSubItem>
                             </SidebarMenuSub>
                           );

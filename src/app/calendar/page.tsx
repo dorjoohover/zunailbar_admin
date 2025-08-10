@@ -5,17 +5,17 @@ import { SchedulerProvider } from "@/providers/schedular-provider";
 
 export default function Calendar() {
   return (
-  <section className="p-10">
-       <SchedulerProvider weekStartsOn="monday">
-      <SchedulerWrapper 
-        stopDayEventSummary={true}
-        classNames={{
-          tabs: {
-            panel: "p-0",
-          },
-        }}
-      />
-    </SchedulerProvider>
-  </section>
+    <section className="p-10">
+      <SchedulerProvider weekStartsOn="monday">
+        <SchedulerWrapper
+          stopDayEventSummary={true}
+          classNames={{
+            tabs: {
+              panel: "p-0",
+            },
+          }}
+        />
+      </SchedulerProvider>
+    </section>
   );
 }

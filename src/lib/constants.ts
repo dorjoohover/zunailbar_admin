@@ -82,6 +82,11 @@ export const DEFAULT_PG: Required<PG> = {
   filter: undefined,
 };
 
+export const ListDefault = {
+  count: 0,
+  items: [],
+};
+
 // export const PG = (dto: PgDto = {}): Required<PgDto> => ({
 //   ...DEFAULT_PG,
 //   ...dto,

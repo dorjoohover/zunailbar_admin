@@ -56,33 +56,33 @@ const pageTransitionVariants = {
 // Precise time-based event grouping function
 const groupEventsByTimePeriod = (events: Event[] | undefined) => {
   if (!events || events.length === 0) return [];
-  
+
   // Sort events by start time
-  const sortedEvents = [...events].sort((a, b) => 
-    new Date(a.startDate).getTime() - new Date(b.startDate).getTime()
+  const sortedEvents = [...events].sort(
+    (a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime()
   );
-  
+
   // Precise time overlap checking function
   const eventsOverlap = (event1: Event, event2: Event) => {
     const start1 = new Date(event1.startDate).getTime();
     const end1 = new Date(event1.endDate).getTime();
     const start2 = new Date(event2.startDate).getTime();
     const end2 = new Date(event2.endDate).getTime();
-    
+
     // Strict time overlap - one event starts before the other ends
-    return (start1 < end2 && start2 < end1);
+    return start1 < end2 && start2 < end1;
   };
-  
+
   // Use a graph-based approach to find connected components (overlapping event groups)
   const buildOverlapGraph = (events: Event[]) => {
     // Create adjacency list
     const graph: Record<string, string[]> = {};
-    
+
     // Initialize graph
-    events.forEach(event => {
+    events.forEach((event) => {
       graph[event.id] = [];
     });
-    
+
     // Build connections
     for (let i = 0; i < events.length; i++) {
       for (let j = i + 1; j < events.length; j++) {
@@ -92,55 +92,59 @@ const groupEventsByTimePeriod = (events: Event[] | undefined) => {
         }
       }
     }
-    
+
     return graph;
   };
-  
+
   // Find connected components using DFS
-  const findConnectedComponents = (graph: Record<string, string[]>, events: Event[]) => {
+  const findConnectedComponents = (
+    graph: Record<string, string[]>,
+    events: Event[]
+  ) => {
     const visited: Record<string, boolean> = {};
     const components: Event[][] = [];
-    
+
     // DFS function to traverse the graph
     const dfs = (nodeId: string, component: string[]) => {
       visited[nodeId] = true;
       component.push(nodeId);
-      
+
       for (const neighbor of graph[nodeId]) {
         if (!visited[neighbor]) {
           dfs(neighbor, component);
         }
       }
     };
-    
+
     // Find all connected components
     for (const event of events) {
       if (!visited[event.id]) {
         const component: string[] = [];
         dfs(event.id, component);
-        
+
         // Map IDs back to events
-        const eventGroup = component.map(id => 
-          events.find(e => e.id === id)!
+        const eventGroup = component.map(
+          (id) => events.find((e) => e.id === id)!
         );
-        
+
         components.push(eventGroup);
       }
     }
-    
+
     return components;
   };
-  
+
   // Build the overlap graph
   const graph = buildOverlapGraph(sortedEvents);
-  
+
   // Find connected components (groups of overlapping events)
   const timeGroups = findConnectedComponents(graph, sortedEvents);
-  
+
   // Sort events within each group by start time
-  return timeGroups.map(group => 
-    group.sort((a, b) => 
-      new Date(a.startDate).getTime() - new Date(b.startDate).getTime()
+  return timeGroups.map((group) =>
+    group.sort(
+      (a, b) =>
+        new Date(a.startDate).getTime() - new Date(b.startDate).getTime()
     )
   );
 };
@@ -151,11 +155,13 @@ export default function DailyView({
   CustomEventComponent,
   CustomEventModal,
   stopDayEventSummary,
+  events,
   classNames,
 }: {
   prevButton?: React.ReactNode;
   nextButton?: React.ReactNode;
   CustomEventComponent?: React.FC<Event>;
+  events: Event[];
   CustomEventModal?: CustomEventModal;
   stopDayEventSummary?: boolean;
   classNames?: { prev?: string; next?: string; addEvent?: string };
@@ -201,7 +207,7 @@ export default function DailyView({
     currentDate?.getDate() || 0,
     currentDate
   );
-  
+
   // Calculate time groups once for all events
   const timeGroups = groupEventsByTimePeriod(dayEvents);
 
@@ -292,6 +298,7 @@ export default function DailyView({
     <div className="">
       <div className="flex justify-between gap-3 flex-wrap mb-5">
         <h1 className="text-3xl font-semibold mb-4">
+          {/* title */}
           {getFormattedDayTitle()}
         </h1>
 
@@ -341,6 +348,7 @@ export default function DailyView({
               <AnimatePresence initial={false}>
                 {dayEvents && dayEvents?.length
                   ? dayEvents?.map((event, eventIndex) => {
+                      console.log(event.endDate);
                       return (
                         <motion.div
                           key={event.id}
@@ -402,21 +410,23 @@ export default function DailyView({
                   </div>
                 ))}
                 <AnimatePresence initial={false}>
-                  {dayEvents && dayEvents?.length
-                    ? dayEvents?.map((event, eventIndex) => {
+                  {events && events?.length
+                    ? events?.map((event, eventIndex) => {
                         // Find which time group this event belongs to
                         let eventsInSamePeriod = 1;
                         let periodIndex = 0;
-                        
+
                         for (let i = 0; i < timeGroups.length; i++) {
-                          const groupIndex = timeGroups[i].findIndex(e => e.id === event.id);
+                          const groupIndex = timeGroups[i].findIndex(
+                            (e) => e.id === event.id
+                          );
                           if (groupIndex !== -1) {
                             eventsInSamePeriod = timeGroups[i].length;
                             periodIndex = groupIndex;
                             break;
                           }
                         }
-                        
+
                         const {
                           height,
                           left,
@@ -424,15 +434,11 @@ export default function DailyView({
                           minWidth,
                           top,
                           zIndex,
-                        } = handlers.handleEventStyling(
-                          event, 
-                          dayEvents,
-                          {
-                            eventsInSamePeriod,
-                            periodIndex,
-                            adjustForPeriod: true
-                          }
-                        );
+                        } = handlers.handleEventStyling(event, events, {
+                          eventsInSamePeriod,
+                          periodIndex,
+                          adjustForPeriod: true,
+                        });
                         return (
                           <motion.div
                             key={event.id}

@@ -112,6 +112,7 @@ export const ServicePage = ({ data, branches }: { data: ListType<Service>; branc
   return (
     <div className="">
       <Modal
+      w="2xl"
         title="Үйлчилгээ жагсаалт форм"
         name={"Бараа нэмэх" + services?.count}
         submit={() => form.handleSubmit(onSubmit, onInvalid)()}
@@ -160,9 +161,9 @@ export const ServicePage = ({ data, branches }: { data: ListType<Service>; branc
               const name = item.key as keyof ServiceType;
               const label = item.label as keyof ServiceType;
               return (
-                <FormItems control={form.control} name={name} key={i} className={item.key === "name" ? "col-span-2" : ""}>
+                <FormItems label={label} control={form.control} name={name} key={i} className={item.key === "name" ? "col-span-2" : ""}>
                   {(field) => {
-                    return <TextField props={{ ...field }} type={item.type} label={label} />;
+                    return <TextField props={{ ...field }} type={item.type} />;
                   }}
                 </FormItems>
               );

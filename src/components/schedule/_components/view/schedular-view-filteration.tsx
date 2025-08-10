@@ -4,7 +4,11 @@ import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Calendar as CalendarIcon, CalendarDaysIcon, Calendar } from "lucide-react";
+import {
+  Calendar as CalendarIcon,
+  CalendarDaysIcon,
+  Calendar,
+} from "lucide-react";
 
 import AddEventModal from "../../_modals/add-event-modal";
 import DailyView from "./day/daily-view";
@@ -14,6 +18,8 @@ import { useModal } from "@/providers/modal-context";
 import { ClassNames, CustomComponents, Views } from "@/types/index";
 import { cn } from "@/lib/utils";
 import CustomModal from "@/components/ui/custom-modal";
+import { ListType } from "@/lib/constants";
+import { IOrder, Order } from "@/models";
 
 // Animation settings for Framer Motion
 const animationConfig = {
@@ -31,7 +37,9 @@ export default function SchedulerViewFilteration({
   stopDayEventSummary = false,
   CustomComponents,
   classNames,
+  orders,
 }: {
+  orders: ListType<Order>;
   views?: Views;
   stopDayEventSummary?: boolean;
   CustomComponents?: CustomComponents;
@@ -196,6 +204,26 @@ export default function SchedulerViewFilteration({
                 <AnimatePresence mode="wait">
                   <motion.div {...animationConfig}>
                     <DailyView
+                      events={orders.items.map(
+                        ({ order_date, start_time, end_time, id }) => {
+                          const date = new Date(order_date);
+
+                          // Үндсэн өдөр/сар/жил
+                          const year = date.getFullYear();
+                          const month = date.getMonth(); // getMonth() нь 0-ээс эхэлдэг тул -1 хэрэггүй
+                          const day = date.getDate();
+
+                          const createDateTime = (hour: number) =>
+                            new Date(year, month, day, Number(hour) || 0);
+
+                          return {
+                            id,
+                            title: id,
+                            startDate: createDateTime(+start_time),
+                            endDate: createDateTime(+end_time),
+                          };
+                        }
+                      )}
                       stopDayEventSummary={stopDayEventSummary}
                       classNames={classNames?.buttons}
                       prevButton={
