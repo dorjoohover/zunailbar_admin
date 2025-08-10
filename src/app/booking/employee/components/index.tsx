@@ -128,13 +128,17 @@ export const SchedulePage = ({
   const refresh = async (pg: PG = DEFAULT_PG) => {
     setAction(ACTION.RUNNING);
     const { sort } = pg;
-    await fetcher<Schedule>(Api.schedule, {
-      page: page,
-      limit,
-      sort,
-      branch_id: branch.id,
-      //   name: pg.filter,
-    }).then((d) => {
+    await fetcher<Schedule>(
+      Api.schedule,
+      {
+        page: page,
+        limit,
+        sort,
+        user_id: branch.id,
+        //   name: pg.filter,
+      },
+      "employee"
+    ).then((d) => {
       ScheduleFormatter(d);
     });
     setAction(ACTION.DEFAULT);

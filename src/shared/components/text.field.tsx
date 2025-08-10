@@ -21,11 +21,14 @@ export const TextField = <T extends FieldValues>({
   props: ControllerRenderProps<T>;
 }) => {
   const id = `${label}_${Math.round(Math.random() * 10)}`;
-  const [display, setDisplay] = useState(type === "money" ? money(String(props.value ?? "")) : String(props.value ?? ""));
+  const [display, setDisplay] = useState(
+    type === "money"
+      ? money(String(props.value ?? ""))
+      : String(props.value ?? "")
+  );
 
   useEffect(() => {
     if (type === "money") {
-      console.log(props.value);
       setDisplay(money(String(props.value ?? "0")));
     }
   }, [props.value, type]);
@@ -38,7 +41,13 @@ export const TextField = <T extends FieldValues>({
             {label}
           </Label>
         )}
-        <Input {...props} type={type} id={id} placeholder={pl} className="pr-10 bg-white h-10 hide-number-arrows" />
+        <Input
+          {...props}
+          type={type}
+          id={id}
+          placeholder={pl}
+          className="pr-10 bg-white h-10 hide-number-arrows"
+        />
       </div>
     );
   }
@@ -61,7 +70,11 @@ export const TextField = <T extends FieldValues>({
         onBlur={() => setDisplay(money(String(props.value ?? "")))} // blur үед money формат
         onFocus={() => setDisplay(String(props.value ?? ""))} // focus үед raw утга
       />
-      {type === "money" && <span className="absolute top-[45%] -translate-y-[50%] right-3 flex items-center text-gray-500 pointer-events-none">{symbol}</span>}
+      {type === "money" && (
+        <span className="absolute top-[45%] -translate-y-[50%] right-3 flex items-center text-gray-500 pointer-events-none">
+          {symbol}
+        </span>
+      )}
     </div>
   );
 };

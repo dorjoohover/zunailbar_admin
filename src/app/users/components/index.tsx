@@ -3,7 +3,13 @@
 import { DataTable } from "@/components/data-table";
 import { Branch, IUser, User } from "@/models";
 import { useEffect, useMemo, useState } from "react";
-import { ListType, ACTION, PG, DEFAULT_PG, getEnumValues } from "@/lib/constants";
+import {
+  ListType,
+  ACTION,
+  PG,
+  DEFAULT_PG,
+  getEnumValues,
+} from "@/lib/constants";
 import { Modal } from "@/shared/components/modal";
 import z from "zod";
 import { FormProvider, useForm } from "react-hook-form";
@@ -19,26 +25,28 @@ import { usernameFormatter } from "@/lib/functions";
 import { ROLE } from "@/lib/enum";
 
 const formSchema = z.object({
+  mobile: z.string().min(1),
   branch_id: z.string().min(1),
-  name: z.string().min(1),
-  max_price: z
-    .preprocess((val) => (typeof val === "string" ? parseFloat(val) : val), z.number())
-    .nullable()
-    .optional() as unknown as number,
-  min_price: z.preprocess((val) => (typeof val === "string" ? parseFloat(val) : val), z.number()) as unknown as number,
-  duration: z.preprocess((val) => (typeof val === "string" ? parseFloat(val) : val), z.number()) as unknown as number,
+  nickname: z.string().min(1),
+  branch_name: z.string().min(1),
   edit: z.string().nullable().optional(),
 });
 const defaultValues: UserType = {
+  mobile: "",
+  nickname: "",
+  branch_name: "",
+
   branch_id: "",
-  name: "",
-  max_price: null,
-  min_price: 0,
-  duration: 0,
   edit: undefined,
 };
 type UserType = z.infer<typeof formSchema>;
-export const UserPage = ({ data, branches }: { data: ListType<User>; branches: ListType<Branch> }) => {
+export const UserPage = ({
+  data,
+  branches,
+}: {
+  data: ListType<User>;
+  branches: ListType<Branch>;
+}) => {
   const [action, setAction] = useState(ACTION.DEFAULT);
   const [open, setOpen] = useState<undefined | boolean>(false);
   const form = useForm<UserType>({
@@ -46,7 +54,10 @@ export const UserPage = ({ data, branches }: { data: ListType<User>; branches: L
     defaultValues,
   });
   const [Users, setUsers] = useState<ListType<User> | null>(null);
-  const branchMap = useMemo(() => new Map(branches.items.map((b) => [b.id, b])), [branches.items]);
+  const branchMap = useMemo(
+    () => new Map(branches.items.map((b) => [b.id, b])),
+    [branches.items]
+  );
 
   const UserFormatter = (data: ListType<User>) => {
     const items: User[] = data.items.map((item) => {
@@ -98,7 +109,9 @@ export const UserPage = ({ data, branches }: { data: ListType<User>; branches: L
     setAction(ACTION.RUNNING);
     const body = e as UserType;
     const { edit, ...payload } = body;
-    const res = edit ? await updateOne<User>(Api.user, edit ?? "", payload as unknown as User) : await create<User>(Api.user, e as User);
+    const res = edit
+      ? await updateOne<User>(Api.user, edit ?? "", payload as unknown as User)
+      : await create<User>(Api.user, e as User);
     console.log(res);
     if (res.success) {
       refresh();
@@ -127,54 +140,72 @@ export const UserPage = ({ data, branches }: { data: ListType<User>; branches: L
         loading={action == ACTION.RUNNING}
       >
         <FormProvider {...form}>
-         <div className="double-col gap-5">
-           <FormItems label="Салбар" control={form.control} name="branch_id">
-            {(field) => {
-              return (
-                <ComboBox
-                  props={{ ...field }}
-                  items={branches.items.map((item) => {
-                    return {
-                      value: item.id,
-                      label: item.name,
-                    };
-                  })}
-                />
-              );
-            }}
-          </FormItems>
+          <div className="double-col gap-5">
+            <FormItems label="Салбар" control={form.control} name="branch_id">
+              {(field) => {
+                return (
+                  <ComboBox
+                    props={{ ...field }}
+                    items={branches.items.map((item) => {
+                      return {
+                        value: item.id,
+                        label: item.name,
+                      };
+                    })}
+                  />
+                );
+              }}
+            </FormItems>
 
-          {[
-            {
-              key: "min_price",
-              type: "money",
-              label: "Үнэ",
-            },
-            {
-              key: "max_price",
-              type: "money",
-              label: "Их үнэ",
-            },
-            {
-              key: "duration",
-              type: "number",
-              label: "Хугацаа",
-            },
-          ].map((item, i) => {
-            const name = item.key as keyof UserType;
-            const label = item.label as keyof UserType;
-            return (
-              <FormItems label={label} control={form.control} name={name} key={i} className={item.key === "name" ? "col-span-2" : ""}>
-                {(field) => {
-                  return <TextField props={{ ...field }} type={item.type} label={''} />;
-                }}
-              </FormItems>
-            );
-          })}
-         </div>
+            {[
+              {
+                key: "min_price",
+                type: "money",
+                label: "Үнэ",
+              },
+              {
+                key: "max_price",
+                type: "money",
+                label: "Их үнэ",
+              },
+              {
+                key: "duration",
+                type: "number",
+                label: "Хугацаа",
+              },
+            ].map((item, i) => {
+              const name = item.key as keyof UserType;
+              const label = item.label as keyof UserType;
+              return (
+                <FormItems
+                  label={label}
+                  control={form.control}
+                  name={name}
+                  key={i}
+                  className={item.key === "name" ? "col-span-2" : ""}
+                >
+                  {(field) => {
+                    return (
+                      <TextField
+                        props={{ ...field }}
+                        type={item.type}
+                        label={""}
+                      />
+                    );
+                  }}
+                </FormItems>
+              );
+            })}
+          </div>
         </FormProvider>
       </Modal>
-      <DataTable columns={columns} count={Users?.count} data={Users?.items ?? []} refresh={refresh} loading={action == ACTION.RUNNING} />
+      <DataTable
+        columns={columns}
+        count={Users?.count}
+        data={Users?.items ?? []}
+        refresh={refresh}
+        loading={action == ACTION.RUNNING}
+      />
       {action}
       {/* <ProductDialog
         editingProduct={editingProduct}

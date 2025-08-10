@@ -21,11 +21,20 @@ const formSchema = z.object({
   branch_id: z.string().min(1),
   name: z.string().min(1),
   max_price: z
-    .preprocess((val) => (typeof val === "string" ? parseFloat(val) : val), z.number())
+    .preprocess(
+      (val) => (typeof val === "string" ? parseFloat(val) : val),
+      z.number()
+    )
     .nullable()
     .optional() as unknown as number,
-  min_price: z.preprocess((val) => (typeof val === "string" ? parseFloat(val) : val), z.number()) as unknown as number,
-  duration: z.preprocess((val) => (typeof val === "string" ? parseFloat(val) : val), z.number()) as unknown as number,
+  min_price: z.preprocess(
+    (val) => (typeof val === "string" ? parseFloat(val) : val),
+    z.number()
+  ) as unknown as number,
+  duration: z.preprocess(
+    (val) => (typeof val === "string" ? parseFloat(val) : val),
+    z.number()
+  ) as unknown as number,
   edit: z.string().nullable().optional(),
 });
 const defaultValues: ServiceType = {
@@ -37,7 +46,13 @@ const defaultValues: ServiceType = {
   edit: undefined,
 };
 type ServiceType = z.infer<typeof formSchema>;
-export const ServicePage = ({ data, branches }: { data: ListType<Service>; branches: ListType<Branch> }) => {
+export const ServicePage = ({
+  data,
+  branches,
+}: {
+  data: ListType<Service>;
+  branches: ListType<Branch>;
+}) => {
   const [action, setAction] = useState(ACTION.DEFAULT);
   const [open, setOpen] = useState<undefined | boolean>(false);
   const form = useForm<ServiceType>({
@@ -45,7 +60,10 @@ export const ServicePage = ({ data, branches }: { data: ListType<Service>; branc
     defaultValues,
   });
   const [services, setServices] = useState<ListType<Service> | null>(null);
-  const branchMap = useMemo(() => new Map(branches.items.map((b) => [b.id, b])), [branches.items]);
+  const branchMap = useMemo(
+    () => new Map(branches.items.map((b) => [b.id, b])),
+    [branches.items]
+  );
 
   const serviceFormatter = (data: ListType<Service>) => {
     const items: Service[] = data.items.map((item) => {
@@ -96,7 +114,9 @@ export const ServicePage = ({ data, branches }: { data: ListType<Service>; branc
     setAction(ACTION.RUNNING);
     const body = e as ServiceType;
     const { edit, ...payload } = body;
-    const res = edit ? await updateOne<Service>(Api.service, edit ?? "", payload as Service) : await create<Service>(Api.service, e as Service);
+    const res = edit
+      ? await updateOne<Service>(Api.service, edit ?? "", payload as Service)
+      : await create<Service>(Api.service, e as Service);
     console.log(res);
     if (res.success) {
       refresh();
@@ -106,6 +126,7 @@ export const ServicePage = ({ data, branches }: { data: ListType<Service>; branc
     setAction(ACTION.DEFAULT);
   };
   const onInvalid = async <T,>(e: T) => {
+    alert(e)
     console.log("error", e);
   };
 
@@ -142,10 +163,17 @@ export const ServicePage = ({ data, branches }: { data: ListType<Service>; branc
             </FormItems>
             {[
               {
+                key: "name",
+                label: "Нэр",
+                type: "text",
+              },
+
+              {
                 key: "min_price",
                 type: "money",
                 label: "Үнэ",
               },
+
               {
                 key: "max_price",
                 type: "money",
@@ -160,9 +188,20 @@ export const ServicePage = ({ data, branches }: { data: ListType<Service>; branc
               const name = item.key as keyof ServiceType;
               const label = item.label as keyof ServiceType;
               return (
-                <FormItems control={form.control} name={name} key={i} className={item.key === "name" ? "col-span-2" : ""}>
+                <FormItems
+                  control={form.control}
+                  name={name}
+                  key={i}
+                  className={item.key === "name" ? "col-span-2" : ""}
+                >
                   {(field) => {
-                    return <TextField props={{ ...field }} type={item.type} label={label} />;
+                    return (
+                      <TextField
+                        props={{ ...field }}
+                        type={item.type}
+                        label={label}
+                      />
+                    );
                   }}
                 </FormItems>
               );
@@ -170,7 +209,13 @@ export const ServicePage = ({ data, branches }: { data: ListType<Service>; branc
           </div>
         </FormProvider>
       </Modal>
-      <DataTable columns={columns} count={services?.count} data={services?.items ?? []} refresh={refresh} loading={action == ACTION.RUNNING} />
+      <DataTable
+        columns={columns}
+        count={services?.count}
+        data={services?.items ?? []}
+        refresh={refresh}
+        loading={action == ACTION.RUNNING}
+      />
       {action}
       {/* <ProductDialog
         editingProduct={editingProduct}

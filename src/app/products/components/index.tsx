@@ -48,7 +48,7 @@ const formSchema = z.object({
   ) as unknown as number,
   color: z.string(),
   size: z.string(),
-  edit: z.string().nullable(),
+  edit: z.string().nullable().optional(),
 });
 type ProductType = z.infer<typeof formSchema>;
 export const ProductPage = ({

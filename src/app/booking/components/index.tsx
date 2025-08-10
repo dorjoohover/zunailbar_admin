@@ -127,13 +127,17 @@ export const BookingPage = ({
   const refresh = async (pg: PG = DEFAULT_PG) => {
     setAction(ACTION.RUNNING);
     const { sort } = pg;
-    await fetcher<Booking>(Api.booking, {
-      page: page,
-      limit,
-      sort,
-      branch_id: branch.id,
-      //   name: pg.filter,
-    }).then((d) => {
+    await fetcher<Booking>(
+      Api.booking,
+      {
+        page: page,
+        limit,
+        sort,
+        branch_id: branch.id,
+        //   name: pg.filter,
+      },
+      "employee"
+    ).then((d) => {
       bookingFormatter(d);
     });
     setAction(ACTION.DEFAULT);

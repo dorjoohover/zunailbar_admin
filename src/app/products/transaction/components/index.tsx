@@ -1,9 +1,25 @@
 "use client";
 
 import { DataTable } from "@/components/data-table";
-import { Branch, Brand, Category, IProduct, IProductTransaction, Product, ProductTransaction, User } from "@/models";
+import {
+  Branch,
+  Brand,
+  Category,
+  IProduct,
+  IProductTransaction,
+  Product,
+  ProductTransaction,
+  User,
+} from "@/models";
 import { useEffect, useMemo, useState } from "react";
-import { ListType, ACTION, PG, DEFAULT_PG, getEnumValues, getValuesProductTransactionStatus } from "@/lib/constants";
+import {
+  ListType,
+  ACTION,
+  PG,
+  DEFAULT_PG,
+  getEnumValues,
+  getValuesProductTransactionStatus,
+} from "@/lib/constants";
 import { Modal } from "@/shared/components/modal";
 import z from "zod";
 import { FormProvider, useForm } from "react-hook-form";
@@ -22,7 +38,10 @@ const formSchema = z.object({
   branch_id: z.string().min(1),
   product_id: z.string().min(1),
   user_id: z.string().nullable().optional(),
-  quantity: z.preprocess((val) => (typeof val === "string" ? parseFloat(val) : val), z.number()) as unknown as number,
+  quantity: z.preprocess(
+    (val) => (typeof val === "string" ? parseFloat(val) : val),
+    z.number()
+  ) as unknown as number,
   //   price: z.preprocess(
   //     (val) => (typeof val === "string" ? parseFloat(val) : val),
   //     z.number()
@@ -32,20 +51,53 @@ const formSchema = z.object({
   //     z.number()
   //   ) as unknown as number,
   edit: z.string().nullable().optional(),
-  product_transaction_status: z.preprocess((val) => (typeof val === "string" ? parseInt(val, 10) : val), z.nativeEnum(ProductTransactionStatus).nullable()).optional() as unknown as number,
+  product_transaction_status: z
+    .preprocess(
+      (val) => (typeof val === "string" ? parseInt(val, 10) : val),
+      z.nativeEnum(ProductTransactionStatus).nullable()
+    )
+    .optional() as unknown as number,
 });
 type TransactionType = z.infer<typeof formSchema>;
-export const ProductTransactionPage = ({ data, users, branches, products }: { data: ListType<ProductTransaction>; users: ListType<User>; branches: ListType<Branch>; products: ListType<Product> }) => {
+const defaultValues = {
+  branch_id: undefined,
+  edit: undefined,
+  product_id: undefined,
+  product_transaction_status: undefined,
+  quantity: undefined,
+  user_id: undefined,
+};
+export const ProductTransactionPage = ({
+  data,
+  users,
+  branches,
+  products,
+}: {
+  data: ListType<ProductTransaction>;
+  users: ListType<User>;
+  branches: ListType<Branch>;
+  products: ListType<Product>;
+}) => {
   const [action, setAction] = useState(ACTION.DEFAULT);
   const [open, setOpen] = useState<undefined | boolean>(false);
   const form = useForm<TransactionType>({
     resolver: zodResolver(formSchema),
-    defaultValues: {},
+    defaultValues,
   });
-  const [transactions, setTransactions] = useState<ListType<IProductTransaction> | null>(null);
-  const branchMap = useMemo(() => new Map(branches.items.map((b) => [b.id, b])), [branches.items]);
-  const userMap = useMemo(() => new Map(users.items.map((u) => [u.id, u])), [users.items]);
-  const productMap = useMemo(() => new Map(products.items.map((p) => [p.id, p])), [products.items]);
+  const [transactions, setTransactions] =
+    useState<ListType<IProductTransaction> | null>(null);
+  const branchMap = useMemo(
+    () => new Map(branches.items.map((b) => [b.id, b])),
+    [branches.items]
+  );
+  const userMap = useMemo(
+    () => new Map(users.items.map((u) => [u.id, u])),
+    [users.items]
+  );
+  const productMap = useMemo(
+    () => new Map(products.items.map((p) => [p.id, p])),
+    [products.items]
+  );
   const transactionFormatter = (data: ListType<ProductTransaction>) => {
     const items: IProductTransaction[] = data.items.map((item) => {
       const branch = branchMap.get(item.branch_id);
@@ -94,11 +146,20 @@ export const ProductTransactionPage = ({ data, users, branches, products }: { da
     setAction(ACTION.RUNNING);
     const body = e as TransactionType;
     const { edit, ...payload } = body;
-    const res = edit ? await updateOne<IProductTransaction>(Api.product_transaction, edit ?? "", payload as IProductTransaction) : await create<IProductTransaction>(Api.product_transaction, e as IProductTransaction);
+    const res = edit
+      ? await updateOne<IProductTransaction>(
+          Api.product_transaction,
+          edit ?? "",
+          payload as IProductTransaction
+        )
+      : await create<IProductTransaction>(
+          Api.product_transaction,
+          e as IProductTransaction
+        );
     if (res.success) {
       refresh();
       setOpen(false);
-      form.reset({});
+      form.reset(defaultValues);
     }
     setAction(ACTION.DEFAULT);
   };
@@ -115,7 +176,7 @@ export const ProductTransactionPage = ({ data, users, branches, products }: { da
         open={open == true}
         reset={() => {
           setOpen(false);
-          form.reset({});
+          form.reset(defaultValues);
         }}
         setOpen={setOpen}
         loading={action == ACTION.RUNNING}
@@ -152,17 +213,23 @@ export const ProductTransactionPage = ({ data, users, branches, products }: { da
                 );
               }}
             </FormItems>
-              <FormItems label="Төлөв" control={form.control} name="product_transaction_status">
+            <FormItems
+              label="Төлөв"
+              control={form.control}
+              name="product_transaction_status"
+            >
               {(field) => {
                 return (
                   <ComboBox
                     props={{ ...field }}
-                    items={getEnumValues(ProductTransactionStatus).map((item) => {
-                      return {
-                        value: item.toString(),
-                        label: getValuesProductTransactionStatus[item],
-                      };
-                    })}
+                    items={getEnumValues(ProductTransactionStatus).map(
+                      (item) => {
+                        return {
+                          value: item.toString(),
+                          label: getValuesProductTransactionStatus[item],
+                        };
+                      }
+                    )}
                   />
                 );
               }}
@@ -187,9 +254,20 @@ export const ProductTransactionPage = ({ data, users, branches, products }: { da
               const name = item.key as keyof TransactionType;
               const label = item.label as keyof TransactionType;
               return (
-                <FormItems control={form.control} name={name} key={i} className={item.key === "name" ? "col-span-2" : ""}>
+                <FormItems
+                  control={form.control}
+                  name={name}
+                  key={i}
+                  className={item.key === "name" ? "col-span-2" : ""}
+                >
                   {(field) => {
-                    return <TextField props={{ ...field }} type={item.type} label={label} />;
+                    return (
+                      <TextField
+                        props={{ ...field }}
+                        type={item.type}
+                        label={label}
+                      />
+                    );
                   }}
                 </FormItems>
               );
@@ -209,11 +287,16 @@ export const ProductTransactionPage = ({ data, users, branches, products }: { da
                 );
               }}
             </FormItems>
-          
           </div>
         </FormProvider>
       </Modal>
-      <DataTable columns={columns} count={transactions?.count} data={transactions?.items ?? []} refresh={refresh} loading={action == ACTION.RUNNING} />
+      <DataTable
+        columns={columns}
+        count={transactions?.count}
+        data={transactions?.items ?? []}
+        refresh={refresh}
+        loading={action == ACTION.RUNNING}
+      />
       {action}
       {/* <ProductDialog
         editingProduct={editingProduct}

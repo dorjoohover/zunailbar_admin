@@ -7,9 +7,13 @@ import { SchedulePage } from "./components";
 
 export default async function Page() {
   const user = await find<User>(Api.user, { limit: -1, role: ROLE.E_M });
-  const res = await find<Schedule>(Api.schedule, {
-    limit: 7,
-  });
+  const res = await find<Schedule>(
+    Api.schedule,
+    {
+      limit: 7,
+    },
+    "employee"
+  );
   return (
     <section>
       <ContainerHeader title="Цагийн хуваарь" />
