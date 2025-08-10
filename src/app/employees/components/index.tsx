@@ -29,11 +29,17 @@ const formSchema = z.object({
   lastname: z.string().min(1),
   branch_id: z.string().min(1),
   mobile: z.string().length(8, { message: "8 тэмдэгт байх ёстой" }),
-  birthday: z.preprocess((val) => (typeof val === "string" ? new Date(val) : val), z.date()) as unknown as Date,
+  birthday: z.preprocess(
+    (val) => (typeof val === "string" ? new Date(val) : val),
+    z.date()
+  ) as unknown as Date,
   password: z.string().min(6),
-  experience: z.preprocess((val) => (typeof val === "string" ? parseFloat(val) : val), z.number()) as unknown as number,
+  experience: z.preprocess(
+    (val) => (typeof val === "string" ? parseFloat(val) : val),
+    z.number()
+  ) as unknown as number,
   nickname: z.string().min(1),
-  profile_img: z.string().nullable(),
+  profile_img: z.string().nullable().optional(),
 
   role: z
     .preprocess(
@@ -49,7 +55,13 @@ const formSchema = z.object({
     .nullable(),
 });
 type UserType = z.infer<typeof formSchema>;
-export const EmployeePage = ({ data, branches }: { data: ListType<User>; branches: ListType<Branch> }) => {
+export const EmployeePage = ({
+  data,
+  branches,
+}: {
+  data: ListType<User>;
+  branches: ListType<Branch>;
+}) => {
   const [action, setAction] = useState(ACTION.DEFAULT);
   const [open, setOpen] = useState<boolean | undefined>(false);
   const form = useForm<UserType>({
@@ -78,17 +90,22 @@ export const EmployeePage = ({ data, branches }: { data: ListType<User>; branche
         ...(body as IUser),
       };
     }
-    const res = editingUser ? await updateOne<IUser>(Api.user, editingUser?.id as string, payload) : await create<IUser>(Api.user, payload);
+    const res = editingUser
+      ? await updateOne<IUser>(Api.user, editingUser?.id as string, payload)
+      : await create<IUser>(Api.user, payload);
+
     if (res.success) {
       refresh();
       setOpen(false);
       form.reset();
+    } else {
+      console.log(res);
     }
     setAction(ACTION.DEFAULT);
   };
   const onInvalid = async <T,>(e: T) => {
     console.log("error", e);
-
+    alert(e);
     // setSuccess(false);
   };
 
@@ -114,9 +131,11 @@ export const EmployeePage = ({ data, branches }: { data: ListType<User>; branche
     form.reset(e);
   };
   const setStatus = async (index: number, status: number) => {
+    console.log(index);
     const res = await updateOne(Api.user, users.items[index].id, {
       user_status: status,
     });
+    console.log(res);
     refresh();
   };
   const giveProduct = (index: number) => {
@@ -164,32 +183,54 @@ export const EmployeePage = ({ data, branches }: { data: ListType<User>; branche
                 );
               }}
             </FormItems> */}
-              <FormItems control={form.control} name="file" label="Зураг өөрчлөх">
+              <FormItems
+                control={form.control}
+                name="file"
+                label="Зураг өөрчлөх"
+              >
                 {(field) => {
-                  const fileUrl = field.value ? URL.createObjectURL(field.value as any) : null;
+                  const fileUrl = field.value
+                    ? URL.createObjectURL(field.value as any)
+                    : null;
 
                   return (
                     <div className="relative w-32 h-32">
                       {fileUrl ? (
                         <>
                           {/* Preview */}
-                          <img src={fileUrl} alt="preview" className="w-full h-full object-cover rounded-md border bg-white overflow-hidden" />
+                          <img
+                            src={fileUrl}
+                            alt="preview"
+                            className="w-full h-full object-cover rounded-md border bg-white overflow-hidden"
+                          />
 
                           {/* Change */}
-                          <label htmlFor="file-upload" className="absolute top-1 right-7 bg-primary p-1 rounded shadow cursor-pointer hover:bg-slate-600">
+                          <label
+                            htmlFor="file-upload"
+                            className="absolute top-1 right-7 bg-primary p-1 rounded shadow cursor-pointer hover:bg-slate-600"
+                          >
                             <Pencil className="size-3 text-white" />
                           </label>
 
                           {/* Remove */}
-                          <button type="button" onClick={() => field.onChange(null)} className="absolute top-1 right-1 bg-primary p-1 rounded shadow cursor-pointer hover:bg-slate-600">
+                          <button
+                            type="button"
+                            onClick={() => field.onChange(null)}
+                            className="absolute top-1 right-1 bg-primary p-1 rounded shadow cursor-pointer hover:bg-slate-600"
+                          >
                             <X className="size-3 text-white" />
                           </button>
                         </>
                       ) : (
                         // Empty state uploader
-                        <label htmlFor="file-upload" className="flex flex-col items-center justify-center w-full h-full bg-white border rounded-md shadow-sm cursor-pointer hover:bg-gray-50 transition-colors">
+                        <label
+                          htmlFor="file-upload"
+                          className="flex flex-col items-center justify-center w-full h-full bg-white border rounded-md shadow-sm cursor-pointer hover:bg-gray-50 transition-colors"
+                        >
                           <UploadCloud className="w-6 h-6 text-gray-500" />
-                          <span className="mt-1 text-xs text-gray-500">Browse</span>
+                          <span className="mt-1 text-xs text-gray-500">
+                            Browse
+                          </span>
                         </label>
                       )}
 
@@ -211,19 +252,29 @@ export const EmployeePage = ({ data, branches }: { data: ListType<User>; branche
                 }}
               </FormItems>
               {/* odoogiin */}
-              <FormItems control={form.control} name="profile_img" label="Одоогийн зураг">
-                {(field) => {
-                  return (
-                    <>
-                      {field.value && (
-                        <div className="relative w-32 h-32">
-                          <img src={`/api/file/${field.value}`} alt="preview" className="size-full bg-gray object-cove rounded-md overflow-hidden border" />
-                        </div>
-                      )}
-                    </>
-                  );
-                }}
-              </FormItems>
+              {form.getValues("profile_img") && (
+                <FormItems
+                  control={form.control}
+                  name="profile_img"
+                  label="Одоогийн зураг"
+                >
+                  {(field) => {
+                    return (
+                      <>
+                        {field.value && (
+                          <div className="relative w-32 h-32">
+                            <img
+                              src={`/api/file/${field.value}`}
+                              alt="preview"
+                              className="size-full bg-gray object-cove rounded-md overflow-hidden border"
+                            />
+                          </div>
+                        )}
+                      </>
+                    );
+                  }}
+                </FormItems>
+              )}
             </div>
             <div className="grid grid-cols-2 gap-3 py-5">
               <FormItems control={form.control} name="branch_id" label="Салбар">
@@ -246,12 +297,14 @@ export const EmployeePage = ({ data, branches }: { data: ListType<User>; branche
                 {(field) => {
                   return (
                     <ComboBox
-                      items={[ROLE.ADMIN, ROLE.EMPLOYEE, ROLE.MANAGER].map((role) => {
-                        return {
-                          label: RoleValue[role],
-                          value: role.toString(),
-                        };
-                      })}
+                      items={[ROLE.ADMIN, ROLE.EMPLOYEE, ROLE.MANAGER].map(
+                        (role) => {
+                          return {
+                            label: RoleValue[role],
+                            value: role.toString(),
+                          };
+                        }
+                      )}
                       props={{ ...field }}
                     />
                   );
@@ -259,15 +312,30 @@ export const EmployeePage = ({ data, branches }: { data: ListType<User>; branche
               </FormItems>
             </div>
             <div className="grid grid-cols-2 gap-3 pt-5">
-              <FormItems control={form.control} name="password" className="col-span-1">
+              <FormItems
+                control={form.control}
+                name="password"
+                className="col-span-1"
+              >
                 {(field) => {
                   return <PasswordField props={{ ...field }} view={true} />;
                 }}
               </FormItems>
-              {["lastname", "firstname", "mobile", "nickname", "experience"].map((i, index) => {
+              {[
+                "lastname",
+                "firstname",
+                "mobile",
+                "nickname",
+                "experience",
+              ].map((i, index) => {
                 const item = i as keyof UserType;
                 return (
-                  <FormItems control={form.control} name={item} key={index} className={"col-span-1"}>
+                  <FormItems
+                    control={form.control}
+                    name={item}
+                    key={index}
+                    className={"col-span-1"}
+                  >
                     {(field) => {
                       return (
                         <>
@@ -276,9 +344,13 @@ export const EmployeePage = ({ data, branches }: { data: ListType<User>; branche
                             type={item === "mobile" ? "number" : "text"}
                             props={{
                               ...field,
-                              ...(item === "mobile" ? { inputMode: "numeric", pattern: "[0-9]*" } : {}),
+                              ...(item === "mobile"
+                                ? { inputMode: "numeric", pattern: "[0-9]*" }
+                                : {}),
                             }}
-                            className={cn(item === "mobile" ? "hide-number-arrows" : "")}
+                            className={cn(
+                              item === "mobile" ? "hide-number-arrows" : ""
+                            )}
                             label={firstLetterUpper(item)}
                           />
                         </>
@@ -289,15 +361,30 @@ export const EmployeePage = ({ data, branches }: { data: ListType<User>; branche
               })}
               <FormItems control={form.control} name="birthday">
                 {(field) => {
-                  return <DatePicker name="Төрсөн өдөр" pl="Огноо сонгох" props={{ ...field }} />;
+                  return (
+                    <DatePicker
+                      name="Төрсөн өдөр"
+                      pl="Огноо сонгох"
+                      props={{ ...field }}
+                    />
+                  );
                 }}
               </FormItems>
             </div>
           </div>
         </FormProvider>
       </Modal>
-      <EmployeeProductModal id={userProduct} clear={() => setUserProduct(undefined)} />
-      <DataTable columns={columns} data={users.items} refresh={refresh} loading={action === ACTION.RUNNING} count={users.count} />
+      <EmployeeProductModal
+        id={userProduct}
+        clear={() => setUserProduct(undefined)}
+      />
+      <DataTable
+        columns={columns}
+        data={users.items}
+        refresh={refresh}
+        loading={action === ACTION.RUNNING}
+        count={users.count}
+      />
     </div>
   );
 };

@@ -3,9 +3,9 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(
   req: NextRequest,
-  context: { params: { filename: string } }
+  context: { params: Promise<{ filename: string }> }
 ) {
-  const { filename } = context.params;
+  const { filename } = await context.params;
 
   try {
     console.log("start");

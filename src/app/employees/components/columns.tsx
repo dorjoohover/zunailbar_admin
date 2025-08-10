@@ -1,5 +1,12 @@
 "use client";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 import { ColumnDef } from "@tanstack/react-table";
 import { IUser } from "@/models/user.model";
@@ -9,7 +16,12 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { IBranch } from "@/models";
 import { mobileFormatter, parseDate } from "@/lib/functions";
 import { ROLE, UserStatus } from "@/lib/enum";
-import { getEnumValues, roleIconMap, RoleValue, UserStatusValue } from "@/lib/constants";
+import {
+  getEnumValues,
+  roleIconMap,
+  RoleValue,
+  UserStatusValue,
+} from "@/lib/constants";
 import { AppAlertDialog } from "@/components/AlertDialog";
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
@@ -25,11 +37,27 @@ const branches: IBranch[] = [
   { id: "3", name: "Airport Branch", address: "Buyant Ukhaa", user_id: "102" },
 ];
 
-export const getColumns = (onEdit: (product: IUser) => void, setStatus: (index: number, status: UserStatus) => void, giveProduct: (index: number) => void): ColumnDef<IUser>[] => [
+export const getColumns = (
+  onEdit: (product: IUser) => void,
+  setStatus: (index: number, status: UserStatus) => void,
+  giveProduct: (index: number) => void
+): ColumnDef<IUser>[] => [
   {
     id: "select",
-    header: ({ table }) => <Checkbox checked={table.getIsAllPageRowsSelected()} onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)} aria-label="Select all" />,
-    cell: ({ row }) => <Checkbox checked={row.getIsSelected()} onCheckedChange={(value) => row.toggleSelected(!!value)} aria-label="Select row" />,
+    header: ({ table }) => (
+      <Checkbox
+        checked={table.getIsAllPageRowsSelected()}
+        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+        aria-label="Select all"
+      />
+    ),
+    cell: ({ row }) => (
+      <Checkbox
+        checked={row.getIsSelected()}
+        onCheckedChange={(value) => row.toggleSelected(!!value)}
+        aria-label="Select row"
+      />
+    ),
     enableSorting: false,
     enableHiding: false,
   },
@@ -86,8 +114,24 @@ export const getColumns = (onEdit: (product: IUser) => void, setStatus: (index: 
     cell: ({ row }) => {
       const role = (row.getValue<number>("role") ?? ROLE.ANY) as ROLE;
       const profile = row.getValue<string | null>("profile_img");
-      const { icon: Icon, color } = roleIconMap[role] ?? {};
-      return <span className={`flex gap-2 items-center font-bold aspect-square size-16 border rounded-md bg-white`}>{profile ? <Image src={`/api/file/${profile}`} width={100} height={100} className="rounded-full" alt={role.toString()} /> : `Хоосон`}</span>;
+      return (
+        <span
+          className={`flex gap-2 items-center overflow-hidden font-bold aspect-square size-16 border rounded-md bg-white`}
+        >
+          {profile ? (
+            <Image
+              src={`/api/file/${profile}`}
+              width={100}
+              height={100}
+              // objectFit="contain"
+              className="rounded-full  object-cover"
+              alt={role.toString()}
+            />
+          ) : (
+            `Хоосон`
+          )}
+        </span>
+      );
     },
   },
   {
@@ -98,15 +142,19 @@ export const getColumns = (onEdit: (product: IUser) => void, setStatus: (index: 
 
       const name = RoleValue[role];
       const { color } = roleIconMap[role] ?? {};
-
-      return <span className={`flex gap-2 items-center text-${color}-500 font-bold`}>{name}</span>;
+      return (
+        <span className={`flex gap-2 items-center text-${color}-500 font-bold`}>
+          {name}
+        </span>
+      );
     },
   },
   {
     accessorKey: "user_status",
     header: "Status",
     cell: ({ row }) => {
-      const status = UserStatusValue[row.getValue<number>("user_status") as UserStatus];
+      const status =
+        UserStatusValue[row.getValue<number>("user_status") as UserStatus];
       return <span className={status.color}>{status.name}</span>;
     },
   },
@@ -115,7 +163,10 @@ export const getColumns = (onEdit: (product: IUser) => void, setStatus: (index: 
     header: "Actions",
     cell: ({ row }) => {
       return (
-        <TableActionButtons rowData={row.original} onEdit={(data) => onEdit(data)}>
+        <TableActionButtons
+          rowData={row.original}
+          onEdit={(data) => onEdit(data)}
+        >
           <DropdownMenu>
             <TooltipWrapper tooltip="Статус солих">
               <DropdownMenuTrigger>
@@ -133,7 +184,11 @@ export const getColumns = (onEdit: (product: IUser) => void, setStatus: (index: 
                 .map((item, i) => {
                   const status = UserStatusValue[item];
                   return (
-                    <DropdownMenuItem className={status.color} key={i} onClick={() => setStatus(row.index, item)}>
+                    <DropdownMenuItem
+                      className={status.color}
+                      key={i}
+                      onClick={() => setStatus(row.index, item)}
+                    >
                       {status.name}
                     </DropdownMenuItem>
                   );
@@ -142,7 +197,11 @@ export const getColumns = (onEdit: (product: IUser) => void, setStatus: (index: 
           </DropdownMenu>
 
           <TooltipWrapper tooltip="Бүтээгдэхүүн өгөх">
-            <Button variant="ghost" size="icon" onClick={() => giveProduct(row.index)}>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => giveProduct(row.index)}
+            >
               <Hammer className="size-4" />
             </Button>
           </TooltipWrapper>

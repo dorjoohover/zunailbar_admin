@@ -38,14 +38,28 @@ const formSchema = z.object({
   brand_id: z.string().min(1),
   category_id: z.string().min(1),
   name: z.string().min(1),
-  quantity: z.preprocess((val) => (typeof val === "string" ? parseFloat(val) : val), z.number()) as unknown as number,
-  price: z.preprocess((val) => (typeof val === "string" ? parseFloat(val) : val), z.number()) as unknown as number,
+  quantity: z.preprocess(
+    (val) => (typeof val === "string" ? parseFloat(val) : val),
+    z.number()
+  ) as unknown as number,
+  price: z.preprocess(
+    (val) => (typeof val === "string" ? parseFloat(val) : val),
+    z.number()
+  ) as unknown as number,
   color: z.string(),
   size: z.string(),
   edit: z.string().nullable(),
 });
 type ProductType = z.infer<typeof formSchema>;
-export const ProductPage = ({ data, categories, brands }: { data: ListType<Product>; categories: ListType<Category>; brands: ListType<Brand> }) => {
+export const ProductPage = ({
+  data,
+  categories,
+  brands,
+}: {
+  data: ListType<Product>;
+  categories: ListType<Category>;
+  brands: ListType<Brand>;
+}) => {
   const [action, setAction] = useState(ACTION.DEFAULT);
   const [open, setOpen] = useState<undefined | boolean>(false);
   const form = useForm<ProductType>({
@@ -85,7 +99,9 @@ export const ProductPage = ({ data, categories, brands }: { data: ListType<Produ
     setAction(ACTION.RUNNING);
     const body = e as ProductType;
     const { edit, ...payload } = body;
-    const res = edit ? await updateOne<IProduct>(Api.product, edit ?? "", payload as IProduct) : await create<IProduct>(Api.product, e as IProduct);
+    const res = edit
+      ? await updateOne<IProduct>(Api.product, edit ?? "", payload as IProduct)
+      : await create<IProduct>(Api.product, e as IProduct);
     if (res.success) {
       refresh();
       setOpen(false);
@@ -116,7 +132,11 @@ export const ProductPage = ({ data, categories, brands }: { data: ListType<Produ
         <FormProvider {...form}>
           <div className="divide-y">
             <div className="grid grid-cols-2 gap-3 pb-5">
-              <FormItems control={form.control} name="category_id" label="Төрөл">
+              <FormItems
+                control={form.control}
+                name="category_id"
+                label="Төрөл"
+              >
                 {(field) => {
                   console.log(field.value);
                   return (
@@ -132,7 +152,7 @@ export const ProductPage = ({ data, categories, brands }: { data: ListType<Produ
                   );
                 }}
               </FormItems>
-              <FormItems control={form.control} name="brand_id" label="Салбар">
+              <FormItems control={form.control} name="brand_id" label="Брэнд">
                 {(field) => {
                   return (
                     <ComboBox
@@ -176,9 +196,20 @@ export const ProductPage = ({ data, categories, brands }: { data: ListType<Produ
                 const name = item.key as keyof ProductType;
                 const label = item.label as keyof ProductType;
                 return (
-                  <FormItems control={form.control} name={name} key={i} className={item.key === "name" ? "col-span-2" : ""}>
+                  <FormItems
+                    control={form.control}
+                    name={name}
+                    key={i}
+                    className={item.key === "name" ? "col-span-2" : ""}
+                  >
                     {(field) => {
-                      return <TextField props={{ ...field }} type={item.type} label={label} />;
+                      return (
+                        <TextField
+                          props={{ ...field }}
+                          type={item.type}
+                          label={label}
+                        />
+                      );
                     }}
                   </FormItems>
                 );
@@ -187,7 +218,13 @@ export const ProductPage = ({ data, categories, brands }: { data: ListType<Produ
           </div>
         </FormProvider>
       </Modal>
-      <DataTable columns={columns} count={products.count} data={products.items} refresh={refresh} loading={action == ACTION.RUNNING} />
+      <DataTable
+        columns={columns}
+        count={products.count}
+        data={products.items}
+        refresh={refresh}
+        loading={action == ACTION.RUNNING}
+      />
       {action}
       {/* <ProductDialog
         editingProduct={editingProduct}
