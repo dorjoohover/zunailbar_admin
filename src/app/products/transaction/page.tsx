@@ -10,6 +10,7 @@ import {
 import { find } from "@/app/(api)";
 import { ProductTransactionPage } from "./components";
 import { ROLE } from "@/lib/enum";
+import ContainerHeader from "@/components/containerHeader";
 
 export default async function Page() {
   const [res, branch, product, users] = await Promise.all([
@@ -20,7 +21,7 @@ export default async function Page() {
   ]);
   return (
     <section>
-      {/* <ContainerHeader title="Барааны жагсаалт" /> */}
+      <ContainerHeader title="Барааны хэрэглээ" />
       <div className="admin-container">
         <ProductTransactionPage
           data={res.data}

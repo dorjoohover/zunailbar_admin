@@ -114,7 +114,40 @@ export const getColumns = (onEdit: (product: IUser) => void, setStatus: (index: 
     id: "actions",
     header: "Actions",
     cell: ({ row }) => {
-      return <TableActionButtons rowData={row.original} onEdit={(data) => onEdit(data)}></TableActionButtons>;
+      return (
+        <TableActionButtons rowData={row.original} onEdit={(data) => onEdit(data)}>
+          <DropdownMenu>
+            <TooltipWrapper tooltip="Статус солих">
+              <DropdownMenuTrigger>
+                <div className="size-9 flex-center items-center justify-center">
+                  <UserRoundCog className="size-4" />
+                </div>
+              </DropdownMenuTrigger>
+            </TooltipWrapper>
+
+            <DropdownMenuContent>
+              <DropdownMenuLabel>Статус солих</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              {getEnumValues(UserStatus)
+                .splice(0, 4)
+                .map((item, i) => {
+                  const status = UserStatusValue[item];
+                  return (
+                    <DropdownMenuItem className={status.color} key={i} onClick={() => setStatus(row.index, item)}>
+                      {status.name}
+                    </DropdownMenuItem>
+                  );
+                })}
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          <TooltipWrapper tooltip="Бүтээгдэхүүн өгөх">
+            <Button variant="ghost" size="icon" onClick={() => giveProduct(row.index)}>
+              <Hammer className="size-4" />
+            </Button>
+          </TooltipWrapper>
+        </TableActionButtons>
+      );
     },
   },
 ];

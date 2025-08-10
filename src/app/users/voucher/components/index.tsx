@@ -152,7 +152,7 @@ export const VoucherPage = ({
   return (
     <div className="">
       <Modal
-        name={"Бараа нэмэх" + vouchers?.count}
+        name={"Хөнгөлөлт" + vouchers?.count}
         submit={() => form.handleSubmit(onSubmit, onInvalid)()}
         open={open == true}
         reset={() => {

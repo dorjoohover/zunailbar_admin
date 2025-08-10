@@ -252,7 +252,7 @@ export function AppSidebar() {
   // const [openIndex, setOpenIndex] = useState(null)
 
   return (
-    <Sidebar variant="sidebar" collapsible="icon" className="relative">
+    <Sidebar variant="sidebar" collapsible="icon" className="fixed top-0">
       {/* <SidebarTrigger className="absolute top-1.5 -right-8 z-50" /> */}
       {/* Header */}
       <SidebarHeader>

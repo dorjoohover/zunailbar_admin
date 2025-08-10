@@ -10,11 +10,11 @@ import React, { ReactNode } from "react";
 interface TableActionButtonsProps<T> {
   rowData: T;
   onEdit: (data: T) => void;
-  onDelete?: (data: T) => Promise<any>;
+  onRemove?: (data: T) => Promise<any>;
   children?: ReactNode; // Дунд хэсэгт нэмэлт JSX оруулах боломж
 }
 
-export function TableActionButtons<T>({ rowData, onEdit, onDelete, children }: TableActionButtonsProps<T>) {
+export function TableActionButtons<T>({ rowData, onEdit, onRemove, children }: TableActionButtonsProps<T>) {
   return (
     <div className="flex items-center gap-2">
       <TooltipWrapper tooltip="Засварлах">
@@ -26,12 +26,12 @@ export function TableActionButtons<T>({ rowData, onEdit, onDelete, children }: T
       {/* Энд дунд хэсгийн JSX оруулна */}
       {children}
 
-      {onDelete && (
+      {onRemove && (
         <AppAlertDialog
           title="Итгэлтэй байна уу?"
           description="Бүр устгана шүү."
           onConfirm={async () => {
-            const res = await onDelete(rowData);
+            const res = await onRemove(rowData);
             toast("Амжилттай устгалаа!" + res, {});
           }}
           trigger={
