@@ -1,7 +1,7 @@
 import { Api } from "@/utils/api";
 import { find } from "../(api)";
 import { ProductPage } from "./components";
-import { Branch, Brand, Category, Product } from "@/models";
+import { Brand, Category, Product } from "@/models";
 import ContainerHeader from "@/components/containerHeader";
 
 export default async function Page() {
@@ -12,7 +12,7 @@ export default async function Page() {
   ]);
   return (
     <section>
-      {/* <ContainerHeader title="Барааны жагсаалт" /> */}
+      <ContainerHeader title="Барааны жагсаалт" />
       <div className="admin-container">
         <ProductPage
           data={res.data}

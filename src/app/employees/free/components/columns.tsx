@@ -9,39 +9,21 @@ import { money, parseDate } from "@/lib/functions";
 import { ISchedule } from "@/models";
 import { ScheduleStatus } from "@/lib/enum";
 import { ScheduleStatusValue } from "@/lib/constants";
+import TooltipWrapper from "@/components/tooltipWrapper";
 
-export function getColumns(
-  onEdit: (product: ISchedule) => void,
-  remove: (index: number) => Promise<boolean>
-): ColumnDef<ISchedule>[] {
+export function getColumns(onEdit: (product: ISchedule) => void, remove: (index: number) => Promise<boolean>): ColumnDef<ISchedule>[] {
   return [
     {
       id: "select",
-      header: ({ table }) => (
-        <Checkbox
-          checked={table.getIsAllPageRowsSelected()}
-          onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-          aria-label="Select all"
-        />
-      ),
-      cell: ({ row }) => (
-        <Checkbox
-          checked={row.getIsSelected()}
-          onCheckedChange={(value) => row.toggleSelected(!!value)}
-          aria-label="Select row"
-        />
-      ),
+      header: ({ table }) => <Checkbox checked={table.getIsAllPageRowsSelected()} onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)} aria-label="Select all" />,
+      cell: ({ row }) => <Checkbox checked={row.getIsSelected()} onCheckedChange={(value) => row.toggleSelected(!!value)} aria-label="Select row" />,
       enableSorting: false,
       enableHiding: false,
     },
     {
       accessorKey: "branch_name",
       header: ({ column }) => (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          className="font-bold"
-        >
+        <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")} className="font-bold">
           branch <ArrowUpDown className="w-4 h-4 ml-2" />
         </Button>
       ),
@@ -49,11 +31,7 @@ export function getColumns(
     {
       accessorKey: "user_name",
       header: ({ column }) => (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          className="font-bold"
-        >
+        <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")} className="font-bold">
           Name <ArrowUpDown className="w-4 h-4 ml-2" />
         </Button>
       ),
@@ -95,21 +73,14 @@ export function getColumns(
       accessorKey: "schedule_status",
       header: "Status",
       cell: ({ row }) => {
-        const status =
-          ScheduleStatusValue[
-            row.getValue<number>("schedule_status") as ScheduleStatus
-          ];
+        const status = ScheduleStatusValue[row.getValue<number>("schedule_status") as ScheduleStatus];
         return <span className={status.color}>{status.name}</span>;
       },
     },
     {
       accessorKey: "created_at",
       header: ({ column }) => (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          className="font-bold"
-        >
+        <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")} className="font-bold">
           Created <ArrowUpDown className="w-4 h-4 ml-2" />
         </Button>
       ),
@@ -126,11 +97,7 @@ export function getColumns(
     {
       accessorKey: "updated_at",
       header: ({ column }) => (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          className="font-bold"
-        >
+        <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")} className="font-bold">
           Created <ArrowUpDown className="w-4 h-4 ml-2" />
         </Button>
       ),
@@ -149,13 +116,11 @@ export function getColumns(
       header: "Actions",
       cell: ({ row }) => (
         <div className="flex items-center gap-2">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => onEdit(row.original)}
-          >
-            <Pencil className="w-4 h-4" />
-          </Button>
+          <TooltipWrapper tooltip="Засварлах">
+            <Button variant="ghost" size="icon" onClick={() => onEdit(row.original)}>
+              <Pencil className="w-4 h-4" />
+            </Button>
+          </TooltipWrapper>
 
           <AppAlertDialog
             title="Итгэлтэй байна уу?"
@@ -166,9 +131,11 @@ export function getColumns(
               toast("Амжилттай устгалаа!" + res, {});
             }}
             trigger={
-              <Button variant="ghost" size="icon">
-                <Trash2 className="w-4 h-4 text-red-500" />
-              </Button>
+              <TooltipWrapper tooltip="Устгах">
+                <Button variant="ghost" size="icon">
+                  <Trash2 className="w-4 h-4 text-red-500" />
+                </Button>
+              </TooltipWrapper>
             }
           />
         </div>

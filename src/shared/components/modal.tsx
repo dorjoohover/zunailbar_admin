@@ -60,7 +60,7 @@ export const Modal = ({
           </Button>
         </DialogTrigger>
       )}
-      <DialogContent  className={`max-w-${w}`}>
+      <DialogContent className={`max-w-${w}`}>
         <DialogHeader className="mb-3">
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription>{description}</DialogDescription>
@@ -68,7 +68,7 @@ export const Modal = ({
         <div>{children}</div>
         <DialogFooter className="mt-3">
           <DialogClose asChild>
-            <Button variant="outline">Цуцлах</Button>
+            <Button variant="outline" className="bg-white">Цуцлах</Button>
           </DialogClose>
           {submit && (
             <Button onClick={(e) => handleSubmit(e)}>

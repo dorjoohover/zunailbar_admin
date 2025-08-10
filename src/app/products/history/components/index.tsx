@@ -2,14 +2,9 @@
 
 import { DataTable } from "@/components/data-table";
 import {
-  Branch,
-  Brand,
-  Category,
-  IProduct,
   IProductLog,
   Product,
-  ProductLog,
-  User,
+  ProductLog
 } from "@/models";
 import { useEffect, useMemo, useState } from "react";
 import {
@@ -32,7 +27,6 @@ import { TextField } from "@/shared/components/text.field";
 import { fetcher } from "@/hooks/fetcher";
 import { getColumns } from "./columns";
 import { ProductLogStatus } from "@/lib/enum";
-import { usernameFormatter } from "@/lib/functions";
 import { DatePicker } from "@/shared/components/date.picker";
 
 const formSchema = z.object({
@@ -160,7 +154,7 @@ export const ProductHistoryPage = ({
   return (
     <div className="">
       <Modal
-        name={"Бараа нэмэх" + transactions?.count}
+        name={"Нэмэх " + transactions?.count}
         submit={() => form.handleSubmit(onSubmit, onInvalid)()}
         open={open == true}
         reset={() => {

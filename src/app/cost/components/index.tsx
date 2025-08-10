@@ -1,7 +1,6 @@
 "use client";
 
 import ContainerHeader from "@/components/containerHeader";
-import { DataTable } from "@/components/data-table";
 import { IProduct, Product } from "@/models";
 import { getColumns } from "./columns";
 import { useState } from "react";

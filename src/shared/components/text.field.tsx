@@ -11,11 +11,13 @@ export const TextField = <T extends FieldValues>({
   pl,
   type = "text",
   symbol = "₮",
+  className = "pr-10 bg-white h-10",
 }: {
   pl?: string;
   symbol?: string;
   type?: string; // "money" бол форматлана
   label?: string;
+  className?: string;
   props: ControllerRenderProps<T>;
 }) => {
   const id = `${label}_${Math.round(Math.random() * 10)}`;
@@ -41,7 +43,7 @@ export const TextField = <T extends FieldValues>({
           type={type}
           id={id}
           placeholder={pl}
-          className="pr-10 bg-white h-10"
+          className="pr-10 bg-white h-10 hide-number-arrows"
         />
       </div>
     );
@@ -53,7 +55,7 @@ export const TextField = <T extends FieldValues>({
       <Input
         id={id}
         placeholder={pl}
-        className="pr-10 bg-white h-10"
+        className={className}
         type="text"
         inputMode="decimal"
         value={display}

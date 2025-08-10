@@ -2,11 +2,9 @@
 
 import { DialogContent, DialogTitle } from "@radix-ui/react-dialog";
 
-import { useState } from "react";
-import { IProduct, Product } from "@/models";
+import { IProduct } from "@/models";
 import { Dialog, DialogHeader } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 
 export const ProductDialog = ({

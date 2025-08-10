@@ -8,39 +8,21 @@ import { toast } from "sonner";
 import { parseDate } from "@/lib/functions";
 import { ProductLogStatus, ProductTransactionStatus } from "@/lib/enum";
 import { IProductLog } from "@/models";
+import TooltipWrapper from "@/components/tooltipWrapper";
 
-export function getColumns(
-  onEdit: (product: IProductLog) => void,
-  remove: (index: number) => Promise<boolean>
-): ColumnDef<IProductLog>[] {
+export function getColumns(onEdit: (product: IProductLog) => void, remove: (index: number) => Promise<boolean>): ColumnDef<IProductLog>[] {
   return [
     {
       id: "select",
-      header: ({ table }) => (
-        <Checkbox
-          checked={table.getIsAllPageRowsSelected()}
-          onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-          aria-label="Select all"
-        />
-      ),
-      cell: ({ row }) => (
-        <Checkbox
-          checked={row.getIsSelected()}
-          onCheckedChange={(value) => row.toggleSelected(!!value)}
-          aria-label="Select row"
-        />
-      ),
+      header: ({ table }) => <Checkbox checked={table.getIsAllPageRowsSelected()} onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)} aria-label="Select all" />,
+      cell: ({ row }) => <Checkbox checked={row.getIsSelected()} onCheckedChange={(value) => row.toggleSelected(!!value)} aria-label="Select row" />,
       enableSorting: false,
       enableHiding: false,
     },
     {
       accessorKey: "product_name",
       header: ({ column }) => (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          className="font-bold"
-        >
+        <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")} className="font-bold">
           Branch <ArrowUpDown className="w-4 h-4 ml-2" />
         </Button>
       ),
@@ -48,11 +30,7 @@ export function getColumns(
     {
       accessorKey: "price",
       header: ({ column }) => (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          className="font-bold"
-        >
+        <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")} className="font-bold">
           Price <ArrowUpDown className="w-4 h-4 ml-2" />
         </Button>
       ),
@@ -60,11 +38,7 @@ export function getColumns(
     {
       accessorKey: "quantity",
       header: ({ column }) => (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          className="font-bold"
-        >
+        <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")} className="font-bold">
           Quantity <ArrowUpDown className="w-4 h-4 ml-2" />
         </Button>
       ),
@@ -72,11 +46,7 @@ export function getColumns(
     {
       accessorKey: "total_amount",
       header: ({ column }) => (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          className="font-bold"
-        >
+        <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")} className="font-bold">
           Total Amount <ArrowUpDown className="w-4 h-4 ml-2" />
         </Button>
       ),
@@ -86,10 +56,7 @@ export function getColumns(
       accessorKey: "product_log_status",
       header: "Status",
       cell: ({ row }) => {
-        const status =
-          ProductLogStatus[
-            row.getValue<number>("product_log_status") as ProductLogStatus
-          ];
+        const status = ProductLogStatus[row.getValue<number>("product_log_status") as ProductLogStatus];
         return <span>{status}</span>;
       },
     },
@@ -105,11 +72,7 @@ export function getColumns(
     {
       accessorKey: "created_at",
       header: ({ column }) => (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          className="font-bold"
-        >
+        <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")} className="font-bold">
           Created <ArrowUpDown className="w-4 h-4 ml-2" />
         </Button>
       ),
@@ -127,14 +90,13 @@ export function getColumns(
       id: "actions",
       header: "Actions",
       cell: ({ row }) => (
+        
         <div className="flex items-center gap-2">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => onEdit(row.original)}
-          >
-            <Pencil className="w-4 h-4" />
-          </Button>
+          <TooltipWrapper tooltip="Засварлах">
+            <Button variant="ghost" size="icon" onClick={() => onEdit(row.original)}>
+              <Pencil className="w-4 h-4" />
+            </Button>
+          </TooltipWrapper>
 
           <AppAlertDialog
             title="Итгэлтэй байна уу?"
@@ -146,7 +108,9 @@ export function getColumns(
             }}
             trigger={
               <Button variant="ghost" size="icon">
-                <Trash2 className="w-4 h-4 text-red-500" />
+                <TooltipWrapper tooltip="Статус солих">
+                  <Trash2 className="w-4 h-4 text-red-500" />
+                </TooltipWrapper>
               </Button>
             }
           />

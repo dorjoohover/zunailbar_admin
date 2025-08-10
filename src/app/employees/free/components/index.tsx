@@ -139,7 +139,7 @@ export const PendingSchedulePage = ({
   return (
     <div className="">
       <Modal
-        name={"Бараа нэмэх" + pendingSchedules?.count}
+        name={"Нэмэх" + pendingSchedules?.count}
         submit={() => form.handleSubmit(onSubmit, onInvalid)()}
         open={open == true}
         reset={() => {

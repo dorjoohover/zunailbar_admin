@@ -1,5 +1,4 @@
 "use server";
-import { IProduct } from "@/models";
 import { API, METHOD } from "@/utils/api";
 import { cookies } from "next/headers";
 

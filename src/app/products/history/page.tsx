@@ -1,11 +1,7 @@
 import { Api } from "@/utils/api";
 import {
-  Branch,
-  Brand,
-  Category,
   Product,
-  ProductLog,
-  ProductTransaction,
+  ProductLog
 } from "@/models";
 import { find } from "@/app/(api)";
 import { ProductHistoryPage } from "./components";

@@ -1,4 +1,4 @@
-import { FormField, FormItem, FormMessage } from "@/components/ui/form";
+import { FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { ReactNode } from "react";
 import {
   Control,
@@ -10,10 +10,12 @@ import {
 export const FormItems = <T extends FieldValues>({
   control,
   name,
+  label,
   className,
   children,
 }: {
   name: Path<T>;
+  label?: string;
   className?: string;
   control: Control<T, any, T>;
   children: (field: ControllerRenderProps<T>) => ReactNode;
@@ -24,6 +26,7 @@ export const FormItems = <T extends FieldValues>({
       name={name}
       render={({ field }) => (
         <FormItem className={className}>
+            <FormLabel>{label}</FormLabel>
           {children(field)}
           <FormMessage />
         </FormItem>

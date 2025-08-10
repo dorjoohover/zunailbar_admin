@@ -2,22 +2,15 @@
 
 import { DataTable } from "@/components/data-table";
 import {
-  Branch,
-  Brand,
-  Category,
-  IProduct,
-  IUserService,
-  Product,
-  User,
-  UserService,
+  IUserService, User,
+  UserService
 } from "@/models";
 import { useEffect, useMemo, useState } from "react";
 import {
   ListType,
   ACTION,
   PG,
-  DEFAULT_PG,
-  getEnumValues,
+  DEFAULT_PG
 } from "@/lib/constants";
 import { Modal } from "@/shared/components/modal";
 import z from "zod";
@@ -27,7 +20,6 @@ import { Api } from "@/utils/api";
 import { create, deleteOne, updateOne } from "@/app/(api)";
 import { FormItems } from "@/shared/components/form.field";
 import { ComboBox } from "@/shared/components/combobox";
-import { TextField } from "@/shared/components/text.field";
 import { fetcher } from "@/hooks/fetcher";
 import { getColumns } from "./columns";
 import { usernameFormatter } from "@/lib/functions";
@@ -147,18 +139,20 @@ export const EmployeeUserServicePage = ({
   return (
     <div className="">
       <Modal
-        name={"Бараа нэмэх" + UserServices?.count}
+        name={"Үйлчилгээ нэмэх " + UserServices?.count}
         submit={() => form.handleSubmit(onSubmit, onInvalid)()}
         open={open == true}
         reset={() => {
           setOpen(false);
           clear();
         }}
+        title="Нэмэх"
         setOpen={setOpen}
         loading={action == ACTION.RUNNING}
       >
         <FormProvider {...form}>
-          <FormItems control={form.control} name="user_id">
+          <div className="grid grid-cols-2 gap-3">
+            <FormItems control={form.control} name="user_id" label="Ажилчин">
             {(field) => {
               return (
                 <ComboBox
@@ -173,7 +167,7 @@ export const EmployeeUserServicePage = ({
               );
             }}
           </FormItems>
-          <FormItems control={form.control} name="service_id">
+          <FormItems control={form.control} name="service_id" label="Үйлчилгээ">
             {(field) => {
               return (
                 <ComboBox
@@ -188,6 +182,7 @@ export const EmployeeUserServicePage = ({
               );
             }}
           </FormItems>
+          </div>
         </FormProvider>
       </Modal>
       <DataTable
