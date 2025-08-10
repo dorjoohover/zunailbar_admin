@@ -12,7 +12,7 @@ export default async function Page() {
   ]);
   return (
     <section>
-      <ContainerHeader title="Үйлчилгээ" />
+      <ContainerHeader title="Хэрэглэгч" />
       <div className="admin-container">
         <UserPage data={res.data} branches={branch.data} />
       </div>

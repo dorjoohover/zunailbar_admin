@@ -7,7 +7,7 @@ import { mobileFormatter, money } from "@/lib/functions";
 
 export const TextField = <T extends FieldValues>({
   props,
-  label = "Name",
+  label,
   pl,
   type = "text",
   symbol = "₮",
@@ -21,11 +21,7 @@ export const TextField = <T extends FieldValues>({
   props: ControllerRenderProps<T>;
 }) => {
   const id = `${label}_${Math.round(Math.random() * 10)}`;
-  const [display, setDisplay] = useState(
-    type === "money"
-      ? money(String(props.value ?? ""))
-      : String(props.value ?? "")
-  );
+  const [display, setDisplay] = useState(type === "money" ? money(String(props.value ?? "")) : String(props.value ?? ""));
 
   useEffect(() => {
     if (type === "money") {
@@ -37,21 +33,19 @@ export const TextField = <T extends FieldValues>({
   if (type !== "money") {
     return (
       <div className="relative space-y-2">
-        <Label htmlFor={id}>{label}</Label>
-        <Input
-          {...props}
-          type={type}
-          id={id}
-          placeholder={pl}
-          className="pr-10 bg-white h-10 hide-number-arrows"
-        />
+        {label && (
+          <Label htmlFor={id} className={className}>
+            {label}
+          </Label>
+        )}
+        <Input {...props} type={type} id={id} placeholder={pl} className="pr-10 bg-white h-10 hide-number-arrows" />
       </div>
     );
   }
 
   return (
     <div className="relative space-y-2">
-      <Label htmlFor={id}>{label}</Label>
+      {label && <Label htmlFor={id}>{label}</Label>}
       <Input
         id={id}
         placeholder={pl}
@@ -67,11 +61,7 @@ export const TextField = <T extends FieldValues>({
         onBlur={() => setDisplay(money(String(props.value ?? "")))} // blur үед money формат
         onFocus={() => setDisplay(String(props.value ?? ""))} // focus үед raw утга
       />
-      {type === "money" && (
-        <span className="absolute top-7 right-3 flex items-center text-gray-500 pointer-events-none">
-          {symbol}
-        </span>
-      )}
+      {type === "money" && <span className="absolute top-[45%] -translate-y-[50%] right-3 flex items-center text-gray-500 pointer-events-none">{symbol}</span>}
     </div>
   );
 };

@@ -6,22 +6,10 @@ import { ChevronDownIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Label } from "@/components/ui/label";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { ControllerRenderProps, FieldValues } from "react-hook-form";
 
-export function DatePicker<T extends FieldValues>({
-  pl = "Select",
-  name = "Choose",
-  props,
-}: {
-  name?: string;
-  pl?: string;
-  props: ControllerRenderProps<T>;
-}) {
+export function DatePicker<T extends FieldValues>({ pl = "Select", name = "Choose", props }: { name?: string; pl?: string; props: ControllerRenderProps<T> }) {
   const [open, setOpen] = React.useState(false);
 
   const { value, onChange } = props;
@@ -30,13 +18,10 @@ export function DatePicker<T extends FieldValues>({
       <Label htmlFor="date" className="px-1">
         {name}
       </Label>
+
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
-          <Button
-            variant="outline"
-            id="date"
-            className="min-w-32 justify-between font-normal h-10 bg-white"
-          >
+          <Button variant="outline" id="date" className="min-w-32 justify-between font-normal h-10 bg-white">
             {value ? new Date(value).toLocaleDateString() : pl}
             <ChevronDownIcon />
           </Button>

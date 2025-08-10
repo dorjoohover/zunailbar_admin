@@ -12,7 +12,7 @@ export default async function Page() {
   ]);
   return (
     <section>
-      <ContainerHeader title="Үйлчилгээ" />
+      <ContainerHeader title="Хэрэглэгчийн хөнгөлөлт" />
       <div className="admin-container">
         <VoucherPage data={res.data} services={service.data} />
       </div>

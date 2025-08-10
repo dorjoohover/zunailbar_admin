@@ -10,6 +10,7 @@ import { IProductTransaction, IUserService } from "@/models";
 import { ProductTransactionStatus } from "@/lib/enum";
 import { IService } from "@/models/service.model";
 import TooltipWrapper from "@/components/tooltipWrapper";
+import { TableActionButtons } from "@/components/tableActionButtons";
 
 export function getColumns(onEdit: (product: IUserService) => void, remove: (index: number) => Promise<boolean>): ColumnDef<IUserService>[] {
   return [
@@ -41,31 +42,34 @@ export function getColumns(onEdit: (product: IUserService) => void, remove: (ind
       id: "actions",
       header: "Actions",
       cell: ({ row }) => (
-        <div className="flex items-center gap-2">
-          <TooltipWrapper tooltip="Засварлах">
-            <Button variant="ghost" size="icon" onClick={() => onEdit(row.original)}>
-              <Pencil className="w-4 h-4" />
-            </Button>
-          </TooltipWrapper>
-
-          <AppAlertDialog
-            title="Итгэлтэй байна уу?"
-            description="Бүр устгана шүү."
-            onConfirm={async () => {
-              const res = await remove(row.index);
-              console.log(res);
-              toast("Амжилттай устгалаа!" + res, {});
-            }}
-            trigger={
-              <TooltipWrapper tooltip="Устгах">
-                <Button variant="ghost" size="icon">
-                  <Trash2 className="w-4 h-4 text-red-500" />
-                </Button>
-              </TooltipWrapper>
-            }
-          />
-        </div>
+        // Bagasgasan
+        <TableActionButtons rowData={row.original} onEdit={(data) => onEdit(data)} onRemove={(data) => remove(row.index)}></TableActionButtons>
+        //
       ),
     },
   ];
 }
+// <div className="flex items-center gap-2">
+//   <TooltipWrapper tooltip="Засварлах">
+//     <Button variant="ghost" size="icon" onClick={() => onEdit(row.original)}>
+//       <Pencil className="w-4 h-4" />
+//     </Button>
+//   </TooltipWrapper>
+
+//   <AppAlertDialog
+//     title="Итгэлтэй байна уу?"
+//     description="Бүр устгана шүү."
+//     onConfirm={async () => {
+//       const res = await remove(row.index);
+//       console.log(res);
+//       toast("Амжилттай устгалаа!" + res, {});
+//     }}
+//     trigger={
+//       <TooltipWrapper tooltip="Устгах">
+//         <Button variant="ghost" size="icon">
+//           <Trash2 className="w-4 h-4 text-red-500" />
+//         </Button>
+//       </TooltipWrapper>
+//     }
+//   />
+// </div>

@@ -3,13 +3,7 @@
 import { DataTable } from "@/components/data-table";
 import { Branch, IUser, User } from "@/models";
 import { useEffect, useMemo, useState } from "react";
-import {
-  ListType,
-  ACTION,
-  PG,
-  DEFAULT_PG,
-  getEnumValues,
-} from "@/lib/constants";
+import { ListType, ACTION, PG, DEFAULT_PG, getEnumValues } from "@/lib/constants";
 import { Modal } from "@/shared/components/modal";
 import z from "zod";
 import { FormProvider, useForm } from "react-hook-form";
@@ -28,20 +22,11 @@ const formSchema = z.object({
   branch_id: z.string().min(1),
   name: z.string().min(1),
   max_price: z
-    .preprocess(
-      (val) => (typeof val === "string" ? parseFloat(val) : val),
-      z.number()
-    )
+    .preprocess((val) => (typeof val === "string" ? parseFloat(val) : val), z.number())
     .nullable()
     .optional() as unknown as number,
-  min_price: z.preprocess(
-    (val) => (typeof val === "string" ? parseFloat(val) : val),
-    z.number()
-  ) as unknown as number,
-  duration: z.preprocess(
-    (val) => (typeof val === "string" ? parseFloat(val) : val),
-    z.number()
-  ) as unknown as number,
+  min_price: z.preprocess((val) => (typeof val === "string" ? parseFloat(val) : val), z.number()) as unknown as number,
+  duration: z.preprocess((val) => (typeof val === "string" ? parseFloat(val) : val), z.number()) as unknown as number,
   edit: z.string().nullable().optional(),
 });
 const defaultValues: UserType = {
@@ -53,13 +38,7 @@ const defaultValues: UserType = {
   edit: undefined,
 };
 type UserType = z.infer<typeof formSchema>;
-export const UserPage = ({
-  data,
-  branches,
-}: {
-  data: ListType<User>;
-  branches: ListType<Branch>;
-}) => {
+export const UserPage = ({ data, branches }: { data: ListType<User>; branches: ListType<Branch> }) => {
   const [action, setAction] = useState(ACTION.DEFAULT);
   const [open, setOpen] = useState<undefined | boolean>(false);
   const form = useForm<UserType>({
@@ -67,10 +46,7 @@ export const UserPage = ({
     defaultValues,
   });
   const [Users, setUsers] = useState<ListType<User> | null>(null);
-  const branchMap = useMemo(
-    () => new Map(branches.items.map((b) => [b.id, b])),
-    [branches.items]
-  );
+  const branchMap = useMemo(() => new Map(branches.items.map((b) => [b.id, b])), [branches.items]);
 
   const UserFormatter = (data: ListType<User>) => {
     const items: User[] = data.items.map((item) => {
@@ -110,7 +86,7 @@ export const UserPage = ({
       page,
       limit,
       sort,
-      role: ROLE.CLIENT
+      role: ROLE.CLIENT,
       //   name: pg.filter,
     }).then((d) => {
       UserFormatter(d);
@@ -122,9 +98,7 @@ export const UserPage = ({
     setAction(ACTION.RUNNING);
     const body = e as UserType;
     const { edit, ...payload } = body;
-    const res = edit
-      ? await updateOne<User>(Api.user, edit ?? "", payload as unknown as User)
-      : await create<User>(Api.user, e as User);
+    const res = edit ? await updateOne<User>(Api.user, edit ?? "", payload as unknown as User) : await create<User>(Api.user, e as User);
     console.log(res);
     if (res.success) {
       refresh();
@@ -140,7 +114,9 @@ export const UserPage = ({
   return (
     <div className="">
       <Modal
-        name={"Бараа нэмэх" + Users?.count}
+        title="Хэрэглэгч нэмэх форм"
+        w="2xl"
+        name={"Хэрэглэгч нэмэх" + Users?.count}
         submit={() => form.handleSubmit(onSubmit, onInvalid)()}
         open={open == true}
         reset={() => {
@@ -151,7 +127,8 @@ export const UserPage = ({
         loading={action == ACTION.RUNNING}
       >
         <FormProvider {...form}>
-          <FormItems control={form.control} name="branch_id">
+         <div className="double-col gap-5">
+           <FormItems label="Салбар" control={form.control} name="branch_id">
             {(field) => {
               return (
                 <ComboBox
@@ -187,33 +164,17 @@ export const UserPage = ({
             const name = item.key as keyof UserType;
             const label = item.label as keyof UserType;
             return (
-              <FormItems
-                control={form.control}
-                name={name}
-                key={i}
-                className={item.key === "name" ? "col-span-2" : ""}
-              >
+              <FormItems label={label} control={form.control} name={name} key={i} className={item.key === "name" ? "col-span-2" : ""}>
                 {(field) => {
-                  return (
-                    <TextField
-                      props={{ ...field }}
-                      type={item.type}
-                      label={label}
-                    />
-                  );
+                  return <TextField props={{ ...field }} type={item.type} label={''} />;
                 }}
               </FormItems>
             );
           })}
+         </div>
         </FormProvider>
       </Modal>
-      <DataTable
-        columns={columns}
-        count={Users?.count}
-        data={Users?.items ?? []}
-        refresh={refresh}
-        loading={action == ACTION.RUNNING}
-      />
+      <DataTable columns={columns} count={Users?.count} data={Users?.items ?? []} refresh={refresh} loading={action == ACTION.RUNNING} />
       {action}
       {/* <ProductDialog
         editingProduct={editingProduct}

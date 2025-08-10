@@ -9,39 +9,21 @@ import { money, parseDate } from "@/lib/functions";
 import { IProductTransaction } from "@/models";
 import { ProductTransactionStatus } from "@/lib/enum";
 import { IService } from "@/models/service.model";
+import { TableActionButtons } from "@/components/tableActionButtons";
 
-export function getColumns(
-  onEdit: (product: IService) => void,
-  remove: (index: number) => Promise<boolean>
-): ColumnDef<IService>[] {
+export function getColumns(onEdit: (product: IService) => void, remove: (index: number) => Promise<boolean>): ColumnDef<IService>[] {
   return [
     {
       id: "select",
-      header: ({ table }) => (
-        <Checkbox
-          checked={table.getIsAllPageRowsSelected()}
-          onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-          aria-label="Select all"
-        />
-      ),
-      cell: ({ row }) => (
-        <Checkbox
-          checked={row.getIsSelected()}
-          onCheckedChange={(value) => row.toggleSelected(!!value)}
-          aria-label="Select row"
-        />
-      ),
+      header: ({ table }) => <Checkbox checked={table.getIsAllPageRowsSelected()} onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)} aria-label="Select all" />,
+      cell: ({ row }) => <Checkbox checked={row.getIsSelected()} onCheckedChange={(value) => row.toggleSelected(!!value)} aria-label="Select row" />,
       enableSorting: false,
       enableHiding: false,
     },
     {
       accessorKey: "branch_name",
       header: ({ column }) => (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          className="font-bold"
-        >
+        <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")} className="font-bold">
           Branch <ArrowUpDown className="w-4 h-4 ml-2" />
         </Button>
       ),
@@ -49,11 +31,7 @@ export function getColumns(
     {
       accessorKey: "name",
       header: ({ column }) => (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          className="font-bold"
-        >
+        <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")} className="font-bold">
           Name <ArrowUpDown className="w-4 h-4 ml-2" />
         </Button>
       ),
@@ -62,11 +40,7 @@ export function getColumns(
     {
       accessorKey: "duration",
       header: ({ column }) => (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          className="font-bold"
-        >
+        <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")} className="font-bold">
           Duration <ArrowUpDown className="w-4 h-4 ml-2" />
         </Button>
       ),
@@ -75,11 +49,7 @@ export function getColumns(
     {
       accessorKey: "min_price",
       header: ({ column }) => (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          className="font-bold"
-        >
+        <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")} className="font-bold">
           Price <ArrowUpDown className="w-4 h-4 ml-2" />
         </Button>
       ),
@@ -88,11 +58,7 @@ export function getColumns(
     {
       accessorKey: "max_price",
       header: ({ column }) => (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          className="font-bold"
-        >
+        <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")} className="font-bold">
           Max Price <ArrowUpDown className="w-4 h-4 ml-2" />
         </Button>
       ),
@@ -101,11 +67,7 @@ export function getColumns(
     {
       accessorKey: "created_at",
       header: ({ column }) => (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          className="font-bold"
-        >
+        <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")} className="font-bold">
           Created <ArrowUpDown className="w-4 h-4 ml-2" />
         </Button>
       ),
@@ -123,31 +85,34 @@ export function getColumns(
       id: "actions",
       header: "Actions",
       cell: ({ row }) => (
-        <div className="flex items-center gap-2">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => onEdit(row.original)}
-          >
-            <Pencil className="w-4 h-4" />
-          </Button>
-
-          <AppAlertDialog
-            title="Итгэлтэй байна уу?"
-            description="Бүр устгана шүү."
-            onConfirm={async () => {
-              const res = await remove(row.index);
-              console.log(res);
-              toast("Амжилттай устгалаа!" + res, {});
-            }}
-            trigger={
-              <Button variant="ghost" size="icon">
-                <Trash2 className="w-4 h-4 text-red-500" />
-              </Button>
-            }
-          />
-        </div>
+        // Bagasgasan
+        <TableActionButtons rowData={row.original} onEdit={(data) => onEdit(data)} onRemove={(data) => remove(row.index)}></TableActionButtons>
       ),
     },
   ];
 }
+
+// <div className="flex items-center gap-2">
+//   <Button
+//     variant="ghost"
+//     size="icon"
+//     onClick={() => onEdit(row.original)}
+//   >
+//     <Pencil className="w-4 h-4" />
+//   </Button>
+
+//   <AppAlertDialog
+//     title="Итгэлтэй байна уу?"
+//     description="Бүр устгана шүү."
+//     onConfirm={async () => {
+//       const res = await remove(row.index);
+//       console.log(res);
+//       toast("Амжилттай устгалаа!" + res, {});
+//     }}
+//     trigger={
+//       <Button variant="ghost" size="icon">
+//         <Trash2 className="w-4 h-4 text-red-500" />
+//       </Button>
+//     }
+//   />
+// </div>

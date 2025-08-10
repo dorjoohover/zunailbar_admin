@@ -78,7 +78,7 @@ export function getColumns(onEdit: (product: IProduct) => void, remove: (index: 
       cell: ({ row }) => 
         
       // Bagasgasan
-      <TableActionButtons rowData={row.original} onEdit={(data) => onEdit(data)} onDelete={(data) => remove(row.index)}></TableActionButtons>,
+      <TableActionButtons rowData={row.original} onEdit={(data) => onEdit(data)} onRemove={(data) => remove(row.index)}></TableActionButtons>,
     },
   ];
 }
