@@ -217,7 +217,7 @@ export const EmployeePage = ({ data, branches }: { data: ListType<User>; branche
                     <>
                       {field.value && (
                         <div className="relative w-32 h-32">
-                          <img src={`/api/file/${field.value}`} alt="preview" className="size-full bg-gray object-cove rounded-md overflow-hidden border" />
+                          <img src={`/api/file/${field.value}`} alt="preview" className="size-full bg-gray object-cover rounded-md overflow-hidden border" />
                         </div>
                       )}
                     </>
