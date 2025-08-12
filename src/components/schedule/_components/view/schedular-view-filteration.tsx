@@ -202,7 +202,7 @@ export default function SchedulerViewFilteration({
             {viewsSelector?.includes("day") && (
               <TabsContent value="day">
                 <AnimatePresence mode="wait">
-                  <motion.div {...animationConfig}>
+                  <motion.div {...(animationConfig as any)}>
                     <DailyView
                       events={orders.items.map(
                         ({ order_date, start_time, end_time, id }) => {
@@ -245,7 +245,7 @@ export default function SchedulerViewFilteration({
             {viewsSelector?.includes("week") && (
               <TabsContent value="week">
                 <AnimatePresence mode="wait">
-                  <motion.div {...animationConfig}>
+                  <motion.div {...(animationConfig as any)}>
                     <WeeklyView
                       classNames={classNames?.buttons}
                       prevButton={
@@ -267,7 +267,7 @@ export default function SchedulerViewFilteration({
             {viewsSelector?.includes("month") && (
               <TabsContent value="month">
                 <AnimatePresence mode="wait">
-                  <motion.div {...animationConfig}>
+                  <motion.div {...(animationConfig as any)}>
                     <MonthView
                       classNames={classNames?.buttons}
                       prevButton={

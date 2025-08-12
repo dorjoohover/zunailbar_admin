@@ -1,10 +1,6 @@
 import { create, updateOne } from "@/app/(api)";
-import {
-  ACTION,
-  CategoryType,
-  CategoryTypeValues,
-  getEnumValues,
-} from "@/lib/constants";
+import { ACTION, CategoryTypeValues, getEnumValues } from "@/lib/constants";
+import { CategoryType } from "@/lib/enum";
 import { IBrand, ICategory } from "@/models";
 import { ComboBox } from "@/shared/components/combobox";
 import { FormItems } from "@/shared/components/form.field";

@@ -18,6 +18,7 @@ import { Input } from "@/components/ui/input";
 import { ILoginUser } from "@/models";
 import { login } from "@/app/(api)/auth";
 import { useRouter } from "next/navigation";
+import { PasswordField } from "@/shared/components/password.field";
 
 const formSchema = z.object({
   mobile: z.string().min(2, {
@@ -59,7 +60,7 @@ export function LoginPage() {
   };
   const onSubmit = async (value: ILoginUser) => {
     const { data, error } = await login(value);
-    console.log(data, error)
+    console.log(data, error);
     save(data.accessToken, data.branch_id, data.merchant_id);
   };
   return (
@@ -87,14 +88,12 @@ export function LoginPage() {
           name="password"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Нууц үг</FormLabel>
-              <FormControl>
-                <Input
-                  placeholder="********"
-                  {...field}
-                  className="bg-white h-10"
-                />
-              </FormControl>
+              <PasswordField
+                props={{ ...field }}
+                className="bg-white h-10"
+                label="Нууц үг"
+              />
+
               <FormMessage />
             </FormItem>
           )}

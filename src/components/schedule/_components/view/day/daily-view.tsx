@@ -333,7 +333,7 @@ export default function DailyView({
         <motion.div
           key={currentDate.toISOString()}
           custom={direction}
-          variants={pageTransitionVariants}
+          variants={pageTransitionVariants as any}
           initial="enter"
           animate="center"
           exit="exit"

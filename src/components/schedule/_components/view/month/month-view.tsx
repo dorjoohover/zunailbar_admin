@@ -216,16 +216,18 @@ export default function MonthView({
         <motion.div
           key={`${currentDate.getFullYear()}-${currentDate.getMonth()}`}
           custom={direction}
-          variants={{
-            ...pageTransitionVariants,
-            center: {
-              ...pageTransitionVariants.center,
-              transition: {
-                opacity: { duration: 0.2 },
-                staggerChildren: 0.02,
+          variants={
+            {
+              ...pageTransitionVariants,
+              center: {
+                ...pageTransitionVariants.center,
+                transition: {
+                  opacity: { duration: 0.2 },
+                  staggerChildren: 0.02,
+                },
               },
-            },
-          }}
+            } as any
+          }
           initial="enter"
           animate="center"
           exit="exit"
