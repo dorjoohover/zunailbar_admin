@@ -180,7 +180,7 @@ export default function AddEventModal({
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button
-                  variant={getButtonVariant(selectedColor)}
+                  variant={getButtonVariant(selectedColor) as any}
                   className="w-fit my-2"
                 >
                   {

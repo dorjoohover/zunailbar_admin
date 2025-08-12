@@ -2,7 +2,7 @@
 
 import { DataTable } from "@/components/data-table";
 import { useEffect, useMemo, useState } from "react";
-import { ListType, ACTION, PG, DEFAULT_PG } from "@/lib/constants";
+import { ListType, ACTION, PG, DEFAULT_PG, ListDefault } from "@/lib/constants";
 import { Modal } from "@/shared/components/modal";
 import z from "zod";
 import { FormProvider, useForm } from "react-hook-form";
@@ -14,7 +14,7 @@ import { ComboBox } from "@/shared/components/combobox";
 import { TextField } from "@/shared/components/text.field";
 import { fetcher } from "@/hooks/fetcher";
 import { getColumns } from "./columns";
-import { Schedule, User } from "@/models";
+import { ISchedule, Schedule, User } from "@/models";
 import { usernameFormatter } from "@/lib/functions";
 import { ScheduleStatus } from "@/lib/enum";
 
@@ -22,11 +22,20 @@ const formSchema = z.object({
   branch_id: z.string().min(1),
   name: z.string().min(1),
   max_price: z
-    .preprocess((val) => (typeof val === "string" ? parseFloat(val) : val), z.number())
+    .preprocess(
+      (val) => (typeof val === "string" ? parseFloat(val) : val),
+      z.number()
+    )
     .nullable()
     .optional() as unknown as number,
-  min_price: z.preprocess((val) => (typeof val === "string" ? parseFloat(val) : val), z.number()) as unknown as number,
-  duration: z.preprocess((val) => (typeof val === "string" ? parseFloat(val) : val), z.number()) as unknown as number,
+  min_price: z.preprocess(
+    (val) => (typeof val === "string" ? parseFloat(val) : val),
+    z.number()
+  ) as unknown as number,
+  duration: z.preprocess(
+    (val) => (typeof val === "string" ? parseFloat(val) : val),
+    z.number()
+  ) as unknown as number,
   edit: z.string().nullable().optional(),
 });
 const defaultValues: PendingScheduleType = {
@@ -38,15 +47,25 @@ const defaultValues: PendingScheduleType = {
   edit: undefined,
 };
 type PendingScheduleType = z.infer<typeof formSchema>;
-export const PendingSchedulePage = ({ data, users }: { data: ListType<Schedule>; users: ListType<User> }) => {
+export const PendingSchedulePage = ({
+  data,
+  users,
+}: {
+  data: ListType<Schedule>;
+  users: ListType<User>;
+}) => {
   const [action, setAction] = useState(ACTION.DEFAULT);
   const [open, setOpen] = useState<undefined | boolean>(false);
   const form = useForm<PendingScheduleType>({
     resolver: zodResolver(formSchema),
     defaultValues,
   });
-  const [pendingSchedules, PendingSchedules] = useState<ListType<Schedule> | null>(null);
-  const userMap = useMemo(() => new Map(users.items.map((b) => [b.id, b])), [users.items]);
+  const [pendingSchedules, PendingSchedules] =
+    useState<ListType<Schedule>>(ListDefault);
+  const userMap = useMemo(
+    () => new Map(users.items.map((b) => [b.id, b])),
+    [users.items]
+  );
 
   const pendingScheduleFormatter = (data: ListType<Schedule>) => {
     const items: Schedule[] = data.items.map((item) => {
@@ -98,7 +117,9 @@ export const PendingSchedulePage = ({ data, users }: { data: ListType<Schedule>;
     setAction(ACTION.RUNNING);
     const body = e as PendingScheduleType;
     const { edit, ...payload } = body;
-    const res = edit ? await updateOne<Schedule>(Api.schedule, edit ?? "", payload as unknown as Schedule) : await create<Schedule>(Api.schedule, e as Schedule);
+    const res = edit
+      ? await updateOne<Schedule>(Api.schedule, edit ?? "", e as Schedule)
+      : await create<Schedule>(Api.schedule, e as Schedule);
     console.log(res);
     if (res.success) {
       refresh();
@@ -162,16 +183,33 @@ export const PendingSchedulePage = ({ data, users }: { data: ListType<Schedule>;
             const name = item.key as keyof PendingScheduleType;
             const label = item.label as keyof PendingScheduleType;
             return (
-              <FormItems control={form.control} name={name} key={i} className={item.key === "name" ? "col-span-2" : ""}>
+              <FormItems
+                control={form.control}
+                name={name}
+                key={i}
+                className={item.key === "name" ? "col-span-2" : ""}
+              >
                 {(field) => {
-                  return <TextField props={{ ...field }} type={item.type} label={label} />;
+                  return (
+                    <TextField
+                      props={{ ...field }}
+                      type={item.type}
+                      label={label}
+                    />
+                  );
                 }}
               </FormItems>
             );
           })}
         </FormProvider>
       </Modal>
-      <DataTable columns={columns} count={pendingSchedules?.count} data={pendingSchedules?.items ?? []} refresh={refresh} loading={action == ACTION.RUNNING} />
+      <DataTable
+        columns={columns}
+        count={pendingSchedules?.count}
+        data={pendingSchedules?.items ?? []}
+        refresh={refresh}
+        loading={action == ACTION.RUNNING}
+      />
       {action}
       {/* <ProductDialog
         editingProduct={editingProduct}
