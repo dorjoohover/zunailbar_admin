@@ -14,7 +14,7 @@ export default async function Page() {
   ]);
   return (
     <section>
-      <ContainerHeader title="Ажилтны чөлөө авах хүсэлт" />
+      <ContainerHeader group="Ажилчид" title="Ажилтны чөлөө авах хүсэлт" />
       <div className="admin-container">
         <PendingSchedulePage data={res.data} users={user.data} />
       </div>

@@ -16,6 +16,8 @@ import { ComboBox } from "@/shared/components/combobox";
 import { TextField } from "@/shared/components/text.field";
 import { fetcher } from "@/hooks/fetcher";
 import { CategoryType } from "@/lib/enum";
+import { toast } from "sonner";
+import { showToast } from "@/shared/components/showToast";
 
 const formSchema = z.object({
   brand_id: z.string().nullable().optional(),
@@ -26,15 +28,7 @@ const formSchema = z.object({
   edit: z.string().nullable().optional(),
 });
 type ProductType = z.infer<typeof formSchema>;
-export const ProductPage = ({
-  data,
-  categories,
-  brands,
-}: {
-  data: ListType<Product>;
-  categories: ListType<Category>;
-  brands: ListType<Brand>;
-}) => {
+export const ProductPage = ({ data, categories, brands }: { data: ListType<Product>; categories: ListType<Category>; brands: ListType<Brand> }) => {
   const [action, setAction] = useState(ACTION.DEFAULT);
   const [open, setOpen] = useState<undefined | boolean>(false);
   const form = useForm<ProductType>({
@@ -75,18 +69,18 @@ export const ProductPage = ({
     setAction(ACTION.RUNNING);
     const body = e as ProductType;
     const { edit, ...payload } = body;
-    const res = edit
-      ? await updateOne<IProduct>(Api.product, edit ?? "", payload as IProduct)
-      : await create<IProduct>(Api.product, e as IProduct);
+    const res = edit ? await updateOne<IProduct>(Api.product, edit ?? "", payload as IProduct) : await create<IProduct>(Api.product, e as IProduct);
     if (res.success) {
       refresh();
       setOpen(false);
       form.reset({});
     }
     setAction(ACTION.DEFAULT);
+    showToast("success", "Амжилттай хадгалагдлаа!");
   };
   const onInvalid = async <T,>(e: T) => {
     console.log("error", e);
+    showToast("error", "Мэдээлэл дутуу байна!");
   };
 
   return (
@@ -107,11 +101,7 @@ export const ProductPage = ({
           <FormProvider {...form}>
             <div className="divide-y">
               <div className="grid grid-cols-2 gap-3 pb-5">
-                <FormItems
-                  control={form.control}
-                  name="category_id"
-                  label="Төрөл"
-                >
+                <FormItems control={form.control} name="category_id" label="Төрөл">
                   {(field) => {
                     console.log(field.value);
                     return (
@@ -161,12 +151,7 @@ export const ProductPage = ({
                   const name = item.key as keyof ProductType;
                   const label = item.label as keyof ProductType;
                   return (
-                    <FormItems
-                      control={form.control}
-                      name={name}
-                      key={i}
-                      className={item.key === "name" ? "col-span-2" : ""}
-                    >
+                    <FormItems control={form.control} name={name} key={i} className={item.key === "name" ? "col-span-2" : ""}>
                       {(field) => {
                         return <TextField props={{ ...field }} label={label} />;
                       }}
@@ -178,13 +163,7 @@ export const ProductPage = ({
           </FormProvider>
         </Modal>
       </div>
-      <DataTable
-        columns={columns}
-        count={products.count}
-        data={products.items}
-        refresh={refresh}
-        loading={action == ACTION.RUNNING}
-      />
+      <DataTable columns={columns} count={products.count} data={products.items} refresh={refresh} loading={action == ACTION.RUNNING} />
     </div>
   );
 };

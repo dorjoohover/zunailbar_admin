@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { useEffect, useRef, useState } from "react";
 import { DEFAULT_LIMIT } from "@/lib/constants";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "./ui/select";
-import { ChevronLeft, ChevronRight, Loader, LoaderCircle } from "lucide-react";
+import { ChevronLeft, ChevronRight, Loader, LoaderCircle, Search } from "lucide-react";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -18,9 +18,10 @@ interface DataTableProps<TData, TValue> {
   count?: number;
   loading?: boolean;
   refresh: <T>({ page, limit, sort, filter }: { page?: number; limit?: number; sort?: boolean; filter?: T }) => void;
+  modalAdd?: React.ReactNode; //
 }
 
-export function DataTable<TData, TValue>({ columns, data, count = 0, limit = DEFAULT_LIMIT, refresh, loading = false }: DataTableProps<TData, TValue>) {
+export function DataTable<TData, TValue>({ columns, data, count = 0, limit = DEFAULT_LIMIT, refresh, loading = false, modalAdd }: DataTableProps<TData, TValue>) {
   const [globalFilter, setGlobalFilter] = useState("");
   const [pagination, setPagination] = useState({
     pageIndex: 0,
@@ -103,9 +104,19 @@ export function DataTable<TData, TValue>({ columns, data, count = 0, limit = DEF
   return (
     <div className="w-full">
       <div className="flex items-center justify-between py-4 ">
-        <Input placeholder="Хайх..." value={globalFilter} onChange={(e) => setGlobalFilter(e.target.value)} className="max-w-sm bg-white border-slate-200" />
-      </div>
+        <div className="flex items-center gap-2">
+          <div className="relative min-w-sm">
+            <Search className="size-5 absolute top-[50%] -translate-y-[50%] left-2 text-slate-600" strokeWidth={2.5} />
+            <Input placeholder="Хайх..." value={globalFilter} onChange={(e) => setGlobalFilter(e.target.value)} className="w-full bg-white border-slate-200 pl-10" />
+          </div>
+        </div>
 
+        {modalAdd && <div> {modalAdd}</div>}
+      </div>
+      <h2 className="space-x-2 my-2 font-bold">
+        Нийт:
+        <span> {count} мөр</span>
+      </h2>
       <div className="overflow-hidden rounded-md border border-slate-200">
         <Table>
           <TableHeader>

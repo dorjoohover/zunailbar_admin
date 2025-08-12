@@ -209,7 +209,7 @@ export const ProductWarehousePage = ({
           setOpen(false);
           form.reset({});
         }}
-        maw="[500px]"
+        maw="xl"
         w="lg"
         setOpen={setOpen}
         loading={action == ACTION.RUNNING}

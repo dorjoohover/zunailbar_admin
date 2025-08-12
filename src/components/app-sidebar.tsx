@@ -2,7 +2,7 @@
 
 import { ChevronUp, LayoutDashboard, ArrowLeftRight, CircleDollarSign, ClipboardCheck, User, Wallet, SquareUserRound, Milk, ShieldUserIcon, ChevronRight, Calendar, UsersRound, UserRound, HandCoins, CalendarRange, CalendarRangeIcon, Banknote } from "lucide-react";
 
-import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarMenuSub, SidebarMenuSubButton, SidebarMenuSubItem } from "@/components/ui/sidebar";
+import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarMenuSub, SidebarMenuSubButton, SidebarMenuSubItem } from "@/components/ui/sidebar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "./ui/dropdown-menu";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
@@ -162,6 +162,7 @@ const items = [
     ],
   },
   {
+    label: "Үндсэн удирдлага",
     title: "Үндсэн",
     url: "",
     icon: Wallet,
@@ -238,7 +239,9 @@ export function AppSidebar() {
                     <SidebarMenuItem className="text-white ">
                       {hasChildren ? (
                         <CollapsibleTrigger asChild>
-                          <SidebarMenuButton asChild isActive={item.url == pathname ? true : false} size={"lg"} className="group-data-[state=open]/collapsible:bg-white/15 group-data-[state=open]/collapsible:hover:bg-white/20 hover:bg-white/20 active:bg-white/20">
+                          {/* group-data-[state=open]/collapsible:bg-white/15  Collapse active uyd bh background*/}
+                          {/* hover:bg-white/20 Active bish uyd hoverdohod */}
+                          <SidebarMenuButton asChild isActive={item.url == pathname ? true : false} size={"lg"} className="active:bg-white/20 hover:bg-white/20">
                             <div>
                               <item.icon />
                               <span>{item.title}</span>
@@ -264,7 +267,7 @@ export function AppSidebar() {
                             <SidebarMenuSub className="w-full" key={i}>
                               <SidebarMenuSubItem className="w-full">
                                 {child.url && (
-                                  <SidebarMenuSubButton asChild className="w-full text-white" isActive={child.url == pathname}>
+                                  <SidebarMenuSubButton asChild className="active:bg-white/20 text-white" isActive={child.url == pathname}>
                                     <Link href={child.url} className={cn(child.url == pathname && "text-sky-600 ", "w-full justify-between px-0")}>
                                       {child.title}
                                     </Link>
@@ -310,7 +313,7 @@ export function AppSidebar() {
           <SidebarMenuItem>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <SidebarMenuButton size={"lg"} className="text-white">
+                <SidebarMenuButton size={"lg"} className="text-white hover:bg-white/20">
                   <ShieldUserIcon /> Админ
                   <ChevronUp className="ml-auto" />
                 </SidebarMenuButton>

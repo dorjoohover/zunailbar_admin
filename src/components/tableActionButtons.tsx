@@ -6,6 +6,7 @@ import TooltipWrapper from "./tooltipWrapper";
 import { toast } from "sonner";
 import { AppAlertDialog } from "./AlertDialog";
 import React, { ReactNode } from "react";
+import { showToast } from "../shared/components/showToast";
 
 interface TableActionButtonsProps<T> {
   rowData: T;
@@ -31,8 +32,23 @@ export function TableActionButtons<T>({ rowData, onEdit, onRemove, children }: T
           title="Итгэлтэй байна уу?"
           description="Бүр устгана шүү."
           onConfirm={async () => {
-            const res = await onRemove(rowData);
-            toast("Амжилттай устгалаа!" + res, {});
+            try {
+              const res = await onRemove(rowData);
+              showToast("success", `Амжилттай устгалаа! ${res}`);
+            } catch (error) {
+              showToast("error", "Устгах явцад алдаа гарлаа");
+            }
+            // const res = await onRemove(rowData);
+            // toast.success(`Амжилттай устгалаа! ${res}`, {
+            //   duration: 3000, // 3 секунд
+            //   position: "bottom-right", // байрлал
+            //   style: {
+            //     fontWeight: "bold",
+            //     borderRadius: "8px",
+            //     padding: "12px 16px",
+            //   },
+            //   icon: "✅",
+            // });
           }}
           trigger={
             <Button variant="ghost" size="icon">
