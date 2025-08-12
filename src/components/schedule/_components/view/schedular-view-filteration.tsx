@@ -194,7 +194,7 @@ export default function SchedulerViewFilteration({
                   variant="default"
                 >
                   <CalendarIcon className="mr-2 h-4 w-4" />
-                  Add Event
+                  Хуваарь нэмэх
                 </Button>
               )}
             </div>

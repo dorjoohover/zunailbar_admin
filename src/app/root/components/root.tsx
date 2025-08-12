@@ -1,10 +1,6 @@
 import { create, updateOne } from "@/app/(api)";
-import {
-  ACTION,
-  CategoryType,
-  CategoryTypeValues,
-  getEnumValues,
-} from "@/lib/constants";
+import { ACTION, CategoryTypeValues, getEnumValues } from "@/lib/constants";
+import { CategoryType } from "@/lib/enum";
 import { IBrand, ICategory } from "@/models";
 import { ComboBox } from "@/shared/components/combobox";
 import { FormItems } from "@/shared/components/form.field";
@@ -87,41 +83,27 @@ export const RootModal = ({ refresh }: { refresh: () => void }) => {
         loading={action == ACTION.RUNNING}
       >
         <FormProvider {...form}>
-          <div className="divide-y">
-            <div className="grid grid-cols-2 gap-3 pb-5"></div>
-            <div className="grid grid-cols-2 gap-3 pt-5">
-              <FormItems
-                control={form.control}
-                name={"category_name"}
-                className={"col-span-1"}
-              >
-                {(field) => {
-                  return (
-                    <TextField props={{ ...field }} label={"Category name"} />
-                  );
-                }}
-              </FormItems>
-              <FormItems
-                label="Төрөл"
-                control={form.control}
-                name="type"
-                className={"col-span-1"}
-              >
-                {(field) => {
-                  return (
-                    <ComboBox
-                      props={{ ...field }}
-                      items={getEnumValues(CategoryType).map((item) => {
-                        return {
-                          value: item.toString(),
-                          label: CategoryTypeValues[item],
-                        };
-                      })}
-                    />
-                  );
-                }}
-              </FormItems>
-            </div>
+          <div className="grid grid-cols-2 gap-3">
+            <FormItems label="Category name" control={form.control} name={"category_name"} className={"col-span-1"}>
+              {(field) => {
+                return <TextField props={{ ...field }} />;
+              }}
+            </FormItems>
+            <FormItems label="Төрөл" control={form.control} name="type" className={"col-span-1"}>
+              {(field) => {
+                return (
+                  <ComboBox
+                    props={{ ...field }}
+                    items={getEnumValues(CategoryType).map((item) => {
+                      return {
+                        value: item.toString(),
+                        label: CategoryTypeValues[item],
+                      };
+                    })}
+                  />
+                );
+              }}
+            </FormItems>
           </div>
         </FormProvider>
       </Modal>
@@ -140,31 +122,23 @@ export const RootModal = ({ refresh }: { refresh: () => void }) => {
         loading={action == ACTION.RUNNING}
       >
         <FormProvider {...form}>
-          <div className="divide-y">
-            <div className="grid grid-cols-2 gap-3 pb-5"></div>
-            <div className="grid grid-cols-2 gap-3 pt-5">
-              {[
-                {
-                  key: "brand_name",
-                  label: "Brand",
-                },
-              ].map((item, i) => {
-                const name = item.key as keyof ParentType;
-                const label = item.label as keyof ParentType;
-                return (
-                  <FormItems
-                    control={form.control}
-                    name={name}
-                    key={i}
-                    className={item.key === "name" ? "col-span-2" : ""}
-                  >
-                    {(field) => {
-                      return <TextField props={{ ...field }} label={label} />;
-                    }}
-                  </FormItems>
-                );
-              })}
-            </div>
+          <div className="grid grid-cols-2 gap-3">
+            {[
+              {
+                key: "brand_name",
+                label: "Brand",
+              },
+            ].map((item, i) => {
+              const name = item.key as keyof ParentType;
+              const label = item.label as keyof ParentType;
+              return (
+                <FormItems control={form.control} name={name} key={i} className={item.key === "name" ? "col-span-2" : ""}>
+                  {(field) => {
+                    return <TextField props={{ ...field }} label={label} />;
+                  }}
+                </FormItems>
+              );
+            })}
           </div>
         </FormProvider>
       </Modal>

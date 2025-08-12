@@ -56,8 +56,6 @@
   --color-system-warning-primary: #ff9800;
   --color-system-warning-secondary: #ff980033;
 
-    --font-size-asd: 5px;
-
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);

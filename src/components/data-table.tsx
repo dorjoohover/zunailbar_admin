@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { useEffect, useRef, useState } from "react";
 import { DEFAULT_LIMIT } from "@/lib/constants";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "./ui/select";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, Loader, LoaderCircle } from "lucide-react";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -119,11 +119,14 @@ export function DataTable<TData, TValue>({ columns, data, count = 0, limit = DEF
           </TableHeader>
           <TableBody>
             {loading ? (
-              <tr>
-                <td colSpan={columns.length} className="text-center py-4">
-                  Уншиж байна...
-                </td>
-              </tr>
+              <TableRow>
+                <TableCell colSpan={columns.length} className="h-24 text-center">
+                  <div className="flex items-center justify-center gap-x-2">
+                    <LoaderCircle className="animate-spin text-slate-700 size-8" />
+                    Уншиж байна
+                  </div>
+                </TableCell>
+              </TableRow>
             ) : table.getRowModel().rows.length ? (
               table.getRowModel().rows.map((row) => (
                 <TableRow key={row.id} data-state={row.getIsSelected() && "selected"}>

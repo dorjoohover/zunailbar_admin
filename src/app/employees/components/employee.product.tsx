@@ -173,7 +173,7 @@ export const EmployeeProductModal = ({ id, clear }: { id?: string; clear: () => 
   return (
     <Modal
       w="lg"
-      maw="lg"
+      maw="3xl"
       open={open === true}
       setOpen={(v) => {
         setOpen(v);

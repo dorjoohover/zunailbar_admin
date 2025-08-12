@@ -140,7 +140,7 @@ export const EmployeeUserServicePage = ({
   return (
     <div className="">
       <Modal
-        name={"Үйлчилгээ нэмэх " + UserServices?.count}
+        name={"Үйлчилгээ нэмэх"}
         submit={() => form.handleSubmit(onSubmit, onInvalid)()}
         open={open == true}
         reset={() => {

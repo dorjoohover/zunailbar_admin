@@ -144,11 +144,11 @@ export default function AddEventModal({
       ) : (
         <>
           <div className="grid gap-2">
-            <Label htmlFor="title">Event Name</Label>
+            <Label htmlFor="title">Үйлдлийн нэр</Label>
             <Input
               id="title"
               {...register("title")}
-              placeholder="Enter event name"
+              placeholder="Үйлдлийн нэр..."
               className={cn(errors.title && "border-red-500")}
             />
             {errors.title && (
@@ -159,11 +159,11 @@ export default function AddEventModal({
           </div>
 
           <div className="grid gap-2">
-            <Label htmlFor="description">Description</Label>
+            <Label htmlFor="description">Тайлбар</Label>
             <Textarea
               id="description"
               {...register("description")}
-              placeholder="Enter event description"
+              placeholder="Дэлгэрэнгүй тайлбар..."
             />
           </div>
 

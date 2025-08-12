@@ -36,9 +36,10 @@ export default async function RootLayout({
 }>) {
   const store = await cookies();
   const token = store.get("token")?.value;
-
+  const defaultOpen = store.get("sidebar_state")?.value === "false"
+  
   return (
-    <SidebarProvider>
+    <SidebarProvider defaultOpen={defaultOpen}>
       <html lang="en">
         <body className={`${geistSans.variable} ${geistMono.variable} antialiased bg-[url(/zu-bg-2.png)]`}>
           <AppSidebar />

@@ -94,7 +94,7 @@ export default function SelectDate({
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Start Date Picker */}
         <div className="space-y-2">
-          <Label htmlFor="startDate">Start Date</Label>
+          <Label htmlFor="startDate">Эхлэх огноо</Label>
           <Popover>
             <PopoverTrigger asChild>
               <Button
@@ -134,7 +134,7 @@ export default function SelectDate({
 
         {/* End Date Picker */}
         <div className="space-y-2">
-          <Label htmlFor="endDate">End Date</Label>
+          <Label htmlFor="endDate">Дуусах огноо</Label>
           <Popover>
             <PopoverTrigger asChild>
               <Button
@@ -176,7 +176,7 @@ export default function SelectDate({
       <div className="flex flex-col gap-4">
         {/* Start Time */}
         <div className="space-y-2">
-          <Label>Start Time</Label>
+          <Label>Эхлэх цаг</Label>
           <div className="flex space-x-2">
             <Select
               value={get12HourFormat(startDate.getHours()).toString()}
@@ -240,13 +240,13 @@ export default function SelectDate({
             </Select>
           </div>
           <div className="text-xs text-muted-foreground">
-            Current time: {format(startDate, "hh:mm a")}
+            Одоогийн цаг: {format(startDate, "hh:mm a")}
           </div>
         </div>
 
         {/* End Time */}
         <div className="space-y-2">
-          <Label>End Time</Label>
+          <Label>Дуусах цаг</Label>
           <div className="flex space-x-2">
             <Select
               value={get12HourFormat(endDate.getHours()).toString()}
@@ -308,9 +308,6 @@ export default function SelectDate({
                 ))}
               </SelectContent>
             </Select>
-          </div>
-          <div className="text-xs text-muted-foreground">
-            Current time: {format(endDate, "hh:mm a")}
           </div>
         </div>
       </div>

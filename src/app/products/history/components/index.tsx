@@ -3,14 +3,7 @@
 import { DataTable } from "@/components/data-table";
 import { IProductLog, Product, ProductLog } from "@/models";
 import { useEffect, useMemo, useState } from "react";
-import {
-  ListType,
-  ACTION,
-  PG,
-  DEFAULT_PG,
-  getEnumValues,
-  getValuesProductLogStatus,
-} from "@/lib/constants";
+import { ListType, ACTION, PG, DEFAULT_PG, getEnumValues, getValuesProductLogStatus } from "@/lib/constants";
 import { Modal } from "@/shared/components/modal";
 import z from "zod";
 import { FormProvider, useForm } from "react-hook-form";
@@ -28,38 +21,15 @@ import { DatePicker } from "@/shared/components/date.picker";
 const formSchema = z.object({
   product_id: z.string().min(1),
 
-  quantity: z.preprocess(
-    (val) => (typeof val === "string" ? parseFloat(val) : val),
-    z.number()
-  ) as unknown as number,
-  price: z.preprocess(
-    (val) => (typeof val === "string" ? parseFloat(val) : val),
-    z.number()
-  ) as unknown as number,
+  quantity: z.preprocess((val) => (typeof val === "string" ? parseFloat(val) : val), z.number()) as unknown as number,
+  price: z.preprocess((val) => (typeof val === "string" ? parseFloat(val) : val), z.number()) as unknown as number,
   currency: z.string().min(1),
-  total_amount: z.preprocess(
-    (val) => (typeof val === "string" ? parseFloat(val) : val),
-    z.number()
-  ) as unknown as number,
-  cargo: z.preprocess(
-    (val) => (typeof val === "string" ? parseFloat(val) : val),
-    z.number()
-  ) as unknown as number,
-  currency_value: z.preprocess(
-    (val) => (typeof val === "string" ? parseFloat(val) : val),
-    z.number()
-  ) as unknown as number,
+  total_amount: z.preprocess((val) => (typeof val === "string" ? parseFloat(val) : val), z.number()) as unknown as number,
+  cargo: z.preprocess((val) => (typeof val === "string" ? parseFloat(val) : val), z.number()) as unknown as number,
+  currency_value: z.preprocess((val) => (typeof val === "string" ? parseFloat(val) : val), z.number()) as unknown as number,
   edit: z.string().nullable().optional(),
-  date: z.preprocess(
-    (val) => (typeof val === "string" ? new Date(val) : val),
-    z.date()
-  ) as unknown as Date,
-  product_log_status: z
-    .preprocess(
-      (val) => (typeof val === "string" ? parseInt(val, 10) : val),
-      z.nativeEnum(ProductLogStatus).nullable()
-    )
-    .optional() as unknown as number,
+  date: z.preprocess((val) => (typeof val === "string" ? new Date(val) : val), z.date()) as unknown as Date,
+  product_log_status: z.preprocess((val) => (typeof val === "string" ? parseInt(val, 10) : val), z.nativeEnum(ProductLogStatus).nullable()).optional() as unknown as number,
 });
 const defaultValues = {
   currency: "CNY",
@@ -67,26 +37,16 @@ const defaultValues = {
   product_log_status: ProductLogStatus.Bought,
 };
 type LogType = z.infer<typeof formSchema>;
-export const ProductHistoryPage = ({
-  data,
-  products,
-}: {
-  data: ListType<ProductLog>;
-  products: ListType<Product>;
-}) => {
+export const ProductHistoryPage = ({ data, products }: { data: ListType<ProductLog>; products: ListType<Product> }) => {
   const [action, setAction] = useState(ACTION.DEFAULT);
   const [open, setOpen] = useState<undefined | boolean>(false);
   const form = useForm<LogType>({
     resolver: zodResolver(formSchema),
     defaultValues,
   });
-  const [transactions, setTransactions] =
-    useState<ListType<IProductLog> | null>(null);
+  const [transactions, setTransactions] = useState<ListType<IProductLog> | null>(null);
 
-  const productMap = useMemo(
-    () => new Map(products.items.map((p) => [p.id, p])),
-    [products.items]
-  );
+  const productMap = useMemo(() => new Map(products.items.map((p) => [p.id, p])), [products.items]);
 
   const logFormatter = (data: ListType<ProductLog>) => {
     const items: IProductLog[] = data.items.map((item) => {
@@ -135,19 +95,11 @@ export const ProductHistoryPage = ({
     let { edit, cargo, ...payload } = body;
     payload = {
       ...payload,
-      price: Math.round(
-        +(payload.total_amount ?? 0) / +(payload.quantity ?? 1)
-      ),
+      price: Math.round(+(payload.total_amount ?? 0) / +(payload.quantity ?? 1)),
       total_amount: Math.round(+(payload.total_amount ?? 0)),
     };
 
-    const res = edit
-      ? await updateOne<IProductLog>(
-          Api.product_log,
-          edit ?? "",
-          payload as unknown as IProductLog
-        )
-      : await create<IProductLog>(Api.product_log, payload as IProductLog);
+    const res = edit ? await updateOne<IProductLog>(Api.product_log, edit ?? "", payload as unknown as IProductLog) : await create<IProductLog>(Api.product_log, payload as IProductLog);
     if (res.success) {
       refresh();
       setOpen(false);
@@ -164,9 +116,7 @@ export const ProductHistoryPage = ({
   const cargo = form.watch("cargo") ?? 0;
 
   useEffect(() => {
-    const total =
-      (Number(qty) || 0) * (Number(price) || 0) * +(currency ?? 500) +
-      +(cargo ?? 0);
+    const total = (Number(qty) || 0) * (Number(price) || 0) * +(currency ?? 500) + +(cargo ?? 0);
     form.setValue("total_amount", total, {
       shouldValidate: true,
       shouldDirty: true,
@@ -175,7 +125,9 @@ export const ProductHistoryPage = ({
   return (
     <div className="">
       <Modal
-        title="Барааны түүх форм"
+        w="2xl"
+        maw="2xl"
+        title="Барааны худалдаж авсан түүх форм"
         name={"Нэмэх"}
         submit={() => form.handleSubmit(onSubmit, onInvalid)()}
         open={open == true}
@@ -204,11 +156,7 @@ export const ProductHistoryPage = ({
                   );
                 }}
               </FormItems>
-              <FormItems
-                label="Төлөв"
-                control={form.control}
-                name="product_log_status"
-              >
+              <FormItems label="Төлөв" control={form.control} name="product_log_status">
                 {(field) => {
                   return (
                     <ComboBox
@@ -265,46 +213,23 @@ export const ProductHistoryPage = ({
                 const name = item.key as keyof LogType;
                 const label = item.label as keyof LogType;
                 return (
-                  <FormItems
-                    control={form.control}
-                    name={name}
-                    key={i}
-                    className={item.key === "name" ? "col-span-2" : ""}
-                  >
+                  <FormItems control={form.control} name={name} key={i} className={item.key === "name" ? "col-span-2" : ""}>
                     {(field) => {
-                      return (
-                        <TextField
-                          props={{ ...field }}
-                          type={item.type}
-                          label={label}
-                        />
-                      );
+                      return <TextField props={{ ...field }} type={item.type} label={label} />;
                     }}
                   </FormItems>
                 );
               })}
               <FormItems control={form.control} name="date">
                 {(field) => {
-                  return (
-                    <DatePicker
-                      name="Огноо"
-                      pl="Огноо сонгох"
-                      props={{ ...field }}
-                    />
-                  );
+                  return <DatePicker name="Огноо" pl="Огноо сонгох" props={{ ...field }} />;
                 }}
               </FormItems>
             </div>
           </div>
         </FormProvider>
       </Modal>
-      <DataTable
-        columns={columns}
-        count={transactions?.count}
-        data={transactions?.items ?? []}
-        refresh={refresh}
-        loading={action == ACTION.RUNNING}
-      />
+      <DataTable columns={columns} count={transactions?.count} data={transactions?.items ?? []} refresh={refresh} loading={action == ACTION.RUNNING} />
     </div>
   );
 };

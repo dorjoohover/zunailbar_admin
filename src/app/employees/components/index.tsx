@@ -145,7 +145,8 @@ export const EmployeePage = ({
   return (
     <div className="w-full relative">
       <Modal
-        w="2xl"
+        w="3xl"
+        maw="3xl"
         submit={() => {
           form.handleSubmit(onSubmit, onInvalid)();
         }}
