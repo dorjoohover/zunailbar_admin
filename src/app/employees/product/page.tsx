@@ -10,7 +10,7 @@ export default async function EmployeesPage() {
   ]);
   return (
     <section>
-      <ContainerHeader title="Олгосон бүтээгдэхүүн харах" />
+      <ContainerHeader title="Ажилчдад олгосон бүтээгдэхүүн" />
       <div className="admin-container">
         <EmployeeProductPage
           data={userProductRes.data}

@@ -46,6 +46,7 @@
   /* Brand */
   --color-brand: #1e293b;
   --color-brand-blue: #1a80f8;
+  --color-active: #eff5fe;
 
   /* System colors */
   --color-system-success-primary: #2cb59e;
@@ -122,12 +123,14 @@
   --chart-3: oklch(0.398 0.07 227.392);
   --chart-4: oklch(0.828 0.189 84.429);
   --chart-5: oklch(0.769 0.188 70.08);
-  --sidebar: #ffffff;
+  /* --sidebar: #1e293b; */
+  /* --sidebar: #fafafa; */
   --sidebar-foreground: #1e293b;
   --sidebar-primary: #1e293b;
   --sidebar-primary-foreground: oklch(0.985 0 0);
   --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: #1e293b;
+  /* --sidebar-accent-foreground: #1e293b; */
+  --sidebar-accent-foreground: #ffffff;
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
 
@@ -157,7 +160,7 @@
   --chart-3: oklch(0.769 0.188 70.08);
   --chart-4: oklch(0.627 0.265 303.9);
   --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: #1e293b;
+  /* --sidebar: #1e293b; */
   /* --sidebar-foreground: oklch(0.985 0 0); */
   --sidebar-foreground: oklch(0.985 0 0);
   --sidebar-primary: oklch(0.488 0.243 264.376);

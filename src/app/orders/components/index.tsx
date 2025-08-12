@@ -150,7 +150,7 @@ export const OrderPage = ({
   };
 
   return (
-    <div className="">
+    <div className="w-full">
       <SchedulerProvider weekStartsOn="monday">
         {JSON.stringify(orders)}
         <SchedulerViewFilteration orders={orders} />

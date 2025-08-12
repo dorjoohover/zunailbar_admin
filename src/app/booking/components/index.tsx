@@ -181,7 +181,7 @@ export const BookingPage = ({
   return (
     <div className="">
       <Modal
-        w="5xl"
+        w="3xl"
         name={"Бараа нэмэх" + bookings?.count}
         submit={() => form.handleSubmit(onSubmit, onInvalid)()}
         open={open == true}

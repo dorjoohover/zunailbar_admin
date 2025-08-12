@@ -170,6 +170,7 @@ export const ProductTransactionPage = ({
   return (
     <div className="">
       <Modal
+      w="2xl"
         title="Барааны хэрэглээ"
         name={"Бараа нэмэх" + transactions?.count}
         submit={() => form.handleSubmit(onSubmit, onInvalid)()}

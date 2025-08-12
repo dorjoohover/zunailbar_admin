@@ -185,12 +185,6 @@ export const ProductPage = ({
         refresh={refresh}
         loading={action == ACTION.RUNNING}
       />
-      {action}
-      {/* <ProductDialog
-        editingProduct={editingProduct}
-        onChange={onChange}
-        save={handleSave}
-      /> */}
     </div>
   );
 };

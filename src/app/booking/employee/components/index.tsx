@@ -184,7 +184,7 @@ export const SchedulePage = ({
   return (
     <div className="">
       <Modal
-        w="[1000px]"
+        w="3xl"
         name={"Бараа нэмэх" + schedules?.count}
         submit={() => form.handleSubmit(onSubmit, onInvalid)()}
         open={open == true}

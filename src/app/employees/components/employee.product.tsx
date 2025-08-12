@@ -172,7 +172,8 @@ export const EmployeeProductModal = ({ id, clear }: { id?: string; clear: () => 
   // const paginationRange = getPaginationRange(page + 1, totalPages);
   return (
     <Modal
-      w="5xl  "
+      w="lg"
+      maw="lg"
       open={open === true}
       setOpen={(v) => {
         setOpen(v);
