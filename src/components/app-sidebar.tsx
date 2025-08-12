@@ -1,16 +1,57 @@
 "use client";
 
-import { ChevronUp, LayoutDashboard, ArrowLeftRight, CircleDollarSign, ClipboardCheck, User, Wallet, SquareUserRound, Milk, ShieldUserIcon, ChevronRight, Calendar, UsersRound, UserRound, HandCoins, CalendarRange, CalendarRangeIcon, Banknote } from "lucide-react";
+import {
+  ChevronUp,
+  LayoutDashboard,
+  ArrowLeftRight,
+  CircleDollarSign,
+  ClipboardCheck,
+  User,
+  Wallet,
+  SquareUserRound,
+  Milk,
+  ShieldUserIcon,
+  ChevronRight,
+  Calendar,
+  UsersRound,
+  UserRound,
+  HandCoins,
+  CalendarRange,
+  CalendarRangeIcon,
+  Banknote,
+} from "lucide-react";
 
-import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarMenuSub, SidebarMenuSubButton, SidebarMenuSubItem } from "@/components/ui/sidebar";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "./ui/dropdown-menu";
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarHeader,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarMenuSub,
+  SidebarMenuSubButton,
+  SidebarMenuSubItem,
+} from "@/components/ui/sidebar";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "./ui/dropdown-menu";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 
 import { useSidebarStore } from "@/stores/sidebar.store";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "./ui/collapsible";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "./ui/collapsible";
 
 // Menu items.
 const items = [
@@ -208,16 +249,29 @@ export function AppSidebar() {
   };
   const { value, setValue } = useSidebarStore();
   // const [openIndex, setOpenIndex] = useState(null)
-
+  if (pathname == "/login") return;
   return (
-    <Sidebar variant="inset" collapsible="icon" className="fixed top-0 backdrop-blur-3xl">
+    <Sidebar
+      variant="inset"
+      collapsible="icon"
+      className="fixed top-0 backdrop-blur-3xl"
+    >
       {/* <SidebarTrigger className="absolute top-1.5 -right-8 z-50" /> */}
       {/* Header */}
       <SidebarHeader className="border-b border-slate-600">
         <SidebarMenu>
           <SidebarMenuItem className="flex items-center gap-2">
-            <SidebarMenuButton size={"logo"} className="pointer-events-none px-0 py-2 text-white">
-              <Image src={"/logo.png"} alt="logo" width={40} height={40} className="rounded-lg object-cover" />
+            <SidebarMenuButton
+              size={"logo"}
+              className="pointer-events-none px-0 py-2 text-white"
+            >
+              <Image
+                src={"/logo.png"}
+                alt="logo"
+                width={40}
+                height={40}
+                className="rounded-lg object-cover"
+              />
               <span className="font-bold">Zu Nailbar</span>
             </SidebarMenuButton>
           </SidebarMenuItem>
@@ -238,7 +292,12 @@ export function AppSidebar() {
                     <SidebarMenuItem className="text-white ">
                       {hasChildren ? (
                         <CollapsibleTrigger asChild>
-                          <SidebarMenuButton asChild isActive={item.url == pathname ? true : false} size={"lg"} className="group-data-[state=open]/collapsible:bg-white/15 group-data-[state=open]/collapsible:hover:bg-white/20 hover:bg-white/20 active:bg-white/20">
+                          <SidebarMenuButton
+                            asChild
+                            isActive={item.url == pathname ? true : false}
+                            size={"lg"}
+                            className="group-data-[state=open]/collapsible:bg-white/15 group-data-[state=open]/collapsible:hover:bg-white/20 hover:bg-white/20 active:bg-white/20"
+                          >
                             <div>
                               <item.icon />
                               <span>{item.title}</span>
@@ -250,8 +309,18 @@ export function AppSidebar() {
                           </SidebarMenuButton>
                         </CollapsibleTrigger>
                       ) : (
-                        <SidebarMenuButton asChild size="lg" isActive={item.url === pathname ? true : false} className="hover:bg-white/20">
-                          <Link href={item.url} className={cn(item.url === pathname && "text-sky-600")}>
+                        <SidebarMenuButton
+                          asChild
+                          size="lg"
+                          isActive={item.url === pathname ? true : false}
+                          className="hover:bg-white/20"
+                        >
+                          <Link
+                            href={item.url}
+                            className={cn(
+                              item.url === pathname && "text-sky-600"
+                            )}
+                          >
                             <item.icon />
                             <span>{item.title}</span>
                           </Link>
@@ -264,8 +333,19 @@ export function AppSidebar() {
                             <SidebarMenuSub className="w-full" key={i}>
                               <SidebarMenuSubItem className="w-full">
                                 {child.url && (
-                                  <SidebarMenuSubButton asChild className="w-full text-white" isActive={child.url == pathname}>
-                                    <Link href={child.url} className={cn(child.url == pathname && "text-sky-600 ", "w-full justify-between px-0")}>
+                                  <SidebarMenuSubButton
+                                    asChild
+                                    className="w-full text-white"
+                                    isActive={child.url == pathname}
+                                  >
+                                    <Link
+                                      href={child.url}
+                                      className={cn(
+                                        child.url == pathname &&
+                                          "text-sky-600 ",
+                                        "w-full justify-between px-0"
+                                      )}
+                                    >
                                       {child.title}
                                     </Link>
                                   </SidebarMenuSubButton>
@@ -315,7 +395,10 @@ export function AppSidebar() {
                   <ChevronUp className="ml-auto" />
                 </SidebarMenuButton>
               </DropdownMenuTrigger>
-              <DropdownMenuContent side="top" className="w-[--radix-popper-anchor-width]">
+              <DropdownMenuContent
+                side="top"
+                className="w-[--radix-popper-anchor-width]"
+              >
                 <DropdownMenuItem>
                   <span>Profile</span>
                 </DropdownMenuItem>
