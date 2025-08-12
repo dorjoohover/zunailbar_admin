@@ -5,7 +5,7 @@ import { API, METHOD } from "@/utils/api";
 
 export const login = async (dto: ILoginUser) => {
   try {
-    console.log(API.login)
+    console.log(API.login);
     const res = await fetch(`${API.login}`, {
       cache: "no-store",
       method: METHOD.post,
@@ -14,6 +14,7 @@ export const login = async (dto: ILoginUser) => {
       },
       body: JSON.stringify(dto),
     });
+    console.log(res);
     const data = await res.json();
     if (!res.ok)
       return {

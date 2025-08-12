@@ -8,7 +8,9 @@ export const logout = async () => {
     store.delete("token");
     store.delete("merchant_id");
     store.delete("branch_id");
-    return NextResponse.redirect(new URL("/login"));
+    return NextResponse.redirect(
+      new URL("/", process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000")
+    );
   } catch (error) {
     console.log(error);
   }
