@@ -109,6 +109,7 @@ export const ProductTransactionPage = ({ data, users, branches, products }: { da
   return (
     <div className="">
       <Modal
+      w="2xl"
         title="Барааны хэрэглээ"
         name={"Бараа нэмэх" + transactions?.count}
         submit={() => form.handleSubmit(onSubmit, onInvalid)()}
@@ -187,9 +188,9 @@ export const ProductTransactionPage = ({ data, users, branches, products }: { da
               const name = item.key as keyof TransactionType;
               const label = item.label as keyof TransactionType;
               return (
-                <FormItems control={form.control} name={name} key={i} className={item.key === "name" ? "col-span-2" : ""}>
+                <FormItems label={label} control={form.control} name={name} key={i} className={item.key === "name" ? "col-span-2" : ""}>
                   {(field) => {
-                    return <TextField props={{ ...field }} type={item.type} label={label} />;
+                    return <TextField props={{ ...field }} type={item.type} />;
                   }}
                 </FormItems>
               );

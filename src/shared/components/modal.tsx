@@ -24,7 +24,7 @@ export const Modal = ({
   open,
   setOpen,
   loading,
-  w = "sm",
+  w = "md",
   reset,
 }: {
   name?: string;
@@ -60,7 +60,7 @@ export const Modal = ({
           </Button>
         </DialogTrigger>
       )}
-      <DialogContent className={`lg:max-w-${w}`}>
+      <DialogContent className={`max-w-${w}`}>
         <DialogHeader className="mb-3">
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription>{description}</DialogDescription>

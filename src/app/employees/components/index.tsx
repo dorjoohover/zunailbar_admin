@@ -266,7 +266,7 @@ export const EmployeePage = ({
                             <img
                               src={`/api/file/${field.value}`}
                               alt="preview"
-                              className="size-full bg-gray object-cove rounded-md overflow-hidden border"
+                              className="size-full bg-gray object-cover rounded-md overflow-hidden border"
                             />
                           </div>
                         )}

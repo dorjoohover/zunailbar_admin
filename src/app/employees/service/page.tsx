@@ -14,7 +14,7 @@ export default async function Page() {
   ]);
   return (
     <section>
-      <ContainerHeader title="Ажилчдын үйлчилгээ" />
+      <ContainerHeader title="Ажилтны хийдэг үйлчилгээ" />
       <div className="admin-container">
         <EmployeeUserServicePage
           data={res.data}
