@@ -1,6 +1,6 @@
 export interface IBrand {
   id?: string;
-  name?: string;
+  name: string;
   created_at?: Date;
 }
 export interface Brand {

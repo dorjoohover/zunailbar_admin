@@ -140,7 +140,7 @@ export const BookingPage = ({
     ).then((d) => {
       bookingFormatter(d);
     });
-    setAction(ACTION.DEFAULT);
+  setAction(ACTION.DEFAULT);
   };
   const onSubmit = async <T,>(e: T) => {
     let lastDate = lastBooking ? new Date(lastBooking?.date) : new Date();

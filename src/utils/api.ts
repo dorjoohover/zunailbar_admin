@@ -10,7 +10,7 @@ const BASE = process.env.API
     ? process.env.API
     : process.env.API + "/"
   : "http://localhost:4000/api/v1/";
-// : "http://srv654666.hstgr.cloud:4000/api/v1/";
+// : "https://srv952218.hstgr.cloud/api/v1/";
 
 export enum Api {
   login = "login",
@@ -19,6 +19,7 @@ export enum Api {
   user = "user",
   user_product = "user_product",
   branch = "branch",
+  discount = "discount",
   file = "file",
   category = "category",
   service = "service",
@@ -27,9 +28,12 @@ export enum Api {
   voucher = "voucher",
   user_service = "user_service",
   product = "product",
+  cost = "cost",
   product_transaction = "product_transaction",
   product_transaction_admin = "product_transaction_admin",
   product_log = "product_log",
+  product_warehouse = "product_warehouse",
+  warehouse = "warehouse",
   brand = "brand",
   upload = "upload",
 }
@@ -37,7 +41,11 @@ export enum Api {
 export const API = {
   [Api.login]: BASE + "login",
   [Api.order]: BASE + "order",
+  [Api.discount]: BASE + "discount",
   [Api.register]: BASE + "register",
+  [Api.warehouse]: BASE + "warehouse",
+  [Api.product_warehouse]: BASE + "product_warehouse",
+  [Api.cost]: BASE + "cost",
   [Api.user]: BASE + "user",
   [Api.product]: BASE + "product",
   [Api.booking]: BASE + "booking",

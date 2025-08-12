@@ -1,0 +1,138 @@
+"use client";
+
+import { DataTable } from "@/components/data-table";
+import {
+  ListType,
+  ACTION,
+  PG,
+  DEFAULT_PG,
+  getEnumValues,
+} from "@/lib/constants";
+import { Modal } from "@/shared/components/modal";
+import z from "zod";
+import { FormProvider, useFieldArray, useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Api } from "@/utils/api";
+import { create, deleteOne, search, updateOne } from "@/app/(api)";
+import { FormItems } from "@/shared/components/form.field";
+import { ComboBox } from "@/shared/components/combobox";
+import { TextField } from "@/shared/components/text.field";
+import { fetcher } from "@/hooks/fetcher";
+import { getColumns } from "./columns";
+import { useState } from "react";
+import { Warehouse, IWarehouse } from "@/models";
+
+const formSchema = z.object({
+  name: z.string().min(1),
+  edit: z.string().nullable().optional(),
+});
+const defaultValues = {
+  name: "",
+  edit: undefined,
+};
+type WarehouseType = z.infer<typeof formSchema>;
+export const ProductWarehousePage = ({
+  data,
+}: {
+  data: ListType<Warehouse>;
+}) => {
+  const [action, setAction] = useState(ACTION.DEFAULT);
+  const [open, setOpen] = useState<undefined | boolean>(false);
+  const form = useForm<WarehouseType>({
+    resolver: zodResolver(formSchema),
+    defaultValues,
+  });
+  const [categories, setCategories] = useState<ListType<Warehouse>>(data);
+
+  const deleteLog = async (index: number) => {
+    const id = categories!.items[index].id;
+    const res = await deleteOne(Api.warehouse, id);
+    refresh();
+    return res.success;
+  };
+  const edit = async (e: IWarehouse) => {
+    setOpen(true);
+    form.reset({ ...e, edit: e.id });
+  };
+  const columns = getColumns(edit, deleteLog);
+
+  const refresh = async (pg: PG = DEFAULT_PG) => {
+    setAction(ACTION.RUNNING);
+    const { page, limit, sort } = pg;
+    await fetcher<Warehouse>(Api.warehouse, {
+      page,
+      limit,
+      sort,
+      //   name: pg.filter,
+    }).then((d) => {
+      setCategories(d);
+    });
+    setAction(ACTION.DEFAULT);
+  };
+  const onSubmit = async <T,>(e: T) => {
+    setAction(ACTION.RUNNING);
+    const body = e as WarehouseType;
+    const { edit, ...payload } = body;
+
+    const res = edit
+      ? await updateOne<Warehouse>(
+          Api.warehouse,
+          edit ?? "",
+          payload as unknown as Warehouse
+        )
+      : await create<Warehouse>(Api.warehouse, e as Warehouse);
+    if (res.success) {
+      refresh();
+      setOpen(false);
+      form.reset({});
+    }
+    setAction(ACTION.DEFAULT);
+  };
+  const onInvalid = async <T,>(e: T) => {
+    console.log("error", e);
+  };
+
+  return (
+    <div className="">
+      <Modal
+        title="Warehouse форм"
+        name={"Нэмэх"}
+        submit={() => form.handleSubmit(onSubmit, onInvalid)()}
+        open={open == true}
+        reset={() => {
+          setOpen(false);
+          form.reset({});
+        }}
+        setOpen={(v) => setOpen(v)}
+        loading={action == ACTION.RUNNING}
+      >
+        <FormProvider {...form}>
+          <div className="divide-y">
+            <div className="grid grid-cols-2 gap-3 pb-5"></div>
+            <div className="grid grid-cols-2 gap-3 pt-5">
+              <FormItems
+                control={form.control}
+                name={"name"}
+                className={"col-span-1"}
+              >
+                {(field) => {
+                  return (
+                    <TextField props={{ ...field }} label={"Warehouse name"} />
+                  );
+                }}
+              </FormItems>
+            </div>
+          </div>
+        </FormProvider>
+      </Modal>
+      <DataTable
+        columns={columns}
+        count={categories?.count}
+        data={categories?.items ?? []}
+        refresh={refresh}
+        loading={action == ACTION.RUNNING}
+      />
+      {action}
+    </div>
+  );
+};

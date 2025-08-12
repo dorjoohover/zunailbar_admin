@@ -3,11 +3,12 @@ import { find } from "../(api)";
 import { ProductPage } from "./components";
 import { Brand, Category, Product } from "@/models";
 import ContainerHeader from "@/components/containerHeader";
+import { CategoryType } from "@/lib/enum";
 
 export default async function Page() {
   const [res, category, brand] = await Promise.all([
-    find<Product>(Api.product),
-    find<Category>(Api.category, { isCost: false, limit: -1 }),
+    find<Product>(Api.product, { type: CategoryType.DEFAULT }),
+    find<Category>(Api.category, { limit: -1, type: CategoryType.DEFAULT }),
     find<Brand>(Api.brand, { limit: -1 }),
   ]);
   return (

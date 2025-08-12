@@ -50,6 +50,14 @@ export function getDayName(dayNumber: number): string {
 
   return days[dayNumber] || "";
 }
+
+export const mnDate = (now = new Date()): Date => {
+  const mongoliaTime = new Date(
+    now.toLocaleString("en-US", { timeZone: "Asia/Ulaanbaatar" })
+  );
+  return mongoliaTime;
+};
+
 export function getDayNameWithDate(
   dayNumber: number,
   date: Date
@@ -89,6 +97,10 @@ export function getDayNameWithDate(
 }
 export const numberArray = (count: number) => {
   return Array.from({ length: count }, (_, i) => i + 1);
+};
+
+export const checkEmpty = (value?: string) => {
+  return value || value != "" ? value : "Хоосон";
 };
 
 export const changeValue = (
@@ -149,7 +161,7 @@ export function paginationToQuery(
   // Other filters
   Object.entries(filtersOnly).forEach(([key, value]) => {
     if (value !== undefined && value !== null) {
-      params.append(key, String(value == "" ? "" : value));
+      params.append(key, String(value));
     }
   });
 

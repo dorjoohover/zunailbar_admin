@@ -1,5 +1,8 @@
 import { Crown, Shield, User2 } from "lucide-react";
 import {
+  CategoryType,
+  CostStatus,
+  DISCOUNT,
   ProductLogStatus,
   ProductTransactionStatus,
   ROLE,
@@ -117,10 +120,18 @@ export function getEnumValues<T extends Record<string, string | number>>(
 
 export const getValuesUserProductStatus = {
   [UserProductStatus.Active]: "Active",
-  [UserProductStatus.Damaged]: ".Damaged",
-  [UserProductStatus.Lost]: ".Lost",
-  [UserProductStatus.Replaced]: ".Replaced",
-  [UserProductStatus.Returned]: ".Returned",
+  [UserProductStatus.Damaged]: "Damaged",
+  [UserProductStatus.Lost]: "Lost",
+  [UserProductStatus.Replaced]: "Replaced",
+  [UserProductStatus.Returned]: "Returned",
+};
+export const getValuesCostStatus = {
+  [CostStatus.Paid]: "Төлсөн",
+  [CostStatus.Remainder]: "Үлдэгдэлтэй",
+};
+export const getValueDiscount = {
+  [DISCOUNT.Percent]: "Хувиар",
+  [DISCOUNT.Price]: "Үнээр",
 };
 
 export const getValuesProductTransactionStatus = {
@@ -131,5 +142,11 @@ export const getValuesProductTransactionStatus = {
 export const getValuesProductLogStatus = {
   [ProductLogStatus.Bought]: "Худалдаж авсан",
   [ProductLogStatus.Remainder]: "Үлдэгдэлтэй",
+  // [ProductLogStatus.Damaged]: "Эвдэрсэн",
+};
+
+export const CategoryTypeValues = {
+  [CategoryType.DEFAULT]: "Default",
+  [CategoryType.COST]: "Хэрэглээний зардал",
   // [ProductLogStatus.Damaged]: "Эвдэрсэн",
 };

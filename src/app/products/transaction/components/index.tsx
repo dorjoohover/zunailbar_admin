@@ -214,6 +214,25 @@ export const ProductTransactionPage = ({
               }}
             </FormItems>
             <FormItems
+              label="Бүтээгдэхүүн"
+              control={form.control}
+              name="product_id"
+            >
+              {(field) => {
+                return (
+                  <ComboBox
+                    props={{ ...field }}
+                    items={products.items.map((item) => {
+                      return {
+                        value: item.id,
+                        label: item.name,
+                      };
+                    })}
+                  />
+                );
+              }}
+            </FormItems>
+            <FormItems
               label="Төлөв"
               control={form.control}
               name="product_transaction_status"

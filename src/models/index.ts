@@ -11,6 +11,8 @@ export * from "./salary.log.model";
 export * from "./schedule.model";
 export * from "./user.product.model";
 export * from "./user.service.model";
-export * from './product.log.model'
-export * from './voucher.model'
-export * from './service.model'
+export * from "./product.log.model";
+export * from "./voucher.model";
+export * from "./service.model";
+export * from "./warehouse";
+export * from "./product.warehouse.model";

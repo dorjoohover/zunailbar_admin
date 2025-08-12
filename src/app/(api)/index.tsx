@@ -20,9 +20,7 @@ export const find = async <T,>(
       ...defaultPagination,
       ...p,
     };
-
     const url = paginationToQuery(uri, merged, route);
-
     const res = await fetch(url, {
       cache: "no-store",
       headers: {

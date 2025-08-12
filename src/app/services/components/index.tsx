@@ -126,13 +126,14 @@ export const ServicePage = ({
     setAction(ACTION.DEFAULT);
   };
   const onInvalid = async <T,>(e: T) => {
-    alert(e)
+    alert(e);
     console.log("error", e);
   };
 
   return (
     <div className="">
       <Modal
+        w="2xl"
         title="Үйлчилгээ жагсаалт форм"
         name={"Бараа нэмэх" + services?.count}
         submit={() => form.handleSubmit(onSubmit, onInvalid)()}
@@ -189,19 +190,14 @@ export const ServicePage = ({
               const label = item.label as keyof ServiceType;
               return (
                 <FormItems
+                  label={label}
                   control={form.control}
                   name={name}
                   key={i}
                   className={item.key === "name" ? "col-span-2" : ""}
                 >
                   {(field) => {
-                    return (
-                      <TextField
-                        props={{ ...field }}
-                        type={item.type}
-                        label={label}
-                      />
-                    );
+                    return <TextField props={{ ...field }} type={item.type} />;
                   }}
                 </FormItems>
               );
@@ -216,12 +212,6 @@ export const ServicePage = ({
         refresh={refresh}
         loading={action == ACTION.RUNNING}
       />
-      {action}
-      {/* <ProductDialog
-        editingProduct={editingProduct}
-        onChange={onChange}
-        save={handleSave}
-      /> */}
     </div>
   );
 };

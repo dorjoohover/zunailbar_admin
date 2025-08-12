@@ -12,61 +12,30 @@ import { Hammer } from "lucide-react";
 
 import { searchProduct } from "@/app/(api)/product";
 import { fetcher } from "@/hooks/fetcher";
-import {
-  ACTION,
-  DEFAULT_PG,
-  PG,
-  ListType,
-  SearchType,
-  DEFAULT_LIMIT,
-} from "@/lib/constants";
+import { ACTION, DEFAULT_PG, PG, ListType, SearchType, DEFAULT_LIMIT } from "@/lib/constants";
 import { UserProductStatus } from "@/lib/enum";
 import { IUserProduct, Product, UserProduct } from "@/models";
 import { API, Api } from "@/utils/api";
 import { create, search } from "@/app/(api)";
 import { toast } from "sonner";
 import { Modal } from "@/shared/components/modal";
-import {
-  Pagination,
-  PaginationContent,
-  PaginationEllipsis,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/components/ui/pagination";
+import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
 import { getPaginationRange } from "@/lib/functions";
 
 const productItemSchema = z.object({
-  quantity: z.preprocess(
-    (val) => (typeof val === "string" ? parseFloat(val) : val),
-    z.number().nullable()
-  ) as unknown as number,
+  quantity: z.preprocess((val) => (typeof val === "string" ? parseFloat(val) : val), z.number().nullable()) as unknown as number,
   product_id: z.string().min(1, "Бүтээгдэхүүн заавал сонгоно").nullable(),
-  status: z
-    .preprocess(
-      (val) => (typeof val === "string" ? parseInt(val, 10) : val),
-      z.nativeEnum(UserProductStatus).nullable()
-    )
-    .optional() as unknown as number,
+  status: z.preprocess((val) => (typeof val === "string" ? parseInt(val, 10) : val), z.nativeEnum(UserProductStatus).nullable()).optional() as unknown as number,
 });
 
 const formSchema = z.object({
   compare: z.boolean(),
-  products: z
-    .array(productItemSchema)
-    .min(1, "Хамгийн багадаа 1 бүтээгдэхүүн нэмнэ"),
+  products: z.array(productItemSchema).min(1, "Хамгийн багадаа 1 бүтээгдэхүүн нэмнэ"),
 });
 
 type UserProductType = z.infer<typeof formSchema>;
 
-export const EmployeeProductModal = ({
-  id,
-  clear,
-}: {
-  id?: string;
-  clear: () => void;
-}) => {
+export const EmployeeProductModal = ({ id, clear }: { id?: string; clear: () => void }) => {
   const form = useForm<UserProductType>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -76,8 +45,7 @@ export const EmployeeProductModal = ({
 
   const [action, setAction] = useState(ACTION.DEFAULT);
   const [open, setOpen] = useState<boolean | undefined>(false);
-  const [userProducts, setUserProducts] =
-    useState<ListType<UserProduct> | null>(null);
+  const [userProducts, setUserProducts] = useState<ListType<UserProduct> | null>(null);
   const [products, setProducts] = useState<SearchType<number>[]>([]);
 
   const { fields, append, replace } = useFieldArray({
@@ -87,9 +55,7 @@ export const EmployeeProductModal = ({
 
   const compare = form.watch("compare");
   const selectedIds = form.watch("products")?.map((p) => p.product_id);
-  const userProductIds = new Set(
-    userProducts?.items.map((up) => up.product_id)
-  );
+  const userProductIds = new Set(userProducts?.items.map((up) => up.product_id));
 
   const visibleProducts = products.filter((p) => {
     if (compare && !userProductIds.has(p.id)) return false;
@@ -206,6 +172,7 @@ export const EmployeeProductModal = ({
   // const paginationRange = getPaginationRange(page + 1, totalPages);
   return (
     <Modal
+      w="5xl  "
       open={open === true}
       setOpen={(v) => {
         setOpen(v);
@@ -216,9 +183,8 @@ export const EmployeeProductModal = ({
       submit={onConfirm}
     >
       <FormProvider {...form}>
-        <div className="w-full">
+        <div className="w-full space-y-5">
           <div className="flex flex-col gap-4">
-            {visibleProducts.length}
             <Input
               placeholder="Бүтээгдэхүүн хайх..."
               onChange={(e) => {
@@ -226,104 +192,76 @@ export const EmployeeProductModal = ({
                 if (value.length >= 2) searchProduct(value);
                 else searchProduct("");
               }}
-              className="w-auto max-w-md"
+              className="w-full bg-white"
             />
-            {userProducts?.items?.length}
 
             <div className="flex items-center gap-2 mt-2">
-              <Switch
-                checked={compare}
-                onCheckedChange={(val) => form.setValue("compare", val)}
-                id="compare-switch"
-              />
-              <label
-                htmlFor="compare-switch"
-                className="text-sm text-muted-foreground"
-              >
-                Зөвхөн хэрэглэгчийн авсан бүтээгдэхүүнүүд (
-                {visibleProducts.length})
+              <Switch checked={compare} onCheckedChange={(val) => form.setValue("compare", val)} id="compare-switch" />
+              <label htmlFor="compare-switch" className="text-sm text-muted-foreground">
+                Зөвхөн хэрэглэгчийн авсан бүтээгдэхүүнүүд ({visibleProducts.length})
               </label>
             </div>
-            {form.getValues("products")?.length}
           </div>
 
-          <ScrollArea className="h-[400px] w-full rounded-md border p-4 my-6">
-            {visibleProducts.map((product, index) => {
-              const [brand, category, name] = product.value.split("__");
+          <div className="bg-white border p-3 rounded-xl space-y-2">
+            <div className="grid grid-cols-10 items-center justify-between w-full py-2 font-bold px-4 text-sm">
+              <span className="col-span-2">Бренд</span>
+              <span className="col-span-4">Төрөл</span>
+              <span className="col-span-2">Бараа</span>
+              <span className="col-span-2"></span>
+            </div>
+            <ScrollArea className="h-[55vh] w-full divide-y border pt-0 bg-white">
+              {visibleProducts.map((product, index) => {
+                const [brand, category, name] = product.value.split("__");
+                return (
+                  <div key={product.id} className="flex items-center justify-between p-3 pr-6 border-b last:border-none">
+                    <div className="grid grid-cols-10 items-center justify-between w-full gap-4">
+                      <span className="text-sm text-start font-medium text-gray-700 truncate col-span-2">{brand} brand</span>
+                      <span className="text-sm font-medium text-gray-700 truncate col-span-4">{category}</span>
+                      <span className="text-sm font-medium text-gray-700 col-span-2">{name}</span>
+                      <div className="flex items-center justify-end gap-1 col-span-2">
+                        <Button variant="default" className="" size="icon" onClick={() => handleProductQuantityChange(product.id, -1)}>
+                          −
+                        </Button>
 
-              return (
-                <div
-                  className="flex items-center justify-between gap-4 py-2 border-b"
-                  key={product.id}
-                >
-                  <span className="text-sm font-medium text-gray-700">
-                    {brand}
-                  </span>
-                  <span className="text-sm font-medium text-gray-700">
-                    {category}
-                  </span>
-                  <span className="text-sm font-medium text-gray-700">
-                    {name}
-                  </span>
+                        <Input
+                          type="number"
+                          className="w-16 text-center bg-white no-spinner hide-number-arrows border-primary border-2"
+                          value={(form.watch("products")?.find((p) => p.product_id === product.id)?.quantity as number) ?? ""}
+                          onClick={() => handleProductClickOnce(product.id)}
+                          onChange={(e) => {
+                            const val = parseInt(e.target.value || "0", 10);
+                            const existing = form.getValues("products");
+                            const index = existing.findIndex((p) => p.product_id === product.id);
 
-                  <div className="flex items-center gap-2">
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      onClick={() =>
-                        handleProductQuantityChange(product.id, -1)
-                      }
-                    >
-                      −
-                    </Button>
+                            const updated = [...existing];
 
-                    <Input
-                      type="number"
-                      className="w-16 text-center bg-white no-spinner"
-                      value={
-                        (form
-                          .watch("products")
-                          ?.find((p) => p.product_id === product.id)
-                          ?.quantity as number) ?? ""
-                      }
-                      onClick={() => handleProductClickOnce(product.id)}
-                      onChange={(e) => {
-                        const val = parseInt(e.target.value || "0", 10);
-                        const existing = form.getValues("products");
-                        const index = existing.findIndex(
-                          (p) => p.product_id === product.id
-                        );
+                            if (val <= 0 && index !== -1) {
+                              updated.splice(index, 1);
+                            } else if (index !== -1) {
+                              updated[index] = { ...updated[index], quantity: val };
+                            } else if (val > 0) {
+                              updated.push({
+                                product_id: product.id,
+                                quantity: val,
+                                status: UserProductStatus.Active,
+                              });
+                            }
 
-                        const updated = [...existing];
+                            form.setValue("products", updated);
+                          }}
+                        />
 
-                        if (val <= 0 && index !== -1) {
-                          updated.splice(index, 1);
-                        } else if (index !== -1) {
-                          updated[index] = { ...updated[index], quantity: val };
-                        } else if (val > 0) {
-                          updated.push({
-                            product_id: product.id,
-                            quantity: val,
-                            status: UserProductStatus.Active,
-                          });
-                        }
-
-                        form.setValue("products", updated);
-                      }}
-                    />
-
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      onClick={() => handleProductQuantityChange(product.id, 1)}
-                    >
-                      +
-                    </Button>
+                        <Button variant="default" className="" size="icon" onClick={() => handleProductQuantityChange(product.id, 1)}>
+                          +
+                        </Button>
+                      </div>
+                    </div>
                   </div>
-                </div>
-              );
-            })}
-          </ScrollArea>
+                );
+              })}
+            </ScrollArea>
+          </div>
         </div>
         {/* oor ymand ashiglana aa */}
         {/* <Pagination>

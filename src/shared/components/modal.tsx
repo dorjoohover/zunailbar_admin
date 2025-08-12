@@ -25,9 +25,11 @@ export const Modal = ({
   setOpen,
   loading,
   w = "sm",
+  maw = "md",
   reset,
 }: {
   name?: string;
+  maw?: string;
   title?: string;
   description?: string;
   submitTxt?: string;
@@ -38,7 +40,7 @@ export const Modal = ({
   reset?: () => void;
   open: boolean;
   loading?: boolean;
-  setOpen: Dispatch<SetStateAction<boolean | undefined>>;
+  setOpen: (v: boolean) => void;
 }) => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -60,7 +62,7 @@ export const Modal = ({
           </Button>
         </DialogTrigger>
       )}
-      <DialogContent className={`lg:max-w-${w}`}>
+      <DialogContent className={`max-w-${maw} lg:max-w-${w}`}>
         <DialogHeader className="mb-3">
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription>{description}</DialogDescription>
@@ -68,7 +70,9 @@ export const Modal = ({
         <div>{children}</div>
         <DialogFooter className="mt-3">
           <DialogClose asChild>
-            <Button variant="outline" className="bg-white">Цуцлах</Button>
+            <Button variant="outline" className="bg-white">
+              Цуцлах
+            </Button>
           </DialogClose>
           {submit && (
             <Button onClick={(e) => handleSubmit(e)}>

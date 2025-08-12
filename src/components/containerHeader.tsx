@@ -7,7 +7,7 @@ interface ContainerHeaderProps {
 
 export default function ContainerHeader({group, title}: ContainerHeaderProps) {
   return (
-    <div className="bg-white py-4 px-6 sm:pl-10 border border-slate-200">
+    <div className="bg-white h-16 px-10 border border-slate-200 flex items-center">
       <h1 className="text-lg font-bold">{group} / {title}</h1>
     </div>
   );

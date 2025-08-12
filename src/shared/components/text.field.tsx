@@ -36,11 +36,7 @@ export const TextField = <T extends FieldValues>({
   if (type !== "money") {
     return (
       <div className="relative space-y-2">
-        {label && (
-          <Label htmlFor={id} className={className}>
-            {label}
-          </Label>
-        )}
+        {label && <Label htmlFor={id}>{label}</Label>}
         <Input
           {...props}
           type={type}
@@ -55,26 +51,28 @@ export const TextField = <T extends FieldValues>({
   return (
     <div className="relative space-y-2">
       {label && <Label htmlFor={id}>{label}</Label>}
-      <Input
-        id={id}
-        placeholder={pl}
-        className={className}
-        type="text"
-        inputMode="decimal"
-        value={display}
-        onChange={(e) => {
-          const raw = e.target.value.replace(/[^\d]/g, ""); // зөвхөн тоо
-          props.onChange(raw); // form-д тоо хадгална
-          setDisplay(raw); // фокус дотор raw тоо харагдана
-        }}
-        onBlur={() => setDisplay(money(String(props.value ?? "")))} // blur үед money формат
-        onFocus={() => setDisplay(String(props.value ?? ""))} // focus үед raw утга
-      />
-      {type === "money" && (
-        <span className="absolute top-[45%] -translate-y-[50%] right-3 flex items-center text-gray-500 pointer-events-none">
-          {symbol}
-        </span>
-      )}
+      <div className="relative w-full">
+        <Input
+          id={id}
+          placeholder={pl}
+          className={className}
+          type="text"
+          inputMode="decimal"
+          value={display}
+          onChange={(e) => {
+            const raw = e.target.value.replace(/[^\d]/g, ""); // зөвхөн тоо
+            props.onChange(raw); // form-д тоо хадгална
+            setDisplay(raw); // фокус дотор raw тоо харагдана
+          }}
+          onBlur={() => setDisplay(money(String(props.value ?? "")))} // blur үед money формат
+          onFocus={() => setDisplay(String(props.value ?? ""))} // focus үед raw утга
+        />
+        {type === "money" && (
+          <span className="absolute top-[50%] -translate-y-[50%] right-3 flex items-center text-primary pointer-events-none">
+            {symbol}
+          </span>
+        )}
+      </div>
     </div>
   );
 };

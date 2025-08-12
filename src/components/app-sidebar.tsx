@@ -64,7 +64,7 @@ const items = [
     icon: SquareUserRound,
     children: [
       {
-        title: "Жагсаалт",
+        title: "Ажилчдын удирдлага",
         icon: SquareUserRound,
         url: "/employees",
       },
@@ -73,21 +73,11 @@ const items = [
       //   icon: SquareUserRound,
       //   id: MODAL_ACTION.add_emp,
       // },
-      // {
-      //   title: "Ажилтаны мэдээлэл засах",
-      //   icon: SquareUserRound,
-      //   id: MODAL_ACTION.edit_emp,
-      // },
       {
         title: "Олгосон бүтээгдэхүүн харах",
         icon: SquareUserRound,
         url: "/employees/product",
       },
-      // {
-      //   title: "Бүтээгдэхүүн олгох",
-      //   icon: SquareUserRound,
-      //   id: MODAL_ACTION.give_product,
-      // },
       {
         title: "Ажилтны үйлчилгээ харах",
         icon: SquareUserRound,
@@ -98,11 +88,6 @@ const items = [
         icon: SquareUserRound,
         url: "/employees/free",
       },
-      // {
-      //   title: "Ажилтны үйлчилгээ нэмэх",
-      //   icon: SquareUserRound,
-      //   id: MODAL_ACTION.add_service_to_emp,
-      // },
     ],
   },
   {
@@ -110,23 +95,29 @@ const items = [
     url: "",
     icon: Milk,
     children: [
-      // {
-      //   title: "Бүтээгдэхүүн нэмэх",
-      //   icon: Milk,
-      // },
       {
-        title: "Жагсаалт",
+        title: "Бүтээгдэхүүний удирдлага",
         url: "/products",
         icon: Milk,
       },
       {
-        title: "Хэрэглээ",
+        title: "Бүтээгдэхүүний хэрэглээ",
         url: "/products/transaction",
         icon: Milk,
       },
       {
-        title: "Түүх",
+        title: "Худалдаж авсан түүх",
         url: "/products/history",
+        icon: Milk,
+      },
+      {
+        title: "Агуулах",
+        url: "/products/warehouse",
+        icon: Milk,
+      },
+      {
+        title: "Хэрэглээний зардал",
+        url: "/products/cost",
         icon: Milk,
       },
     ],
@@ -137,7 +128,7 @@ const items = [
     icon: CircleDollarSign,
     children: [
       {
-        title: "Жагсаалт",
+        title: "Захиалгын удирдлага",
         url: "/orders",
         icon: Milk,
       },
@@ -149,22 +140,16 @@ const items = [
     url: "",
     icon: ArrowLeftRight,
     children: [
-      // {
-      //   title: "Үйлчилгээ нэмэх",
-      //   id: MODAL_ACTION.add_service,
-      //   icon: Milk,
-      // },
       {
-        title: "Жагсаалт",
+        title: "Үйлчилгээний удирдлага",
         url: "/services",
         icon: Milk,
       },
-
-      // {
-      //   title: "Урамшуулал нэмэх",
-      //   id: MODAL_ACTION.add_discount,
-      //   icon: Milk,
-      // },
+      {
+        title: "Үйлчилгээний урамшуулал",
+        url: "/services/discount",
+        icon: Milk,
+      },
     ],
   },
   {
@@ -173,21 +158,15 @@ const items = [
     icon: User,
     children: [
       {
-        title: "Жагсаалт",
+        title: "Хэрэглэгчдийн удирдлага",
         url: "/users",
         icon: Milk,
       },
       {
         title: "Хэрэглэгчийн хөнгөлөлт",
         url: "/users/voucher",
-        // onClick: () => console.log("voucher discount"),
         icon: Milk,
       },
-      // {
-      //   title: "Хэрэглэчид хөнгөлөлт өгөх",
-      //   id: MODAL_ACTION.add_emp,
-      //   icon: Milk,
-      // },
     ],
   },
   {
@@ -196,39 +175,65 @@ const items = [
     icon: User,
     children: [
       {
-        title: "Жагсаалт",
+        title: "Цагийн хуваарийн удирдлага",
         url: "/booking",
         icon: Milk,
       },
       {
         title: "Ажилчдын цагийн хуваарь",
         url: "/booking/employee",
-        // onClick: () => console.log("voucher discount"),
         icon: Milk,
       },
-      // {
-      //   title: "Ажилчдын хуваарь нэмэх",
-      //   id: MODAL_ACTION.add_schedule_to_emp,
-      //   icon: Milk,
-      // },
     ],
   },
 
   {
     title: "Цалин",
-    url: "/salaries",
+    url: "",
     icon: Wallet,
     children: [
-      // {
-      //   title: "Цалингийн статус солих",
-      //   id: MODAL_ACTION.set_status_salary,
-      //   icon: Milk,
-      // },
-      // {
-      //   title: "Цалингийн лог үүсгэх",
-      //   id: MODAL_ACTION.add_salary,
-      //   icon: Milk,
-      // },
+      {
+        title: "Цалингийн удирдлага",
+        url: "/salaries",
+        icon: Milk,
+      },
+    ],
+  },
+  {
+    title: "Үндсэн",
+    url: "",
+    icon: Wallet,
+    children: [
+      {
+        title: "Сайтны удирдлага",
+        url: "/root",
+        icon: Milk,
+      },
+      {
+        title: "Ангилал удирдлага",
+        url: "/root/category",
+        icon: Milk,
+      },
+      {
+        title: "Бранд удирдлага",
+        url: "/root/brand",
+        icon: Milk,
+      },
+      {
+        title: "Агуулах удирдлага",
+        url: "/root/warehouse",
+        icon: Milk,
+      },
+      {
+        title: "Хэрэглээний зардал",
+        url: "/root/cost",
+        icon: Milk,
+      },
+      {
+        title: "Салбар удирдлага",
+        url: "/root/branch",
+        icon: Milk,
+      },
     ],
   },
 ];

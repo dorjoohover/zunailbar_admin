@@ -12,13 +12,14 @@ export interface ProductLog {
 }
 export interface IProductLog {
   id: string;
-  product_id?: string;
+  product_id: string;
   product_name: string;
   quantity: number;
   price: number;
   total_amount: number;
   product_log_status: number;
-
+  currency?: string;
+  currency_value?: number;
   date: Date;
   created_by?: string;
   created_at?: Date;
