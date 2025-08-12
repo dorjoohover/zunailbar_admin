@@ -1,4 +1,3 @@
-
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
@@ -41,11 +40,14 @@ export default async function RootLayout({
   return (
     <SidebarProvider defaultOpen={defaultOpen}>
       <html lang="en">
-        <body className={`${geistSans.variable} ${geistMono.variable} antialiased bg-[url(/zu-bg-2.png)]`}>
+        <body
+          className={`${geistSans.variable} ${geistMono.variable} antialiased bg-[url(/zu-bg-2.png)]`}
+        >
           <AppSidebar />
           <main className="relative size-full p-2 pl-0 min-h-screen">
             <ScrollArea className="rounded-xl overflow-hidden size-full bg-white h-[calc(100vh-1rem)] fixed top-0 left-0 ml-1">
               <SidebarTrigger />
+
               <Template token={token}>
                 {/* <Navbar /> */}
                 <Toaster />
@@ -60,4 +62,3 @@ export default async function RootLayout({
     </SidebarProvider>
   );
 }
-
