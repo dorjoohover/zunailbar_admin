@@ -5,6 +5,7 @@ import { ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { ChartConfig, ChartContainer } from "@/components/ui/chart";
 import { ChartLegend, ChartLegendContent } from "@/components/ui/chart";
 import ContainerHeader from "@/components/containerHeader";
+import DynamicHeader from "@/components/dynamicHeader";
 
 const chartData = [
   { month: "January", manicure: 186, pedicure: 80 },
@@ -29,7 +30,7 @@ const chartConfig = {
 export default function DashboardPage() {
   return (
     <section>
-      <ContainerHeader title="Хянах самбар" />
+      <DynamicHeader />
       {/* <div className="admin-container grid grid-cols-2 gap-x-8">
         <div className="p-8 py-6 rounded-lg bg-white shadow-md space-y-8">
           <div className="space-y-1">

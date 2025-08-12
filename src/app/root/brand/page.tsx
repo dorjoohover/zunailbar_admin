@@ -8,10 +8,7 @@ export default async function Page() {
   const [res] = await Promise.all([find<Brand>(Api.brand)]);
   return (
     <section>
-      <ContainerHeader title="Бранд түүх" />
-      <div className="admin-container">
-        <BrandPage data={res.data} />
-      </div>
+      <BrandPage data={res.data} />
     </section>
   );
 }

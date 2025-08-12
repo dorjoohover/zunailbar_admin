@@ -17,6 +17,8 @@ import { getColumns } from "./columns";
 import { ISchedule, Schedule, User } from "@/models";
 import { usernameFormatter } from "@/lib/functions";
 import { ScheduleStatus } from "@/lib/enum";
+import ContainerHeader from "@/components/containerHeader";
+import DynamicHeader from "@/components/dynamicHeader";
 
 const formSchema = z.object({
   branch_id: z.string().min(1),
@@ -113,74 +115,78 @@ export const PendingSchedulePage = ({ data, users }: { data: ListType<Schedule>;
 
   return (
     <div className="">
-      <DataTable
-        columns={columns}
-        count={pendingSchedules?.count}
-        data={pendingSchedules?.items ?? []}
-        refresh={refresh}
-        loading={action == ACTION.RUNNING}
-        modalAdd={
-          <Modal
-            title="Чөлөө авах хүсэлт форм"
-            name={"Нэмэх"}
-            submit={() => form.handleSubmit(onSubmit, onInvalid)()}
-            open={open == true}
-            reset={() => {
-              setOpen(false);
-              clear();
-            }}
-            setOpen={setOpen}
-            loading={action == ACTION.RUNNING}
-          >
-            <FormProvider {...form}>
-              <FormItems label="Нэр" control={form.control} name="branch_id">
-                {(field) => {
-                  return (
-                    <ComboBox
-                      props={{ ...field }}
-                      items={users.items.map((item) => {
-                        return {
-                          value: item.id,
-                          label: usernameFormatter(item),
-                        };
-                      })}
-                    />
-                  );
-                }}
-              </FormItems>
+      <DynamicHeader count={pendingSchedules?.count} />
 
-              {[
-                {
-                  key: "min_price",
-                  type: "money",
-                  label: "Үнэ",
-                },
-                {
-                  key: "max_price",
-                  type: "money",
-                  label: "Их үнэ",
-                },
-                {
-                  key: "duration",
-                  type: "number",
-                  label: "Хугацаа",
-                },
-              ].map((item, i) => {
-                const name = item.key as keyof PendingScheduleType;
-                const label = item.label as keyof PendingScheduleType;
-                return (
-                  <FormItems control={form.control} name={name} key={i} className={item.key === "name" ? "col-span-2" : ""}>
-                    {(field) => {
-                      return <TextField props={{ ...field }} type={item.type} label={label} />;
-                    }}
-                  </FormItems>
-                );
-              })}
-            </FormProvider>
-          </Modal>
-        }
-      />
-      {action}
+      <div className="admin-container">
+        <DataTable
+          columns={columns}
+          count={pendingSchedules?.count}
+          data={pendingSchedules?.items ?? []}
+          refresh={refresh}
+          loading={action == ACTION.RUNNING}
+          modalAdd={
+            <Modal
+              maw="md"
+              title="Чөлөө авах хүсэлт форм"
+              name={"Нэмэх"}
+              submit={() => form.handleSubmit(onSubmit, onInvalid)()}
+              open={open == true}
+              reset={() => {
+                setOpen(false);
+                clear();
+              }}
+              setOpen={setOpen}
+              loading={action == ACTION.RUNNING}
+            >
+              <FormProvider {...form}>
+                <FormItems label="Нэр" control={form.control} name="branch_id">
+                  {(field) => {
+                    return (
+                      <ComboBox
+                        props={{ ...field }}
+                        items={users.items.map((item) => {
+                          return {
+                            value: item.id,
+                            label: usernameFormatter(item),
+                          };
+                        })}
+                      />
+                    );
+                  }}
+                </FormItems>
+                {[
+                  {
+                    key: "min_price",
+                    type: "money",
+                    label: "Үнэ",
+                  },
+                  {
+                    key: "max_price",
+                    type: "money",
+                    label: "Их үнэ",
+                  },
+                  {
+                    key: "duration",
+                    type: "number",
+                    label: "Хугацаа",
+                  },
+                ].map((item, i) => {
+                  const name = item.key as keyof PendingScheduleType;
+                  const label = item.label as keyof PendingScheduleType;
+                  return (
+                    <FormItems control={form.control} name={name} key={i} className={item.key === "name" ? "col-span-2" : ""}>
+                      {(field) => {
+                        return <TextField props={{ ...field }} type={item.type} label={label} />;
+                      }}
+                    </FormItems>
+                  );
+                })}
+              </FormProvider>
+            </Modal>
+          }
+        />
+        {action}
+      </div>
       {/* <ProductDialog
         editingProduct={editingProduct}
         onChange={onChange}

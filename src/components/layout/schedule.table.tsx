@@ -1,25 +1,11 @@
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "../ui/table";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../ui/table";
 import { formatTime, getDayNameWithDate, numberArray } from "@/lib/functions";
 import { Button } from "../ui/button";
 import { cn } from "@/lib/utils";
+import { ScrollArea } from "../ui/scroll-area";
 const days = numberArray(7);
 const today = new Date().getDay();
-export const ScheduleTable = ({
-  edit,
-  d,
-  value,
-}: {
-  edit: any;
-  d: Date;
-  value: string[];
-}) => {
+export const ScheduleTable = ({ edit, d, value }: { edit: any; d: Date; value: string[] }) => {
   const date = new Date(d);
   const today = new Date();
 
@@ -53,10 +39,7 @@ export const ScheduleTable = ({
   }
 
   // Ашиглах нь
-  const disables = getDisabledDaysForWeek(
-    checkDate /* Ням */,
-    days /* [0..6] */
-  );
+  const disables = getDisabledDaysForWeek(checkDate /* Ням */, days /* [0..6] */);
   return (
     <Table className="table-fixed ">
       <TableHeader>
@@ -93,21 +76,12 @@ export const ScheduleTable = ({
                   <TableCell key={day}>
                     <Button
                       type="button"
-                      className={cn(
-                        includes
-                          ? "bg-black text-white"
-                          : "bg-gray-300 text-black",
-                        "w-full"
-                      )}
+                      className={cn(includes ? "bg-black text-white" : "bg-gray-300 text-black", "w-full")}
                       disabled={disables[day]}
                       onClick={() => {
-                        let nextTimes = includes
-                          ? times.filter((t) => t !== keyStr)
-                          : [...times, keyStr];
+                        let nextTimes = includes ? times.filter((t) => t !== keyStr) : [...times, keyStr];
 
-                        nextTimes = Array.from(new Set(nextTimes)).sort(
-                          (a, b) => Number(a) - Number(b)
-                        );
+                        nextTimes = Array.from(new Set(nextTimes)).sort((a, b) => Number(a) - Number(b));
 
                         const next = [...value];
                         next[idx] = nextTimes.join("|");
@@ -127,15 +101,7 @@ export const ScheduleTable = ({
   );
 };
 
-export const ScheduleForm = ({
-  date,
-  value,
-  setValue,
-}: {
-  date: Date;
-  value: string[];
-  setValue: (value: string[]) => void;
-}) => {
+export const ScheduleForm = ({ date, value, setValue }: { date: Date; value: string[]; setValue: (value: string[]) => void }) => {
   return (
     <Table className="table-fixed ">
       <TableHeader>
@@ -156,7 +122,7 @@ export const ScheduleForm = ({
         </TableRow>
       </TableHeader>
 
-      <TableBody>
+      <TableBody className="h-72 overflow-hidden">
         {numberArray(15).map((time) => {
           const hour = time + 7; // 8..22
           return (
@@ -174,25 +140,12 @@ export const ScheduleForm = ({
                   <TableCell key={day}>
                     <Button
                       type="button"
-                      className={cn(
-                        includes
-                          ? "bg-black text-white"
-                          : "bg-gray-300 text-black",
-                        "w-full"
-                      )}
-                      disabled={
-                        date &&
-                        new Date(date).getDate() == new Date().getDate() &&
-                        today > day
-                      }
+                      className={cn(includes ? "bg-black text-white" : "bg-gray-300 text-black", "w-full")}
+                      disabled={date && new Date(date).getDate() == new Date().getDate() && today > day}
                       onClick={() => {
-                        let nextTimes = includes
-                          ? times.filter((t) => t !== keyStr)
-                          : [...times, keyStr];
+                        let nextTimes = includes ? times.filter((t) => t !== keyStr) : [...times, keyStr];
 
-                        nextTimes = Array.from(new Set(nextTimes)).sort(
-                          (a, b) => Number(a) - Number(b)
-                        );
+                        nextTimes = Array.from(new Set(nextTimes)).sort((a, b) => Number(a) - Number(b));
 
                         const next = [...value];
                         next[idx] = nextTimes.join("|");

@@ -1,24 +1,9 @@
 "use client";
 
 import { DataTable } from "@/components/data-table";
-import {
-  Branch,
-  Brand,
-  Category,
-  IProduct,
-  IBooking,
-  Product,
-  User,
-  Booking,
-} from "@/models";
+import { Branch, Brand, Category, IProduct, IBooking, Product, User, Booking } from "@/models";
 import { useEffect, useMemo, useRef, useState } from "react";
-import {
-  ListType,
-  ACTION,
-  PG,
-  DEFAULT_PG,
-  getEnumValues,
-} from "@/lib/constants";
+import { ListType, ACTION, PG, DEFAULT_PG, getEnumValues } from "@/lib/constants";
 import { Modal } from "@/shared/components/modal";
 import z from "zod";
 import { FormProvider, useForm } from "react-hook-form";
@@ -30,32 +15,14 @@ import { ComboBox } from "@/shared/components/combobox";
 import { fetcher } from "@/hooks/fetcher";
 import { getColumns } from "./columns";
 import { Button } from "@/components/ui/button";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import {
-  formatTime,
-  getDayName,
-  getDayNameWithDate,
-  numberArray,
-} from "@/lib/functions";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { formatTime, getDayName, getDayNameWithDate, numberArray } from "@/lib/functions";
 import { cn } from "@/lib/utils";
-import {
-  ScheduleForm,
-  ScheduleTable,
-} from "@/components/layout/schedule.table";
-import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/components/ui/pagination";
+import { ScheduleForm, ScheduleTable } from "@/components/layout/schedule.table";
+import { Pagination, PaginationContent, PaginationItem, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
+import ContainerHeader from "@/components/containerHeader";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import DynamicHeader from "@/components/dynamicHeader";
 
 const hourLine = z.string();
 const limit = 7;
@@ -70,13 +37,7 @@ const defaultValues: BookingType = {
   edit: undefined,
 };
 type BookingType = z.infer<typeof formSchema>;
-export const BookingPage = ({
-  data,
-  branches,
-}: {
-  data: ListType<Booking>;
-  branches: ListType<Branch>;
-}) => {
+export const BookingPage = ({ data, branches }: { data: ListType<Booking>; branches: ListType<Branch> }) => {
   const [action, setAction] = useState(ACTION.DEFAULT);
   const [open, setOpen] = useState<undefined | boolean>(false);
   const form = useForm<BookingType>({
@@ -87,10 +48,7 @@ export const BookingPage = ({
   const [lastBooking, setLastBooking] = useState<Booking | null>(null);
   const [page, setPage] = useState(0);
   const [branch, setBranch] = useState(branches.items[0]);
-  const branchMap = useMemo(
-    () => new Map(branches.items.map((b) => [b.id, b])),
-    [branches.items]
-  );
+  const branchMap = useMemo(() => new Map(branches.items.map((b) => [b.id, b])), [branches.items]);
 
   const bookingFormatter = (data: ListType<Booking>) => {
     const items: Booking[] = data.items.map((item) => {
@@ -140,23 +98,18 @@ export const BookingPage = ({
     ).then((d) => {
       bookingFormatter(d);
     });
-  setAction(ACTION.DEFAULT);
+    setAction(ACTION.DEFAULT);
   };
   const onSubmit = async <T,>(e: T) => {
     let lastDate = lastBooking ? new Date(lastBooking?.date) : new Date();
-    if (lastBooking)
-      lastDate = new Date(lastDate.setDate(lastDate.getDate() + 7));
+    if (lastBooking) lastDate = new Date(lastDate.setDate(lastDate.getDate() + 7));
     const date = lastDate;
     console.log(e, date);
     setAction(ACTION.RUNNING);
     const body = e as BookingType;
     const { edit, ...payload } = body;
     const res = edit
-      ? await updateOne<Booking>(
-          Api.booking,
-          edit ?? "",
-          payload as unknown as Booking
-        )
+      ? await updateOne<Booking>(Api.booking, edit ?? "", payload as unknown as Booking)
       : await create<IBooking>(Api.booking, {
           date: date,
           times: body.dates,
@@ -180,106 +133,104 @@ export const BookingPage = ({
 
   return (
     <div className="">
-      <Modal
-        w="3xl"
-        name={"Бараа нэмэх" + bookings?.count}
-        submit={() => form.handleSubmit(onSubmit, onInvalid)()}
-        open={open == true}
-        reset={() => {
-          setOpen(false);
-          clear();
-        }}
-        setOpen={setOpen}
-        loading={action == ACTION.RUNNING}
-      >
-        <FormProvider {...form}>
-          <FormItems control={form.control} name="branch_id">
-            {(field) => {
-              return (
-                <ComboBox
-                  props={{ ...field }}
-                  items={branches.items.map((item) => {
-                    return {
-                      value: item.id,
-                      label: item.name,
-                    };
-                  })}
-                />
-              );
-            }}
-          </FormItems>
-          <FormItems control={form.control} name={"dates"} className="">
-            {(field) => {
-              const value = (field.value as string[]) ?? Array(7).fill("");
-              let date = new Date();
-              if (lastBooking) {
-                const lastDate = new Date(lastBooking.date);
-                date = new Date(lastDate.setDate(lastDate.getDate() + 7));
-              }
+      <DynamicHeader count={bookings?.count} />
 
-              return (
-                <ScheduleForm
-                  date={date}
-                  value={value}
-                  setValue={(next) =>
-                    form.setValue("dates", next, {
-                      shouldDirty: true,
-                      shouldTouch: true,
-                    })
-                  }
-                />
-              );
-            }}
-          </FormItems>
-        </FormProvider>
-      </Modal>
-      <ComboBox
-        items={branches.items.map((b, i) => {
-          return {
-            label: b.name,
-            value: b.id,
-          };
-        })}
-        props={{
-          onChange: (v: string) => {
-            const selected = branches.items.filter((b) => b.id == v)[0];
-            setBranch(selected);
-          },
-          name: "",
-          onBlur: () => {},
-          ref: () => {},
-          value: branch?.id,
-        }}
-      />
-      <Pagination>
-        <PaginationContent>
-          {page > 0 && (
-            <PaginationItem>
-              <PaginationNext onClick={() => setPage(page - 1)} />
-            </PaginationItem>
-          )}
+      <div className="admin-container space-y-0">
+        <Modal
+          maw="3xl"
+          name={"Нэмэх"}
+          submit={() => form.handleSubmit(onSubmit, onInvalid)()}
+          open={open == true}
+          reset={() => {
+            setOpen(false);
+            clear();
+          }}
+          setOpen={setOpen}
+          loading={action == ACTION.RUNNING}
+        >
+          <FormProvider {...form}>
+            <FormItems control={form.control} name="branch_id">
+              {(field) => {
+                return (
+                  <ComboBox
+                    props={{ ...field }}
+                    items={branches.items.map((item) => {
+                      return {
+                        value: item.id,
+                        label: item.name,
+                      };
+                    })}
+                  />
+                );
+              }}
+            </FormItems>
+            <FormItems control={form.control} name={"dates"} className="">
+              {(field) => {
+                const value = (field.value as string[]) ?? Array(7).fill("");
+                let date = new Date();
+                if (lastBooking) {
+                  const lastDate = new Date(lastBooking.date);
+                  date = new Date(lastDate.setDate(lastDate.getDate() + 7));
+                }
 
-          {bookings && Math.ceil(+bookings.count / limit) - 1 > page && (
-            <PaginationItem>
-              <PaginationPrevious onClick={() => setPage(page + 1)} />
-            </PaginationItem>
-          )}
-        </PaginationContent>
-      </Pagination>
-      {bookings?.items && bookings?.items?.length > 0 ? (
-        <ScheduleTable
-          d={bookings.items?.[0]?.date}
-          value={bookings.items.map((item) => item.times).reverse()}
-          edit={null}
+                return (
+                  <ScheduleForm
+                    date={date}
+                    value={value}
+                    setValue={(next) =>
+                      form.setValue("dates", next, {
+                        shouldDirty: true,
+                        shouldTouch: true,
+                      })
+                    }
+                  />
+                );
+              }}
+            </FormItems>
+          </FormProvider>
+        </Modal>
+        <ComboBox
+          items={branches.items.map((b, i) => {
+            return {
+              label: b.name,
+              value: b.id,
+            };
+          })}
+          props={{
+            onChange: (v: string) => {
+              const selected = branches.items.filter((b) => b.id == v)[0];
+              setBranch(selected);
+            },
+            name: "",
+            onBlur: () => {},
+            ref: () => {},
+            value: branch?.id,
+          }}
         />
-      ) : null}
-      {/* <DataTable
+        <Pagination>
+          <PaginationContent>
+            {page > 0 && (
+              <PaginationItem>
+                <PaginationNext onClick={() => setPage(page - 1)} />
+              </PaginationItem>
+            )}
+
+            {bookings && Math.ceil(+bookings.count / limit) - 1 > page && (
+              <PaginationItem>
+                <PaginationPrevious onClick={() => setPage(page + 1)} />
+              </PaginationItem>
+            )}
+          </PaginationContent>
+        </Pagination>
+        {bookings?.items && bookings?.items?.length > 0 ? <ScheduleTable d={bookings.items?.[0]?.date} value={bookings.items.map((item) => item.times).reverse()} edit={null} /> : null}
+        {/* <DataTable
         columns={columns}
         count={bookings?.count}
         data={bookings?.items ?? []}
         refresh={refresh}
         loading={action == ACTION.RUNNING}
       /> */}
+      </div>
     </div>
   );
 };

@@ -6,16 +6,10 @@ import ContainerHeader from "@/components/containerHeader";
 import { ROLE } from "@/lib/enum";
 
 export default async function Page() {
-  const [res, branch] = await Promise.all([
-    find<User>(Api.service, { role: ROLE.CLIENT }),
-    find<Branch>(Api.branch, { limit: -1 }),
-  ]);
+  const [res, branch] = await Promise.all([find<User>(Api.service, { role: ROLE.CLIENT }), find<Branch>(Api.branch, { limit: -1 })]);
   return (
     <section>
-      <ContainerHeader title="Хэрэглэгч" />
-      <div className="admin-container">
-        <UserPage data={res.data} branches={branch.data} />
-      </div>
+      <UserPage data={res.data} branches={branch.data} />
     </section>
   );
 }

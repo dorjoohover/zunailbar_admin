@@ -14,10 +14,10 @@ export default async function Page() {
   ]);
   return (
     <section>
-      <ContainerHeader group="Ажилчид" title="Ажилтны чөлөө авах хүсэлт" />
-      <div className="admin-container">
+      {/* <ContainerHeader group="Ажилчид" title="Ажилтны чөлөө авах хүсэлт" /> */}
+      {/* <div className=""> */}
         <PendingSchedulePage data={res.data} users={user.data} />
-      </div>
+      {/* </div> */}
     </section>
   );
 }

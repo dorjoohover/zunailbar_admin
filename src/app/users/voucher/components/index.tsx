@@ -1,25 +1,9 @@
 "use client";
 
 import { DataTable } from "@/components/data-table";
-import {
-  Branch,
-  Brand,
-  Category,
-  IProduct,
-  IVoucher,
-  Product,
-  Service,
-  User,
-  Voucher,
-} from "@/models";
+import { Branch, Brand, Category, IProduct, IVoucher, Product, Service, User, Voucher } from "@/models";
 import { useEffect, useMemo, useState } from "react";
-import {
-  ListType,
-  ACTION,
-  PG,
-  DEFAULT_PG,
-  getEnumValues,
-} from "@/lib/constants";
+import { ListType, ACTION, PG, DEFAULT_PG, getEnumValues } from "@/lib/constants";
 import { Modal } from "@/shared/components/modal";
 import z from "zod";
 import { FormProvider, useForm } from "react-hook-form";
@@ -32,25 +16,18 @@ import { TextField } from "@/shared/components/text.field";
 import { fetcher } from "@/hooks/fetcher";
 import { getColumns } from "./columns";
 import { usernameFormatter } from "@/lib/functions";
+import ContainerHeader from "@/components/containerHeader";
+import DynamicHeader from "@/components/dynamicHeader";
 
 const formSchema = z.object({
   branch_id: z.string().min(1),
   name: z.string().min(1),
   max_price: z
-    .preprocess(
-      (val) => (typeof val === "string" ? parseFloat(val) : val),
-      z.number()
-    )
+    .preprocess((val) => (typeof val === "string" ? parseFloat(val) : val), z.number())
     .nullable()
     .optional() as unknown as number,
-  min_price: z.preprocess(
-    (val) => (typeof val === "string" ? parseFloat(val) : val),
-    z.number()
-  ) as unknown as number,
-  duration: z.preprocess(
-    (val) => (typeof val === "string" ? parseFloat(val) : val),
-    z.number()
-  ) as unknown as number,
+  min_price: z.preprocess((val) => (typeof val === "string" ? parseFloat(val) : val), z.number()) as unknown as number,
+  duration: z.preprocess((val) => (typeof val === "string" ? parseFloat(val) : val), z.number()) as unknown as number,
   edit: z.string().nullable().optional(),
 });
 const defaultValues: VoucherType = {
@@ -62,13 +39,7 @@ const defaultValues: VoucherType = {
   edit: undefined,
 };
 type VoucherType = z.infer<typeof formSchema>;
-export const VoucherPage = ({
-  data,
-  services,
-}: {
-  data: ListType<Voucher>;
-  services: ListType<Service>;
-}) => {
+export const VoucherPage = ({ data, services }: { data: ListType<Voucher>; services: ListType<Service> }) => {
   const [action, setAction] = useState(ACTION.DEFAULT);
   const [open, setOpen] = useState<undefined | boolean>(false);
   const form = useForm<VoucherType>({
@@ -76,10 +47,7 @@ export const VoucherPage = ({
     defaultValues,
   });
   const [vouchers, setVouchers] = useState<ListType<Voucher> | null>(null);
-  const serviceMap = useMemo(
-    () => new Map(services.items.map((b) => [b.id, b])),
-    [services.items]
-  );
+  const serviceMap = useMemo(() => new Map(services.items.map((b) => [b.id, b])), [services.items]);
 
   const voucherFormatter = (data: ListType<Voucher>) => {
     const items: Voucher[] = data.items.map((item) => {
@@ -130,13 +98,7 @@ export const VoucherPage = ({
     setAction(ACTION.RUNNING);
     const body = e as VoucherType;
     const { edit, ...payload } = body;
-    const res = edit
-      ? await updateOne<Voucher>(
-          Api.voucher,
-          edit ?? "",
-          payload as unknown as Voucher
-        )
-      : await create<Voucher>(Api.voucher, e as Voucher);
+    const res = edit ? await updateOne<Voucher>(Api.voucher, edit ?? "", payload as unknown as Voucher) : await create<Voucher>(Api.voucher, e as Voucher);
     console.log(res);
     if (res.success) {
       refresh();
@@ -151,82 +113,77 @@ export const VoucherPage = ({
 
   return (
     <div className="">
-      <Modal
-        name={"Хөнгөлөлт" + vouchers?.count}
-        submit={() => form.handleSubmit(onSubmit, onInvalid)()}
-        open={open == true}
-        reset={() => {
-          setOpen(false);
-          clear();
-        }}
-        setOpen={setOpen}
-        loading={action == ACTION.RUNNING}
-      >
-        <FormProvider {...form}>
-          <FormItems control={form.control} name="branch_id">
-            {(field) => {
-              return (
-                <ComboBox
-                  props={{ ...field }}
-                  items={services.items.map((item) => {
-                    return {
-                      value: item.id ?? "",
-                      label: item.name ?? "",
-                    };
-                  })}
-                />
-              );
-            }}
-          </FormItems>
+      <DynamicHeader count={vouchers?.count} />
 
-          {[
-            {
-              key: "min_price",
-              type: "money",
-              label: "Үнэ",
-            },
-            {
-              key: "max_price",
-              type: "money",
-              label: "Их үнэ",
-            },
-            {
-              key: "duration",
-              type: "number",
-              label: "Хугацаа",
-            },
-          ].map((item, i) => {
-            const name = item.key as keyof VoucherType;
-            const label = item.label as keyof VoucherType;
-            return (
-              <FormItems
-                control={form.control}
-                name={name}
-                key={i}
-                className={item.key === "name" ? "col-span-2" : ""}
-              >
-                {(field) => {
+      <div className="admin-container">
+        <DataTable
+          columns={columns}
+          count={vouchers?.count}
+          data={vouchers?.items ?? []}
+          refresh={refresh}
+          loading={action == ACTION.RUNNING}
+          modalAdd={
+            <Modal
+              name={"Хөнгөлөлт" + vouchers?.count}
+              submit={() => form.handleSubmit(onSubmit, onInvalid)()}
+              open={open == true}
+              reset={() => {
+                setOpen(false);
+                clear();
+              }}
+              setOpen={setOpen}
+              loading={action == ACTION.RUNNING}
+            >
+              <FormProvider {...form}>
+                <FormItems control={form.control} name="branch_id">
+                  {(field) => {
+                    return (
+                      <ComboBox
+                        props={{ ...field }}
+                        items={services.items.map((item) => {
+                          return {
+                            value: item.id ?? "",
+                            label: item.name ?? "",
+                          };
+                        })}
+                      />
+                    );
+                  }}
+                </FormItems>
+
+                {[
+                  {
+                    key: "min_price",
+                    type: "money",
+                    label: "Үнэ",
+                  },
+                  {
+                    key: "max_price",
+                    type: "money",
+                    label: "Их үнэ",
+                  },
+                  {
+                    key: "duration",
+                    type: "number",
+                    label: "Хугацаа",
+                  },
+                ].map((item, i) => {
+                  const name = item.key as keyof VoucherType;
+                  const label = item.label as keyof VoucherType;
                   return (
-                    <TextField
-                      props={{ ...field }}
-                      type={item.type}
-                      label={label}
-                    />
+                    <FormItems control={form.control} name={name} key={i} className={item.key === "name" ? "col-span-2" : ""}>
+                      {(field) => {
+                        return <TextField props={{ ...field }} type={item.type} label={label} />;
+                      }}
+                    </FormItems>
                   );
-                }}
-              </FormItems>
-            );
-          })}
-        </FormProvider>
-      </Modal>
-      <DataTable
-        columns={columns}
-        count={vouchers?.count}
-        data={vouchers?.items ?? []}
-        refresh={refresh}
-        loading={action == ACTION.RUNNING}
-      />
-      {action}
+                })}
+              </FormProvider>
+            </Modal>
+          }
+        />
+        {action}
+      </div>
       {/* <ProductDialog
         editingProduct={editingProduct}
         onChange={onChange}

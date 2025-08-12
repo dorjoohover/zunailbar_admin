@@ -17,6 +17,8 @@ import { fetcher } from "@/hooks/fetcher";
 import { getColumns } from "./columns";
 import { ProductLogStatus } from "@/lib/enum";
 import { DatePicker } from "@/shared/components/date.picker";
+import ContainerHeader from "@/components/containerHeader";
+import DynamicHeader from "@/components/dynamicHeader";
 
 const formSchema = z.object({
   product_id: z.string().min(1),
@@ -124,112 +126,124 @@ export const ProductHistoryPage = ({ data, products }: { data: ListType<ProductL
   }, [qty, price, form, currency, cargo]);
   return (
     <div className="">
-      <Modal
-        w="2xl"
-        maw="2xl"
-        title="Барааны худалдаж авсан түүх форм"
-        name={"Нэмэх"}
-        submit={() => form.handleSubmit(onSubmit, onInvalid)()}
-        open={open == true}
-        reset={() => {
-          setOpen(false);
-          form.reset(defaultValues);
-        }}
-        setOpen={setOpen}
-        loading={action == ACTION.RUNNING}
-      >
-        <FormProvider {...form}>
-          <div className="">
-            <div className="double-col">
-              <FormItems label="Бараа" control={form.control} name="product_id">
-                {(field) => {
-                  return (
-                    <ComboBox
-                      props={{ ...field }}
-                      items={products.items.map((item) => {
-                        return {
-                          value: item.id,
-                          label: item.name,
-                        };
-                      })}
-                    />
-                  );
-                }}
-              </FormItems>
-              <FormItems label="Төлөв" control={form.control} name="product_log_status">
-                {(field) => {
-                  return (
-                    <ComboBox
-                      props={{ ...field }}
-                      items={getEnumValues(ProductLogStatus).map((item) => {
-                        return {
-                          value: item.toString(),
-                          label: getValuesProductLogStatus[item],
-                        };
-                      })}
-                    />
-                  );
-                }}
-              </FormItems>
-            </div>
-            <div className="divide-x-gray"></div>
-            <div className="double-col">
-              {[
-                {
-                  key: "quantity",
-                  type: "number",
-                  label: "Тоо ширхэг",
-                },
-                {
-                  key: "currency",
-                  label: "Currency",
-                },
-                {
-                  key: "currency_value",
-                  label: "Currency value",
-                  type: "number",
-                },
-                {
-                  key: "price",
-                  type: "number",
-                  label: "Үнэ",
-                },
-                {
-                  key: "cargo",
-                  type: "money",
-                  label: "Kargo",
-                },
-                {
-                  key: "total_amount",
-                  type: "money",
-                  label: "Нийт үнэ",
-                },
-                // {
-                //   key: "total_amount",
-                //   type: "money",
-                //   label: "Нийт үнэ",
-                // },
-              ].map((item, i) => {
-                const name = item.key as keyof LogType;
-                const label = item.label as keyof LogType;
-                return (
-                  <FormItems control={form.control} name={name} key={i} className={item.key === "name" ? "col-span-2" : ""}>
-                    {(field) => {
-                      return <TextField props={{ ...field }} type={item.type} label={label} />;
-                    }}
-                  </FormItems>
-                );
-              })}
-              <FormItems control={form.control} name="date">
-                {(field) => {
-                  return <DatePicker name="Огноо" pl="Огноо сонгох" props={{ ...field }} />;
-                }}
-              </FormItems>
-            </div>
-          </div>
-        </FormProvider>
-      </Modal>
-      <DataTable columns={columns} count={transactions?.count} data={transactions?.items ?? []} refresh={refresh} loading={action == ACTION.RUNNING} />
+      <DynamicHeader count={transactions?.count} />
+
+      <div className="admin-container">
+        <DataTable
+          columns={columns}
+          count={transactions?.count}
+          data={transactions?.items ?? []}
+          refresh={refresh}
+          loading={action == ACTION.RUNNING}
+          modalAdd={
+            <Modal
+              // w="2xl"
+              maw="xl"
+              title="Барааны худалдаж авсан түүх форм"
+              name={"Нэмэх"}
+              submit={() => form.handleSubmit(onSubmit, onInvalid)()}
+              open={open == true}
+              reset={() => {
+                setOpen(false);
+                form.reset(defaultValues);
+              }}
+              setOpen={setOpen}
+              loading={action == ACTION.RUNNING}
+            >
+              <FormProvider {...form}>
+                <div className="">
+                  <div className="double-col">
+                    <FormItems label="Бараа" control={form.control} name="product_id">
+                      {(field) => {
+                        return (
+                          <ComboBox
+                            props={{ ...field }}
+                            items={products.items.map((item) => {
+                              return {
+                                value: item.id,
+                                label: item.name,
+                              };
+                            })}
+                          />
+                        );
+                      }}
+                    </FormItems>
+                    <FormItems label="Төлөв" control={form.control} name="product_log_status">
+                      {(field) => {
+                        return (
+                          <ComboBox
+                            props={{ ...field }}
+                            items={getEnumValues(ProductLogStatus).map((item) => {
+                              return {
+                                value: item.toString(),
+                                label: getValuesProductLogStatus[item],
+                              };
+                            })}
+                          />
+                        );
+                      }}
+                    </FormItems>
+                  </div>
+                  <div className="divide-x-gray"></div>
+                  <div className="double-col">
+                    {[
+                      {
+                        key: "quantity",
+                        type: "number",
+                        label: "Тоо ширхэг",
+                      },
+                      {
+                        key: "currency",
+                        label: "Currency",
+                      },
+                      {
+                        key: "currency_value",
+                        label: "Currency value",
+                        type: "number",
+                      },
+                      {
+                        key: "price",
+                        type: "number",
+                        label: "Үнэ",
+                      },
+                      {
+                        key: "cargo",
+                        type: "money",
+                        label: "Kargo",
+                      },
+                      {
+                        key: "total_amount",
+                        type: "money",
+                        label: "Нийт үнэ",
+                      },
+                      // {
+                      //   key: "total_amount",
+                      //   type: "money",
+                      //   label: "Нийт үнэ",
+                      // },
+                    ].map((item, i) => {
+                      const name = item.key as keyof LogType;
+                      const label = item.label as keyof LogType;
+                      return (
+                        <FormItems control={form.control} name={name} key={i} className={item.key === "name" ? "col-span-2" : ""}>
+                          {(field) => {
+                            return <TextField props={{ ...field }} type={item.type} label={label} />;
+                          }}
+                        </FormItems>
+                      );
+                    })}
+                    <FormItems control={form.control} name="date">
+                      {(field) => {
+                        return <DatePicker name="Огноо" pl="Огноо сонгох" props={{ ...field }} />;
+                      }}
+                    </FormItems>
+                  </div>
+                </div>
+              </FormProvider>
+            </Modal>
+          }
+        />
+      </div>
     </div>
   );
 };

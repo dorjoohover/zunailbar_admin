@@ -8,10 +8,7 @@ export default async function Page() {
   const [res] = await Promise.all([find<Warehouse>(Api.warehouse)]);
   return (
     <section>
-      <ContainerHeader title="Агуулах" />
-      <div className="admin-container">
-        <ProductWarehousePage data={res.data} />
-      </div>
+      <ProductWarehousePage data={res.data} />
     </section>
   );
 }

@@ -11,10 +11,10 @@ export default async function Page() {
   ]);
   return (
     <section>
-      <ContainerHeader title="Барааны түүх" />
-      <div className="admin-container">
+      {/* <ContainerHeader title="Барааны түүх" />
+      <div className="admin-container"> */}
         <ProductWarehousePage data={res.data} warehouses={warehouse.data} />
-      </div>
+      {/* </div> */}
     </section>
   );
 }

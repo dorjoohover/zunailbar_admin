@@ -1,13 +1,7 @@
 "use client";
 
 import { DataTable } from "@/components/data-table";
-import {
-  ListType,
-  ACTION,
-  PG,
-  DEFAULT_PG,
-  getEnumValues,
-} from "@/lib/constants";
+import { ListType, ACTION, PG, DEFAULT_PG, getEnumValues } from "@/lib/constants";
 import { Modal } from "@/shared/components/modal";
 import z from "zod";
 import { FormProvider, useFieldArray, useForm } from "react-hook-form";
@@ -21,6 +15,8 @@ import { fetcher } from "@/hooks/fetcher";
 import { getColumns } from "./columns";
 import { useState } from "react";
 import { Warehouse, IWarehouse } from "@/models";
+import ContainerHeader from "@/components/containerHeader";
+import DynamicHeader from "@/components/dynamicHeader";
 
 const formSchema = z.object({
   name: z.string().min(1),
@@ -31,11 +27,7 @@ const defaultValues = {
   edit: undefined,
 };
 type WarehouseType = z.infer<typeof formSchema>;
-export const ProductWarehousePage = ({
-  data,
-}: {
-  data: ListType<Warehouse>;
-}) => {
+export const ProductWarehousePage = ({ data }: { data: ListType<Warehouse> }) => {
   const [action, setAction] = useState(ACTION.DEFAULT);
   const [open, setOpen] = useState<undefined | boolean>(false);
   const form = useForm<WarehouseType>({
@@ -74,13 +66,7 @@ export const ProductWarehousePage = ({
     const body = e as WarehouseType;
     const { edit, ...payload } = body;
 
-    const res = edit
-      ? await updateOne<Warehouse>(
-          Api.warehouse,
-          edit ?? "",
-          payload as unknown as Warehouse
-        )
-      : await create<Warehouse>(Api.warehouse, e as Warehouse);
+    const res = edit ? await updateOne<Warehouse>(Api.warehouse, edit ?? "", payload as unknown as Warehouse) : await create<Warehouse>(Api.warehouse, e as Warehouse);
     if (res.success) {
       refresh();
       setOpen(false);
@@ -94,45 +80,45 @@ export const ProductWarehousePage = ({
 
   return (
     <div className="">
-      <Modal
-        title="Warehouse форм"
-        name={"Нэмэх"}
-        submit={() => form.handleSubmit(onSubmit, onInvalid)()}
-        open={open == true}
-        reset={() => {
-          setOpen(false);
-          form.reset({});
-        }}
-        setOpen={(v) => setOpen(v)}
-        loading={action == ACTION.RUNNING}
-      >
-        <FormProvider {...form}>
-          <div className="divide-y">
-            <div className="grid grid-cols-2 gap-3 pb-5"></div>
-            <div className="grid grid-cols-2 gap-3 pt-5">
-              <FormItems
-                control={form.control}
-                name={"name"}
-                className={"col-span-1"}
-              >
-                {(field) => {
-                  return (
-                    <TextField props={{ ...field }} label={"Warehouse name"} />
-                  );
-                }}
-              </FormItems>
-            </div>
-          </div>
-        </FormProvider>
-      </Modal>
-      <DataTable
-        columns={columns}
-        count={categories?.count}
-        data={categories?.items ?? []}
-        refresh={refresh}
-        loading={action == ACTION.RUNNING}
-      />
-      {action}
+      <DynamicHeader count={categories?.count} />
+
+      <div className="admin-container">
+        <DataTable
+          columns={columns}
+          count={categories?.count}
+          data={categories?.items ?? []}
+          refresh={refresh}
+          loading={action == ACTION.RUNNING}
+          modalAdd={
+            <Modal
+              title="Warehouse форм"
+              name={"Нэмэх"}
+              submit={() => form.handleSubmit(onSubmit, onInvalid)()}
+              open={open == true}
+              reset={() => {
+                setOpen(false);
+                form.reset({});
+              }}
+              setOpen={(v) => setOpen(v)}
+              loading={action == ACTION.RUNNING}
+            >
+              <FormProvider {...form}>
+                <div className="divide-y">
+                  <div className="grid grid-cols-2 gap-3 pb-5"></div>
+                  <div className="grid grid-cols-2 gap-3 pt-5">
+                    <FormItems control={form.control} name={"name"} className={"col-span-1"}>
+                      {(field) => {
+                        return <TextField props={{ ...field }} label={"Warehouse name"} />;
+                      }}
+                    </FormItems>
+                  </div>
+                </div>
+              </FormProvider>
+            </Modal>
+          }
+        />
+        {action}
+      </div>
     </div>
   );
 };

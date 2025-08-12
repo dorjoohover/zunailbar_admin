@@ -12,14 +12,11 @@ export default async function Page() {
   ]);
   return (
     <section>
-      <ContainerHeader title="Барааны жагсаалт" />
-      <div className="admin-container">
         <ProductPage
           data={res.data}
           categories={category.data}
           brands={brand.data}
         />
-      </div>
     </section>
   );
 }

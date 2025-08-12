@@ -16,6 +16,7 @@ import { ComboBox } from "@/shared/components/combobox";
 import { TextField } from "@/shared/components/text.field";
 import { fetcher } from "@/hooks/fetcher";
 import { CategoryType } from "@/lib/enum";
+import DynamicHeader from "@/components/dynamicHeader";
 
 const formSchema = z.object({
   category_id: z.string().min(1),
@@ -26,13 +27,7 @@ const formSchema = z.object({
   edit: z.string().nullable().optional(),
 });
 type ProductType = z.infer<typeof formSchema>;
-export const CostPage = ({
-  data,
-  categories,
-}: {
-  data: ListType<Product>;
-  categories: ListType<Category>;
-}) => {
+export const CostPage = ({ data, categories }: { data: ListType<Product>; categories: ListType<Category> }) => {
   const [action, setAction] = useState(ACTION.DEFAULT);
   const [open, setOpen] = useState<undefined | boolean>(false);
   const form = useForm<ProductType>({
@@ -73,9 +68,7 @@ export const CostPage = ({
     setAction(ACTION.RUNNING);
     const body = e as ProductType;
     const { edit, ...payload } = body;
-    const res = edit
-      ? await updateOne<IProduct>(Api.product, edit ?? "", payload as IProduct)
-      : await create<IProduct>(Api.product, e as IProduct);
+    const res = edit ? await updateOne<IProduct>(Api.product, edit ?? "", payload as IProduct) : await create<IProduct>(Api.product, e as IProduct);
     if (res.success) {
       refresh();
       setOpen(false);
@@ -89,86 +82,81 @@ export const CostPage = ({
 
   return (
     <div className="">
-      <div className="flex gap-4">
-        <Modal
-          name="Бараа нэмэх"
-          title="Бараа нэмэх форм"
-          submit={() => form.handleSubmit(onSubmit, onInvalid)()}
-          open={open == true}
-          reset={() => {
-            setOpen(false);
-            form.reset({});
-          }}
-          setOpen={(v) => setOpen(v)}
-          loading={action == ACTION.RUNNING}
-        >
-          <FormProvider {...form}>
-            <div className="divide-y">
-              <div className="grid grid-cols-2 gap-3 pb-5">
-                <FormItems
-                  control={form.control}
-                  name="category_id"
-                  label="Төрөл"
-                >
-                  {(field) => {
-                    console.log(field.value);
-                    return (
-                      <ComboBox
-                        props={{ ...field }}
-                        items={categories.items.map((item) => {
-                          return {
-                            value: item.id,
-                            label: item.name,
-                          };
-                        })}
-                      />
-                    );
-                  }}
-                </FormItems>
-              </div>
-              <div className="grid grid-cols-2 gap-3 pt-5">
-                {[
-                  {
-                    key: "name",
-                    label: "Нэр",
-                  },
-                  {
-                    key: "color",
-                    label: "Өнгө",
-                  },
+      <DynamicHeader count={products.count} />
 
-                  {
-                    key: "size",
-                    label: "Хэмжээ  ",
-                  },
-                ].map((item, i) => {
-                  const name = item.key as keyof ProductType;
-                  const label = item.label as keyof ProductType;
-                  return (
-                    <FormItems
-                      control={form.control}
-                      name={name}
-                      key={i}
-                      className={item.key === "name" ? "col-span-2" : ""}
-                    >
+      <div className="admin-container">
+        <DataTable
+          columns={columns}
+          count={products.count}
+          data={products.items}
+          refresh={refresh}
+          loading={action == ACTION.RUNNING}
+          modalAdd={
+            <Modal
+              name="Бараа нэмэх"
+              title="Бараа нэмэх форм"
+              submit={() => form.handleSubmit(onSubmit, onInvalid)()}
+              open={open == true}
+              reset={() => {
+                setOpen(false);
+                form.reset({});
+              }}
+              setOpen={(v) => setOpen(v)}
+              loading={action == ACTION.RUNNING}
+            >
+              <FormProvider {...form}>
+                <div className="divide-y">
+                  <div className="grid grid-cols-2 gap-3 pb-5">
+                    <FormItems control={form.control} name="category_id" label="Төрөл">
                       {(field) => {
-                        return <TextField props={{ ...field }} label={label} />;
+                        console.log(field.value);
+                        return (
+                          <ComboBox
+                            props={{ ...field }}
+                            items={categories.items.map((item) => {
+                              return {
+                                value: item.id,
+                                label: item.name,
+                              };
+                            })}
+                          />
+                        );
                       }}
                     </FormItems>
-                  );
-                })}
-              </div>
-            </div>
-          </FormProvider>
-        </Modal>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3 pt-5">
+                    {[
+                      {
+                        key: "name",
+                        label: "Нэр",
+                      },
+                      {
+                        key: "color",
+                        label: "Өнгө",
+                      },
+
+                      {
+                        key: "size",
+                        label: "Хэмжээ  ",
+                      },
+                    ].map((item, i) => {
+                      const name = item.key as keyof ProductType;
+                      const label = item.label as keyof ProductType;
+                      return (
+                        <FormItems control={form.control} name={name} key={i} className={item.key === "name" ? "col-span-2" : ""}>
+                          {(field) => {
+                            return <TextField props={{ ...field }} label={label} />;
+                          }}
+                        </FormItems>
+                      );
+                    })}
+                  </div>
+                </div>
+              </FormProvider>
+            </Modal>
+          }
+        />
       </div>
-      <DataTable
-        columns={columns}
-        count={products.count}
-        data={products.items}
-        refresh={refresh}
-        loading={action == ACTION.RUNNING}
-      />
     </div>
   );
 };

@@ -1,7 +1,6 @@
 import { Api } from "@/utils/api";
 import { find } from "../(api)";
-import ContainerHeader from "@/components/containerHeader";
-import { Booking, Branch, Schedule } from "@/models";
+import { Booking, Branch } from "@/models";
 import { BookingPage } from "./components";
 
 export default async function Page() {
@@ -17,10 +16,7 @@ export default async function Page() {
   console.log(res);
   return (
     <section>
-      <ContainerHeader title="Цагийн хуваарь" />
-      <div className="admin-container">
-        <BookingPage data={res.data} branches={branch.data} />
-      </div>
+      <BookingPage data={res.data} branches={branch.data} />
     </section>
   );
 }

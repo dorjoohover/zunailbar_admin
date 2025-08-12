@@ -113,10 +113,10 @@ export function DataTable<TData, TValue>({ columns, data, count = 0, limit = DEF
 
         {modalAdd && <div> {modalAdd}</div>}
       </div>
-      <h2 className="space-x-2 my-2 font-bold">
+      {/* <h2 className="space-x-2 my-2 font-bold">
         Нийт:
         <span> {count} мөр</span>
-      </h2>
+      </h2> */}
       <div className="overflow-hidden rounded-md border border-slate-200">
         <Table>
           <TableHeader>

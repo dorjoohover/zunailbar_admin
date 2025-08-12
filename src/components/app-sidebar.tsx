@@ -27,7 +27,7 @@ import {
 } from "./ui/collapsible";
 
 // Menu items.
-const items = [
+export const items = [
   {
     title: "Хянах самбар",
     url: "/dashboard",
