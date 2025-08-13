@@ -55,7 +55,8 @@ export function LoginPage() {
         merchant,
       }),
     });
-    router.push("/");
+    // router.push("/");
+    window.location.href = "/dashboard";
     router.refresh();
   };
   const onSubmit = async (value: ILoginUser) => {

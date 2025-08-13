@@ -41,7 +41,7 @@ export default async function RootLayout({
     <SidebarProvider defaultOpen={defaultOpen}>
       <html lang="en">
         <body
-          className={`${geistSans.variable} ${geistMono.variable} antialiased bg-[url(/zu-bg-2.png)]`}
+          className={`${geistSans.variable} ${geistMono.variable} antialiased custom-bg`}
         >
           <AppSidebar />
           <main className="relative size-full p-2 pl-0 min-h-screen">

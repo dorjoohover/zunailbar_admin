@@ -164,6 +164,7 @@ export const BookingPage = ({ data, branches }: { data: ListType<Booking>; branc
                 );
               }}
             </FormItems>
+            <div className={cn("max-h-[60vh] overflow-y-scroll")}>
             <FormItems control={form.control} name={"dates"} className="">
               {(field) => {
                 const value = (field.value as string[]) ?? Array(7).fill("");
@@ -187,6 +188,7 @@ export const BookingPage = ({ data, branches }: { data: ListType<Booking>; branc
                 );
               }}
             </FormItems>
+            </div>
           </FormProvider>
         </Modal>
         <ComboBox

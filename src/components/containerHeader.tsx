@@ -15,10 +15,12 @@ export default function ContainerHeader({ group, title, count }: ContainerHeader
         <ChevronRight />
         <span>{title}</span>
       </div>
+      {count && (
         <div className="flex items-center gap-x-5">
           <span>-</span>
           <span className="w-14 h-8 border rounded-full flex-center font-bold">{count}</span>
         </div>
+      )}
     </div>
   );
 }
