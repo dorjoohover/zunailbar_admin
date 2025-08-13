@@ -15,10 +15,10 @@ export default async function Page() {
   ]);
   return (
     <section>
-      <ContainerHeader title="Барааны түүх" />
-      <div className="admin-container">
+      {/* <ContainerHeader title="Барааны түүх" />
+      <div className="admin-container"> */}
         <ProductHistoryPage data={res.data} products={product.data} />
-      </div>
+      {/* </div> */}
     </section>
   );
 }

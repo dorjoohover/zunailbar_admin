@@ -8,10 +8,7 @@ export default async function Page() {
   const [res] = await Promise.all([find<Branch>(Api.branch)]);
   return (
     <section>
-      <ContainerHeader title="Салбар түүх" />
-      <div className="admin-container">
-        <BranchPage data={res.data} />
-      </div>
+      <BranchPage data={res.data} />
     </section>
   );
 }

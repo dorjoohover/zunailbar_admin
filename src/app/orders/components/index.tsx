@@ -1,25 +1,9 @@
 "use client";
 
 import { DataTable } from "@/components/data-table";
-import {
-  Branch,
-  Brand,
-  Category,
-  IOrder,
-  IProduct,
-  Order,
-  Product,
-  User,
-} from "@/models";
+import { Branch, Brand, Category, IOrder, IProduct, Order, Product, User } from "@/models";
 import { useEffect, useMemo, useState } from "react";
-import {
-  ListType,
-  ACTION,
-  PG,
-  DEFAULT_PG,
-  getEnumValues,
-  ListDefault,
-} from "@/lib/constants";
+import { ListType, ACTION, PG, DEFAULT_PG, getEnumValues, ListDefault } from "@/lib/constants";
 import { Modal } from "@/shared/components/modal";
 import z from "zod";
 import { FormProvider, useForm } from "react-hook-form";
@@ -35,25 +19,18 @@ import { usernameFormatter } from "@/lib/functions";
 import SchedulerViewFilteration from "@/components/schedule/_components/view/schedular-view-filteration";
 import { SchedulerProvider } from "@/providers/schedular-provider";
 import SchedulerWrapper from "@/components/schedule/_components/wrapper/schedular-wrapper";
+import ContainerHeader from "@/components/containerHeader";
+import DynamicHeader from "@/components/dynamicHeader";
 
 const formSchema = z.object({
   branch_id: z.string().min(1),
   name: z.string().min(1),
   max_price: z
-    .preprocess(
-      (val) => (typeof val === "string" ? parseFloat(val) : val),
-      z.number()
-    )
+    .preprocess((val) => (typeof val === "string" ? parseFloat(val) : val), z.number())
     .nullable()
     .optional() as unknown as number,
-  min_price: z.preprocess(
-    (val) => (typeof val === "string" ? parseFloat(val) : val),
-    z.number()
-  ) as unknown as number,
-  duration: z.preprocess(
-    (val) => (typeof val === "string" ? parseFloat(val) : val),
-    z.number()
-  ) as unknown as number,
+  min_price: z.preprocess((val) => (typeof val === "string" ? parseFloat(val) : val), z.number()) as unknown as number,
+  duration: z.preprocess((val) => (typeof val === "string" ? parseFloat(val) : val), z.number()) as unknown as number,
   edit: z.string().nullable().optional(),
 });
 const defaultValues: OrderType = {
@@ -65,13 +42,7 @@ const defaultValues: OrderType = {
   edit: undefined,
 };
 type OrderType = z.infer<typeof formSchema>;
-export const OrderPage = ({
-  data,
-  branches,
-}: {
-  data: ListType<Order>;
-  branches: ListType<Branch>;
-}) => {
+export const OrderPage = ({ data, branches }: { data: ListType<Order>; branches: ListType<Branch> }) => {
   const [action, setAction] = useState(ACTION.DEFAULT);
   const [open, setOpen] = useState<undefined | boolean>(false);
   const form = useForm<OrderType>({
@@ -79,10 +50,7 @@ export const OrderPage = ({
     defaultValues,
   });
   const [orders, setOrders] = useState<ListType<Order>>(ListDefault);
-  const branchMap = useMemo(
-    () => new Map(branches.items.map((b) => [b.id, b])),
-    [branches.items]
-  );
+  const branchMap = useMemo(() => new Map(branches.items.map((b) => [b.id, b])), [branches.items]);
 
   const orderFormatter = (data: ListType<Order>) => {
     const items: Order[] = data.items.map((item) => {
@@ -133,13 +101,7 @@ export const OrderPage = ({
     setAction(ACTION.RUNNING);
     const body = e as OrderType;
     const { edit, ...payload } = body;
-    const res = edit
-      ? await updateOne<Order>(
-          Api.order,
-          edit ?? "",
-          payload as unknown as Order
-        )
-      : await create<Order>(Api.order, e as Order);
+    const res = edit ? await updateOne<Order>(Api.order, edit ?? "", payload as unknown as Order) : await create<Order>(Api.order, e as Order);
     console.log(res);
     if (res.success) {
       refresh();
@@ -150,11 +112,15 @@ export const OrderPage = ({
   };
 
   return (
-    <div className="w-full">
-      <SchedulerProvider weekStartsOn="monday">
-        {JSON.stringify(orders)}
-        <SchedulerViewFilteration orders={orders} />
-      </SchedulerProvider>
+    <div className="">
+      <DynamicHeader count={orders?.count} />
+
+      <div className="admin-container relative">
+        <SchedulerProvider weekStartsOn="monday">
+          {JSON.stringify(orders)}
+          <SchedulerViewFilteration orders={orders} />
+        </SchedulerProvider>
+      </div>
     </div>
   );
 };

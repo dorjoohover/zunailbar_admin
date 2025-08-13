@@ -9,21 +9,17 @@ import { Api } from "@/utils/api";
 import { fetcher } from "@/hooks/fetcher";
 import { UserProduct } from "@/models";
 import { getColumns } from "./columns";
+import ContainerHeader from "@/components/containerHeader";
+import DynamicHeader from "@/components/dynamicHeader";
 
 const formSchema = z.object({
   firstname: z.string().min(1),
   lastname: z.string().min(1),
   branch_id: z.string().min(1),
   mobile: z.string().length(8, { message: "8 тэмдэгт байх ёстой" }),
-  birthday: z.preprocess(
-    (val) => (typeof val === "string" ? new Date(val) : val),
-    z.date()
-  ) as unknown as Date,
+  birthday: z.preprocess((val) => (typeof val === "string" ? new Date(val) : val), z.date()) as unknown as Date,
   password: z.string().min(6),
-  experience: z.preprocess(
-    (val) => (typeof val === "string" ? parseFloat(val) : val),
-    z.number()
-  ) as unknown as number,
+  experience: z.preprocess((val) => (typeof val === "string" ? parseFloat(val) : val), z.number()) as unknown as number,
   nickname: z.string().min(1),
   profile_img: z.string().nullable(),
 
@@ -122,8 +118,19 @@ export const EmployeeProductPage = ({
   //   const columns = getColumns(edit, setStatus, giveProduct);
   return (
     <div className="w-full relative">
+      <DynamicHeader count={data.count} />
+
       {data.count}
-      {/* <Modal
+      <div className="admin-container">
+        <DataTable
+          columns={columns}
+          data={userProduct.items}
+          refresh={refresh}
+          loading={action === ACTION.RUNNING}
+          count={userProduct.count}
+          modalAdd={
+            <>
+              {/* <Modal
         submit={() => {
           form.handleSubmit(onSubmit, onInvalid)();
         }}
@@ -266,13 +273,10 @@ export const EmployeeProductPage = ({
         id={userProduct}
         clear={() => setUserProduct(undefined)}
       /> */}
-      <DataTable
-        columns={columns}
-        data={userProduct.items}
-        refresh={refresh}
-        loading={action === ACTION.RUNNING}
-        count={userProduct.count}
-      />
+            </>
+          }
+        />
+      </div>
     </div>
   );
 };

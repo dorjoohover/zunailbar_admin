@@ -21,15 +21,15 @@ export default async function Page() {
   ]);
   return (
     <section>
-      <ContainerHeader title="Барааны хэрэглээ" />
-      <div className="admin-container">
+      {/* <ContainerHeader title="Барааны хэрэглээ" />
+      <div className="admin-container"> */}
         <ProductTransactionPage
           data={res.data}
           branches={branch.data}
           products={product.data}
           users={users.data}
         />
-      </div>
+      {/* </div> */}
     </section>
   );
 }

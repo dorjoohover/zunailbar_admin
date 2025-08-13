@@ -6,21 +6,10 @@ import ContainerHeader from "@/components/containerHeader";
 import { find } from "@/app/(api)";
 
 export default async function Page() {
-  const [res, branch, service] = await Promise.all([
-    find<Discount>(Api.discount),
-    find<Branch>(Api.branch, { limit: -1 }),
-    find<Service>(Api.service, { limit: -1 }),
-  ]);
+  const [res, branch, service] = await Promise.all([find<Discount>(Api.discount), find<Branch>(Api.branch, { limit: -1 }), find<Service>(Api.service, { limit: -1 })]);
   return (
     <section>
-      <ContainerHeader title="Үйлчилгээний урамшуулал" />
-      <div className="admin-container">
-        <DiscountPage
-          data={res.data}
-          branches={branch.data}
-          services={service.data}
-        />
-      </div>
+      <DiscountPage data={res.data} branches={branch.data} services={service.data} />
     </section>
   );
 }

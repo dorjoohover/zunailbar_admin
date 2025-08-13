@@ -12,10 +12,9 @@ export default async function Page() {
   ]);
   return (
     <section>
-      <ContainerHeader title="Үйлчилгээ" />
-      <div className="admin-container">
+      {/* <div className="admin-container"> */}
         <OrderPage data={res.data} branches={branch.data} />
-      </div>
+      {/* </div> */}
     </section>
   );
 }

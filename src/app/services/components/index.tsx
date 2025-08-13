@@ -16,25 +16,18 @@ import { TextField } from "@/shared/components/text.field";
 import { fetcher } from "@/hooks/fetcher";
 import { getColumns } from "./columns";
 import { usernameFormatter } from "@/lib/functions";
+import ContainerHeader from "@/components/containerHeader";
+import DynamicHeader from "@/components/dynamicHeader";
 
 const formSchema = z.object({
   branch_id: z.string().min(1),
   name: z.string().min(1),
   max_price: z
-    .preprocess(
-      (val) => (typeof val === "string" ? parseFloat(val) : val),
-      z.number()
-    )
+    .preprocess((val) => (typeof val === "string" ? parseFloat(val) : val), z.number())
     .nullable()
     .optional() as unknown as number,
-  min_price: z.preprocess(
-    (val) => (typeof val === "string" ? parseFloat(val) : val),
-    z.number()
-  ) as unknown as number,
-  duration: z.preprocess(
-    (val) => (typeof val === "string" ? parseFloat(val) : val),
-    z.number()
-  ) as unknown as number,
+  min_price: z.preprocess((val) => (typeof val === "string" ? parseFloat(val) : val), z.number()) as unknown as number,
+  duration: z.preprocess((val) => (typeof val === "string" ? parseFloat(val) : val), z.number()) as unknown as number,
   edit: z.string().nullable().optional(),
 });
 const defaultValues: ServiceType = {
@@ -46,13 +39,7 @@ const defaultValues: ServiceType = {
   edit: undefined,
 };
 type ServiceType = z.infer<typeof formSchema>;
-export const ServicePage = ({
-  data,
-  branches,
-}: {
-  data: ListType<Service>;
-  branches: ListType<Branch>;
-}) => {
+export const ServicePage = ({ data, branches }: { data: ListType<Service>; branches: ListType<Branch> }) => {
   const [action, setAction] = useState(ACTION.DEFAULT);
   const [open, setOpen] = useState<undefined | boolean>(false);
   const form = useForm<ServiceType>({
@@ -60,10 +47,7 @@ export const ServicePage = ({
     defaultValues,
   });
   const [services, setServices] = useState<ListType<Service> | null>(null);
-  const branchMap = useMemo(
-    () => new Map(branches.items.map((b) => [b.id, b])),
-    [branches.items]
-  );
+  const branchMap = useMemo(() => new Map(branches.items.map((b) => [b.id, b])), [branches.items]);
 
   const serviceFormatter = (data: ListType<Service>) => {
     const items: Service[] = data.items.map((item) => {
@@ -114,9 +98,7 @@ export const ServicePage = ({
     setAction(ACTION.RUNNING);
     const body = e as ServiceType;
     const { edit, ...payload } = body;
-    const res = edit
-      ? await updateOne<Service>(Api.service, edit ?? "", payload as Service)
-      : await create<Service>(Api.service, e as Service);
+    const res = edit ? await updateOne<Service>(Api.service, edit ?? "", payload as Service) : await create<Service>(Api.service, e as Service);
     console.log(res);
     if (res.success) {
       refresh();
@@ -132,86 +114,87 @@ export const ServicePage = ({
 
   return (
     <div className="">
-      <Modal
-        w="2xl"
-        title="Үйлчилгээ жагсаалт форм"
-        name={"Бараа нэмэх" + services?.count}
-        submit={() => form.handleSubmit(onSubmit, onInvalid)()}
-        open={open == true}
-        reset={() => {
-          setOpen(false);
-          clear();
-        }}
-        setOpen={setOpen}
-        loading={action == ACTION.RUNNING}
-      >
-        <FormProvider {...form}>
-          <div className="double-col">
-            <FormItems label="Салбар" control={form.control} name="branch_id">
-              {(field) => {
-                return (
-                  <ComboBox
-                    props={{ ...field }}
-                    items={branches.items.map((item) => {
-                      return {
-                        value: item.id,
-                        label: item.name,
-                      };
-                    })}
-                  />
-                );
+      <DynamicHeader count={services?.count} />
+
+      <div className="admin-container">
+        <DataTable
+          columns={columns}
+          count={services?.count}
+          data={services?.items ?? []}
+          refresh={refresh}
+          loading={action == ACTION.RUNNING}
+          modalAdd={
+            <Modal
+              // w="2xl"
+              maw="lg"
+              title="Үйлчилгээ жагсаалт форм"
+              name={"Бараа нэмэх" + services?.count}
+              submit={() => form.handleSubmit(onSubmit, onInvalid)()}
+              open={open == true}
+              reset={() => {
+                setOpen(false);
+                clear();
               }}
-            </FormItems>
-            {[
-              {
-                key: "name",
-                label: "Нэр",
-                type: "text",
-              },
+              setOpen={setOpen}
+              loading={action == ACTION.RUNNING}
+            >
+              <FormProvider {...form}>
+                <div className="double-col">
+                  <FormItems label="Салбар" control={form.control} name="branch_id">
+                    {(field) => {
+                      return (
+                        <ComboBox
+                          props={{ ...field }}
+                          items={branches.items.map((item) => {
+                            return {
+                              value: item.id,
+                              label: item.name,
+                            };
+                          })}
+                        />
+                      );
+                    }}
+                  </FormItems>
+                  {[
+                    {
+                      key: "name",
+                      label: "Нэр",
+                      type: "text",
+                    },
 
-              {
-                key: "min_price",
-                type: "money",
-                label: "Үнэ",
-              },
+                    {
+                      key: "min_price",
+                      type: "money",
+                      label: "Үнэ",
+                    },
 
-              {
-                key: "max_price",
-                type: "money",
-                label: "Их үнэ",
-              },
-              {
-                key: "duration",
-                type: "number",
-                label: "Хугацаа",
-              },
-            ].map((item, i) => {
-              const name = item.key as keyof ServiceType;
-              const label = item.label as keyof ServiceType;
-              return (
-                <FormItems
-                  label={label}
-                  control={form.control}
-                  name={name}
-                  key={i}
-                  className={item.key === "name" ? "col-span-2" : ""}
-                >
-                  {(field) => {
-                    return <TextField props={{ ...field }} type={item.type} />;
-                  }}
-                </FormItems>
-              );
-            })}
-          </div>
-        </FormProvider>
-      </Modal>
-      <DataTable
-        columns={columns}
-        count={services?.count}
-        data={services?.items ?? []}
-        refresh={refresh}
-        loading={action == ACTION.RUNNING}
-      />
+                    {
+                      key: "max_price",
+                      type: "money",
+                      label: "Их үнэ",
+                    },
+                    {
+                      key: "duration",
+                      type: "number",
+                      label: "Хугацаа",
+                    },
+                  ].map((item, i) => {
+                    const name = item.key as keyof ServiceType;
+                    const label = item.label as keyof ServiceType;
+                    return (
+                      <FormItems label={label} control={form.control} name={name} key={i} className={item.key === "name" ? "col-span-2" : ""}>
+                        {(field) => {
+                          return <TextField props={{ ...field }} type={item.type} />;
+                        }}
+                      </FormItems>
+                    );
+                  })}
+                </div>
+              </FormProvider>
+            </Modal>
+          }
+        />
+      </div>
     </div>
   );
 };

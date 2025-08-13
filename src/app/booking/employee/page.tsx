@@ -16,10 +16,7 @@ export default async function Page() {
   );
   return (
     <section>
-      <ContainerHeader title="Цагийн хуваарь" />
-      <div className="admin-container">
-        <SchedulePage data={res.data} users={user.data} />
-      </div>
+      <SchedulePage data={res.data} users={user.data} />
     </section>
   );
 }

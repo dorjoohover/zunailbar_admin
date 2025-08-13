@@ -1,13 +1,7 @@
 "use client";
 
 import { DataTable } from "@/components/data-table";
-import {
-  ListType,
-  ACTION,
-  PG,
-  DEFAULT_PG,
-  getEnumValues,
-} from "@/lib/constants";
+import { ListType, ACTION, PG, DEFAULT_PG, getEnumValues } from "@/lib/constants";
 import { Modal } from "@/shared/components/modal";
 import z from "zod";
 import { FormProvider, useFieldArray, useForm } from "react-hook-form";
@@ -21,6 +15,8 @@ import { fetcher } from "@/hooks/fetcher";
 import { getColumns } from "./columns";
 import { useState } from "react";
 import { Brand, IBrand } from "@/models";
+import ContainerHeader from "@/components/containerHeader";
+import DynamicHeader from "@/components/dynamicHeader";
 
 const formSchema = z.object({
   name: z.string().min(1),
@@ -70,13 +66,7 @@ export const BrandPage = ({ data }: { data: ListType<Brand> }) => {
     const body = e as BrandType;
     const { edit, ...payload } = body;
 
-    const res = edit
-      ? await updateOne<Brand>(
-          Api.brand,
-          edit ?? "",
-          payload as unknown as Brand
-        )
-      : await create<Brand>(Api.brand, e as Brand);
+    const res = edit ? await updateOne<Brand>(Api.brand, edit ?? "", payload as unknown as Brand) : await create<Brand>(Api.brand, e as Brand);
     if (res.success) {
       refresh();
       setOpen(false);
@@ -90,45 +80,45 @@ export const BrandPage = ({ data }: { data: ListType<Brand> }) => {
 
   return (
     <div className="">
-      <Modal
-        title="Brand форм"
-        name={"Нэмэх"}
-        submit={() => form.handleSubmit(onSubmit, onInvalid)()}
-        open={open == true}
-        reset={() => {
-          setOpen(false);
-          form.reset({});
-        }}
-        setOpen={(v) => setOpen(v)}
-        loading={action == ACTION.RUNNING}
-      >
-        <FormProvider {...form}>
-          <div className="divide-y">
-            <div className="grid grid-cols-2 gap-3 pb-5"></div>
-            <div className="grid grid-cols-2 gap-3 pt-5">
-              <FormItems
-                control={form.control}
-                name={"name"}
-                className={"col-span-1"}
-              >
-                {(field) => {
-                  return (
-                    <TextField props={{ ...field }} label={"Brand name"} />
-                  );
-                }}
-              </FormItems>
-            </div>
-          </div>
-        </FormProvider>
-      </Modal>
-      <DataTable
-        columns={columns}
-        count={categories?.count}
-        data={categories?.items ?? []}
-        refresh={refresh}
-        loading={action == ACTION.RUNNING}
-      />
-      {action}
+      <DynamicHeader count={categories?.count} />
+
+      <div className="admin-container">
+        <DataTable
+          columns={columns}
+          count={categories?.count}
+          data={categories?.items ?? []}
+          refresh={refresh}
+          loading={action == ACTION.RUNNING}
+          modalAdd={
+            <Modal
+              title="Brand форм"
+              name={"Нэмэх"}
+              submit={() => form.handleSubmit(onSubmit, onInvalid)()}
+              open={open == true}
+              reset={() => {
+                setOpen(false);
+                form.reset({});
+              }}
+              setOpen={(v) => setOpen(v)}
+              loading={action == ACTION.RUNNING}
+            >
+              <FormProvider {...form}>
+                <div className="divide-y">
+                  <div className="grid grid-cols-2 gap-3 pb-5"></div>
+                  <div className="grid grid-cols-2 gap-3 pt-5">
+                    <FormItems control={form.control} name={"name"} className={"col-span-1"}>
+                      {(field) => {
+                        return <TextField props={{ ...field }} label={"Brand name"} />;
+                      }}
+                    </FormItems>
+                  </div>
+                </div>
+              </FormProvider>
+            </Modal>
+          }
+        />
+        {action}
+      </div>
     </div>
   );
 };

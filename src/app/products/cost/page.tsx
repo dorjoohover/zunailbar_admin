@@ -13,14 +13,14 @@ export default async function Page() {
   ]);
   return (
     <section>
-      <ContainerHeader title="Хэрэглээний зардал" />
-      <div className="admin-container">
+      {/* <ContainerHeader title="Хэрэглээний зардал" />
+      <div className="admin-container"> */}
         <CostPage
           data={res.data}
           products={product.data}
           branches={branch.data}
         />
-      </div>
+      {/* </div> */}
     </section>
   );
 }

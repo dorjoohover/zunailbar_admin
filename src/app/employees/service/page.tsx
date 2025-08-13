@@ -14,14 +14,14 @@ export default async function Page() {
   ]);
   return (
     <section>
-      <ContainerHeader title="Ажилтны хийдэг үйлчилгээ" />
-      <div className="admin-container">
+      {/* <ContainerHeader title="Ажилтны хийдэг үйлчилгээ" />
+      <div className="admin-container"> */}
         <EmployeeUserServicePage
           data={res.data}
           services={service.data}
           users={user.data}
         />
-      </div>
+      {/* </div> */}
     </section>
   );
 }

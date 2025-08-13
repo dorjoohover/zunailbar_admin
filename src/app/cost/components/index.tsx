@@ -7,24 +7,27 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { ProductDialog } from "./dialog";
 import { ListType } from "@/lib/constants";
-const initialProduct: IProduct = {
-  id: "1",
-  brand_id: "1",
-  category_id: "man",
-  name: "Ягаан будаг",
-  ref: "asd",
-  quantity: 12,
-  price: 15000,
-  color: "Pink",
-  size: "50ml",
-  created_at: new Date("2025-07-20"),
-};
+import DynamicHeader from "@/components/dynamicHeader";
 
-const initialProducts: IProduct[] = Array.from({ length: 40 }, (_, i) => ({
-  ...initialProduct,
-  id: (i + 1).toString(),
-  name: `Ягаан будаг ${i + 1}`,
-}));
+// Ustgah
+// const initialProduct: IProduct = {
+//   id: "1",
+//   brand_id: "1",
+//   category_id: "man",
+//   name: "Ягаан будаг",
+//   ref: "asd",
+//   quantity: 12,
+//   price: 15000,
+//   color: "Pink",
+//   size: "50ml",
+//   created_at: new Date("2025-07-20"),
+// };
+
+// const initialProducts: IProduct[] = Array.from({ length: 40 }, (_, i) => ({
+//   ...initialProduct,
+//   id: (i + 1).toString(),
+//   name: `Ягаан будаг ${i + 1}`,
+// }));
 
 export const ProductPage = ({ data }: { data: ListType<Product> }) => {
   const { count, items } = data;

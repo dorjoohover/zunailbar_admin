@@ -10,13 +10,13 @@ export default async function EmployeesPage() {
   ]);
   return (
     <section>
-      <ContainerHeader title="Ажилчдад олгосон бүтээгдэхүүн" />
-      <div className="admin-container">
+      {/* <ContainerHeader title="Ажилчдад олгосон бүтээгдэхүүн" /> */}
+      {/* <div className="admin-container"> */}
         <EmployeeProductPage
           data={userProductRes.data}
           //   branches={branchRes.data}
         />
-      </div>
+      {/* </div> */}
     </section>
   );
 }
