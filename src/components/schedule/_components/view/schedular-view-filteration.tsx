@@ -4,11 +4,7 @@ import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  Calendar as CalendarIcon,
-  CalendarDaysIcon,
-  Calendar,
-} from "lucide-react";
+import { Calendar as CalendarIcon, CalendarDaysIcon, Calendar } from "lucide-react";
 
 import AddEventModal from "../../_modals/add-event-modal";
 import DailyView from "./day/daily-view";
@@ -23,10 +19,10 @@ import { IOrder, Order } from "@/models";
 
 // Animation settings for Framer Motion
 const animationConfig = {
-  initial: { opacity: 0, y: 20 },
+  initial: { opacity: 0, y: 10 },
   animate: { opacity: 1, y: 0 },
-  exit: { opacity: 0, y: -20 },
-  transition: { duration: 0.3, type: "spring", stiffness: 250 },
+  exit: { opacity: 0, y: -10 },
+  transition: { duration: 0.3, type: "spring" },
 };
 
 export default function SchedulerViewFilteration({
@@ -55,9 +51,7 @@ export default function SchedulerViewFilteration({
     setClientSide(true);
   }, []);
 
-  const [isMobile, setIsMobile] = useState(
-    clientSide ? window.innerWidth <= 768 : false
-  );
+  const [isMobile, setIsMobile] = useState(clientSide ? window.innerWidth <= 768 : false);
 
   useEffect(() => {
     if (!clientSide) return;
@@ -77,31 +71,13 @@ export default function SchedulerViewFilteration({
 
   function handleAddEvent(selectedDay?: number) {
     // Create the modal content with proper data
-    const startDate = new Date(
-      new Date().getFullYear(),
-      new Date().getMonth(),
-      selectedDay ?? new Date().getDate(),
-      0,
-      0,
-      0,
-      0
-    );
+    const startDate = new Date(new Date().getFullYear(), new Date().getMonth(), selectedDay ?? new Date().getDate(), 0, 0, 0, 0);
 
-    const endDate = new Date(
-      new Date().getFullYear(),
-      new Date().getMonth(),
-      selectedDay ?? new Date().getDate(),
-      23,
-      59,
-      59,
-      999
-    );
+    const endDate = new Date(new Date().getFullYear(), new Date().getMonth(), selectedDay ?? new Date().getDate(), 23, 59, 59, 999);
 
     // Create a wrapper component to handle data passing
     const ModalWrapper = () => {
-      const title =
-        CustomComponents?.CustomEventModal?.CustomAddEventModal?.title ||
-        "Add Event";
+      const title = CustomComponents?.CustomEventModal?.CustomAddEventModal?.title || "Add Event";
 
       return (
         <div>
@@ -113,11 +89,7 @@ export default function SchedulerViewFilteration({
     // Open the modal with the content
     setOpen(
       <CustomModal title="Add Event">
-        <AddEventModal
-          CustomAddEventModal={
-            CustomComponents?.CustomEventModal?.CustomAddEventModal?.CustomForm
-          }
-        />{" "}
+        <AddEventModal CustomAddEventModal={CustomComponents?.CustomEventModal?.CustomAddEventModal?.CustomForm} />{" "}
       </CustomModal>
     );
   }
@@ -135,11 +107,7 @@ export default function SchedulerViewFilteration({
     <div className="flex w-full flex-col">
       <div className="flex w-full">
         <div className="dayly-weekly-monthly-selection relative w-full">
-          <Tabs
-            value={activeView}
-            onValueChange={setActiveView}
-            className={cn("w-full", classNames?.tabs)}
-          >
+          <Tabs value={activeView} onValueChange={setActiveView} className={cn("w-full", classNames?.tabs)}>
             <div className="flex justify-between items-center mb-4">
               <TabsList className="grid grid-cols-3">
                 {viewsSelector?.includes("day") && (
@@ -184,15 +152,9 @@ export default function SchedulerViewFilteration({
 
               {/* Add Event Button */}
               {CustomComponents?.customButtons?.CustomAddEventButton ? (
-                <div onClick={() => handleAddEvent()}>
-                  {CustomComponents?.customButtons.CustomAddEventButton}
-                </div>
+                <div onClick={() => handleAddEvent()}>{CustomComponents?.customButtons.CustomAddEventButton}</div>
               ) : (
-                <Button
-                  onClick={() => handleAddEvent()}
-                  className={classNames?.buttons?.addEvent}
-                  variant="default"
-                >
+                <Button onClick={() => handleAddEvent()} className={classNames?.buttons?.addEvent} variant="default">
                   <CalendarIcon className="mr-2 h-4 w-4" />
                   Хуваарь нэмэх
                 </Button>
@@ -204,37 +166,28 @@ export default function SchedulerViewFilteration({
                 <AnimatePresence mode="wait">
                   <motion.div {...(animationConfig as any)}>
                     <DailyView
-                      events={orders.items.map(
-                        ({ order_date, start_time, end_time, id }) => {
-                          const date = new Date(order_date);
+                      events={orders.items.map(({ order_date, start_time, end_time, id }) => {
+                        const date = new Date(order_date);
 
-                          // Үндсэн өдөр/сар/жил
-                          const year = date.getFullYear();
-                          const month = date.getMonth(); // getMonth() нь 0-ээс эхэлдэг тул -1 хэрэггүй
-                          const day = date.getDate();
+                        // Үндсэн өдөр/сар/жил
+                        const year = date.getFullYear();
+                        const month = date.getMonth(); // getMonth() нь 0-ээс эхэлдэг тул -1 хэрэггүй
+                        const day = date.getDate();
 
-                          const createDateTime = (hour: number) =>
-                            new Date(year, month, day, Number(hour) || 0);
+                        const createDateTime = (hour: number) => new Date(year, month, day, Number(hour) || 0);
 
-                          return {
-                            id,
-                            title: id,
-                            startDate: createDateTime(+start_time),
-                            endDate: createDateTime(+end_time),
-                          };
-                        }
-                      )}
+                        return {
+                          id,
+                          title: id,
+                          startDate: createDateTime(+start_time),
+                          endDate: createDateTime(+end_time),
+                        };
+                      })}
                       stopDayEventSummary={stopDayEventSummary}
                       classNames={classNames?.buttons}
-                      prevButton={
-                        CustomComponents?.customButtons?.CustomPrevButton
-                      }
-                      nextButton={
-                        CustomComponents?.customButtons?.CustomNextButton
-                      }
-                      CustomEventComponent={
-                        CustomComponents?.CustomEventComponent
-                      }
+                      prevButton={CustomComponents?.customButtons?.CustomPrevButton}
+                      nextButton={CustomComponents?.customButtons?.CustomNextButton}
+                      CustomEventComponent={CustomComponents?.CustomEventComponent}
                       CustomEventModal={CustomComponents?.CustomEventModal}
                     />
                   </motion.div>
@@ -246,19 +199,7 @@ export default function SchedulerViewFilteration({
               <TabsContent value="week">
                 <AnimatePresence mode="wait">
                   <motion.div {...(animationConfig as any)}>
-                    <WeeklyView
-                      classNames={classNames?.buttons}
-                      prevButton={
-                        CustomComponents?.customButtons?.CustomPrevButton
-                      }
-                      nextButton={
-                        CustomComponents?.customButtons?.CustomNextButton
-                      }
-                      CustomEventComponent={
-                        CustomComponents?.CustomEventComponent
-                      }
-                      CustomEventModal={CustomComponents?.CustomEventModal}
-                    />
+                    <WeeklyView classNames={classNames?.buttons} prevButton={CustomComponents?.customButtons?.CustomPrevButton} nextButton={CustomComponents?.customButtons?.CustomNextButton} CustomEventComponent={CustomComponents?.CustomEventComponent} CustomEventModal={CustomComponents?.CustomEventModal} />
                   </motion.div>
                 </AnimatePresence>
               </TabsContent>
@@ -268,19 +209,7 @@ export default function SchedulerViewFilteration({
               <TabsContent value="month">
                 <AnimatePresence mode="wait">
                   <motion.div {...(animationConfig as any)}>
-                    <MonthView
-                      classNames={classNames?.buttons}
-                      prevButton={
-                        CustomComponents?.customButtons?.CustomPrevButton
-                      }
-                      nextButton={
-                        CustomComponents?.customButtons?.CustomNextButton
-                      }
-                      CustomEventComponent={
-                        CustomComponents?.CustomEventComponent
-                      }
-                      CustomEventModal={CustomComponents?.CustomEventModal}
-                    />
+                    <MonthView classNames={classNames?.buttons} prevButton={CustomComponents?.customButtons?.CustomPrevButton} nextButton={CustomComponents?.customButtons?.CustomNextButton} CustomEventComponent={CustomComponents?.CustomEventComponent} CustomEventModal={CustomComponents?.CustomEventModal} />
                   </motion.div>
                 </AnimatePresence>
               </TabsContent>

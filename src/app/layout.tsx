@@ -45,7 +45,7 @@ export default async function RootLayout({
         >
           <AppSidebar />
           <main className="relative size-full p-2 pl-0 min-h-screen">
-            <ScrollArea className="rounded-xl overflow-hidden size-full bg-white h-[calc(100vh-1rem)] fixed top-0 left-0 ml-1">
+            <ScrollArea className="rounded-xl overflow-hidden size-full bg-[#f8f9fb] h-[calc(100vh-1rem)] fixed top-0 left-0 ml-1">
               <SidebarTrigger />
 
               <Template token={token}>

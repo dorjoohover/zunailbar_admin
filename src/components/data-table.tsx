@@ -6,10 +6,14 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { DEFAULT_LIMIT } from "@/lib/constants";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "./ui/select";
-import { ChevronLeft, ChevronRight, Loader, LoaderCircle, Search } from "lucide-react";
+import { ChevronDown, ChevronLeft, ChevronRight, Funnel, LoaderCircle, Search } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
+import { Checkbox } from "./ui/checkbox";
+import { Calendar } from "./ui/calendar";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -100,23 +104,167 @@ export function DataTable<TData, TValue>({ columns, data, count = 0, limit = DEF
     }
     return pages;
   }
+  const [showFilter, setShowFilter] = useState(false);
+
+  const roles = ["Ажилчин", "Менежер", "asd"];
+
+  const [selectedRoles, setSelectedRoles] = useState<string[]>([]);
+  const toggleRole = (role: string) => {
+    setSelectedRoles((prev) => (prev.includes(role) ? prev.filter((r) => r !== role) : [...prev, role]));
+  };
+  const [date, setDate] = React.useState<Date | undefined>(new Date());
 
   return (
-    <div className="w-full">
-      <div className="flex items-center justify-between py-4 ">
-        <div className="flex items-center gap-2">
-          <div className="relative min-w-sm">
-            <Search className="size-5 absolute top-[50%] -translate-y-[50%] left-2 text-slate-600" strokeWidth={2.5} />
-            <Input placeholder="Хайх..." value={globalFilter} onChange={(e) => setGlobalFilter(e.target.value)} className="w-full bg-white border-slate-200 pl-10" />
+    <div className="w-full space-y-4">
+      {/* Table action */}
+      <div className="border-b space-y-4 pb-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            {/* Search input */}
+            <div className="relative min-w-sm">
+              <div className="flex items-center">
+                <Search className="size-5 absolute top-[50%] -translate-y-[50%] left-2 text-slate-600" strokeWidth={2.5} />
+              </div>
+              <Input placeholder="Хайх..." value={globalFilter} onChange={(e) => setGlobalFilter(e.target.value)} className="w-full bg-white ring-1 ring-primary pl-10" />
+            </div>
+
+            {/* Table filter trigger */}
+            <Button onClick={() => setShowFilter(!showFilter)} className={cn(showFilter ? "bg-primary text-white" : " bg-white text-dark hover:bg-gray-100", "ring-1 ring-primary cursor-pointer")}>
+              <Funnel />
+            </Button>
           </div>
+
+          {/* Add modal button */}
+          {modalAdd && <div> {modalAdd}</div>}
         </div>
 
-        {modalAdd && <div> {modalAdd}</div>}
+        {/* Filter show */}
+        {showFilter && (
+          <div className="flex items-end justify-between gap-2 p-3 border rounded-md bg-white">
+            <div className="inline-flex gap-3 w-full flex-wrap">
+              <div className="relative space-y-2">
+                <h1 className="text-xs font-bold text-gray-500">Салбар</h1>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" className="inline-flex items-center justify-start text-left gap-1 w-[160px] truncate px-2 rounded">
+                      <div className="font-normal w-full flex items-center justify-between">
+                        {selectedRoles.length ? <span className="w-full truncate">{selectedRoles.join(", ")}</span> : <>Сонгох</>}
+                        <ChevronDown />
+                      </div>
+                    </Button>
+                  </PopoverTrigger>
+
+                  <PopoverContent className="w-auto min-w-[150px]">
+                    <div className="flex flex-col gap-2">
+                      {roles.map((role) => (
+                        <label key={role} className="flex items-center gap-2 cursor-pointer text-sm">
+                          <Checkbox checked={selectedRoles.includes(role)} onCheckedChange={() => toggleRole(role)} />
+                          <span>{role}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </PopoverContent>
+                </Popover>
+              </div>
+              <div className="relative space-y-2">
+                <h1 className="text-xs font-bold text-gray-500">Role</h1>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" className="inline-flex items-center justify-start text-left gap-1 w-[160px] truncate px-2 rounded">
+                      <div className="font-normal w-full flex items-center justify-between">
+                        {selectedRoles.length ? <span className="w-full truncate">{selectedRoles.join(", ")}</span> : <>Сонгох</>}
+                        <ChevronDown />
+                      </div>
+                    </Button>
+                  </PopoverTrigger>
+
+                  <PopoverContent className="w-auto min-w-[150px]">
+                    <div className="flex flex-col gap-2">
+                      {roles.map((role) => (
+                        <label key={role} className="flex items-center gap-2 cursor-pointer text-sm">
+                          <Checkbox checked={selectedRoles.includes(role)} onCheckedChange={() => toggleRole(role)} />
+                          <span>{role}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </PopoverContent>
+                </Popover>
+              </div>
+              <div className="relative space-y-2">
+                <h1 className="text-xs font-bold text-gray-500">Статус</h1>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" className="inline-flex items-center justify-start text-left gap-1 w-[160px] truncate px-2 rounded">
+                      <div className="font-normal w-full flex items-center justify-between">
+                        {selectedRoles.length ? <span className="w-full truncate">{selectedRoles.join(", ")}</span> : <>Сонгох</>}
+                        <ChevronDown />
+                      </div>
+                    </Button>
+                  </PopoverTrigger>
+
+                  <PopoverContent className="w-auto min-w-[150px]">
+                    <div className="flex flex-col gap-2">
+                      {roles.map((role) => (
+                        <label key={role} className="flex items-center gap-2 cursor-pointer text-sm">
+                          <Checkbox checked={selectedRoles.includes(role)} onCheckedChange={() => toggleRole(role)} />
+                          <span>{role}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </PopoverContent>
+                </Popover>
+              </div>
+              <div className="relative space-y-2">
+                <h1 className="text-xs font-bold text-gray-500">Эхлэх огноо</h1>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" className="inline-flex items-center justify-start text-left gap-1 w-[160px] truncate px-2 rounded">
+                      <div className="font-normal w-full flex items-center justify-between">
+                        {date ? <span className="w-full truncate">{date.toLocaleDateString()}</span> : <>Сонгох</>}
+                        <ChevronDown />
+                      </div>
+                    </Button>
+                  </PopoverTrigger>
+
+                  <PopoverContent className="w-auto min-w-[150px]">
+                    <div className="flex flex-col gap-2">
+                      <Calendar mode="single" selected={date} onSelect={setDate} />
+                    </div>
+                  </PopoverContent>
+                </Popover>
+              </div>
+              <div className="relative space-y-2">
+                <h1 className="text-xs font-bold text-gray-500">Дуусах огноо</h1>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" className="inline-flex items-center justify-start text-left gap-1 w-[160px] truncate px-2 rounded">
+                      <div className="font-normal w-full flex items-center justify-between">
+                        {date ? <span className="w-full truncate">{date.toLocaleDateString()}</span> : <>Сонгох</>}
+                        <ChevronDown />
+                      </div>
+                    </Button>
+                  </PopoverTrigger>
+
+                  <PopoverContent className="w-auto min-w-[150px]">
+                    <div className="flex flex-col gap-2">
+                      <Calendar mode="single" selected={date} onSelect={setDate} />
+                    </div>
+                  </PopoverContent>
+                </Popover>
+              </div>
+            </div>
+
+            {/* Clear button */}
+            <Button variant="outline">Цэвэрлэх</Button>
+          </div>
+        )}
       </div>
-      {/* <h2 className="space-x-2 my-2 font-bold">
+      <h2 className="space-x-2 my-2 font-bold">
         Нийт:
         <span> {count} мөр</span>
-      </h2> */}
+      </h2>
+
+      {/* Table */}
       <div className="overflow-hidden rounded-md border border-slate-200">
         <Table>
           <TableHeader>
@@ -157,7 +305,8 @@ export function DataTable<TData, TValue>({ columns, data, count = 0, limit = DEF
         </Table>
       </div>
 
-      <div className="flex items-center justify-between py-4">
+      {/* Table pagination */}
+      <div className="flex items-center justify-between">
         <p className="text-sm text-muted-foreground">{table.getSelectedRowModel().rows.length} мөр сонгогдсон.</p>
 
         <div className="space-x-2 flex items-center">

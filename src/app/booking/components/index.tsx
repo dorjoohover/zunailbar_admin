@@ -165,29 +165,29 @@ export const BookingPage = ({ data, branches }: { data: ListType<Booking>; branc
               }}
             </FormItems>
             <div className={cn("max-h-[60vh] overflow-y-scroll")}>
-            <FormItems control={form.control} name={"dates"} className="">
-              {(field) => {
-                const value = (field.value as string[]) ?? Array(7).fill("");
-                let date = new Date();
-                if (lastBooking) {
-                  const lastDate = new Date(lastBooking.date);
-                  date = new Date(lastDate.setDate(lastDate.getDate() + 7));
-                }
+              <FormItems control={form.control} name={"dates"} className="">
+                {(field) => {
+                  const value = (field.value as string[]) ?? Array(7).fill("");
+                  let date = new Date();
+                  if (lastBooking) {
+                    const lastDate = new Date(lastBooking.date);
+                    date = new Date(lastDate.setDate(lastDate.getDate() + 7));
+                  }
 
-                return (
-                  <ScheduleForm
-                    date={date}
-                    value={value}
-                    setValue={(next) =>
-                      form.setValue("dates", next, {
-                        shouldDirty: true,
-                        shouldTouch: true,
-                      })
-                    }
-                  />
-                );
-              }}
-            </FormItems>
+                  return (
+                    <ScheduleForm
+                      date={date}
+                      value={value}
+                      setValue={(next) =>
+                        form.setValue("dates", next, {
+                          shouldDirty: true,
+                          shouldTouch: true,
+                        })
+                      }
+                    />
+                  );
+                }}
+              </FormItems>
             </div>
           </FormProvider>
         </Modal>

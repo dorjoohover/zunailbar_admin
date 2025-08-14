@@ -112,12 +112,11 @@ export const OrderPage = ({ data, branches }: { data: ListType<Order>; branches:
   };
 
   return (
-    <div className="">
-      <DynamicHeader count={orders?.count} />
-
+    <div className="relative">
+        <DynamicHeader count={orders?.count} />
       <div className="admin-container relative">
         <SchedulerProvider weekStartsOn="monday">
-          {JSON.stringify(orders)}
+          <p>{/* {JSON.stringify(orders)} */}</p>
           <SchedulerViewFilteration orders={orders} />
         </SchedulerProvider>
       </div>
