@@ -1,5 +1,4 @@
 "use client";
-
 import { DataTable } from "@/components/data-table";
 import { IUserService, User, UserService } from "@/models";
 import { useEffect, useMemo, useState } from "react";
@@ -16,33 +15,46 @@ import { fetcher } from "@/hooks/fetcher";
 import { getColumns } from "./columns";
 import { usernameFormatter } from "@/lib/functions";
 import { Service } from "@/models/service.model";
-import { SelectGroup } from "@radix-ui/react-select";
-import { Select, SelectContent, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select";
-import ContainerHeader from "@/components/containerHeader";
 import DynamicHeader from "@/components/dynamicHeader";
+import { Checkbox } from "@/components/ui/checkbox";
 
 const formSchema = z.object({
   user_id: z.string().min(1),
-  service_id: z.string().min(1),
+  services: z.array(z.string()),
 
   edit: z.string().nullable().optional(),
 });
 const defaultValues: UserServiceType = {
   user_id: "",
-  service_id: "",
+  services: [],
   edit: undefined,
 };
 type UserServiceType = z.infer<typeof formSchema>;
-export const EmployeeUserServicePage = ({ data, services, users }: { data: ListType<UserService>; services: ListType<Service>; users: ListType<User> }) => {
+export const EmployeeUserServicePage = ({
+  data,
+  services,
+  users,
+}: {
+  data: ListType<UserService>;
+  services: ListType<Service>;
+  users: ListType<User>;
+}) => {
   const [action, setAction] = useState(ACTION.DEFAULT);
   const [open, setOpen] = useState<undefined | boolean>(false);
   const form = useForm<UserServiceType>({
     resolver: zodResolver(formSchema),
     defaultValues,
   });
-  const [UserServices, setUserServices] = useState<ListType<UserService> | null>(null);
-  const serviceMap = useMemo(() => new Map(services.items.map((b) => [b.id, b])), [services.items]);
-  const userMap = useMemo(() => new Map(users.items.map((b) => [b.id, b])), [users.items]);
+  const [UserServices, setUserServices] =
+    useState<ListType<UserService> | null>(null);
+  const serviceMap = useMemo(
+    () => new Map(services.items.map((b) => [b.id, b])),
+    [services.items]
+  );
+  const userMap = useMemo(
+    () => new Map(users.items.map((b) => [b.id, b])),
+    [users.items]
+  );
 
   const UserServiceFormatter = (data: ListType<UserService>) => {
     const items: UserService[] = data.items.map((item) => {
@@ -50,7 +62,11 @@ export const EmployeeUserServicePage = ({ data, services, users }: { data: ListT
       const service = serviceMap.get(item.service_id);
       return {
         ...item,
-        user_name: item.user_name ? item.user_name : user ? usernameFormatter(user) : "",
+        user_name: item.user_name
+          ? item.user_name
+          : user
+          ? usernameFormatter(user)
+          : "",
         service_name: service?.name ?? item.service_name ?? "",
       };
     });
@@ -94,8 +110,13 @@ export const EmployeeUserServicePage = ({ data, services, users }: { data: ListT
     setAction(ACTION.RUNNING);
     const body = e as UserServiceType;
     const { edit, ...payload } = body;
-    const res = edit ? await updateOne<UserService>(Api.user_service, edit ?? "", payload as unknown as UserService) : await create<UserService>(Api.user_service, e as UserService);
-    console.log(res);
+    const res = edit
+      ? await updateOne<IUserService>(
+          Api.user_service,
+          edit ?? "",
+          payload as unknown as IUserService
+        )
+      : await create<IUserService>(Api.user_service, e as IUserService);
     if (res.success) {
       refresh();
       setOpen(false);
@@ -134,7 +155,11 @@ export const EmployeeUserServicePage = ({ data, services, users }: { data: ListT
             >
               <FormProvider {...form}>
                 <div className="grid grid-cols-1 gap-3 space-y-4">
-                  <FormItems control={form.control} name="user_id" label="Ажилчин">
+                  <FormItems
+                    control={form.control}
+                    name="user_id"
+                    label="Ажилчин"
+                  >
                     {(field) => {
                       return (
                         <ComboBox
@@ -149,31 +174,39 @@ export const EmployeeUserServicePage = ({ data, services, users }: { data: ListT
                       );
                     }}
                   </FormItems>
-                  <FormItems control={form.control} name="service_id" label="Үйлчилгээ">
-                    {(field) => {
-                      return (
-                        <ComboBox
-                          props={{ ...field }}
-                          items={services.items.map((item) => {
-                            return {
-                              value: item.id,
-                              label: item.name ?? "",
-                            };
-                          })}
-                        />
-                        // <Select >
-                        //   <SelectTrigger className="w-full bg-white">
-                        //     <SelectValue placeholder="Үйлчилгээнүүд сонгох"  />
-                        //   </SelectTrigger>
-                        //   <SelectContent >
-                        //     <SelectGroup>
-                        //       <SelectLabel>Үйлчилгээнүүд</SelectLabel>
-                        //       <SelectItem value="a">a</SelectItem>
-                        //     </SelectGroup>
-                        //   </SelectContent>
-                        // </Select>
-                      );
-                    }}
+
+                  <FormItems
+                    control={form.control}
+                    name="services"
+                    label="Үйлчилгээ"
+                  >
+                    {(field) => (
+                      <div className="space-y-2">
+                        {services.items.map((service) => {
+                          const selected = field.value ?? ([] as string[]);
+                          const isChecked = selected.includes(service.id);
+
+                          return (
+                            <div key={service.id} className="">
+                              <Checkbox
+                                checked={isChecked}
+                                onCheckedChange={(val) => {
+                                  const checked = val === true;
+                                  const prev = field.value ?? [];
+                                  const next = checked
+                                    ? Array.from(new Set([...prev, service.id]))
+                                    : (prev as string[]).filter(
+                                        (id: string) => id !== service.id
+                                      );
+                                  field.onChange(next);
+                                }}
+                              />
+                              <span>{service.name}</span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
                   </FormItems>
                 </div>
               </FormProvider>

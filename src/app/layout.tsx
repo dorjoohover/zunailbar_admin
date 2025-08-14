@@ -35,8 +35,8 @@ export default async function RootLayout({
 }>) {
   const store = await cookies();
   const token = store.get("token")?.value;
-  const defaultOpen = store.get("sidebar_state")?.value === "false"
-  
+  const defaultOpen = store.get("sidebar_state")?.value === "false";
+
   return (
     <SidebarProvider defaultOpen={defaultOpen}>
       <html lang="en">
@@ -46,8 +46,6 @@ export default async function RootLayout({
           <AppSidebar />
           <main className="relative size-full p-2 pl-0 min-h-screen">
             <ScrollArea className="rounded-xl overflow-hidden size-full bg-white h-[calc(100vh-1rem)] fixed top-0 left-0 ml-1">
-              <SidebarTrigger />
-
               <Template token={token}>
                 {/* <Navbar /> */}
                 <Toaster />

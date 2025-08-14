@@ -1,9 +1,7 @@
 "use client";
-
-import { DataTable } from "@/components/data-table";
-import { Branch, Brand, Category, IProduct, IBooking, Product, User, Booking } from "@/models";
+import { Branch, IBooking, Booking } from "@/models";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ListType, ACTION, PG, DEFAULT_PG, getEnumValues } from "@/lib/constants";
+import { ListType, ACTION, PG, DEFAULT_PG } from "@/lib/constants";
 import { Modal } from "@/shared/components/modal";
 import z from "zod";
 import { FormProvider, useForm } from "react-hook-form";
@@ -14,14 +12,17 @@ import { FormItems } from "@/shared/components/form.field";
 import { ComboBox } from "@/shared/components/combobox";
 import { fetcher } from "@/hooks/fetcher";
 import { getColumns } from "./columns";
-import { Button } from "@/components/ui/button";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { formatTime, getDayName, getDayNameWithDate, numberArray } from "@/lib/functions";
-import { cn } from "@/lib/utils";
-import { ScheduleForm, ScheduleTable } from "@/components/layout/schedule.table";
-import { Pagination, PaginationContent, PaginationItem, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
-import ContainerHeader from "@/components/containerHeader";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import {
+  ScheduleForm,
+  ScheduleTable,
+} from "@/components/layout/schedule.table";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 import DynamicHeader from "@/components/dynamicHeader";
 
 const hourLine = z.string();
@@ -37,7 +38,13 @@ const defaultValues: BookingType = {
   edit: undefined,
 };
 type BookingType = z.infer<typeof formSchema>;
-export const BookingPage = ({ data, branches }: { data: ListType<Booking>; branches: ListType<Branch> }) => {
+export const BookingPage = ({
+  data,
+  branches,
+}: {
+  data: ListType<Booking>;
+  branches: ListType<Branch>;
+}) => {
   const [action, setAction] = useState(ACTION.DEFAULT);
   const [open, setOpen] = useState<undefined | boolean>(false);
   const form = useForm<BookingType>({
@@ -48,7 +55,10 @@ export const BookingPage = ({ data, branches }: { data: ListType<Booking>; branc
   const [lastBooking, setLastBooking] = useState<Booking | null>(null);
   const [page, setPage] = useState(0);
   const [branch, setBranch] = useState(branches.items[0]);
-  const branchMap = useMemo(() => new Map(branches.items.map((b) => [b.id, b])), [branches.items]);
+  const branchMap = useMemo(
+    () => new Map(branches.items.map((b) => [b.id, b])),
+    [branches.items]
+  );
 
   const bookingFormatter = (data: ListType<Booking>) => {
     const items: Booking[] = data.items.map((item) => {
@@ -102,14 +112,19 @@ export const BookingPage = ({ data, branches }: { data: ListType<Booking>; branc
   };
   const onSubmit = async <T,>(e: T) => {
     let lastDate = lastBooking ? new Date(lastBooking?.date) : new Date();
-    if (lastBooking) lastDate = new Date(lastDate.setDate(lastDate.getDate() + 7));
+    if (lastBooking)
+      lastDate = new Date(lastDate.setDate(lastDate.getDate() + 7));
     const date = lastDate;
     console.log(e, date);
     setAction(ACTION.RUNNING);
     const body = e as BookingType;
     const { edit, ...payload } = body;
     const res = edit
-      ? await updateOne<Booking>(Api.booking, edit ?? "", payload as unknown as Booking)
+      ? await updateOne<Booking>(
+          Api.booking,
+          edit ?? "",
+          payload as unknown as Booking
+        )
       : await create<IBooking>(Api.booking, {
           date: date,
           times: body.dates,
@@ -222,7 +237,13 @@ export const BookingPage = ({ data, branches }: { data: ListType<Booking>; branc
             )}
           </PaginationContent>
         </Pagination>
-        {bookings?.items && bookings?.items?.length > 0 ? <ScheduleTable d={bookings.items?.[0]?.date} value={bookings.items.map((item) => item.times).reverse()} edit={null} /> : null}
+        {bookings?.items && bookings?.items?.length > 0 ? (
+          <ScheduleTable
+            d={bookings.items?.[0]?.date}
+            value={bookings.items.map((item) => item.times).reverse()}
+            edit={null}
+          />
+        ) : null}
         {/* <DataTable
         columns={columns}
         count={bookings?.count}

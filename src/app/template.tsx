@@ -1,5 +1,6 @@
 "use client";
 
+import { SidebarTrigger } from "@/components/ui/sidebar";
 import { ROLE } from "@/lib/enum";
 import { API, baseUrl } from "@/utils/api";
 import { usePathname, useRouter } from "next/navigation";
@@ -50,5 +51,11 @@ export default function Template({
     me();
   }, [token]);
 
-  return <div className="w-full ">{children}</div>;
+  return (
+    <div className="w-full ">
+      {pathname != "/login" && <SidebarTrigger />}
+
+      {children}
+    </div>
+  );
 }

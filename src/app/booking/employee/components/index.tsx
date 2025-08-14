@@ -1,9 +1,7 @@
 "use client";
-
-import { DataTable } from "@/components/data-table";
-import { Branch, Brand, Category, IProduct, ISchedule, Product, User, Schedule } from "@/models";
+import { ISchedule, User, Schedule } from "@/models";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ListType, ACTION, PG, DEFAULT_PG, getEnumValues } from "@/lib/constants";
+import { ListType, ACTION, PG, DEFAULT_PG } from "@/lib/constants";
 import { Modal } from "@/shared/components/modal";
 import z from "zod";
 import { FormProvider, useForm } from "react-hook-form";
@@ -13,14 +11,18 @@ import { create, deleteOne, updateOne } from "@/app/(api)";
 import { FormItems } from "@/shared/components/form.field";
 import { ComboBox } from "@/shared/components/combobox";
 import { fetcher } from "@/hooks/fetcher";
-import { getColumns } from "./columns";
-import { Button } from "@/components/ui/button";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { formatTime, getDayName, getDayNameWithDate, numberArray, usernameFormatter } from "@/lib/functions";
-import { cn } from "@/lib/utils";
-import { ScheduleForm, ScheduleTable } from "@/components/layout/schedule.table";
-import { Pagination, PaginationContent, PaginationItem, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
-import ContainerHeader from "@/components/containerHeader";
+import { usernameFormatter } from "@/lib/functions";
+import {
+  ScheduleForm,
+  ScheduleTable,
+} from "@/components/layout/schedule.table";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 import DynamicHeader from "@/components/dynamicHeader";
 
 const hourLine = z.string();
@@ -36,7 +38,13 @@ const defaultValues: ScheduleType = {
   edit: undefined,
 };
 type ScheduleType = z.infer<typeof formSchema>;
-export const SchedulePage = ({ data, users }: { data: ListType<Schedule>; users: ListType<User> }) => {
+export const SchedulePage = ({
+  data,
+  users,
+}: {
+  data: ListType<Schedule>;
+  users: ListType<User>;
+}) => {
   const [action, setAction] = useState(ACTION.DEFAULT);
   const [open, setOpen] = useState<undefined | boolean>(false);
   const form = useForm<ScheduleType>({
@@ -47,7 +55,10 @@ export const SchedulePage = ({ data, users }: { data: ListType<Schedule>; users:
   const [lastSchedule, setLastSchedule] = useState<Schedule | null>(null);
   const [page, setPage] = useState(0);
   const [branch, setBranch] = useState(users.items[0]);
-  const userMap = useMemo(() => new Map(users.items.map((b) => [b.id, b])), [users.items]);
+  const userMap = useMemo(
+    () => new Map(users.items.map((b) => [b.id, b])),
+    [users.items]
+  );
 
   const ScheduleFormatter = (data: ListType<Schedule>) => {
     const items: Schedule[] = data.items.map((item) => {
@@ -101,7 +112,8 @@ export const SchedulePage = ({ data, users }: { data: ListType<Schedule>; users:
   };
   const onSubmit = async <T,>(e: T) => {
     let lastDate = lastSchedule ? new Date(lastSchedule?.date) : new Date();
-    if (lastSchedule) lastDate = new Date(lastDate.setDate(lastDate.getDate() + 7));
+    if (lastSchedule)
+      lastDate = new Date(lastDate.setDate(lastDate.getDate() + 7));
     const date = lastDate;
     console.log(e, date);
     setAction(ACTION.RUNNING);
@@ -109,7 +121,11 @@ export const SchedulePage = ({ data, users }: { data: ListType<Schedule>; users:
     const { edit, ...payload } = body;
     const user = users.items.filter((user) => user.id == body.user_id)[0];
     const res = edit
-      ? await updateOne<Schedule>(Api.schedule, edit ?? "", payload as unknown as Schedule)
+      ? await updateOne<Schedule>(
+          Api.schedule,
+          edit ?? "",
+          payload as unknown as Schedule
+        )
       : await create<ISchedule>(Api.schedule, {
           date: date,
           times: body.dates,
@@ -134,12 +150,12 @@ export const SchedulePage = ({ data, users }: { data: ListType<Schedule>; users:
 
   return (
     <div className="">
-      <DynamicHeader count={schedules?.count} />
+      <DynamicHeader />
 
       <div className="admin-container space-y-0">
         <Modal
           maw="5xl"
-          name={"Бараа нэмэх" + schedules?.count}
+          name={"Арчистын хуваарь оруулах"}
           submit={() => form.handleSubmit(onSubmit, onInvalid)()}
           open={open == true}
           reset={() => {
@@ -223,7 +239,13 @@ export const SchedulePage = ({ data, users }: { data: ListType<Schedule>; users:
             )}
           </PaginationContent>
         </Pagination>
-        {schedules?.items && schedules?.items?.length > 0 ? <ScheduleTable d={schedules.items?.[0]?.date} value={schedules.items.map((item) => item.times).reverse()} edit={null} /> : null}
+        {schedules?.items && schedules?.items?.length > 0 ? (
+          <ScheduleTable
+            d={schedules.items?.[0]?.date}
+            value={schedules.items.map((item) => item.times).reverse()}
+            edit={null}
+          />
+        ) : null}
         {/* <DataTable
         columns={columns}
         count={Schedules?.count}

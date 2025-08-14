@@ -215,7 +215,16 @@ export default function SchedulerViewFilteration({
 
                           const createDateTime = (hour: number) =>
                             new Date(year, month, day, Number(hour) || 0);
-
+                          console.log({
+                            id,
+                            title: id,
+                            order_date,
+                            date,
+                            start_time,
+                            end_time,
+                            startDate: createDateTime(+start_time),
+                            endDate: createDateTime(+end_time),
+                          });
                           return {
                             id,
                             title: id,

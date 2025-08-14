@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { requestNotificationPermission } from "../utils/notification";
+import DashboardPage from "./dashboard/page";
 
 export default function HomePage() {
   const [token, setToken] = useState<string | null>(null);
@@ -26,17 +27,17 @@ export default function HomePage() {
         setToken(deviceToken);
 
         // Backend NestJS рүү token илгээх
-        await fetch("http://srv654666.hstgr.cloud:4000/api/v1/register", {
-        // await fetch("http://192.168.1.15:4000/api/v1/register", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            token: deviceToken,
-            title: "title test",
-            body: "body test",
-            mobile: "88666515",
-          }),
-        });
+        // await fetch("http://srv654666.hstgr.cloud:4000/api/v1/register", {
+        // // await fetch("http://192.168.1.15:4000/api/v1/register", {
+        //   method: "POST",
+        //   headers: { "Content-Type": "application/json" },
+        //   body: JSON.stringify({
+        //     token: deviceToken,
+        //     title: "title test",
+        //     body: "body test",
+        //     mobile: "88666515",
+        //   }),
+        // });
       }
     }
 
@@ -69,12 +70,13 @@ export default function HomePage() {
 
   return (
     <main className="p-4">
-      <h1 className="text-2xl font-bold">🚀 Firebase Push Test</h1>
+      <DashboardPage />
+      {/* <h1 className="text-2xl font-bold">🚀 Firebase Push Test</h1>
       {token ? (
         <p className="text-green-600">Device Token: {token}</p>
       ) : (
         <p>Loading token...</p>
-      )}
+      )} */}
     </main>
   );
 }

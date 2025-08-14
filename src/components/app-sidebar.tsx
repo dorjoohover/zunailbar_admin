@@ -30,7 +30,7 @@ import {
 export const items = [
   {
     title: "Хянах самбар",
-    url: "/dashboard",
+    url: "/",
     // icon: GraphIcon,
     icon: LayoutDashboard,
   },
