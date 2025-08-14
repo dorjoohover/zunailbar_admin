@@ -2,7 +2,7 @@ import { LoginPage } from "./components";
 
 const Page = async () => {
   return (
-    <section className="max-w-md mx-auto col-center h-full">
+    <section className="max-w-md mx-auto col-center h-[calc(100vh-1rem)] ">
       <LoginPage
       // save={(token, branch, merchant) => handleLogin(token, branch, merchant)}
       />

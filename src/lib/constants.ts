@@ -67,7 +67,7 @@ export enum ACTION {
   RUNNING = 30,
 }
 
-export const DEFAULT_LIMIT = 2;
+export const DEFAULT_LIMIT = 10;
 export const DEFAULT_PAGE = 0;
 export const DEFAULT_SORT = true;
 

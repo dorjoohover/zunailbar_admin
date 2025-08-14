@@ -23,10 +23,10 @@ import { IOrder, Order } from "@/models";
 
 // Animation settings for Framer Motion
 const animationConfig = {
-  initial: { opacity: 0, y: 20 },
+  initial: { opacity: 0, y: 10 },
   animate: { opacity: 1, y: 0 },
-  exit: { opacity: 0, y: -20 },
-  transition: { duration: 0.3, type: "spring", stiffness: 250 },
+  exit: { opacity: 0, y: -10 },
+  transition: { duration: 0.3, type: "spring" },
 };
 
 export default function SchedulerViewFilteration({

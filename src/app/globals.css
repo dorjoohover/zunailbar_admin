@@ -13,6 +13,16 @@
   .hide-number-arrows {
     -moz-appearance: textfield;
   }
+  body {
+    background-image: "/zu-bg-2.png";
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center;
+  }
+}
+
+@utility custom-bg {
+  @apply bg-[url(/zu-bg-2.png)];
 }
 
 @custom-variant dark (&:is(.dark *));
@@ -103,7 +113,8 @@
   --card-foreground: #1e293b;
   --popover: oklch(1 0 0);
   --popover-foreground: #1e293b;
-  --primary: #1e293b;
+  /* --primary: #1e293b; */
+  --primary: #171c45;
   --primary-foreground: oklch(0.985 0 0);
   --secondary: oklch(0.97 0 0);
   --secondary-foreground: #1e293b;

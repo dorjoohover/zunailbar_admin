@@ -41,11 +41,11 @@ export default async function RootLayout({
     <SidebarProvider defaultOpen={defaultOpen}>
       <html lang="en">
         <body
-          className={`${geistSans.variable} ${geistMono.variable} antialiased bg-[url(/zu-bg-2.png)]`}
+          className={`${geistSans.variable} ${geistMono.variable} antialiased custom-bg`}
         >
           <AppSidebar />
           <main className="relative size-full p-2 pl-0 min-h-screen">
-            <ScrollArea className="rounded-xl overflow-hidden size-full bg-white h-[calc(100vh-1rem)] fixed top-0 left-0 ml-1">
+            <ScrollArea className="rounded-xl overflow-hidden size-full bg-[#f8f9fb] h-[calc(100vh-1rem)] fixed top-0 left-0 ml-1">
               <Template token={token}>
                 {/* <Navbar /> */}
                 <Toaster />
