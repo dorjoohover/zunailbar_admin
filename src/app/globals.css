@@ -44,7 +44,7 @@
 }
 
 @utility double-col {
-  @apply grid grid-cols-2 gap-5;
+  @apply grid grid-cols-1 sm:grid-cols-2 gap-5;
 }
 
 @utility divide-x-gray {

@@ -123,7 +123,7 @@ export const CostPage = ({ data, products, branches }: { data: ListType<Cost>; p
             <Modal
             maw="lg"
               name="Бараа нэмэх"
-              title="Бараа нэмэх форм"
+              title="Хэрэглээний зардал"
               submit={() => form.handleSubmit(onSubmit, onInvalid)()}
               open={open == true}
               reset={() => {
@@ -152,7 +152,7 @@ export const CostPage = ({ data, products, branches }: { data: ListType<Cost>; p
                       }}
                     </FormItems>
                   </div>
-                  <div className="grid grid-cols-2 gap-3 pb-5">
+                  <div className="grid double-col gap-3 py-5">
                     <FormItems control={form.control} name="branch_id" label="Салбар">
                       {(field) => {
                         return (
@@ -185,7 +185,7 @@ export const CostPage = ({ data, products, branches }: { data: ListType<Cost>; p
                     </FormItems>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-3 pt-5">
+                  <div className="grid double-col gap-3 pt-5">
                     {[
                       {
                         key: "price",

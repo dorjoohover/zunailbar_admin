@@ -109,7 +109,7 @@ export const ProductPage = ({ data, categories, brands }: { data: ListType<Produ
               >
                 <FormProvider {...form}>
                   <div className="divide-y">
-                    <div className="grid grid-cols-2 gap-3 pb-5">
+                    <div className="double-col pb-5">
                       <FormItems control={form.control} name="category_id" label="Төрөл">
                         {(field) => {
                           console.log(field.value);
@@ -142,7 +142,7 @@ export const ProductPage = ({ data, categories, brands }: { data: ListType<Produ
                         }}
                       </FormItems>
                     </div>
-                    <div className="grid grid-cols-2 gap-3 pt-5">
+                    <div className="double-col pt-5">
                       {[
                         {
                           key: "name",
@@ -165,7 +165,7 @@ export const ProductPage = ({ data, categories, brands }: { data: ListType<Produ
                         const name = item.key as keyof ProductType;
                         const label = item.label as keyof ProductType;
                         return (
-                          <FormItems control={form.control} name={name} key={i} className={item.key === "name" ? "col-span-2" : ""}>
+                          <FormItems control={form.control} name={name} key={i} className={item.key && "name"}>
                             {(field) => {
                               return <TextField props={{ ...field }} type={item.type} label={label} />;
                             }}

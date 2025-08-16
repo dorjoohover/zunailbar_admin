@@ -14,6 +14,7 @@ import { cn } from "@/lib/utils";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import { Checkbox } from "./ui/checkbox";
 import { Calendar } from "./ui/calendar";
+import { ScrollArea, ScrollBar } from "./ui/scroll-area";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -115,13 +116,13 @@ export function DataTable<TData, TValue>({ columns, data, count = 0, limit = DEF
   const [date, setDate] = React.useState<Date | undefined>(new Date());
 
   return (
-    <div className="w-full space-y-4">
+    <div className="space-y-4">
       {/* Table action */}
       <div className="border-b space-y-4 pb-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             {/* Search input */}
-            <div className="relative min-w-sm">
+            <div className="relative max-w-sm">
               <div className="flex items-center">
                 <Search className="size-5 absolute top-[50%] -translate-y-[50%] left-2 text-slate-600" strokeWidth={2.5} />
               </div>
@@ -264,46 +265,50 @@ export function DataTable<TData, TValue>({ columns, data, count = 0, limit = DEF
         <span> {count} мөр</span>
       </h2>
 
-      {/* Table */}
-      <div className="overflow-hidden rounded-md border border-slate-200">
-        <Table>
-          <TableHeader>
-            {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => (
-                  <TableHead key={header.id}>{header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}</TableHead>
-                ))}
-              </TableRow>
-            ))}
-          </TableHeader>
-          <TableBody>
-            {loading ? (
-              <TableRow>
-                <TableCell colSpan={columns.length} className="h-24 text-center">
-                  <div className="flex items-center justify-center gap-x-2">
-                    <LoaderCircle className="animate-spin text-slate-700 size-8" />
-                    Уншиж байна
-                  </div>
-                </TableCell>
-              </TableRow>
-            ) : table.getRowModel().rows.length ? (
-              table.getRowModel().rows.map((row) => (
-                <TableRow key={row.id} data-state={row.getIsSelected() && "selected"}>
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</TableCell>
+      <ScrollArea className="h-fit w-[calc(100vw-3rem)] lg:w-full rounded-md border pb-2">
+        {/* Table */}
+        <div className="overflow-hidden rounded-md border border-slate-200">
+          <Table>
+            <TableHeader>
+              {table.getHeaderGroups().map((headerGroup) => (
+                <TableRow key={headerGroup.id}>
+                  {headerGroup.headers.map((header) => (
+                    <TableHead key={header.id}>{header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}</TableHead>
                   ))}
                 </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell colSpan={columns.length} className="h-24 text-center">
-                  Хоосон байна
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </div>
+              ))}
+            </TableHeader>
+            <TableBody>
+              {loading ? (
+                <TableRow>
+                  <TableCell colSpan={columns.length} className="h-24 text-center">
+                    <div className="flex items-center justify-center gap-x-2">
+                      <LoaderCircle className="animate-spin text-slate-700 size-8" />
+                      Уншиж байна
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ) : table.getRowModel().rows.length ? (
+                table.getRowModel().rows.map((row) => (
+                  <TableRow key={row.id} data-state={row.getIsSelected() && "selected"}>
+                    {row.getVisibleCells().map((cell) => (
+                      <TableCell key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</TableCell>
+                    ))}
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={columns.length} className="h-24 text-center">
+                    Хоосон байна
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </div>
+
+        <ScrollBar orientation="horizontal" className="" />
+      </ScrollArea>
 
       {/* Table pagination */}
       <div className="flex items-center justify-between">

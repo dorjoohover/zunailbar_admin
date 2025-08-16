@@ -161,7 +161,7 @@ export const EmployeePage = ({ data, branches }: { data: ListType<User>; branche
               <FormProvider {...form}>
                 {/* Profile Image */}
                 <div className="divide-y">
-                  <div className="grid grid-cols-2 gap-3 pb-5">
+                  <div className="grid grid-cols-1 gap-3 pb-5">
                     {/* <FormItems control={form.control} name="file">
               {(field) => {
                 return (
@@ -245,7 +245,7 @@ export const EmployeePage = ({ data, branches }: { data: ListType<User>; branche
                       </FormItems>
                     )}
                   </div>
-                  <div className="grid grid-cols-2 gap-3 py-5">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 py-5">
                     <FormItems control={form.control} name="branch_id" label="Салбар">
                       {(field) => {
                         return (
@@ -278,7 +278,7 @@ export const EmployeePage = ({ data, branches }: { data: ListType<User>; branche
                       }}
                     </FormItems>
                   </div>
-                  <div className="grid grid-cols-2 gap-3 pt-5">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-5">
                     <FormItems control={form.control} name="password" className="col-span-1">
                       {(field) => {
                         return <PasswordField props={{ ...field }} view={true} />;

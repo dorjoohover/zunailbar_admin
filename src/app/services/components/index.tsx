@@ -182,7 +182,7 @@ export const ServicePage = ({ data, branches }: { data: ListType<Service>; branc
                     const name = item.key as keyof ServiceType;
                     const label = item.label as keyof ServiceType;
                     return (
-                      <FormItems label={label} control={form.control} name={name} key={i} className={item.key === "name" ? "col-span-2" : ""}>
+                      <FormItems label={label} control={form.control} name={name} key={i} className={item.key && "name"}>
                         {(field) => {
                           return <TextField props={{ ...field }} type={item.type} />;
                         }}

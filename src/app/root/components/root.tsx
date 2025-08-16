@@ -83,7 +83,7 @@ export const RootModal = ({ refresh }: { refresh: () => void }) => {
         loading={action == ACTION.RUNNING}
       >
         <FormProvider {...form}>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="double-col">
             <FormItems label="Category name" control={form.control} name={"category_name"} className={"col-span-1"}>
               {(field) => {
                 return <TextField props={{ ...field }} />;
@@ -122,7 +122,7 @@ export const RootModal = ({ refresh }: { refresh: () => void }) => {
         loading={action == ACTION.RUNNING}
       >
         <FormProvider {...form}>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="double-col">
             {[
               {
                 key: "brand_name",

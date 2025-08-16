@@ -113,7 +113,7 @@ export const ProductPage = ({ data, categories, brands }: { data: ListType<Produ
             >
               <FormProvider {...form}>
                 <div className="divide-y">
-                  <div className="grid grid-cols-2 gap-3 pb-5">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pb-5">
                     <FormItems control={form.control} name="category_id" label="Төрөл">
                       {(field) => {
                         console.log(field.value);
