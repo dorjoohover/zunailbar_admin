@@ -11,6 +11,7 @@ import { useScheduler } from "@/providers/schedular-provider";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import CustomModal from "@/components/ui/custom-modal";
+import { getUserColor } from "@/lib/colors";
 
 // Function to format date
 const formatDate = (date: Date) => {
@@ -34,28 +35,45 @@ const formatTime = (date: Date) => {
 };
 
 // Color variants based on event type
-const variantColors = {
-  primary: {
-    bg: "bg-blue-100",
-    border: "border-blue-200",
-    text: "text-blue-800",
-  },
-  danger: {
-    bg: "bg-red-100",
-    border: "border-red-200",
-    text: "text-red-800",
-  },
-  success: {
-    bg: "bg-green-100",
-    border: "border-green-200",
-    text: "text-green-800",
-  },
-  warning: {
-    bg: "bg-yellow-100",
-    border: "border-yellow-200",
-    text: "text-yellow-800",
-  },
-};
+const FAMILIES = [
+  "blue",
+  "red",
+  "green",
+  "yellow",
+  "purple",
+  "pink",
+  "indigo",
+  "teal",
+  "cyan",
+  "sky",
+  "rose",
+  "orange",
+  "amber",
+  "lime",
+  "emerald",
+  "violet",
+  "fuchsia",
+  "slate",
+  "gray",
+  "zinc",
+  "neutral",
+  "stone",
+];
+
+// Нэмэлт сүүдэр сетүүд (1 өнгөнд 3 хувилбар = 60+ item)
+const SHADE_SETS = [
+  { bg: 50, border: 200, text: 800 },
+  { bg: 100, border: 200, text: 800 },
+  { bg: 200, border: 300, text: 900 },
+];
+
+export const PALETTE = FAMILIES.flatMap((c) =>
+  SHADE_SETS.map((s) => ({
+    bg: `bg-${c}-${s.bg}`,
+    border: `border-${c}-${s.border}`,
+    text: `text-${c}-${s.text}`,
+  }))
+);
 
 interface EventStyledProps extends Event {
   minmized?: boolean;
@@ -98,10 +116,11 @@ export default function EventStyled({
   }
 
   // Get background color class based on variant
-  const getBackgroundColor = (variant: string | undefined) => {
-    const variantKey = (variant as keyof typeof variantColors) || "primary";
-    const colors = variantColors[variantKey] || variantColors.primary;
-    return `${colors.bg} ${colors.text} ${colors.border}`;
+  const getBackgroundColor = (color: number | undefined) => {
+    const userColor = getUserColor(color ?? 0);
+    const res = `${userColor.bg} ${userColor.border} `;
+    console.log(res);
+    return res;
   };
 
   return (
@@ -139,7 +158,7 @@ export default function EventStyled({
               startDate: event?.startDate,
               endDate: event?.endDate,
               description: event?.description,
-              variant: event?.variant,
+              color: event?.color,
             });
           }}
         >
@@ -155,12 +174,12 @@ export default function EventStyled({
               startDate: event?.startDate,
               endDate: event?.endDate,
               description: event?.description,
-              variant: event?.variant,
+              color: event?.color,
             });
           }}
           className={cn(
-            "w-full p-2 rounded",
-            getBackgroundColor(event?.variant),
+            "w-full p-2 rounded text-white",
+            getBackgroundColor(event?.color),
             event?.minmized ? "flex-grow overflow-hidden" : "min-h-fit"
           )}
         >

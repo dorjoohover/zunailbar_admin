@@ -38,7 +38,7 @@ export const zNumOpt = z.number().nullable().optional();
 //   [EmployeeStatus.VACATION]: { name: "Амралт", color: "yellow" },
 //   [EmployeeStatus.FIRED]: { name: "Халагдсан", color: "red" },
 // };
-
+export type Option<T = string | number> = { value: T; label: string };
 export const UserStatusValue = {
   [UserStatus.ACTIVE]: { name: "Active", color: "text-green-600" },
   [UserStatus.FIRED]: { name: "Халагдсан", color: "text-gray-600" },
@@ -91,6 +91,12 @@ export const ListDefault = {
   count: 0,
   items: [],
 };
+
+export enum OrderStatus {
+  Active = 10,
+  Pending = 20,
+  Hidden = 30,
+}
 
 // export const PG = (dto: PgDto = {}): Required<PgDto> => ({
 //   ...DEFAULT_PG,

@@ -25,6 +25,7 @@ import { ControllerRenderProps, FieldValues } from "react-hook-form";
 type InputType = {
   value: string;
   label: string;
+  color?: string;
 };
 
 export function ComboBox<T extends FieldValues>({
@@ -70,6 +71,11 @@ export function ComboBox<T extends FieldValues>({
                     onChange(vl);
                     setOpen(false);
                   }}
+                  className={
+                    framework.color
+                      ? `bg-${framework.color}-500 text-white`
+                      : ""
+                  }
                 >
                   {framework.label}
                   <Check

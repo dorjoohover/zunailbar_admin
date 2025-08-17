@@ -1,9 +1,26 @@
 "use client";
 
 import { DataTable } from "@/components/data-table";
-import { Branch, Brand, Category, IProduct, IProductTransaction, Product, ProductTransaction, User } from "@/models";
+import {
+  Branch,
+  Brand,
+  Category,
+  IProduct,
+  IProductTransaction,
+  Product,
+  ProductTransaction,
+  User,
+} from "@/models";
 import { useEffect, useMemo, useState } from "react";
-import { ListType, ACTION, PG, DEFAULT_PG, getEnumValues, getValuesProductTransactionStatus } from "@/lib/constants";
+import {
+  ListType,
+  ACTION,
+  PG,
+  DEFAULT_PG,
+  getEnumValues,
+  getValuesProductTransactionStatus,
+  Option,
+} from "@/lib/constants";
 import { Modal } from "@/shared/components/modal";
 import z from "zod";
 import { FormProvider, useForm } from "react-hook-form";
@@ -16,27 +33,36 @@ import { TextField } from "@/shared/components/text.field";
 import { fetcher } from "@/hooks/fetcher";
 import { getColumns } from "./columns";
 import { ProductTransactionStatus } from "@/lib/enum";
-import { usernameFormatter } from "@/lib/functions";
+import { objectCompact, usernameFormatter } from "@/lib/functions";
 import ContainerHeader from "@/components/containerHeader";
 import DynamicHeader from "@/components/dynamicHeader";
+import { FilterPopover } from "@/components/layout/popover";
+import { Checkbox } from "@radix-ui/react-checkbox";
 
 const formSchema = z.object({
   branch_id: z.string().min(1),
   product_id: z.string().min(1),
   user_id: z.string().nullable().optional(),
-  quantity: z.preprocess((val) => (typeof val === "string" ? parseFloat(val) : val), z.number()) as unknown as number,
-  //   price: z.preprocess(
-  //     (val) => (typeof val === "string" ? parseFloat(val) : val),
-  //     z.number()
-  //   ) as unknown as number,
-  //   total_amount: z.preprocess(
-  //     (val) => (typeof val === "string" ? parseFloat(val) : val),
-  //     z.number()
-  //   ) as unknown as number,
+  quantity: z.preprocess(
+    (val) => (typeof val === "string" ? parseFloat(val) : val),
+    z.number()
+  ) as unknown as number,
+
   edit: z.string().nullable().optional(),
-  product_transaction_status: z.preprocess((val) => (typeof val === "string" ? parseInt(val, 10) : val), z.nativeEnum(ProductTransactionStatus).nullable()).optional() as unknown as number,
+  product_transaction_status: z
+    .preprocess(
+      (val) => (typeof val === "string" ? parseInt(val, 10) : val),
+      z.nativeEnum(ProductTransactionStatus).nullable()
+    )
+    .optional() as unknown as number,
 });
 type TransactionType = z.infer<typeof formSchema>;
+type FilterType = {
+  product?: string;
+  user?: string;
+  branch?: string;
+  status?: number;
+};
 const defaultValues = {
   branch_id: undefined,
   edit: undefined,
@@ -45,17 +71,37 @@ const defaultValues = {
   quantity: undefined,
   user_id: undefined,
 };
-export const ProductTransactionPage = ({ data, users, branches, products }: { data: ListType<ProductTransaction>; users: ListType<User>; branches: ListType<Branch>; products: ListType<Product> }) => {
+export const ProductTransactionPage = ({
+  data,
+  users,
+  branches,
+  products,
+}: {
+  data: ListType<ProductTransaction>;
+  users: ListType<User>;
+  branches: ListType<Branch>;
+  products: ListType<Product>;
+}) => {
   const [action, setAction] = useState(ACTION.DEFAULT);
   const [open, setOpen] = useState<undefined | boolean>(false);
   const form = useForm<TransactionType>({
     resolver: zodResolver(formSchema),
     defaultValues,
   });
-  const [transactions, setTransactions] = useState<ListType<IProductTransaction> | null>(null);
-  const branchMap = useMemo(() => new Map(branches.items.map((b) => [b.id, b])), [branches.items]);
-  const userMap = useMemo(() => new Map(users.items.map((u) => [u.id, u])), [users.items]);
-  const productMap = useMemo(() => new Map(products.items.map((p) => [p.id, p])), [products.items]);
+  const [transactions, setTransactions] =
+    useState<ListType<IProductTransaction> | null>(null);
+  const branchMap = useMemo(
+    () => new Map(branches.items.map((b) => [b.id, b])),
+    [branches.items]
+  );
+  const userMap = useMemo(
+    () => new Map(users.items.map((u) => [u.id, u])),
+    [users.items]
+  );
+  const productMap = useMemo(
+    () => new Map(products.items.map((p) => [p.id, p])),
+    [products.items]
+  );
   const transactionFormatter = (data: ListType<ProductTransaction>) => {
     const items: IProductTransaction[] = data.items.map((item) => {
       const branch = branchMap.get(item.branch_id);
@@ -91,10 +137,10 @@ export const ProductTransactionPage = ({ data, users, branches, products }: { da
     setAction(ACTION.RUNNING);
     const { page, limit, sort } = pg;
     await fetcher<ProductTransaction>(Api.product_transaction_admin, {
-      page,
-      limit,
-      sort,
-      //   name: pg.filter,
+      page: page ?? DEFAULT_PG.page,
+      limit: limit ?? DEFAULT_PG.limit,
+      sort: sort ?? DEFAULT_PG.sort,
+      ...pg,
     }).then((d) => {
       transactionFormatter(d);
     });
@@ -104,7 +150,16 @@ export const ProductTransactionPage = ({ data, users, branches, products }: { da
     setAction(ACTION.RUNNING);
     const body = e as TransactionType;
     const { edit, ...payload } = body;
-    const res = edit ? await updateOne<IProductTransaction>(Api.product_transaction, edit ?? "", payload as IProductTransaction) : await create<IProductTransaction>(Api.product_transaction, e as IProductTransaction);
+    const res = edit
+      ? await updateOne<IProductTransaction>(
+          Api.product_transaction,
+          edit ?? "",
+          payload as IProductTransaction
+        )
+      : await create<IProductTransaction>(
+          Api.product_transaction,
+          e as IProductTransaction
+        );
     if (res.success) {
       refresh();
       setOpen(false);
@@ -116,12 +171,92 @@ export const ProductTransactionPage = ({ data, users, branches, products }: { da
     console.log("error", e);
   };
 
+  const [filter, setFilter] = useState<FilterType>();
+  const changeFilter = (key: string, value: number | string) => {
+    setFilter((prev) => ({ ...prev, [key]: value }));
+  };
+
+  useEffect(() => {
+    refresh(
+      objectCompact({
+        branch_id: filter?.branch,
+        user_id: filter?.user,
+        product_id: filter?.product,
+        product_transaction_status: filter?.status,
+        page: 0,
+      })
+    );
+  }, [filter]);
+  const groups: { key: keyof FilterType; label: string; items: Option[] }[] =
+    useMemo(
+      () => [
+        {
+          key: "branch",
+          label: "Салбар",
+          items: branches.items.map((b) => ({ value: b.id, label: b.name })),
+        },
+        {
+          key: "user",
+          label: "Артист",
+          items: users.items.map((b) => ({
+            value: b.id,
+            label: usernameFormatter(b),
+          })),
+        },
+        {
+          key: "product",
+          label: "Бүтээгдэхүүн",
+          items: products.items.map((b) => ({ value: b.id, label: b.name })),
+        },
+        {
+          key: "status",
+          label: "Статус",
+          items: getEnumValues(ProductTransactionStatus).map((s) => ({
+            value: s,
+            label: getValuesProductTransactionStatus[s],
+          })),
+        },
+      ],
+      [branches.items]
+    );
   return (
     <div className="">
       <DynamicHeader count={transactions?.count} />
-      
+
       <div className="admin-container">
         <DataTable
+          clear={() => setFilter(undefined)}
+          filter={
+            <div className="inline-flex gap-3 w-full flex-wrap">
+              {groups.map((item, i) => {
+                const { key } = item;
+                return (
+                  <FilterPopover
+                    content={item.items.map((it, index) => (
+                      <label
+                        key={index}
+                        className="flex items-center gap-2 cursor-pointer text-sm"
+                      >
+                        <Checkbox
+                          checked={filter?.[key] == it.value}
+                          onCheckedChange={() => changeFilter(key, it.value)}
+                        />
+                        <span>{it.label as string}</span>
+                      </label>
+                    ))}
+                    value={
+                      filter?.[key]
+                        ? item.items.filter(
+                            (item) => item.value == filter[key]
+                          )[0].label
+                        : undefined
+                    }
+                    label={item.label}
+                  />
+                );
+              })}
+            </div>
+          }
           columns={columns}
           count={transactions?.count}
           data={transactions?.items ?? []}
@@ -144,7 +279,11 @@ export const ProductTransactionPage = ({ data, users, branches, products }: { da
             >
               <FormProvider {...form}>
                 <div className="grid grid-cols-2 gap-5">
-                  <FormItems label="Салбар" control={form.control} name="branch_id">
+                  <FormItems
+                    label="Салбар"
+                    control={form.control}
+                    name="branch_id"
+                  >
                     {(field) => {
                       return (
                         <ComboBox
@@ -159,7 +298,11 @@ export const ProductTransactionPage = ({ data, users, branches, products }: { da
                       );
                     }}
                   </FormItems>
-                  <FormItems label="Ажилтан" control={form.control} name="user_id">
+                  <FormItems
+                    label="Ажилтан"
+                    control={form.control}
+                    name="user_id"
+                  >
                     {(field) => {
                       return (
                         <ComboBox
@@ -174,7 +317,11 @@ export const ProductTransactionPage = ({ data, users, branches, products }: { da
                       );
                     }}
                   </FormItems>
-                  <FormItems label="Бүтээгдэхүүн" control={form.control} name="product_id">
+                  <FormItems
+                    label="Бүтээгдэхүүн"
+                    control={form.control}
+                    name="product_id"
+                  >
                     {(field) => {
                       return (
                         <ComboBox
@@ -189,17 +336,23 @@ export const ProductTransactionPage = ({ data, users, branches, products }: { da
                       );
                     }}
                   </FormItems>
-                  <FormItems label="Төлөв" control={form.control} name="product_transaction_status">
+                  <FormItems
+                    label="Төлөв"
+                    control={form.control}
+                    name="product_transaction_status"
+                  >
                     {(field) => {
                       return (
                         <ComboBox
                           props={{ ...field }}
-                          items={getEnumValues(ProductTransactionStatus).map((item) => {
-                            return {
-                              value: item.toString(),
-                              label: getValuesProductTransactionStatus[item],
-                            };
-                          })}
+                          items={getEnumValues(ProductTransactionStatus).map(
+                            (item) => {
+                              return {
+                                value: item.toString(),
+                                label: getValuesProductTransactionStatus[item],
+                              };
+                            }
+                          )}
                         />
                       );
                     }}
@@ -224,14 +377,29 @@ export const ProductTransactionPage = ({ data, users, branches, products }: { da
                     const name = item.key as keyof TransactionType;
                     const label = item.label as keyof TransactionType;
                     return (
-                      <FormItems control={form.control} name={name} key={i} className={item.key === "name" ? "col-span-2" : ""}>
+                      <FormItems
+                        control={form.control}
+                        name={name}
+                        key={i}
+                        className={item.key === "name" ? "col-span-2" : ""}
+                      >
                         {(field) => {
-                          return <TextField props={{ ...field }} type={item.type} label={label} />;
+                          return (
+                            <TextField
+                              props={{ ...field }}
+                              type={item.type}
+                              label={label}
+                            />
+                          );
                         }}
                       </FormItems>
                     );
                   })}
-                  <FormItems label="Бараа" control={form.control} name="product_id">
+                  <FormItems
+                    label="Бараа"
+                    control={form.control}
+                    name="product_id"
+                  >
                     {(field) => {
                       return (
                         <ComboBox

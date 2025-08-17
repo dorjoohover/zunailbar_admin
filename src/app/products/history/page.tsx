@@ -6,12 +6,13 @@ import {
 import { find } from "@/app/(api)";
 import { ProductHistoryPage } from "./components";
 import ContainerHeader from "@/components/containerHeader";
+import { CategoryType } from "@/lib/enum";
 // import { ProductTransactionPage } from "./components";
 
 export default async function Page() {
   const [res, product] = await Promise.all([
     find<ProductLog>(Api.product_log),
-    find<Product>(Api.product, { isCost: false, limit: -1 }),
+    find<Product>(Api.product, { type: CategoryType.DEFAULT, limit: -1 }),
   ]);
   return (
     <section>

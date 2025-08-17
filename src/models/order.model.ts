@@ -36,6 +36,17 @@ export interface Order {
   status: number;
   created_at?: Date;
   updated_at?: Date;
+  details?: OrderDetail[];
+}
+
+export interface OrderDetail {
+  id: string;
+  order_id: string;
+  service_id: string;
+  service_name: string;
+  price: number;
+  status: number;
+  created_at?: Date;
 }
 
 export interface IOrderDetail {

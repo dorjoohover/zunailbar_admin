@@ -43,6 +43,7 @@ export const OrderPage = ({ data, branches }: { data: ListType<Order>; branches:
   const branchMap = useMemo(() => new Map(branches.items.map((b) => [b.id, b])), [branches.items]);
 
   const orderFormatter = (data: ListType<Order>) => {
+    console.log(data)
     const items: Order[] = data.items.map((item) => {
       // const branch = branchMap.get(item.branch_id);
 
@@ -106,7 +107,7 @@ export const OrderPage = ({ data, branches }: { data: ListType<Order>; branches:
         <DynamicHeader count={orders?.count} />
       <div className="admin-container relative">
         <SchedulerProvider weekStartsOn="monday">
-          <p>{/* {JSON.stringify(orders)} */}</p>
+          <p>{JSON.stringify(orders)}</p>
           <SchedulerViewFilteration orders={orders} />
         </SchedulerProvider>
       </div>

@@ -20,7 +20,7 @@ export interface IService {
 export interface Service {
   id: string;
   branch_id: string;
-  name?: string;
+  name: string;
   max_price: number;
   min_price: number;
   duration: number;

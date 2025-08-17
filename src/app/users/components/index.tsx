@@ -1,9 +1,16 @@
 "use client";
-
 import { DataTable } from "@/components/data-table";
 import { Branch, IUser, User } from "@/models";
 import { useEffect, useMemo, useState } from "react";
-import { ListType, ACTION, PG, DEFAULT_PG, getEnumValues } from "@/lib/constants";
+import {
+  ListType,
+  ACTION,
+  PG,
+  DEFAULT_PG,
+  getEnumValues,
+  Option,
+  UserStatusValue,
+} from "@/lib/constants";
 import { Modal } from "@/shared/components/modal";
 import z from "zod";
 import { FormProvider, useForm } from "react-hook-form";
@@ -15,10 +22,11 @@ import { ComboBox } from "@/shared/components/combobox";
 import { TextField } from "@/shared/components/text.field";
 import { fetcher } from "@/hooks/fetcher";
 import { getColumns } from "./columns";
-import { usernameFormatter } from "@/lib/functions";
-import { ROLE } from "@/lib/enum";
-import ContainerHeader from "@/components/containerHeader";
+import { ROLE, UserStatus } from "@/lib/enum";
 import DynamicHeader from "@/components/dynamicHeader";
+import { objectCompact } from "@/lib/functions";
+import { FilterPopover } from "@/components/layout/popover";
+import { Checkbox } from "@radix-ui/react-checkbox";
 
 const formSchema = z.object({
   mobile: z.string().min(1),
@@ -35,8 +43,17 @@ const defaultValues: UserType = {
   branch_id: "",
   edit: undefined,
 };
+type FilterType = {
+  status?: number;
+};
 type UserType = z.infer<typeof formSchema>;
-export const UserPage = ({ data, branches }: { data: ListType<User>; branches: ListType<Branch> }) => {
+export const UserPage = ({
+  data,
+  branches,
+}: {
+  data: ListType<User>;
+  branches: ListType<Branch>;
+}) => {
   const [action, setAction] = useState(ACTION.DEFAULT);
   const [open, setOpen] = useState<undefined | boolean>(false);
   const form = useForm<UserType>({
@@ -44,7 +61,10 @@ export const UserPage = ({ data, branches }: { data: ListType<User>; branches: L
     defaultValues,
   });
   const [Users, setUsers] = useState<ListType<User> | null>(null);
-  const branchMap = useMemo(() => new Map(branches.items.map((b) => [b.id, b])), [branches.items]);
+  const branchMap = useMemo(
+    () => new Map(branches.items.map((b) => [b.id, b])),
+    [branches.items]
+  );
 
   const UserFormatter = (data: ListType<User>) => {
     const items: User[] = data.items.map((item) => {
@@ -81,10 +101,11 @@ export const UserPage = ({ data, branches }: { data: ListType<User>; branches: L
     setAction(ACTION.RUNNING);
     const { page, limit, sort } = pg;
     await fetcher<User>(Api.user, {
-      page,
-      limit,
-      sort,
+      page: page ?? DEFAULT_PG.page,
+      limit: limit ?? DEFAULT_PG.limit,
+      sort: sort ?? DEFAULT_PG.sort,
       role: ROLE.CLIENT,
+      ...pg,
       //   name: pg.filter,
     }).then((d) => {
       UserFormatter(d);
@@ -96,7 +117,9 @@ export const UserPage = ({ data, branches }: { data: ListType<User>; branches: L
     setAction(ACTION.RUNNING);
     const body = e as UserType;
     const { edit, ...payload } = body;
-    const res = edit ? await updateOne<User>(Api.user, edit ?? "", payload as unknown as User) : await create<User>(Api.user, e as User);
+    const res = edit
+      ? await updateOne<User>(Api.user, edit ?? "", payload as unknown as User)
+      : await create<User>(Api.user, e as User);
     console.log(res);
     if (res.success) {
       refresh();
@@ -108,13 +131,73 @@ export const UserPage = ({ data, branches }: { data: ListType<User>; branches: L
   const onInvalid = async <T,>(e: T) => {
     console.log("error", e);
   };
+  const [filter, setFilter] = useState<FilterType>();
+  const changeFilter = (key: string, value: number | string) => {
+    setFilter((prev) => ({ ...prev, [key]: value }));
+  };
 
+  useEffect(() => {
+    refresh(
+      objectCompact({
+        user_status: filter?.status,
+
+        page: 0,
+      })
+    );
+  }, [filter]);
+  const groups: { key: keyof FilterType; label: string; items: Option[] }[] =
+    useMemo(
+      () => [
+        {
+          key: "status",
+          label: "Статус",
+          items: getEnumValues(UserStatus).map((s) => ({
+            value: s,
+            label: UserStatusValue[s].name,
+          })),
+        },
+      ],
+      [branches.items]
+    );
   return (
     <div className="">
       <DynamicHeader count={Users?.count} />
 
       <div className="admin-container">
         <DataTable
+          clear={() => setFilter(undefined)}
+          filter={
+            <div className="inline-flex gap-3 w-full flex-wrap">
+              {groups.map((item, i) => {
+                const { key } = item;
+                return (
+                  <FilterPopover
+                    key={i}
+                    content={item.items.map((it, index) => (
+                      <label
+                        key={index}
+                        className="flex items-center gap-2 cursor-pointer text-sm"
+                      >
+                        <Checkbox
+                          checked={filter?.[key] == it.value}
+                          onCheckedChange={() => changeFilter(key, it.value)}
+                        />
+                        <span>{it.label as string}</span>
+                      </label>
+                    ))}
+                    value={
+                      filter?.[key]
+                        ? item.items.filter(
+                            (item) => item.value == filter[key]
+                          )[0].label
+                        : undefined
+                    }
+                    label={item.label}
+                  />
+                );
+              })}
+            </div>
+          }
           columns={columns}
           count={Users?.count}
           data={Users?.items ?? []}
@@ -136,7 +219,11 @@ export const UserPage = ({ data, branches }: { data: ListType<User>; branches: L
             >
               <FormProvider {...form}>
                 <div className="double-col gap-5">
-                  <FormItems label="Салбар" control={form.control} name="branch_id">
+                  <FormItems
+                    label="Салбар"
+                    control={form.control}
+                    name="branch_id"
+                  >
                     {(field) => {
                       return (
                         <ComboBox
@@ -172,9 +259,21 @@ export const UserPage = ({ data, branches }: { data: ListType<User>; branches: L
                     const name = item.key as keyof UserType;
                     const label = item.label as keyof UserType;
                     return (
-                      <FormItems label={label} control={form.control} name={name} key={i} className={item.key === "name" ? "col-span-2" : ""}>
+                      <FormItems
+                        label={label}
+                        control={form.control}
+                        name={name}
+                        key={i}
+                        className={item.key === "name" ? "col-span-2" : ""}
+                      >
                         {(field) => {
-                          return <TextField props={{ ...field }} type={item.type} label={""} />;
+                          return (
+                            <TextField
+                              props={{ ...field }}
+                              type={item.type}
+                              label={""}
+                            />
+                          );
                         }}
                       </FormItems>
                     );
