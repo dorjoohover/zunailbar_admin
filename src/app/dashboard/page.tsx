@@ -6,6 +6,9 @@ import { ChartConfig, ChartContainer } from "@/components/ui/chart";
 import { ChartLegend, ChartLegendContent } from "@/components/ui/chart";
 import ContainerHeader from "@/components/containerHeader";
 import DynamicHeader from "@/components/dynamicHeader";
+import EChart from "./components/eChart";
+import EChartPie from "./components/eChartPie";
+import { CircleDollarSign } from "lucide-react";
 
 const chartData = [
   { month: "January", manicure: 186, pedicure: 80 },
@@ -31,6 +34,36 @@ export default function DashboardPage() {
   return (
     <section>
       <DynamicHeader />
+      <div className="admin-container">
+        <div className="w-full grid grid-cols-5 gap-4">
+          <div className="min-w-[300px] rounded-3xl border px-10 py-6 space-y-3">
+            <h1 className="font-bold flex items-center gap-2 text-green-600">
+              <CircleDollarSign />
+              Total 1 yum</h1>
+            <h3 className="text-2xl">2000000</h3>
+          </div>
+          <div className="min-w-[300px] rounded-3xl border px-10 py-6 space-y-3">
+            <h1 className="font-bold">Total 1 yum</h1>
+            <h3 className="text-2xl">2000000</h3>
+          </div>
+          <div className="min-w-[300px] rounded-3xl border px-10 py-6 space-y-3">
+            <h1 className="font-bold">Total 1 yum</h1>
+            <h3 className="text-2xl">2000000</h3>
+          </div>
+          <div className="min-w-[300px] rounded-3xl border px-10 py-6 space-y-3">
+            <h1 className="font-bold">Total 1 yum</h1>
+            <h3 className="text-2xl">2000000</h3>
+          </div>
+          <div className="min-w-[300px] rounded-3xl border px-10 py-6 space-y-3">
+            <h1 className="font-bold">Total 1 yum</h1>
+            <h3 className="text-2xl">2000000</h3>
+          </div>
+        </div>
+        <div className="grid grid-cols-2">
+          <EChart />
+          <EChartPie />
+        </div>
+      </div>
       {/* <div className="admin-container grid grid-cols-2 gap-x-8">
         <div className="p-8 py-6 rounded-lg bg-white shadow-md space-y-8">
           <div className="space-y-1">

@@ -77,7 +77,7 @@ export function LoginPage() {
                 <Input
                   placeholder="xxxx-xxxx"
                   {...field}
-                  className="bg-white h-10"
+                  className="h-10 transparent-input"
                 />
               </FormControl>
               <FormMessage />

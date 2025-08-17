@@ -175,6 +175,7 @@ export const items = [
       },
     ],
   },
+
   {
     label: "Үндсэн удирдлага",
     title: "Үндсэн",
@@ -183,6 +184,45 @@ export const items = [
     children: [
       {
         title: "Сайтны удирдлага",
+        url: "/root",
+        icon: Milk,
+      },
+      {
+        title: "Ангилал удирдлага",
+        url: "/root/category",
+        icon: Milk,
+      },
+      {
+        title: "Бранд удирдлага",
+        url: "/root/brand",
+        icon: Milk,
+      },
+      {
+        title: "Агуулах удирдлага",
+        url: "/root/warehouse",
+        icon: Milk,
+      },
+      {
+        title: "Хэрэглээний зардал",
+        url: "/root/cost",
+        icon: Milk,
+      },
+      {
+        title: "Салбар удирдлага",
+        url: "/root/branch",
+        icon: Milk,
+      },
+    ],
+  },
+
+    {
+    label: "Ажилчны хэсэг",
+    title: "Ажилчны хэсэг",
+    url: "",
+    icon: Wallet,
+    children: [
+      {
+        title: "Хуваарь",
         url: "/root",
         icon: Milk,
       },
