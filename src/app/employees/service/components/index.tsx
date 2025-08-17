@@ -17,6 +17,7 @@ import { usernameFormatter } from "@/lib/functions";
 import { Service } from "@/models/service.model";
 import DynamicHeader from "@/components/dynamicHeader";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
 
 const formSchema = z.object({
   user_id: z.string().min(1),
@@ -30,31 +31,16 @@ const defaultValues: UserServiceType = {
   edit: undefined,
 };
 type UserServiceType = z.infer<typeof formSchema>;
-export const EmployeeUserServicePage = ({
-  data,
-  services,
-  users,
-}: {
-  data: ListType<UserService>;
-  services: ListType<Service>;
-  users: ListType<User>;
-}) => {
+export const EmployeeUserServicePage = ({ data, services, users }: { data: ListType<UserService>; services: ListType<Service>; users: ListType<User> }) => {
   const [action, setAction] = useState(ACTION.DEFAULT);
   const [open, setOpen] = useState<undefined | boolean>(false);
   const form = useForm<UserServiceType>({
     resolver: zodResolver(formSchema),
     defaultValues,
   });
-  const [UserServices, setUserServices] =
-    useState<ListType<UserService> | null>(null);
-  const serviceMap = useMemo(
-    () => new Map(services.items.map((b) => [b.id, b])),
-    [services.items]
-  );
-  const userMap = useMemo(
-    () => new Map(users.items.map((b) => [b.id, b])),
-    [users.items]
-  );
+  const [UserServices, setUserServices] = useState<ListType<UserService> | null>(null);
+  const serviceMap = useMemo(() => new Map(services.items.map((b) => [b.id, b])), [services.items]);
+  const userMap = useMemo(() => new Map(users.items.map((b) => [b.id, b])), [users.items]);
 
   const UserServiceFormatter = (data: ListType<UserService>) => {
     const items: UserService[] = data.items.map((item) => {
@@ -62,11 +48,7 @@ export const EmployeeUserServicePage = ({
       const service = serviceMap.get(item.service_id);
       return {
         ...item,
-        user_name: item.user_name
-          ? item.user_name
-          : user
-          ? usernameFormatter(user)
-          : "",
+        user_name: item.user_name ? item.user_name : user ? usernameFormatter(user) : "",
         service_name: service?.name ?? item.service_name ?? "",
       };
     });
@@ -110,13 +92,7 @@ export const EmployeeUserServicePage = ({
     setAction(ACTION.RUNNING);
     const body = e as UserServiceType;
     const { edit, ...payload } = body;
-    const res = edit
-      ? await updateOne<IUserService>(
-          Api.user_service,
-          edit ?? "",
-          payload as unknown as IUserService
-        )
-      : await create<IUserService>(Api.user_service, e as IUserService);
+    const res = edit ? await updateOne<IUserService>(Api.user_service, edit ?? "", payload as unknown as IUserService) : await create<IUserService>(Api.user_service, e as IUserService);
     if (res.success) {
       refresh();
       setOpen(false);
@@ -141,7 +117,7 @@ export const EmployeeUserServicePage = ({
           loading={action == ACTION.RUNNING}
           modalAdd={
             <Modal
-              maw="lg"
+              maw="md"
               name={"Үйлчилгээ нэмэх"}
               submit={() => form.handleSubmit(onSubmit, onInvalid)()}
               open={open == true}
@@ -155,11 +131,7 @@ export const EmployeeUserServicePage = ({
             >
               <FormProvider {...form}>
                 <div className="grid grid-cols-1 gap-3 space-y-4">
-                  <FormItems
-                    control={form.control}
-                    name="user_id"
-                    label="Ажилчин"
-                  >
+                  <FormItems control={form.control} name="user_id" label="Ажилчин">
                     {(field) => {
                       return (
                         <ComboBox
@@ -175,33 +147,26 @@ export const EmployeeUserServicePage = ({
                     }}
                   </FormItems>
 
-                  <FormItems
-                    control={form.control}
-                    name="services"
-                    label="Үйлчилгээ"
-                  >
+                  <FormItems control={form.control} name="services" label="Үйлчилгээ">
                     {(field) => (
-                      <div className="space-y-2">
+                      <div className="mt-2 bg-white border rounded-md p-2">
                         {services.items.map((service) => {
                           const selected = field.value ?? ([] as string[]);
                           const isChecked = selected.includes(service.id);
 
                           return (
-                            <div key={service.id} className="">
+                            <div key={service.id} className="flex items-center gap-2 hover:bg-[#e9ebfa] p-2 border-b last:border-none">
                               <Checkbox
+                                id={service.id}
                                 checked={isChecked}
                                 onCheckedChange={(val) => {
                                   const checked = val === true;
                                   const prev = field.value ?? [];
-                                  const next = checked
-                                    ? Array.from(new Set([...prev, service.id]))
-                                    : (prev as string[]).filter(
-                                        (id: string) => id !== service.id
-                                      );
+                                  const next = checked ? Array.from(new Set([...prev, service.id])) : (prev as string[]).filter((id: string) => id !== service.id);
                                   field.onChange(next);
                                 }}
                               />
-                              <span>{service.name}</span>
+                              <Label htmlFor={service.id} className="size-full py-2">{service.name}</Label>
                             </div>
                           );
                         })}
