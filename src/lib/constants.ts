@@ -10,6 +10,7 @@ import {
   UserProductStatus,
   UserStatus,
 } from "./enum";
+import z from "zod";
 
 export const roleIconMap = {
   [ROLE.SYSTEM]: { icon: Crown, color: "yellow" },
@@ -29,7 +30,8 @@ export const RoleValue = {
   [ROLE.ANY]: "ANY",
   [ROLE.E_M]: "ANY",
 };
-
+export const zStrOpt = z.string().nullable().optional();
+export const zNumOpt = z.number().nullable().optional();
 // export const EmployeeStatusValue = {
 //   [EmployeeStatus.ACTIVE]: { name: "Идэвхтэй", color: "green" },
 //   [EmployeeStatus.DEKIRIT]: { name: "Декирит", color: "orange" },

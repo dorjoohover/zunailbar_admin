@@ -24,6 +24,7 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination";
 import DynamicHeader from "@/components/dynamicHeader";
+import { cn } from "@/lib/utils";
 
 const hourLine = z.string();
 const limit = 7;
