@@ -1,18 +1,15 @@
 import { ColumnDef } from "@tanstack/react-table";
-import { IProduct } from "@/models/product.model";
-import { ArrowUpDown, Pencil, Trash2 } from "lucide-react";
+import { ArrowUpDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { AppAlertDialog } from "@/components/AlertDialog";
-import { toast } from "sonner";
 import { parseDate } from "@/lib/functions";
-import TooltipWrapper from "@/components/tooltipWrapper";
 import { TableActionButtons } from "@/components/tableActionButtons";
+import { IFeature } from "@/models/home.model";
 
 export function getColumns(
-  onEdit: (product: IProduct) => void,
-  remove: (index: number) => Promise<boolean>
-): ColumnDef<IProduct>[] {
+  onEdit: (product: IFeature, index: number) => void,
+  remove: (index: number, isHome: boolean) => Promise<boolean>
+): ColumnDef<IFeature>[] {
   return [
     {
       id: "select",
@@ -98,37 +95,10 @@ export function getColumns(
         // Bagasgasan
         <TableActionButtons
           rowData={row.original}
-          onEdit={(data) => onEdit(data)}
-          onRemove={(data) => remove(row.index)}
+          onEdit={(data) => onEdit(data, 1)}
+          onRemove={(data) => remove(row.index, true)}
         ></TableActionButtons>
       ),
     },
   ];
 }
-
-// {
-//   <div className="flex items-center gap-2">
-//     <TooltipWrapper tooltip="Засварлах">
-//       <Button variant="ghost" size="icon" onClick={() => onEdit(row.original)}>
-//         <Pencil className="w-4 h-4" />
-//       </Button>
-//     </TooltipWrapper>
-
-//     <AppAlertDialog
-//       title="Итгэлтэй байна уу?"
-//       description="Бүр устгана шүү."
-//       onConfirm={async () => {
-//         const res = await remove(row.index);
-//         console.log(res);
-//         toast("Амжилттай устгалаа!" + res, {});
-//       }}
-//       trigger={
-//         <TooltipWrapper tooltip="Устгах">
-//           <Button variant="ghost" size="icon">
-//             <Trash2 className="w-4 h-4 text-red-500" />
-//           </Button>
-//         </TooltipWrapper>
-//       }
-//     />
-//   </div>;
-// }

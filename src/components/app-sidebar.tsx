@@ -2,18 +2,39 @@
 
 import {
   ChevronUp,
-  LayoutDashboard, ClipboardCheck, Wallet,
+  LayoutDashboard,
+  ClipboardCheck,
+  Wallet,
   SquareUserRound,
   Milk,
   ShieldUserIcon,
-  ChevronRight, UsersRound,
+  ChevronRight,
+  UsersRound,
   UserRound,
   HandCoins,
-  CalendarRange
+  CalendarRange,
 } from "lucide-react";
 
-import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarMenuSub, SidebarMenuSubButton, SidebarMenuSubItem } from "@/components/ui/sidebar";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "./ui/dropdown-menu";
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarHeader,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarMenuSub,
+  SidebarMenuSubButton,
+  SidebarMenuSubItem,
+} from "@/components/ui/sidebar";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "./ui/dropdown-menu";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
@@ -183,11 +204,6 @@ export const items = [
     icon: Wallet,
     children: [
       {
-        title: "Сайтны удирдлага",
-        url: "/root",
-        icon: Milk,
-      },
-      {
         title: "Ангилал удирдлага",
         url: "/root/category",
         icon: Milk,
@@ -214,41 +230,20 @@ export const items = [
       },
     ],
   },
-
-    {
-    label: "Ажилчны хэсэг",
-    title: "Ажилчны хэсэг",
+  {
+    label: "Сайтны удирдлага",
+    title: "Сайт",
     url: "",
     icon: Wallet,
     children: [
       {
-        title: "Хуваарь",
-        url: "/root",
+        title: "Header image",
+        url: "/root/home",
         icon: Milk,
       },
       {
-        title: "Ангилал удирдлага",
-        url: "/root/category",
-        icon: Milk,
-      },
-      {
-        title: "Бранд удирдлага",
-        url: "/root/brand",
-        icon: Milk,
-      },
-      {
-        title: "Агуулах удирдлага",
-        url: "/root/warehouse",
-        icon: Milk,
-      },
-      {
-        title: "Хэрэглээний зардал",
-        url: "/root/cost",
-        icon: Milk,
-      },
-      {
-        title: "Салбар удирдлага",
-        url: "/root/branch",
+        title: "Feature",
+        url: "/root/feature",
         icon: Milk,
       },
     ],
@@ -308,7 +303,12 @@ export function AppSidebar() {
                         <CollapsibleTrigger asChild>
                           {/* group-data-[state=open]/collapsible:bg-white/15  Collapse active uyd bh background*/}
                           {/* hover:bg-white/20 Active bish uyd hoverdohod */}
-                          <SidebarMenuButton asChild isActive={item.url == pathname ? true : false} size={"lg"} className="active:bg-white/20 hover:bg-white/20">
+                          <SidebarMenuButton
+                            asChild
+                            isActive={item.url == pathname ? true : false}
+                            size={"lg"}
+                            className="active:bg-white/20 hover:bg-white/20"
+                          >
                             <div>
                               <item.icon />
                               <span>{item.title}</span>
@@ -344,8 +344,19 @@ export function AppSidebar() {
                             <SidebarMenuSub className="w-full" key={i}>
                               <SidebarMenuSubItem className="w-full">
                                 {child.url && (
-                                  <SidebarMenuSubButton asChild className="active:bg-white/20 text-white" isActive={child.url == pathname}>
-                                    <Link href={child.url} className={cn(child.url == pathname && "text-sky-600 ", "w-full justify-between px-0")}>
+                                  <SidebarMenuSubButton
+                                    asChild
+                                    className="active:bg-white/20 text-white"
+                                    isActive={child.url == pathname}
+                                  >
+                                    <Link
+                                      href={child.url}
+                                      className={cn(
+                                        child.url == pathname &&
+                                          "text-sky-600 ",
+                                        "w-full justify-between px-0"
+                                      )}
+                                    >
                                       {child.title}
                                     </Link>
                                   </SidebarMenuSubButton>
@@ -390,7 +401,10 @@ export function AppSidebar() {
           <SidebarMenuItem>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <SidebarMenuButton size={"lg"} className="text-white hover:bg-white/20">
+                <SidebarMenuButton
+                  size={"lg"}
+                  className="text-white hover:bg-white/20"
+                >
                   <ShieldUserIcon /> Админ
                   <ChevronUp className="ml-auto" />
                 </SidebarMenuButton>
