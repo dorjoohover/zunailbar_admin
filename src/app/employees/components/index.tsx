@@ -1,15 +1,6 @@
 "use client";
 import { DataTable } from "@/components/data-table";
-import {
-  ACTION,
-  DEFAULT_PG,
-  getEnumValues,
-  ListType,
-  Option,
-  PG,
-  RoleValue,
-  UserStatusValue,
-} from "@/lib/constants";
+import { ACTION, DEFAULT_PG, getEnumValues, ListType, Option, PG, RoleValue, UserStatusValue } from "@/lib/constants";
 import { Branch, IUser, User } from "@/models";
 import { getColumns } from "./columns";
 import { Modal } from "@/shared/components/modal";
@@ -42,15 +33,9 @@ const formSchema = z.object({
   lastname: z.string().min(1),
   branch_id: z.string().min(1),
   mobile: z.string().length(8, { message: "8 тэмдэгт байх ёстой" }),
-  birthday: z.preprocess(
-    (val) => (typeof val === "string" ? new Date(val) : val),
-    z.date()
-  ) as unknown as Date,
+  birthday: z.preprocess((val) => (typeof val === "string" ? new Date(val) : val), z.date()) as unknown as Date,
   password: z.string().min(6),
-  experience: z.preprocess(
-    (val) => (typeof val === "string" ? parseFloat(val) : val),
-    z.number()
-  ) as unknown as number,
+  experience: z.preprocess((val) => (typeof val === "string" ? parseFloat(val) : val), z.number()) as unknown as number,
   nickname: z.string().min(1),
   profile_img: z.string().nullable().optional(),
   color: z.number(),
@@ -73,13 +58,7 @@ interface FilterType {
   branch?: string;
   status?: number;
 }
-export const EmployeePage = ({
-  data,
-  branches,
-}: {
-  data: ListType<User>;
-  branches: ListType<Branch>;
-}) => {
+export const EmployeePage = ({ data, branches }: { data: ListType<User>; branches: ListType<Branch> }) => {
   const [action, setAction] = useState(ACTION.DEFAULT);
   const [open, setOpen] = useState<boolean | undefined>(false);
   const form = useForm<UserType>({
@@ -108,9 +87,7 @@ export const EmployeePage = ({
         ...(body as IUser),
       };
     }
-    const res = editingUser
-      ? await updateOne<IUser>(Api.user, editingUser?.id as string, payload)
-      : await create<IUser>(Api.user, payload);
+    const res = editingUser ? await updateOne<IUser>(Api.user, editingUser?.id as string, payload) : await create<IUser>(Api.user, payload);
 
     if (res.success) {
       refresh();
@@ -176,42 +153,38 @@ export const EmployeePage = ({
       })
     );
   }, [filter]);
-  const groups: { key: keyof FilterType; label: string; items: Option[] }[] =
-    useMemo(
-      () => [
-        {
-          key: "role",
-          label: "ROLE",
-          items: [
-            { value: ROLE.EMPLOYEE, label: "Ажилтан" },
-            { value: ROLE.MANAGER, label: "Manager" },
-          ],
-        },
-        {
-          key: "branch",
-          label: "Салбар",
-          items: branches.items.map((b) => ({ value: b.id, label: b.name })),
-        },
-        {
-          key: "status",
-          label: "Статус",
-          items: getEnumValues(UserStatus).map((s) => ({
-            value: s,
-            label: UserStatusValue[s].name,
-          })),
-        },
-      ],
-      [branches.items]
-    );
+  const groups: { key: keyof FilterType; label: string; items: Option[] }[] = useMemo(
+    () => [
+      {
+        key: "role",
+        label: "ROLE",
+        items: [
+          { value: ROLE.EMPLOYEE, label: "Ажилтан" },
+          { value: ROLE.MANAGER, label: "Manager" },
+        ],
+      },
+      {
+        key: "branch",
+        label: "Салбар",
+        items: branches.items.map((b) => ({ value: b.id, label: b.name })),
+      },
+      {
+        key: "status",
+        label: "Статус",
+        items: getEnumValues(UserStatus).map((s) => ({
+          value: s,
+          label: UserStatusValue[s].name,
+        })),
+      },
+    ],
+    [branches.items]
+  );
   return (
     <div className="w-full relative">
       <DynamicHeader count={users?.count} />
 
       <div className="admin-container">
-        <EmployeeProductModal
-          id={userProduct}
-          clear={() => setUserProduct(undefined)}
-        />
+        <EmployeeProductModal id={userProduct} clear={() => setUserProduct(undefined)} />
         <DataTable
           clear={() => setFilter(undefined)}
           filter={
@@ -220,25 +193,14 @@ export const EmployeePage = ({
                 const { key } = item;
                 return (
                   <FilterPopover
+                    key={i}
                     content={item.items.map((it, index) => (
-                      <label
-                        key={index}
-                        className="flex items-center gap-2 cursor-pointer text-sm"
-                      >
-                        <Checkbox
-                          checked={filter?.[key] == it.value}
-                          onCheckedChange={() => changeFilter(key, it.value)}
-                        />
+                      <label key={index} className="flex items-center gap-2 cursor-pointer text-sm">
+                        <Checkbox checked={filter?.[key] == it.value} onCheckedChange={() => changeFilter(key, it.value)} />
                         <span>{it.label as string}</span>
                       </label>
                     ))}
-                    value={
-                      filter?.[key]
-                        ? item.items.filter(
-                            (item) => item.value == filter[key]
-                          )[0].label
-                        : undefined
-                    }
+                    value={filter?.[key] ? item.items.filter((item) => item.value == filter[key])[0].label : undefined}
                     label={item.label}
                   />
                 );
@@ -290,54 +252,32 @@ export const EmployeePage = ({
                 );
               }}
             </FormItems> */}
-                    <FormItems
-                      control={form.control}
-                      name="file"
-                      label="Зураг өөрчлөх"
-                    >
+                    <FormItems control={form.control} name="file" label="Зураг өөрчлөх">
                       {(field) => {
-                        const fileUrl = field.value
-                          ? URL.createObjectURL(field.value as any)
-                          : null;
+                        const fileUrl = field.value ? URL.createObjectURL(field.value as any) : null;
 
                         return (
                           <div className="relative w-32 h-32">
                             {fileUrl ? (
                               <>
                                 {/* Preview */}
-                                <img
-                                  src={fileUrl}
-                                  alt="preview"
-                                  className="w-full h-full object-cover rounded-md border bg-white overflow-hidden"
-                                />
+                                <img src={fileUrl} alt="preview" className="w-full h-full object-cover rounded-md border bg-white overflow-hidden" />
 
                                 {/* Change */}
-                                <label
-                                  htmlFor="file-upload"
-                                  className="absolute top-1 right-7 bg-primary p-1 rounded shadow cursor-pointer hover:bg-slate-600"
-                                >
+                                <label htmlFor="file-upload" className="absolute top-1 right-7 bg-primary p-1 rounded shadow cursor-pointer hover:bg-slate-600">
                                   <Pencil className="size-3 text-white" />
                                 </label>
 
                                 {/* Remove */}
-                                <button
-                                  type="button"
-                                  onClick={() => field.onChange(null)}
-                                  className="absolute top-1 right-1 bg-primary p-1 rounded shadow cursor-pointer hover:bg-slate-600"
-                                >
+                                <button type="button" onClick={() => field.onChange(null)} className="absolute top-1 right-1 bg-primary p-1 rounded shadow cursor-pointer hover:bg-slate-600">
                                   <X className="size-3 text-white" />
                                 </button>
                               </>
                             ) : (
                               // Empty state uploader
-                              <label
-                                htmlFor="file-upload"
-                                className="flex flex-col items-center justify-center w-full h-full bg-white border rounded-md shadow-sm cursor-pointer hover:bg-gray-50 transition-colors"
-                              >
+                              <label htmlFor="file-upload" className="flex flex-col items-center justify-center w-full h-full bg-white border rounded-md shadow-sm cursor-pointer hover:bg-gray-50 transition-colors">
                                 <UploadCloud className="w-6 h-6 text-gray-500" />
-                                <span className="mt-1 text-xs text-gray-500">
-                                  Browse
-                                </span>
+                                <span className="mt-1 text-xs text-gray-500">Browse</span>
                               </label>
                             )}
 
@@ -360,21 +300,13 @@ export const EmployeePage = ({
                     </FormItems>
                     {/* odoogiin */}
                     {form.getValues("profile_img") && (
-                      <FormItems
-                        control={form.control}
-                        name="profile_img"
-                        label="Одоогийн зураг"
-                      >
+                      <FormItems control={form.control} name="profile_img" label="Одоогийн зураг">
                         {(field) => {
                           return (
                             <>
                               {field.value && (
                                 <div className="relative w-32 h-32">
-                                  <img
-                                    src={`/api/file/${field.value}`}
-                                    alt="preview"
-                                    className="size-full bg-gray object-cover rounded-md overflow-hidden border"
-                                  />
+                                  <img src={`/api/file/${field.value}`} alt="preview" className="size-full bg-gray object-cover rounded-md overflow-hidden border" />
                                 </div>
                               )}
                             </>
@@ -404,11 +336,7 @@ export const EmployeePage = ({
                       {(field) => {
                         return (
                           <ComboBox
-                            items={[
-                              ROLE.ADMIN,
-                              ROLE.EMPLOYEE,
-                              ROLE.MANAGER,
-                            ].map((role) => {
+                            items={[ROLE.ADMIN, ROLE.EMPLOYEE, ROLE.MANAGER].map((role) => {
                               return {
                                 label: RoleValue[role],
                                 value: role.toString(),
@@ -423,26 +351,13 @@ export const EmployeePage = ({
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-5">
                     <FormItems control={form.control} name="password" className="col-span-1">
                       {(field) => {
-                        return (
-                          <PasswordField props={{ ...field }} view={true} />
-                        );
+                        return <PasswordField props={{ ...field }} view={true} />;
                       }}
                     </FormItems>
-                    {[
-                      "lastname",
-                      "firstname",
-                      "mobile",
-                      "nickname",
-                      "experience",
-                    ].map((i, index) => {
+                    {["lastname", "firstname", "mobile", "nickname", "experience"].map((i, index) => {
                       const item = i as keyof UserType;
                       return (
-                        <FormItems
-                          control={form.control}
-                          name={item}
-                          key={index}
-                          className={"col-span-1"}
-                        >
+                        <FormItems control={form.control} name={item} key={index} className={"col-span-1"}>
                           {(field) => {
                             return (
                               <>
@@ -458,11 +373,7 @@ export const EmployeePage = ({
                                         }
                                       : {}),
                                   }}
-                                  className={cn(
-                                    item === "mobile"
-                                      ? "hide-number-arrows"
-                                      : ""
-                                  )}
+                                  className={cn(item === "mobile" ? "hide-number-arrows" : "")}
                                   label={firstLetterUpper(item)}
                                 />
                               </>
@@ -473,13 +384,7 @@ export const EmployeePage = ({
                     })}
                     <FormItems control={form.control} name="birthday">
                       {(field) => {
-                        return (
-                          <DatePicker
-                            name="Төрсөн өдөр"
-                            pl="Огноо сонгох"
-                            props={{ ...field }}
-                          />
-                        );
+                        return <DatePicker name="Төрсөн өдөр" pl="Огноо сонгох" props={{ ...field }} />;
                       }}
                     </FormItems>
                     <FormItems control={form.control} name="color" label="Өнгө">
