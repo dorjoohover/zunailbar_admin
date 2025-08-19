@@ -13,8 +13,8 @@ export default function EChartPie() {
 
     chart.setOption({
       title: {
-        text: "Traffic Sources",
-        left: "center",
+        text: "Pie Жишээ",
+        left: "left",
       },
       tooltip: {
         trigger: "item",
@@ -57,5 +57,5 @@ export default function EChartPie() {
     };
   }, []);
 
-  return <div ref={chartRef} className="w-full h-[400px]" />;
+  return <div ref={chartRef} className="w-full h-[400px] p-4" />;
 }

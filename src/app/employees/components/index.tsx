@@ -194,14 +194,14 @@ export const EmployeePage = ({ data, branches }: { data: ListType<User>; branche
                 return (
                   <FilterPopover
                     key={i}
+                       label={item.label}
                     content={item.items.map((it, index) => (
-                      <label key={index} className="flex items-center gap-2 cursor-pointer text-sm">
+                      <label key={index} className="flex items-center gap-2 cursor-pointer text-sm py-1 hover:bg-gray-100">
                         <Checkbox checked={filter?.[key] == it.value} onCheckedChange={() => changeFilter(key, it.value)} />
                         <span>{it.label as string}</span>
                       </label>
                     ))}
                     value={filter?.[key] ? item.items.filter((item) => item.value == filter[key])[0].label : undefined}
-                    label={item.label}
                   />
                 );
               })}

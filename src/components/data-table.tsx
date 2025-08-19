@@ -78,23 +78,6 @@ export function DataTable<TData, TValue>({ columns, data, count = 0, limit = DEF
     getFilteredRowModel: getFilteredRowModel(),
   });
 
-  // const totalPages = Math.ceil(count / limit);
-  // const currentPage = pagination.pageIndex;
-
-  // if (totalPages <= 1) {
-  //   return null; // эсвэл <></>, pagination байхгүй
-  // }
-
-  // function getPaginationRange() {
-  //   const start = Math.max(1, currentPage + 1 - 2);
-  //   const end = Math.min(totalPages, currentPage + 1 + 2);
-  //   let pages = [];
-  //   for (let i = start; i <= end; i++) {
-  //     pages.push(i);
-  //   }
-  //   return pages;
-  // }
-
   const totalPages = Math.ceil(count / limit);
   const currentPage = pagination.pageIndex;
 
