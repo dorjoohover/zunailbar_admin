@@ -13,7 +13,7 @@ export default function ContainerHeader({ group, title, count }: ContainerHeader
       <div className="text-sm lg:text-lg font-semibold flex items-center gap-x-2">
         <span className="opacity-80">{group}</span>
         <ChevronRight className="size-4 lg:size-5" />
-        <span>{title}</span>
+        {title && <span>{title}</span>}
       </div>
       {count && (
         <div className="flex items-center space-x-2 lg:space-x-5">

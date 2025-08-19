@@ -16,32 +16,32 @@ export const Modal = ({ name = "Нэмэх", title = "Title", btn = <Loader2Icon
     }
   };
   const mawClasses: Record<string, string> = {
-    xs: "max-w-xs",
-    sm: "max-w-sm",
-    md: "max-w-md",
-    lg: "max-w-lg",
-    xl: "max-w-xl",
-    "2xl": "max-w-2xl",
-    "3xl": "max-w-3xl",
-    "4xl": "max-w-4xl",
-    "5xl": "max-w-5xl",
-    "6xl": "max-w-6xl",
-    "7xl": "max-w-7xl",
+    xs: "max-w-[calc(theme(maxWidth.xs)-1rem)]",
+    sm: "max-w-[calc(theme(maxWidth.sm)-1rem)]",
+    md: "max-w-[calc(theme(maxWidth.md)-1rem)]",
+    lg: "max-w-[calc(theme(maxWidth.lg)-1rem)]",
+    xl: "max-w-[calc(theme(maxWidth.xl)-1rem)]",
+    "2xl": "max-w-[calc(theme(maxWidth.2xl)-1rem)]",
+    "3xl": "max-w-[calc(theme(maxWidth.4xl)-1rem)]",
+    "4xl": "max-w-[calc(theme(maxWidth.4xl)-1rem)]",
+    "5xl": "max-w-[calc(theme(maxWidth.5xl)-1rem)]",
+    "6xl": "max-w-[calc(theme(maxWidth.6xl)-1rem)]",
+    "7xl": "max-w-[calc(theme(maxWidth.7xl)-1rem)]",
   };
 
-  // FKK eniig zasah gej bur !?
-  //  className={cn(` ${maw === "xs" ? "lg:max-w-xs" : ""}
-  //   ${maw === "sm" ? "lg:max-w-sm" : ""}
-  //   ${maw === "md" ? "lg:max-w-md" : ""}
-  //   ${maw === "lg" ? "lg:max-w-lg" : ""}
-  //   ${maw === "xl" ? "lg:max-w-xl" : ""}
-  //   ${maw === "2xl" ? "lg:max-w-2xl" : ""}
-  //   ${maw === "3xl" ? "lg:max-w-3xl" : ""}
-  //   ${maw === "4xl" ? "lg:max-w-4xl" : ""}
-  //   ${maw === "5xl" ? "lg:max-w-5xl" : ""}
-  //   ${maw === "6xl" ? "lg:max-w-6xl" : ""}
-  //   ${maw === "7xl" ? "lg:max-w-7xl" : ""}`)}
-  //     >
+  //   const mawClasses: Record<string, string> = {
+  //   xs: "max-w-xs",
+  //   sm: "max-w-sm",
+  //   md: "max-w-md",
+  //   lg: "max-w-lg",
+  //   xl: "max-w-xl",
+  //   "2xl": "max-w-2xl",
+  //   "3xl": "max-w-3xl",
+  //   "4xl": "max-w-4xl",
+  //   "5xl": "max-w-5xl",
+  //   "6xl": "max-w-6xl",
+  //   "7xl": "max-w-7xl",
+  // };
 
   return (
     <Dialog open={open} onOpenChange={(v) => setOpen(v)}>
@@ -54,7 +54,7 @@ export const Modal = ({ name = "Нэмэх", title = "Title", btn = <Loader2Icon
         </DialogTrigger>
       )}
       {/* <DialogContent className={`max-w-${maw} lg:max-w-${w}`}> */}
-      <DialogContent className={cn(mawClasses[maw])}>
+      <DialogContent className={cn(mawClasses[maw], "")}>
         <DialogHeader className="mb-3">
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription>{description}</DialogDescription>

@@ -265,7 +265,7 @@ export function DataTable<TData, TValue>({ columns, data, count = 0, limit = DEF
         <span> {count} мөр</span>
       </h2>
 
-      <ScrollArea className="h-fit w-[calc(100vw-3rem)] lg:w-full rounded-md border pb-2">
+      <ScrollArea className="h-fit w-[calc(100vw-2rem)] lg:w-full rounded-md border pb-2">
         {/* Table */}
         <div className="overflow-hidden rounded-md border border-slate-200">
           <Table>

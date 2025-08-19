@@ -44,7 +44,7 @@
 }
 
 @utility admin-container {
-  @apply p-6 space-y-5 w-full;
+  @apply p-3 lg:p-6 space-y-5 w-full;
 }
 
 @utility double-col {

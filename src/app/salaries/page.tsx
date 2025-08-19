@@ -1,12 +1,18 @@
-import ContainerHeader from "@/components/containerHeader";
+import { ProductPage } from "./components";
+import { Cost, Product } from "@/models";
+import { find } from "../(api)";
+import { Api } from "@/utils/api";
 import DynamicHeader from "@/components/dynamicHeader";
-import React from "react";
 
-export default function SalariesPage() {
+export default async function Page() {
+  const { data } = await find<Product>(Api.product, {
+    isCost: true,
+  });
+
   return (
-    <section>
-      <DynamicHeader count={0} />
-      <div className="admin-container"></div>
-    </section>
+    <div className="w-full">
+      <DynamicHeader />
+      <ProductPage data={data} />
+    </div>
   );
 }

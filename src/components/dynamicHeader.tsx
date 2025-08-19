@@ -16,7 +16,7 @@ export default function DynamicHeader({ count, titleOverride, groupOverride }: D
   const findGroupAndTitle = () => {
     for (const item of items) {
       if (item.url && item.url === pathname) {
-        return { group: item.title, title: item.title };
+        return { group: item.title, title: "" };
       }
       if (item.children) {
         for (const child of item.children) {

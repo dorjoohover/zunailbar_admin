@@ -248,6 +248,34 @@ export const items = [
       },
     ],
   },
+  {
+    label: "Ажилчин",
+    title: "Ажилчин",
+    url: "/",
+    icon: Wallet,
+    children: [
+      // {
+      //   title: "Хянах самбар",
+      //   url: "/employee",
+      //   icon: Milk,
+      // },
+      {
+        title: "Цагийн хуваарь",
+        url: "/employee",
+        icon: Milk,
+      },  
+      {
+        title: "Цалин",
+        url: "/employee/salary",
+        icon: Milk,
+      },
+      {
+        title: "Чөлөөний хүсэлт",
+        url: "/employee/leave-request",
+        icon: Milk,
+      },
+    ],
+  },
 ];
 
 export function AppSidebar() {
