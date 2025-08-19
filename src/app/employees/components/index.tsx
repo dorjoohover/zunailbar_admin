@@ -1,19 +1,28 @@
-"use client";;
+"use client";
 import { DataTable } from "@/components/data-table";
-import { ACTION, DEFAULT_PG, ListType, PG, RoleValue } from "@/lib/constants";
+import {
+  ACTION,
+  DEFAULT_PG,
+  getEnumValues,
+  ListType,
+  Option,
+  PG,
+  RoleValue,
+  UserStatusValue,
+} from "@/lib/constants";
 import { Branch, IUser, User } from "@/models";
 import { getColumns } from "./columns";
 import { Modal } from "@/shared/components/modal";
 import { ComboBox } from "@/shared/components/combobox";
-import { useState } from "react";
-import { ROLE } from "@/lib/enum";
+import { useEffect, useMemo, useState } from "react";
+import { ROLE, UserStatus } from "@/lib/enum";
 import { PasswordField } from "@/shared/components/password.field";
 import z from "zod";
 import { FormProvider, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import { TextField } from "@/shared/components/text.field";
-import { firstLetterUpper } from "@/lib/functions";
+import { firstLetterUpper, numberArray, objectCompact } from "@/lib/functions";
 import { DatePicker } from "@/shared/components/date.picker";
 import { create, updateOne } from "@/app/(api)";
 import { Api } from "@/utils/api";
@@ -24,18 +33,27 @@ import { imageUploader } from "@/app/(api)/base";
 import { Pencil, UploadCloud, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import DynamicHeader from "@/components/dynamicHeader";
+import { COLORS } from "@/lib/colors";
+import { FilterPopover } from "@/components/layout/popover";
+import { Checkbox } from "@radix-ui/react-checkbox";
 
 const formSchema = z.object({
   firstname: z.string().min(1),
   lastname: z.string().min(1),
   branch_id: z.string().min(1),
   mobile: z.string().length(8, { message: "8 тэмдэгт байх ёстой" }),
-  birthday: z.preprocess((val) => (typeof val === "string" ? new Date(val) : val), z.date()) as unknown as Date,
+  birthday: z.preprocess(
+    (val) => (typeof val === "string" ? new Date(val) : val),
+    z.date()
+  ) as unknown as Date,
   password: z.string().min(6),
-  experience: z.preprocess((val) => (typeof val === "string" ? parseFloat(val) : val), z.number()) as unknown as number,
+  experience: z.preprocess(
+    (val) => (typeof val === "string" ? parseFloat(val) : val),
+    z.number()
+  ) as unknown as number,
   nickname: z.string().min(1),
   profile_img: z.string().nullable().optional(),
-
+  color: z.number(),
   role: z
     .preprocess(
       (val) => (typeof val === "string" ? parseInt(val, 10) : val),
@@ -50,7 +68,18 @@ const formSchema = z.object({
     .nullable(),
 });
 type UserType = z.infer<typeof formSchema>;
-export const EmployeePage = ({ data, branches }: { data: ListType<User>; branches: ListType<Branch> }) => {
+interface FilterType {
+  role?: number;
+  branch?: string;
+  status?: number;
+}
+export const EmployeePage = ({
+  data,
+  branches,
+}: {
+  data: ListType<User>;
+  branches: ListType<Branch>;
+}) => {
   const [action, setAction] = useState(ACTION.DEFAULT);
   const [open, setOpen] = useState<boolean | undefined>(false);
   const form = useForm<UserType>({
@@ -79,7 +108,9 @@ export const EmployeePage = ({ data, branches }: { data: ListType<User>; branche
         ...(body as IUser),
       };
     }
-    const res = editingUser ? await updateOne<IUser>(Api.user, editingUser?.id as string, payload) : await create<IUser>(Api.user, payload);
+    const res = editingUser
+      ? await updateOne<IUser>(Api.user, editingUser?.id as string, payload)
+      : await create<IUser>(Api.user, payload);
 
     if (res.success) {
       refresh();
@@ -99,13 +130,15 @@ export const EmployeePage = ({ data, branches }: { data: ListType<User>; branche
   const refresh = async (pg: PG = DEFAULT_PG) => {
     setAction(ACTION.RUNNING);
     const { page, limit, sort } = pg;
+
     await fetcher<User>(Api.user, {
-      page,
-      limit,
-      sort,
+      page: page ?? DEFAULT_PG.page,
+      limit: limit ?? DEFAULT_PG.limit,
+      sort: sort ?? DEFAULT_PG.sort,
       isCost: false,
       role: ROLE.E_M,
       mobile: pg.filter,
+      ...pg,
     }).then((d) => {
       setUsers(d);
       form.reset(undefined);
@@ -118,24 +151,100 @@ export const EmployeePage = ({ data, branches }: { data: ListType<User>; branche
     form.reset(e);
   };
   const setStatus = async (index: number, status: number) => {
-    console.log(index);
-    const res = await updateOne(Api.user, users.items[index].id, {
+    await updateOne(Api.user, users.items[index].id, {
       user_status: status,
     });
-    console.log(res);
     refresh();
   };
   const giveProduct = (index: number) => {
     setUserProduct(users.items[index].id);
   };
   const columns = getColumns(edit, setStatus, giveProduct);
+
+  const [filter, setFilter] = useState<FilterType>();
+  const changeFilter = (key: string, value: number | string) => {
+    setFilter((prev) => ({ ...prev, [key]: value }));
+  };
+
+  useEffect(() => {
+    refresh(
+      objectCompact({
+        branch_id: filter?.branch,
+        role: filter?.role,
+        user_status: filter?.status,
+        page: 0,
+      })
+    );
+  }, [filter]);
+  const groups: { key: keyof FilterType; label: string; items: Option[] }[] =
+    useMemo(
+      () => [
+        {
+          key: "role",
+          label: "ROLE",
+          items: [
+            { value: ROLE.EMPLOYEE, label: "Ажилтан" },
+            { value: ROLE.MANAGER, label: "Manager" },
+          ],
+        },
+        {
+          key: "branch",
+          label: "Салбар",
+          items: branches.items.map((b) => ({ value: b.id, label: b.name })),
+        },
+        {
+          key: "status",
+          label: "Статус",
+          items: getEnumValues(UserStatus).map((s) => ({
+            value: s,
+            label: UserStatusValue[s].name,
+          })),
+        },
+      ],
+      [branches.items]
+    );
   return (
     <div className="w-full relative">
       <DynamicHeader count={users?.count} />
 
       <div className="admin-container">
-        <EmployeeProductModal id={userProduct} clear={() => setUserProduct(undefined)} />
+        <EmployeeProductModal
+          id={userProduct}
+          clear={() => setUserProduct(undefined)}
+        />
         <DataTable
+          clear={() => setFilter(undefined)}
+          filter={
+            <div className="inline-flex gap-3 w-full flex-wrap">
+              {groups.map((item, i) => {
+                const { key } = item;
+                return (
+                  <FilterPopover
+                    content={item.items.map((it, index) => (
+                      <label
+                        key={index}
+                        className="flex items-center gap-2 cursor-pointer text-sm"
+                      >
+                        <Checkbox
+                          checked={filter?.[key] == it.value}
+                          onCheckedChange={() => changeFilter(key, it.value)}
+                        />
+                        <span>{it.label as string}</span>
+                      </label>
+                    ))}
+                    value={
+                      filter?.[key]
+                        ? item.items.filter(
+                            (item) => item.value == filter[key]
+                          )[0].label
+                        : undefined
+                    }
+                    label={item.label}
+                  />
+                );
+              })}
+            </div>
+          }
           columns={columns}
           data={users.items}
           refresh={refresh}
@@ -181,32 +290,54 @@ export const EmployeePage = ({ data, branches }: { data: ListType<User>; branche
                 );
               }}
             </FormItems> */}
-                    <FormItems control={form.control} name="file" label="Зураг өөрчлөх">
+                    <FormItems
+                      control={form.control}
+                      name="file"
+                      label="Зураг өөрчлөх"
+                    >
                       {(field) => {
-                        const fileUrl = field.value ? URL.createObjectURL(field.value as any) : null;
+                        const fileUrl = field.value
+                          ? URL.createObjectURL(field.value as any)
+                          : null;
 
                         return (
                           <div className="relative w-32 h-32">
                             {fileUrl ? (
                               <>
                                 {/* Preview */}
-                                <img src={fileUrl} alt="preview" className="w-full h-full object-cover rounded-md border bg-white overflow-hidden" />
+                                <img
+                                  src={fileUrl}
+                                  alt="preview"
+                                  className="w-full h-full object-cover rounded-md border bg-white overflow-hidden"
+                                />
 
                                 {/* Change */}
-                                <label htmlFor="file-upload" className="absolute top-1 right-7 bg-primary p-1 rounded shadow cursor-pointer hover:bg-slate-600">
+                                <label
+                                  htmlFor="file-upload"
+                                  className="absolute top-1 right-7 bg-primary p-1 rounded shadow cursor-pointer hover:bg-slate-600"
+                                >
                                   <Pencil className="size-3 text-white" />
                                 </label>
 
                                 {/* Remove */}
-                                <button type="button" onClick={() => field.onChange(null)} className="absolute top-1 right-1 bg-primary p-1 rounded shadow cursor-pointer hover:bg-slate-600">
+                                <button
+                                  type="button"
+                                  onClick={() => field.onChange(null)}
+                                  className="absolute top-1 right-1 bg-primary p-1 rounded shadow cursor-pointer hover:bg-slate-600"
+                                >
                                   <X className="size-3 text-white" />
                                 </button>
                               </>
                             ) : (
                               // Empty state uploader
-                              <label htmlFor="file-upload" className="flex flex-col items-center justify-center w-full h-full bg-white border rounded-md shadow-sm cursor-pointer hover:bg-gray-50 transition-colors">
+                              <label
+                                htmlFor="file-upload"
+                                className="flex flex-col items-center justify-center w-full h-full bg-white border rounded-md shadow-sm cursor-pointer hover:bg-gray-50 transition-colors"
+                              >
                                 <UploadCloud className="w-6 h-6 text-gray-500" />
-                                <span className="mt-1 text-xs text-gray-500">Browse</span>
+                                <span className="mt-1 text-xs text-gray-500">
+                                  Browse
+                                </span>
                               </label>
                             )}
 
@@ -229,13 +360,21 @@ export const EmployeePage = ({ data, branches }: { data: ListType<User>; branche
                     </FormItems>
                     {/* odoogiin */}
                     {form.getValues("profile_img") && (
-                      <FormItems control={form.control} name="profile_img" label="Одоогийн зураг">
+                      <FormItems
+                        control={form.control}
+                        name="profile_img"
+                        label="Одоогийн зураг"
+                      >
                         {(field) => {
                           return (
                             <>
                               {field.value && (
                                 <div className="relative w-32 h-32">
-                                  <img src={`/api/file/${field.value}`} alt="preview" className="size-full bg-gray object-cover rounded-md overflow-hidden border" />
+                                  <img
+                                    src={`/api/file/${field.value}`}
+                                    alt="preview"
+                                    className="size-full bg-gray object-cover rounded-md overflow-hidden border"
+                                  />
                                 </div>
                               )}
                             </>
@@ -265,7 +404,11 @@ export const EmployeePage = ({ data, branches }: { data: ListType<User>; branche
                       {(field) => {
                         return (
                           <ComboBox
-                            items={[ROLE.ADMIN, ROLE.EMPLOYEE, ROLE.MANAGER].map((role) => {
+                            items={[
+                              ROLE.ADMIN,
+                              ROLE.EMPLOYEE,
+                              ROLE.MANAGER,
+                            ].map((role) => {
                               return {
                                 label: RoleValue[role],
                                 value: role.toString(),
@@ -280,13 +423,26 @@ export const EmployeePage = ({ data, branches }: { data: ListType<User>; branche
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-5">
                     <FormItems control={form.control} name="password" className="col-span-1">
                       {(field) => {
-                        return <PasswordField props={{ ...field }} view={true} />;
+                        return (
+                          <PasswordField props={{ ...field }} view={true} />
+                        );
                       }}
                     </FormItems>
-                    {["lastname", "firstname", "mobile", "nickname", "experience"].map((i, index) => {
+                    {[
+                      "lastname",
+                      "firstname",
+                      "mobile",
+                      "nickname",
+                      "experience",
+                    ].map((i, index) => {
                       const item = i as keyof UserType;
                       return (
-                        <FormItems control={form.control} name={item} key={index} className={"col-span-1"}>
+                        <FormItems
+                          control={form.control}
+                          name={item}
+                          key={index}
+                          className={"col-span-1"}
+                        >
                           {(field) => {
                             return (
                               <>
@@ -295,9 +451,18 @@ export const EmployeePage = ({ data, branches }: { data: ListType<User>; branche
                                   type={item === "mobile" ? "number" : "text"}
                                   props={{
                                     ...field,
-                                    ...(item === "mobile" ? { inputMode: "numeric", pattern: "[0-9]*" } : {}),
+                                    ...(item === "mobile"
+                                      ? {
+                                          inputMode: "numeric",
+                                          pattern: "[0-9]*",
+                                        }
+                                      : {}),
                                   }}
-                                  className={cn(item === "mobile" ? "hide-number-arrows" : "")}
+                                  className={cn(
+                                    item === "mobile"
+                                      ? "hide-number-arrows"
+                                      : ""
+                                  )}
                                   label={firstLetterUpper(item)}
                                 />
                               </>
@@ -308,7 +473,29 @@ export const EmployeePage = ({ data, branches }: { data: ListType<User>; branche
                     })}
                     <FormItems control={form.control} name="birthday">
                       {(field) => {
-                        return <DatePicker name="Төрсөн өдөр" pl="Огноо сонгох" props={{ ...field }} />;
+                        return (
+                          <DatePicker
+                            name="Төрсөн өдөр"
+                            pl="Огноо сонгох"
+                            props={{ ...field }}
+                          />
+                        );
+                      }}
+                    </FormItems>
+                    <FormItems control={form.control} name="color" label="Өнгө">
+                      {(field) => {
+                        return (
+                          <ComboBox
+                            props={{ ...field }}
+                            items={numberArray(22).map((number) => {
+                              return {
+                                color: COLORS[number],
+                                value: number.toString(),
+                                label: COLORS[number],
+                              };
+                            })}
+                          />
+                        );
                       }}
                     </FormItems>
                   </div>

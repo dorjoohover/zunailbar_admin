@@ -1,9 +1,23 @@
 "use client";
 
 import { DataTable } from "@/components/data-table";
-import { Product, Category, Warehouse, ICategory, IProductsWarehouse } from "@/models";
+import {
+  Product,
+  Category,
+  Warehouse,
+  ICategory,
+  IProductsWarehouse,
+} from "@/models";
 import { useEffect, useMemo, useState } from "react";
-import { ListType, ACTION, PG, DEFAULT_PG, getEnumValues, SearchType, CategoryTypeValues } from "@/lib/constants";
+import {
+  ListType,
+  ACTION,
+  PG,
+  DEFAULT_PG,
+  getEnumValues,
+  SearchType,
+  CategoryTypeValues,
+} from "@/lib/constants";
 import { Modal } from "@/shared/components/modal";
 import z from "zod";
 import { FormProvider, useFieldArray, useForm } from "react-hook-form";
@@ -25,7 +39,12 @@ import DynamicHeader from "@/components/dynamicHeader";
 
 const formSchema = z.object({
   name: z.string().min(1),
-  type: z.preprocess((val) => (typeof val === "string" ? parseInt(val, 10) : val), z.nativeEnum(CategoryTypEnum).nullable()).optional() as unknown as number,
+  type: z
+    .preprocess(
+      (val) => (typeof val === "string" ? parseInt(val, 10) : val),
+      z.nativeEnum(CategoryTypEnum).nullable()
+    )
+    .optional() as unknown as number,
   edit: z.string().nullable().optional(),
 });
 const defaultValues = {
@@ -73,7 +92,13 @@ export const CategoryPage = ({ data }: { data: ListType<Category> }) => {
     const body = e as CategoryType;
     const { edit, ...payload } = body;
 
-    const res = edit ? await updateOne<ICategory>(Api.category, edit ?? "", payload as unknown as ICategory) : await create<ICategory>(Api.category, e as ICategory);
+    const res = edit
+      ? await updateOne<ICategory>(
+          Api.category,
+          edit ?? "",
+          payload as unknown as ICategory
+        )
+      : await create<ICategory>(Api.category, e as ICategory);
     if (res.success) {
       refresh();
       setOpen(false);
@@ -114,20 +139,32 @@ export const CategoryPage = ({ data }: { data: ListType<Category> }) => {
                   <div className="double-col">
                     <FormItems control={form.control} name={"name"} className={"col-span-1"}>
                       {(field) => {
-                        return <TextField props={{ ...field }} label={"Category name"} />;
+                        return (
+                          <TextField
+                            props={{ ...field }}
+                            label={"Category name"}
+                          />
+                        );
                       }}
                     </FormItems>
-                    <FormItems label="Төрөл" control={form.control} name="type" className={"col-span-1"}>
+                    <FormItems
+                      label="Төрөл"
+                      control={form.control}
+                      name="type"
+                      className={"col-span-1"}
+                    >
                       {(field) => {
                         return (
                           <ComboBox
                             props={{ ...field }}
-                            items={getEnumValues(CategoryTypEnum).map((item) => {
-                              return {
-                                value: item.toString(),
-                                label: CategoryTypeValues[item],
-                              };
-                            })}
+                            items={getEnumValues(CategoryTypEnum).map(
+                              (item) => {
+                                return {
+                                  value: item.toString(),
+                                  label: CategoryTypeValues[item],
+                                };
+                              }
+                            )}
                           />
                         );
                       }}
@@ -138,7 +175,6 @@ export const CategoryPage = ({ data }: { data: ListType<Category> }) => {
             </Modal>
           }
         />
-        {action}
       </div>
     </div>
   );

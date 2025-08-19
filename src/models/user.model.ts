@@ -19,6 +19,7 @@ export interface IUser {
 }
 export interface User {
   id: string;
+  color?: number;
   firstname?: string;
   lastname?: string;
   nickname?: string;

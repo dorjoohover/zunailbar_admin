@@ -1,280 +1,223 @@
 "use client";
 import { DataTable } from "@/components/data-table";
-import { ACTION, DEFAULT_PG, ListType, PG, RoleValue } from "@/lib/constants";
-import { useState } from "react";
-import { ROLE } from "@/lib/enum";
+import {
+  ACTION,
+  DEFAULT_PG,
+  getEnumValues,
+  getValuesUserProductStatus,
+  ListDefault,
+  ListType,
+  Option,
+  PG,
+  RoleValue,
+} from "@/lib/constants";
+import { useEffect, useMemo, useState } from "react";
+import { ROLE, UserProductStatus } from "@/lib/enum";
 import z from "zod";
 
 import { Api } from "@/utils/api";
 import { fetcher } from "@/hooks/fetcher";
-import { UserProduct } from "@/models";
+import { Branch, IUser, Product, User, UserProduct } from "@/models";
 import { getColumns } from "./columns";
 import ContainerHeader from "@/components/containerHeader";
 import DynamicHeader from "@/components/dynamicHeader";
+import { create, updateOne } from "@/app/(api)";
+import { imageUploader } from "@/app/(api)/base";
+import { Input } from "@/components/ui/input";
+import {
+  firstLetterUpper,
+  objectCompact,
+  usernameFormatter,
+} from "@/lib/functions";
+import { ComboBox } from "@/shared/components/combobox";
+import { DatePicker } from "@/shared/components/date.picker";
+import { FormItems } from "@/shared/components/form.field";
+import { Modal } from "@/shared/components/modal";
+import { PasswordField } from "@/shared/components/password.field";
+import { TextField } from "@/shared/components/text.field";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm, FormProvider } from "react-hook-form";
+import { Label } from "recharts";
+import { EmployeeProductModal } from "../../components/employee.product";
+import { FilterPopover } from "@/components/layout/popover";
+import { Checkbox } from "@radix-ui/react-checkbox";
+import { Button } from "@/components/ui/button";
+import { Plus } from "lucide-react";
 
-const formSchema = z.object({
-  firstname: z.string().min(1),
-  lastname: z.string().min(1),
-  branch_id: z.string().min(1),
-  mobile: z.string().length(8, { message: "8 тэмдэгт байх ёстой" }),
-  birthday: z.preprocess((val) => (typeof val === "string" ? new Date(val) : val), z.date()) as unknown as Date,
-  password: z.string().min(6),
-  experience: z.preprocess((val) => (typeof val === "string" ? parseFloat(val) : val), z.number()) as unknown as number,
-  nickname: z.string().min(1),
-  profile_img: z.string().nullable(),
-
-  role: z
-    .preprocess(
-      (val) => (typeof val === "string" ? parseInt(val, 10) : val),
-      z.number().refine((val) => [ROLE.EMPLOYEE, ROLE.MANAGER].includes(val), {
-        message: "Only EMPLOYEE and MANAGER roles are allowed",
-      })
-    )
-    .optional() as unknown as number,
-  file: z
-    .any()
-    // .refine((f) => f.size > 0, { message: "Файл заавал оруулна" })
-    .nullable(),
-});
-type UserType = z.infer<typeof formSchema>;
+type FilterType = {
+  branch?: string;
+  user?: string;
+  product?: string;
+  status?: number;
+};
 export const EmployeeProductPage = ({
   data,
-}: //   branches,
-{
+  products,
+  branches,
+  users,
+}: {
   data: ListType<UserProduct>;
-  //   branches: ListType<Branch>;
+  branches: ListType<Branch>;
+  users: ListType<User>;
+  products: ListType<Product>;
 }) => {
   const [action, setAction] = useState(ACTION.DEFAULT);
-  //   const [open, setOpen] = useState<boolean | undefined>(false);
-  //   const form = useForm<UserType>({
-  //     resolver: zodResolver(formSchema),
-  //     defaultValues: {
-  //       role: ROLE.EMPLOYEE,
-  //       password: "string",
-  //     },
-  //   });
-  const [userProduct, setUserProduct] = useState<ListType<UserProduct>>(data);
-  //   const [editingUser, setEditingUser] = useState<IUser | null>(null);
-  //   const onSubmit = async <T,>(e: T) => {
-  //     const { file, ...body } = form.getValues();
-  //     const formData = new FormData();
-  //     let payload = {};
-  //     if (file != null) {
-  //       formData.append("files", file);
-  //       const uploadResult = await imageUploader(formData);
-  //       payload = {
-  //         ...(body as IUser),
-  //         profile_img: uploadResult[0],
-  //       };
-  //     } else {
-  //       payload = {
-  //         ...(body as IUser),
-  //       };
-  //     }
-  //     const res = editingUser
-  //       ? await updateOne<IUser>(Api.user, editingUser?.id as string, payload)
-  //       : await create<IUser>(Api.user, payload);
-  //     if (res.success) {
-  //       refresh();
-  //       setOpen(false);
-  //       form.reset();
-  //     }
-  //     setAction(ACTION.DEFAULT);
-  //   };
-  //   const onInvalid = async <T,>(e: T) => {
-  //     console.log("error", e);
+  const [open, setOpen] = useState<boolean | undefined>(false);
 
-  //     // setSuccess(false);
-  //   };
+  const [userProduct, setUserProduct] = useState<ListType<UserProduct>>(data);
+  const [editingUser, setEditingUser] = useState<IUser | null>(null);
+  // const onSubmit = async <T,>(e: T) => {
+  //   const { file, ...body } = form.getValues();
+  //   const formData = new FormData();
+  //   let payload = {};
+  //   if (file != null) {
+  //     formData.append("files", file);
+  //     const uploadResult = await imageUploader(formData);
+  //     payload = {
+  //       ...(body as IUser),
+  //       profile_img: uploadResult[0],
+  //     };
+  //   } else {
+  //     payload = {
+  //       ...(body as IUser),
+  //     };
+  //   }
+  //   const res = editingUser
+  //     ? await updateOne<IUser>(Api.user, editingUser?.id as string, payload)
+  //     : await create<IUser>(Api.user, payload);
+  //   if (res.success) {
+  //     refresh();
+  //     setOpen(false);
+  //     form.reset();
+  //   }
+  //   setAction(ACTION.DEFAULT);
+  // };
+  // const onInvalid = async <T,>(e: T) => {
+  //   console.log("error", e);
+
+  //   // setSuccess(false);
+  // };
 
   const refresh = async (pg: PG = DEFAULT_PG) => {
     setAction(ACTION.RUNNING);
     const { page, limit, sort } = pg;
     await fetcher<UserProduct>(Api.user_product, {
-      page,
-      limit,
-      sort,
+      page: page ?? DEFAULT_PG.page,
+      limit: limit ?? DEFAULT_PG.limit,
+      sort: sort ?? DEFAULT_PG.sort,
+      ...pg,
     }).then((d) => {
       setUserProduct(d);
       // form.reset(undefined);
     });
     setAction(ACTION.DEFAULT);
   };
-  //   const edit = (e: IUser) => {
-  //     setOpen(true);
-  //     setEditingUser(e);
-  //     form.reset(e);
-  //   };
-  //   const setStatus = async (index: number, status: number) => {
-  //     const res = await updateOne(Api.user, users.items[index].id, {
-  //       user_status: status,
-  //     });
-  //     refresh();
-  //   };
-  //   const giveProduct = (index: number) => {
-  //     setUserProduct(users.items[index].id);
-  //   };
-  const columns = getColumns();
-  //   const columns = getColumns(edit, setStatus, giveProduct);
+  const edit = (e: IUser) => {
+    setOpen(true);
+    setEditingUser(e);
+    // form.reset(e);
+  };
+  const setStatus = async (index: number, status: number) => {
+    const res = await updateOne(Api.user, users.items[index].id, {
+      user_status: status,
+    });
+    refresh();
+  };
+
+  const columns = getColumns(edit, setStatus);
+  const [filter, setFilter] = useState<FilterType>();
+  const changeFilter = (key: string, value: number | string) => {
+    setFilter((prev) => ({ ...prev, [key]: value }));
+  };
+
+  useEffect(() => {
+    refresh(
+      objectCompact({
+        branch_id: filter?.branch,
+        user_id: filter?.user,
+        product_id: filter?.product,
+        user_product_status: filter?.status,
+        page: 0,
+      })
+    );
+  }, [filter]);
+  const groups: { key: keyof FilterType; label: string; items: Option[] }[] =
+    useMemo(
+      () => [
+        {
+          key: "branch",
+          label: "Салбар",
+          items: branches.items.map((b) => ({ value: b.id, label: b.name })),
+        },
+        {
+          key: "user",
+          label: "Артист",
+          items: users.items.map((b) => ({
+            value: b.id,
+            label: usernameFormatter(b),
+          })),
+        },
+        {
+          key: "product",
+          label: "Бүтээгдэхүүн",
+          items: products.items.map((b) => ({ value: b.id, label: b.name })),
+        },
+        {
+          key: "status",
+          label: "Статус",
+          items: getEnumValues(UserProductStatus).map((s) => ({
+            value: s,
+            label: getValuesUserProductStatus[s],
+          })),
+        },
+      ],
+      [branches.items]
+    );
+
   return (
     <div className="w-full relative">
       <DynamicHeader count={data.count} />
 
-      {data.count}
       <div className="admin-container">
         <DataTable
+          clear={() => setFilter(undefined)}
+          filter={
+            <div className="inline-flex gap-3 w-full flex-wrap">
+              {groups.map((item, i) => {
+                const { key } = item;
+                return (
+                  <FilterPopover
+                    content={item.items.map((it, index) => (
+                      <label
+                        key={index}
+                        className="flex items-center gap-2 cursor-pointer text-sm"
+                      >
+                        <Checkbox
+                          checked={filter?.[key] == it.value}
+                          onCheckedChange={() => changeFilter(key, it.value)}
+                        />
+                        <span>{it.label as string}</span>
+                      </label>
+                    ))}
+                    value={
+                      filter?.[key]
+                        ? item.items.filter(
+                            (item) => item.value == filter[key]
+                          )[0].label
+                        : undefined
+                    }
+                    label={item.label}
+                  />
+                );
+              })}
+            </div>
+          }
           columns={columns}
           data={userProduct.items}
           refresh={refresh}
           loading={action === ACTION.RUNNING}
           count={userProduct.count}
-          modalAdd={
-            <>
-              {/* <Modal
-        submit={() => {
-          form.handleSubmit(onSubmit, onInvalid)();
-        }}
-        name="Шинээр нэмэх"
-        title="Ажилтан нэмэх"
-        submitTxt={editingUser ? "Засах" : "Нэмэх"}
-        open={!open ? false : open}
-        setOpen={(v) => {
-          setOpen(v);
-          setEditingUser(null);
-        }}
-        loading={action == ACTION.RUNNING}
-      >
-        <FormProvider {...form}>
-          <FormItems control={form.control} name="branch_id">
-            {(field) => {
-              return (
-                <>
-                  <Label>Салбар</Label>
-                  <ComboBox
-                    props={{ ...field }}
-                    items={branches.items.map((branch) => {
-                      return {
-                        value: branch.id,
-                        label: branch.name,
-                      };
-                    })}
-                  />
-                </>
-              );
-            }}
-          </FormItems>
-          <FormItems control={form.control} name="file">
-            {(field) => {
-              return (
-                <>
-                  <Input
-                    type="file"
-                    accept="image/*"
-                    onChange={(e) => {
-                      const file = e.target.files?.[0];
-                      if (file) {
-                        field.onChange(file);
-                      }
-                    }}
-                  />
-                  {field.value && (
-                    <img
-                      src={URL.createObjectURL(field.value as any)}
-                      alt="preview"
-                      className="w-32 h-32 mt-2 object-cover"
-                    />
-                  )}
-                </>
-              );
-            }}
-          </FormItems>
-   
-          <FormItems control={form.control} name="profile_img">
-            {(field) => {
-              return (
-                <>
-                  {field.value && (
-                    <img
-                      src={`/api/file/${field.value}`}
-                      alt="preview"
-                      className="w-32 h-32 mt-2 object-cover"
-                    />
-                  )}
-                </>
-              );
-            }}
-          </FormItems>
-          <FormItems control={form.control} name="role">
-            {(field) => {
-              return (
-                <>
-                  <Label>Role</Label>
-                  <ComboBox
-                    items={[ROLE.ADMIN, ROLE.EMPLOYEE, ROLE.MANAGER].map(
-                      (role) => {
-                        return {
-                          label: RoleValue[role],
-                          value: role.toString(),
-                        };
-                      }
-                    )}
-                    props={{ ...field }}
-                  />
-                </>
-              );
-            }}
-          </FormItems>
-          <FormItems
-            control={form.control}
-            name="password"
-            className="col-span-2"
-          >
-            {(field) => {
-              return <PasswordField props={{ ...field }} view={true} />;
-            }}
-          </FormItems>
-          {["lastname", "firstname", "mobile", "nickname", "experience"].map(
-            (i, index) => {
-              const item = i as keyof UserType;
-              return (
-                <FormItems
-                  control={form.control}
-                  name={item}
-                  key={index}
-                  className={
-                    item == "mobile" || item == "experience"
-                      ? "col-span-1"
-                      : "col-span-2"
-                  }
-                >
-                  {(field) => {
-                    return (
-                      <>
-                        <TextField
-                          type={"mobile" == item ? "number" : "text"}
-                          props={{ ...field }}
-                          label={firstLetterUpper(item)}
-                        />
-                      </>
-                    );
-                  }}
-                </FormItems>
-              );
-            }
-          )}
-          <FormItems control={form.control} name="birthday">
-            {(field) => {
-              return <DatePicker pl="Огноо сонгох" props={{ ...field }} />;
-            }}
-          </FormItems>
-        </FormProvider>
-      </Modal>
-      <EmployeeProductModal
-        id={userProduct}
-        clear={() => setUserProduct(undefined)}
-      /> */}
-            </>
-          }
+          modalAdd={<></>}
         />
       </div>
     </div>

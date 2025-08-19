@@ -6,10 +6,17 @@ import { useModal } from "@/providers/modal-context";
 import AddEventModal from "@/components/schedule/_modals/add-event-modal";
 import EventStyled from "../event-component/event-styled";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, ArrowRight, Maximize2, ChevronLeft, Maximize } from "lucide-react";
+import {
+  ArrowLeft,
+  ArrowRight,
+  Maximize2,
+  ChevronLeft,
+  Maximize,
+} from "lucide-react";
 import clsx from "clsx";
 import { Event, CustomEventModal } from "@/types";
 import CustomModal from "@/components/ui/custom-modal";
+import { COLORS } from "@/lib/colors";
 
 const hours = Array.from({ length: 24 }, (_, i) => {
   const hour = i % 12 || 12;
@@ -126,28 +133,32 @@ export default function WeeklyView({
     setColWidth(Array(7).fill(1));
   }, [currentDate]);
 
-  const handleMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-    if (!hoursColumnRef.current) return;
-    const rect = hoursColumnRef.current.getBoundingClientRect();
-    const y = e.clientY - rect.top;
-    const hourHeight = rect.height / 24;
-    const hour = Math.max(0, Math.min(23, Math.floor(y / hourHeight)));
-    const minuteFraction = (y % hourHeight) / hourHeight;
-    const minutes = Math.floor(minuteFraction * 60);
-    
-    // Format in 12-hour format
-    const hour12 = hour % 12 || 12;
-    const ampm = hour < 12 ? "AM" : "PM";
-    setDetailedHour(
-      `${hour12}:${minutes.toString().padStart(2, "0")} ${ampm}`
-    );
-    
-    // Ensure timelinePosition is never negative and is within bounds
-    // 83px offset accounts for the header height
-    const headerOffset = 83;
-    const position = Math.max(0, Math.min(rect.height, Math.round(y))) + headerOffset;
-    setTimelinePosition(position);
-  }, []);
+  const handleMouseMove = useCallback(
+    (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+      if (!hoursColumnRef.current) return;
+      const rect = hoursColumnRef.current.getBoundingClientRect();
+      const y = e.clientY - rect.top;
+      const hourHeight = rect.height / 24;
+      const hour = Math.max(0, Math.min(23, Math.floor(y / hourHeight)));
+      const minuteFraction = (y % hourHeight) / hourHeight;
+      const minutes = Math.floor(minuteFraction * 60);
+
+      // Format in 12-hour format
+      const hour12 = hour % 12 || 12;
+      const ampm = hour < 12 ? "AM" : "PM";
+      setDetailedHour(
+        `${hour12}:${minutes.toString().padStart(2, "0")} ${ampm}`
+      );
+
+      // Ensure timelinePosition is never negative and is within bounds
+      // 83px offset accounts for the header height
+      const headerOffset = 83;
+      const position =
+        Math.max(0, Math.min(rect.height, Math.round(y))) + headerOffset;
+      setTimelinePosition(position);
+    },
+    []
+  );
 
   function handleAddEvent(event?: Event) {
     // Create the modal content with the provided event data or defaults
@@ -198,7 +209,7 @@ export default function WeeklyView({
     const [hourStr, minuteStr] = timePart.split(":");
     let hours = parseInt(hourStr);
     const minutes = parseInt(minuteStr);
-    
+
     // Convert to 24-hour format for Date object
     if (ampm === "PM" && hours < 12) {
       hours += 12;
@@ -227,39 +238,39 @@ export default function WeeklyView({
       endDate: new Date(date.getTime() + 60 * 60 * 1000), // 1-hour duration
       title: "",
       id: "",
-      variant: "primary",
+      color: 0,
     });
   }
-
 
   // Group events by time period to prevent splitting spaces within same time blocks
   const groupEventsByTimePeriod = (events: Event[] | undefined) => {
     if (!events || events.length === 0) return [];
-    
+
     // Sort events by start time
-    const sortedEvents = [...events].sort((a, b) => 
-      new Date(a.startDate).getTime() - new Date(b.startDate).getTime()
+    const sortedEvents = [...events].sort(
+      (a, b) =>
+        new Date(a.startDate).getTime() - new Date(b.startDate).getTime()
     );
-    
+
     // Precise time overlap checking function
     const eventsOverlap = (event1: Event, event2: Event) => {
       const start1 = new Date(event1.startDate).getTime();
       const end1 = new Date(event1.endDate).getTime();
       const start2 = new Date(event2.startDate).getTime();
       const end2 = new Date(event2.endDate).getTime();
-      
+
       // Strict time overlap - one event starts before the other ends
-      return (start1 < end2 && start2 < end1);
+      return start1 < end2 && start2 < end1;
     };
-    
+
     // First, create a graph where events are vertices and edges represent overlaps
     const graph: Record<string, Set<string>> = {};
-    
+
     // Initialize graph
     for (const event of sortedEvents) {
       graph[event.id] = new Set<string>();
     }
-    
+
     // Build connections - only connect events that truly overlap in time
     for (let i = 0; i < sortedEvents.length; i++) {
       for (let j = i + 1; j < sortedEvents.length; j++) {
@@ -270,27 +281,27 @@ export default function WeeklyView({
         }
       }
     }
-    
+
     // Use DFS to find connected components (groups of overlapping events)
     const visited = new Set<string>();
     const groups: Event[][] = [];
-    
+
     for (const event of sortedEvents) {
       if (!visited.has(event.id)) {
         // Start a new component/group
         const group: Event[] = [];
         const stack: Event[] = [event];
         visited.add(event.id);
-        
+
         // DFS traversal
         while (stack.length > 0) {
           const current = stack.pop()!;
           group.push(current);
-          
+
           // Visit neighbors (overlapping events)
           for (const neighborId of graph[current.id]) {
             if (!visited.has(neighborId)) {
-              const neighbor = sortedEvents.find(e => e.id === neighborId);
+              const neighbor = sortedEvents.find((e) => e.id === neighborId);
               if (neighbor) {
                 stack.push(neighbor);
                 visited.add(neighborId);
@@ -298,28 +309,32 @@ export default function WeeklyView({
             }
           }
         }
-        
+
         // Sort this group by start time
-        group.sort((a, b) => 
-          new Date(a.startDate).getTime() - new Date(b.startDate).getTime()
+        group.sort(
+          (a, b) =>
+            new Date(a.startDate).getTime() - new Date(b.startDate).getTime()
         );
-        
+
         groups.push(group);
       }
     }
-    
+
     return groups;
   };
 
   return (
     <div className="flex flex-col gap-4">
       <div className="flex justify-between items-center mb-2">
-
         <div className="flex ml-auto gap-3">
           {prevButton ? (
             <div onClick={handlePrevWeek}>{prevButton}</div>
           ) : (
-            <Button variant="outline" className={classNames?.prev} onClick={handlePrevWeek}>
+            <Button
+              variant="outline"
+              className={classNames?.prev}
+              onClick={handlePrevWeek}
+            >
               <ArrowLeft />
               Prev
             </Button>
@@ -327,14 +342,18 @@ export default function WeeklyView({
           {nextButton ? (
             <div onClick={handleNextWeek}>{nextButton}</div>
           ) : (
-            <Button variant="outline" className={classNames?.next} onClick={handleNextWeek}>
+            <Button
+              variant="outline"
+              className={classNames?.next}
+              onClick={handleNextWeek}
+            >
               Next
               <ArrowRight />
             </Button>
           )}
         </div>
       </div>
-      
+
       <AnimatePresence initial={false} custom={direction} mode="wait">
         <motion.div
           key={currentDate.toISOString()}
@@ -355,11 +374,13 @@ export default function WeeklyView({
           </div>
 
           <div className="col-span-7 flex flex-col relative">
-            <div 
-              className="grid gap-0 flex-grow bg-primary/10 rounded-r-lg" 
-              style={{ 
-                gridTemplateColumns: colWidth.map(w => `${w}fr`).join(' '),
-                transition: isResizing ? 'none' : 'grid-template-columns 0.3s ease-in-out'
+            <div
+              className="grid gap-0 flex-grow bg-primary/10 rounded-r-lg"
+              style={{
+                gridTemplateColumns: colWidth.map((w) => `${w}fr`).join(" "),
+                transition: isResizing
+                  ? "none"
+                  : "grid-template-columns 0.3s ease-in-out",
               }}
             >
               {daysOfWeek.map((day, idx) => (
@@ -374,44 +395,51 @@ export default function WeeklyView({
                           "text-lg font-semibold",
                           new Date().getDate() === day.getDate() &&
                             new Date().getMonth() === currentDate.getMonth() &&
-                            new Date().getFullYear() === currentDate.getFullYear()
+                            new Date().getFullYear() ===
+                              currentDate.getFullYear()
                             ? "text-secondary-500"
                             : ""
                         )}
                       >
                         {day.getDate()}
                       </div>
-                      
+
                       {/* Fullscreen icon that appears on hover */}
-                      <div 
+                      <div
                         className="absolute top-5 right-10 cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity"
                         onClick={(e) => {
                           e.stopPropagation();
-                          
+
                           // Set the selected day
                           const selectedDay = new Date(
                             currentDate.getFullYear(),
                             currentDate.getMonth(),
                             day.getDate()
                           );
-                          
+
                           // Get events for the selected day
                           const dayEvents = getters.getEventsForDay(
                             day.getDate(),
                             currentDate
                           );
-                          
+
                           setOpen(
-                            <CustomModal title={`${getters.getDayName(day.getDay())} ${day.getDate()}, ${selectedDay.getFullYear()}`}>
+                            <CustomModal
+                              title={`${getters.getDayName(
+                                day.getDay()
+                              )} ${day.getDate()}, ${selectedDay.getFullYear()}`}
+                            >
                               <div className="flex flex-col space-y-4 p-4">
                                 <div className="flex items-center mb-4">
-                                  <ChevronLeft 
-                                    className="cursor-pointer hover:text-primary mr-2" 
+                                  <ChevronLeft
+                                    className="cursor-pointer hover:text-primary mr-2"
                                     onClick={() => setOpen(null)}
                                   />
-                                  <h2 className="text-2xl font-bold">{selectedDay.toDateString()}</h2>
+                                  <h2 className="text-2xl font-bold">
+                                    {selectedDay.toDateString()}
+                                  </h2>
                                 </div>
-                                
+
                                 {dayEvents && dayEvents.length > 0 ? (
                                   <div className="space-y-4">
                                     {/* Timeline view */}
@@ -428,58 +456,78 @@ export default function WeeklyView({
                                             </div>
                                           ))}
                                         </div>
-                                        
+
                                         {/* Events column */}
                                         <div className="relative">
                                           {/* Hour grid lines */}
-                                          {Array.from({ length: 24 }).map((_, index) => (
-                                            <div
-                                              key={`grid-${index}`}
-                                              className="h-16 border-b border-default-200"
-                                            />
-                                          ))}
-                                          
+                                          {Array.from({ length: 24 }).map(
+                                            (_, index) => (
+                                              <div
+                                                key={`grid-${index}`}
+                                                className="h-16 border-b border-default-200"
+                                              />
+                                            )
+                                          )}
+
                                           {/* Display events */}
                                           {dayEvents.map((event) => {
                                             // Calculate time groups
-                                            const timeGroups = groupEventsByTimePeriod(dayEvents);
-                                            
+                                            const timeGroups =
+                                              groupEventsByTimePeriod(
+                                                dayEvents
+                                              );
+
                                             // Find which time group this event belongs to
                                             let eventsInSamePeriod = 1;
                                             let periodIndex = 0;
-                                            
-                                            for (let i = 0; i < timeGroups.length; i++) {
-                                              const groupIndex = timeGroups[i].findIndex(e => e.id === event.id);
+
+                                            for (
+                                              let i = 0;
+                                              i < timeGroups.length;
+                                              i++
+                                            ) {
+                                              const groupIndex = timeGroups[
+                                                i
+                                              ].findIndex(
+                                                (e) => e.id === event.id
+                                              );
                                               if (groupIndex !== -1) {
-                                                eventsInSamePeriod = timeGroups[i].length;
+                                                eventsInSamePeriod =
+                                                  timeGroups[i].length;
                                                 periodIndex = groupIndex;
                                                 break;
                                               }
                                             }
-                                            
+
                                             // Get styling for this event
-                                            const { height, top, left, maxWidth, minWidth } = handlers.handleEventStyling(
+                                            const {
+                                              height,
+                                              top,
+                                              left,
+                                              maxWidth,
+                                              minWidth,
+                                            } = handlers.handleEventStyling(
                                               event,
                                               dayEvents,
                                               {
                                                 eventsInSamePeriod,
                                                 periodIndex,
-                                                adjustForPeriod: true
+                                                adjustForPeriod: true,
                                               }
                                             );
-                                            
+
                                             return (
                                               <div
                                                 key={event.id}
                                                 style={{
-                                                  position: 'absolute',
+                                                  position: "absolute",
                                                   height,
                                                   top,
                                                   left,
                                                   maxWidth,
                                                   minWidth,
-                                                  padding: '0 2px',
-                                                  boxSizing: 'border-box',
+                                                  padding: "0 2px",
+                                                  boxSizing: "border-box",
                                                 }}
                                               >
                                                 <EventStyled
@@ -488,7 +536,9 @@ export default function WeeklyView({
                                                     CustomEventComponent,
                                                     minmized: true,
                                                   }}
-                                                  CustomEventModal={CustomEventModal}
+                                                  CustomEventModal={
+                                                    CustomEventModal
+                                                  }
                                                 />
                                               </div>
                                             );
@@ -496,15 +546,19 @@ export default function WeeklyView({
                                         </div>
                                       </div>
                                     </div>
-                                    
+
                                     {/* Event list */}
                                     <div className="bg-card rounded-lg p-4">
-                                      <h3 className="text-lg font-semibold mb-4">All Events</h3>
+                                      <h3 className="text-lg font-semibold mb-4">
+                                        All Events
+                                      </h3>
                                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        {dayEvents.map(event => (
-                                          <div 
-                                            key={event.id} 
-                                            className={`p-4 rounded-lg shadow-sm border-l-4 border-${event.variant} hover:shadow-md transition-shadow`}
+                                        {dayEvents.map((event) => (
+                                          <div
+                                            key={event.id}
+                                            className={`p-4 rounded-lg shadow-sm border-l-4 border-${
+                                              COLORS[event.color ?? 0]
+                                            }-500 hover:shadow-md transition-shadow`}
                                           >
                                             <EventStyled
                                               event={{
@@ -512,7 +566,9 @@ export default function WeeklyView({
                                                 CustomEventComponent,
                                                 minmized: false,
                                               }}
-                                              CustomEventModal={CustomEventModal}
+                                              CustomEventModal={
+                                                CustomEventModal
+                                              }
                                             />
                                           </div>
                                         ))}
@@ -522,12 +578,15 @@ export default function WeeklyView({
                                 ) : (
                                   <div className="text-center py-10 text-muted-foreground">
                                     <p>No events scheduled for this day</p>
-                                    <Button 
-                                      variant="outline" 
+                                    <Button
+                                      variant="outline"
                                       className="mt-4"
                                       onClick={() => {
                                         setOpen(null);
-                                        handleAddEventWeek(idx, detailedHour || "12:00 PM");
+                                        handleAddEventWeek(
+                                          idx,
+                                          detailedHour || "12:00 PM"
+                                        );
                                       }}
                                     >
                                       Add Event
@@ -539,9 +598,12 @@ export default function WeeklyView({
                           );
                         }}
                       >
-                        <Maximize size={16} className="text-muted-foreground hover:text-primary" />
+                        <Maximize
+                          size={16}
+                          className="text-muted-foreground hover:text-primary"
+                        />
                       </div>
-                      
+
                       {/* Resize handle */}
                     </div>
                   </div>
@@ -583,11 +645,13 @@ export default function WeeklyView({
               ))}
             </div>
 
-            <div 
-              className="col-span-7 bg-default-50 grid h-full" 
-              style={{ 
-                gridTemplateColumns: colWidth.map(w => `${w}fr`).join(' '),
-                transition: isResizing ? 'none' : 'grid-template-columns 0.3s ease-in-out'
+            <div
+              className="col-span-7 bg-default-50 grid h-full"
+              style={{
+                gridTemplateColumns: colWidth.map((w) => `${w}fr`).join(" "),
+                transition: isResizing
+                  ? "none"
+                  : "grid-template-columns 0.3s ease-in-out",
               }}
             >
               {Array.from({ length: 7 }, (_, dayIndex) => {
@@ -598,15 +662,15 @@ export default function WeeklyView({
 
                 // Calculate time groups once for this day's events
                 const timeGroups = groupEventsByTimePeriod(dayEvents);
-                
+
                 // Get the count of events to determine if we need to show a "more" button
                 const eventsCount = dayEvents?.length || 0;
                 const maxEventsToShow = 10; // Limit the number of events to display before showing "more"
                 const hasMoreEvents = eventsCount > maxEventsToShow;
-                
+
                 // Only show a subset of events if there are too many
-                const visibleEvents = hasMoreEvents 
-                  ? dayEvents?.slice(0, maxEventsToShow - 1) 
+                const visibleEvents = hasMoreEvents
+                  ? dayEvents?.slice(0, maxEventsToShow - 1)
                   : dayEvents;
 
                 return (
@@ -622,28 +686,32 @@ export default function WeeklyView({
                         // For better spacing, consider if this event is part of a time group
                         let eventsInSamePeriod = 1;
                         let periodIndex = 0;
-                        
+
                         // Find which time group this event belongs to
                         for (let i = 0; i < timeGroups.length; i++) {
-                          const groupIndex = timeGroups[i].findIndex(e => e.id === event.id);
+                          const groupIndex = timeGroups[i].findIndex(
+                            (e) => e.id === event.id
+                          );
                           if (groupIndex !== -1) {
                             eventsInSamePeriod = timeGroups[i].length;
                             periodIndex = groupIndex;
                             break;
                           }
                         }
-                        
+
                         // Customize styling parameters for events in the same time period
-                        const { height, left, maxWidth, minWidth, top, zIndex } =
-                          handlers.handleEventStyling(
-                            event, 
-                            dayEvents, 
-                            {
-                              eventsInSamePeriod,
-                              periodIndex,
-                              adjustForPeriod: true
-                            }
-                          );
+                        const {
+                          height,
+                          left,
+                          maxWidth,
+                          minWidth,
+                          top,
+                          zIndex,
+                        } = handlers.handleEventStyling(event, dayEvents, {
+                          eventsInSamePeriod,
+                          periodIndex,
+                          adjustForPeriod: true,
+                        });
 
                         return (
                           <motion.div
@@ -655,8 +723,8 @@ export default function WeeklyView({
                               left: left,
                               maxWidth: maxWidth,
                               minWidth: minWidth,
-                              padding: '0 2px',
-                              boxSizing: 'border-box',
+                              padding: "0 2px",
+                              boxSizing: "border-box",
                             }}
                             className="flex transition-all duration-1000 flex-grow flex-col z-50 absolute"
                             initial={{ opacity: 0, scale: 0.9 }}
@@ -675,29 +743,33 @@ export default function WeeklyView({
                           </motion.div>
                         );
                       })}
-                      
+
                       {/* Show "more events" button if there are too many */}
                       {hasMoreEvents && (
                         <motion.div
                           key={`more-events-${dayIndex}`}
                           style={{
-                            bottom: '10px',
-                            right: '10px',
-                            position: 'absolute',
+                            bottom: "10px",
+                            right: "10px",
+                            position: "absolute",
                           }}
                           className="z-50"
                           initial={{ opacity: 0 }}
                           animate={{ opacity: 1 }}
                           exit={{ opacity: 0 }}
                         >
-                          <Badge 
+                          <Badge
                             variant="secondary"
                             className="cursor-pointer hover:bg-accent"
                             onClick={(e) => {
                               e.stopPropagation();
                               // Show a modal with all events for this day
                               setOpen(
-                                <CustomModal title={`Events for ${daysOfWeek[dayIndex].toDateString()}`}>
+                                <CustomModal
+                                  title={`Events for ${daysOfWeek[
+                                    dayIndex
+                                  ].toDateString()}`}
+                                >
                                   <div className="space-y-2 p-2 max-h-[80vh] overflow-y-auto">
                                     {dayEvents?.map((event) => (
                                       <EventStyled
@@ -720,7 +792,7 @@ export default function WeeklyView({
                         </motion.div>
                       )}
                     </AnimatePresence>
-                    
+
                     {/* Render hour slots */}
                     {Array.from({ length: 24 }, (_, hourIndex) => (
                       <div
@@ -739,8 +811,6 @@ export default function WeeklyView({
           </div>
         </motion.div>
       </AnimatePresence>
-
-   
     </div>
   );
 }

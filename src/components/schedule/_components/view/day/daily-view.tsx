@@ -13,12 +13,13 @@ import { CustomEventModal, Event } from "@/types";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import CustomModal from "@/components/ui/custom-modal";
+import { totalHours } from "@/lib/functions";
+import { OrderStatus } from "@/lib/constants";
 
 // Generate hours in 12-hour format
-const hours = Array.from({ length: 24 }, (_, i) => {
-  const hour = i % 12 || 12;
-  const ampm = i < 12 ? "AM" : "PM";
-  return `${hour}:00 ${ampm}`;
+const hours = Array.from({ length: totalHours }, (_, i) => {
+  const hour = i + 5;
+  return `${hour}:00`;
 });
 
 // Animation variants
@@ -179,19 +180,11 @@ export default function DailyView({
       if (!hoursColumnRef.current) return;
       const rect = hoursColumnRef.current.getBoundingClientRect();
       const y = e.clientY - rect.top;
-      const hourHeight = rect.height / 24;
-      const hour = Math.max(0, Math.min(23, Math.floor(y / hourHeight)));
-      const minuteFraction = (y % hourHeight) / hourHeight;
-      const minutes = Math.floor(minuteFraction * 60);
+      const hourHeight = Math.ceil(rect.height / totalHours);
+      const hour = Math.max(0, Math.min(23, Math.floor(y / hourHeight))) + 5;
+      const hour12 = hour;
+      setDetailedHour(`${hour12}:00`);
 
-      // Format in 12-hour format
-      const hour12 = hour % 12 || 12;
-      const ampm = hour < 12 ? "AM" : "PM";
-      setDetailedHour(
-        `${hour12}:${Math.max(0, minutes).toString().padStart(2, "0")} ${ampm}`
-      );
-
-      // Ensure timelinePosition is never negative and is within bounds
       const position = Math.max(0, Math.min(rect.height, Math.round(y)));
       setTimelinePosition(position);
     },
@@ -276,7 +269,7 @@ export default function DailyView({
       endDate: new Date(date.getTime() + 60 * 60 * 1000), // 1-hour duration
       title: "",
       id: "",
-      variant: "primary",
+      color: 0,
     });
   }
 
@@ -348,7 +341,6 @@ export default function DailyView({
               <AnimatePresence initial={false}>
                 {dayEvents && dayEvents?.length
                   ? dayEvents?.map((event, eventIndex) => {
-                      console.log(event.endDate);
                       return (
                         <motion.div
                           key={event.id}
@@ -396,7 +388,7 @@ export default function DailyView({
                 ))}
               </div>
               <div className="flex relative flex-grow flex-col ">
-                {Array.from({ length: 24 }).map((_, index) => (
+                {Array.from({ length: totalHours }).map((_, index) => (
                   <div
                     onClick={() => {
                       handleAddEventDay(detailedHour as string);
@@ -411,9 +403,9 @@ export default function DailyView({
                 ))}
                 <AnimatePresence initial={false}>
                   {events && events?.length
-                    ? events?.map((event, eventIndex) => {
+                    ? events.map((event, eventIndex) => {
                         // Find which time group this event belongs to
-                        let eventsInSamePeriod = 1;
+                        let eventsInSamePeriod = 10;
                         let periodIndex = 0;
 
                         for (let i = 0; i < timeGroups.length; i++) {
@@ -426,7 +418,6 @@ export default function DailyView({
                             break;
                           }
                         }
-
                         const {
                           height,
                           left,
@@ -439,6 +430,7 @@ export default function DailyView({
                           periodIndex,
                           adjustForPeriod: true,
                         });
+
                         return (
                           <motion.div
                             key={event.id}

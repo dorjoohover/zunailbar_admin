@@ -20,6 +20,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { EventFormData, eventSchema, Variant, Event } from "@/types/index";
 import { useScheduler } from "@/providers/schedular-provider";
 import { v4 as uuidv4 } from "uuid"; // Use UUID to generate event IDs
+import { COLORS } from "@/lib/colors";
 
 export default function AddEventModal({
   CustomAddEventModal,
@@ -49,8 +50,8 @@ export default function AddEventModal({
       description: "",
       startDate: new Date(),
       endDate: new Date(),
-      variant: data?.variant || "primary",
-      color: data?.color || "blue",
+
+      color: 0,
     },
   });
 
@@ -64,18 +65,10 @@ export default function AddEventModal({
         description: eventData.description || "",
         startDate: eventData.startDate,
         endDate: eventData.endDate,
-        variant: eventData.variant || "primary",
-        color: eventData.color || "blue",
+        color: 0,
       });
     }
   }, [data, reset]);
-
-  const colorOptions = [
-    { key: "blue", name: "Blue" },
-    { key: "red", name: "Red" },
-    { key: "green", name: "Green" },
-    { key: "yellow", name: "Yellow" },
-  ];
 
   function getEventColor(variant: Variant) {
     switch (variant) {
@@ -128,7 +121,7 @@ export default function AddEventModal({
       title: formData.title,
       startDate: formData.startDate,
       endDate: formData.endDate,
-      variant: formData.variant,
+      color: formData.color,
       description: formData.description,
     };
 
@@ -183,29 +176,26 @@ export default function AddEventModal({
                   variant={getButtonVariant(selectedColor) as any}
                   className="w-fit my-2"
                 >
-                  {
-                    colorOptions.find((color) => color.key === selectedColor)
-                      ?.name
-                  }
+                  {COLORS.find((color) => color === selectedColor)}
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent>
-                {colorOptions.map((color) => (
+                {COLORS.map((color, i) => (
                   <DropdownMenuItem
-                    key={color.key}
+                    key={i}
                     onClick={() => {
-                      setSelectedColor(color.key);
-                      setValue("variant", getEventStatus(color.key));
+                      setSelectedColor(color);
+                      setValue("color", i);
                     }}
                   >
                     <div className="flex items-center">
                       <div
                         style={{
-                          backgroundColor: `var(--${color.key})`,
+                          backgroundColor: `var(--${color})`,
                         }}
                         className={`w-4 h-4 rounded-full mr-2`}
                       />
-                      {color.name}
+                      {color}
                     </div>
                   </DropdownMenuItem>
                 ))}

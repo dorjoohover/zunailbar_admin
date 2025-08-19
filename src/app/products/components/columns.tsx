@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { AppAlertDialog } from "@/components/AlertDialog";
 import { toast } from "sonner";
-import { parseDate } from "@/lib/functions";
+import { checkEmpty, parseDate } from "@/lib/functions";
 import TooltipWrapper from "@/components/tooltipWrapper";
 import { TableActionButtons } from "@/components/tableActionButtons";
 
@@ -46,6 +46,17 @@ export function getColumns(
       ),
     },
     {
+      accessorKey: "brand_name",
+      header: "Brand",
+      cell: ({ row }) => checkEmpty(row.getValue("brand_name")),
+    },
+    {
+      accessorKey: "category_name",
+      header: "Category",
+      cell: ({ row }) => checkEmpty(row.getValue("category_name")),
+    },
+
+    {
       accessorKey: "ref",
       header: "Reference",
     },
@@ -72,27 +83,7 @@ export function getColumns(
       header: "Size",
       cell: ({ row }) => row.getValue("size") ?? "Хоосон",
     },
-    {
-      accessorKey: "created_at",
-      header: ({ column }) => (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          className="font-bold"
-        >
-          Created <ArrowUpDown className="w-4 h-4 ml-2" />
-        </Button>
-      ),
-      cell: ({ row }) => {
-        const date = parseDate(new Date(row.getValue("created_at")), false);
-        return date;
-      },
-      sortingFn: (rowA, rowB, columnId) => {
-        const dateA = new Date(rowA.getValue(columnId)).getTime();
-        const dateB = new Date(rowB.getValue(columnId)).getTime();
-        return dateA - dateB;
-      },
-    },
+
     {
       id: "actions",
       header: "Actions",

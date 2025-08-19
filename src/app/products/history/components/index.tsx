@@ -1,9 +1,16 @@
 "use client";
-
 import { DataTable } from "@/components/data-table";
 import { IProductLog, Product, ProductLog } from "@/models";
 import { useEffect, useMemo, useState } from "react";
-import { ListType, ACTION, PG, DEFAULT_PG, getEnumValues, getValuesProductLogStatus } from "@/lib/constants";
+import {
+  ListType,
+  ACTION,
+  PG,
+  DEFAULT_PG,
+  getEnumValues,
+  getValuesProductLogStatus,
+  Option,
+} from "@/lib/constants";
 import { Modal } from "@/shared/components/modal";
 import z from "zod";
 import { FormProvider, useForm } from "react-hook-form";
@@ -17,38 +24,81 @@ import { fetcher } from "@/hooks/fetcher";
 import { getColumns } from "./columns";
 import { ProductLogStatus } from "@/lib/enum";
 import { DatePicker } from "@/shared/components/date.picker";
-import ContainerHeader from "@/components/containerHeader";
 import DynamicHeader from "@/components/dynamicHeader";
+import { dateOnly, mnDate, objectCompact } from "@/lib/functions";
+import { FilterPopover } from "@/components/layout/popover";
+import { Checkbox } from "@radix-ui/react-checkbox";
+import { Calendar } from "@/components/ui/calendar";
 
 const formSchema = z.object({
   product_id: z.string().min(1),
 
-  quantity: z.preprocess((val) => (typeof val === "string" ? parseFloat(val) : val), z.number()) as unknown as number,
-  price: z.preprocess((val) => (typeof val === "string" ? parseFloat(val) : val), z.number()) as unknown as number,
+  quantity: z.preprocess(
+    (val) => (typeof val === "string" ? parseFloat(val) : val),
+    z.number()
+  ) as unknown as number,
+  price: z.preprocess(
+    (val) => (typeof val === "string" ? parseFloat(val) : val),
+    z.number()
+  ) as unknown as number,
   currency: z.string().min(1),
-  total_amount: z.preprocess((val) => (typeof val === "string" ? parseFloat(val) : val), z.number()) as unknown as number,
-  cargo: z.preprocess((val) => (typeof val === "string" ? parseFloat(val) : val), z.number()) as unknown as number,
-  currency_value: z.preprocess((val) => (typeof val === "string" ? parseFloat(val) : val), z.number()) as unknown as number,
+  total_amount: z.preprocess(
+    (val) => (typeof val === "string" ? parseFloat(val) : val),
+    z.number()
+  ) as unknown as number,
+  cargo: z.preprocess(
+    (val) => (typeof val === "string" ? parseFloat(val) : val),
+    z.number()
+  ) as unknown as number,
+  currency_value: z.preprocess(
+    (val) => (typeof val === "string" ? parseFloat(val) : val),
+    z.number()
+  ) as unknown as number,
   edit: z.string().nullable().optional(),
-  date: z.preprocess((val) => (typeof val === "string" ? new Date(val) : val), z.date()) as unknown as Date,
-  product_log_status: z.preprocess((val) => (typeof val === "string" ? parseInt(val, 10) : val), z.nativeEnum(ProductLogStatus).nullable()).optional() as unknown as number,
+  date: z.preprocess(
+    (val) => (typeof val === "string" ? new Date(val) : val),
+    z.date()
+  ) as unknown as Date,
+  product_log_status: z
+    .preprocess(
+      (val) => (typeof val === "string" ? parseInt(val, 10) : val),
+      z.nativeEnum(ProductLogStatus).nullable()
+    )
+    .optional() as unknown as number,
 });
 const defaultValues = {
   currency: "CNY",
   currency_value: 500,
   product_log_status: ProductLogStatus.Bought,
 };
+type FilterType = {
+  product?: string;
+  status?: number;
+  start?: Date;
+  end?: Date;
+};
+
 type LogType = z.infer<typeof formSchema>;
-export const ProductHistoryPage = ({ data, products }: { data: ListType<ProductLog>; products: ListType<Product> }) => {
+export const ProductHistoryPage = ({
+  data,
+  products,
+}: {
+  data: ListType<ProductLog>;
+  products: ListType<Product>;
+}) => {
   const [action, setAction] = useState(ACTION.DEFAULT);
   const [open, setOpen] = useState<undefined | boolean>(false);
   const form = useForm<LogType>({
     resolver: zodResolver(formSchema),
     defaultValues,
   });
-  const [transactions, setTransactions] = useState<ListType<IProductLog> | null>(null);
+  const [transactions, setTransactions] =
+    useState<ListType<IProductLog> | null>(null);
 
-  const productMap = useMemo(() => new Map(products.items.map((p) => [p.id, p])), [products.items]);
+  const productMap = useMemo(
+    () => new Map(products.items.map((p) => [p.id, p])),
+    [products.items]
+  );
 
   const logFormatter = (data: ListType<ProductLog>) => {
     const items: IProductLog[] = data.items.map((item) => {
@@ -81,9 +131,10 @@ export const ProductHistoryPage = ({ data, products }: { data: ListType<ProductL
     setAction(ACTION.RUNNING);
     const { page, limit, sort } = pg;
     await fetcher<ProductLog>(Api.product_log, {
-      page,
-      limit,
-      sort,
+      page: page ?? DEFAULT_PG.page,
+      limit: limit ?? DEFAULT_PG.limit,
+      sort: sort ?? DEFAULT_PG.sort,
+      ...pg,
       //   name: pg.filter,
     }).then((d) => {
       console.log(d);
@@ -97,11 +148,19 @@ export const ProductHistoryPage = ({ data, products }: { data: ListType<ProductL
     let { edit, cargo, ...payload } = body;
     payload = {
       ...payload,
-      price: Math.round(+(payload.total_amount ?? 0) / +(payload.quantity ?? 1)),
+      price: Math.round(
+        +(payload.total_amount ?? 0) / +(payload.quantity ?? 1)
+      ),
       total_amount: Math.round(+(payload.total_amount ?? 0)),
     };
 
-    const res = edit ? await updateOne<IProductLog>(Api.product_log, edit ?? "", payload as unknown as IProductLog) : await create<IProductLog>(Api.product_log, payload as IProductLog);
+    const res = edit
+      ? await updateOne<IProductLog>(
+          Api.product_log,
+          edit ?? "",
+          payload as unknown as IProductLog
+        )
+      : await create<IProductLog>(Api.product_log, payload as IProductLog);
     if (res.success) {
       refresh();
       setOpen(false);
@@ -118,18 +177,121 @@ export const ProductHistoryPage = ({ data, products }: { data: ListType<ProductL
   const cargo = form.watch("cargo") ?? 0;
 
   useEffect(() => {
-    const total = (Number(qty) || 0) * (Number(price) || 0) * +(currency ?? 500) + +(cargo ?? 0);
+    const total =
+      (Number(qty) || 0) * (Number(price) || 0) * +(currency ?? 500) +
+      +(cargo ?? 0);
     form.setValue("total_amount", total, {
       shouldValidate: true,
       shouldDirty: true,
     });
   }, [qty, price, form, currency, cargo]);
+
+  const [filter, setFilter] = useState<FilterType>();
+  const changeFilter = (key: string, value: number | string) => {
+    setFilter((prev) => ({ ...prev, [key]: value }));
+  };
+
+  useEffect(() => {
+    refresh(
+      objectCompact({
+        product_id: filter?.product,
+        product_log_status: filter?.status,
+        start_date: filter?.start ? dateOnly(filter?.start) : undefined,
+        end_date: filter?.end ? dateOnly(filter?.end) : undefined,
+
+        page: 0,
+      })
+    );
+  }, [filter]);
+  const groups: { key: keyof FilterType; label: string; items: Option[] }[] =
+    useMemo(
+      () => [
+        {
+          key: "product",
+          label: "Бүтээгдэхүүн",
+          items: products.items.map((b) => ({ value: b.id, label: b.name })),
+        },
+
+        {
+          key: "status",
+          label: "Статус",
+          items: getEnumValues(ProductLogStatus).map((s) => ({
+            value: s,
+            label: getValuesProductLogStatus[s],
+          })),
+        },
+      ],
+      [products.items]
+    );
+
   return (
     <div className="">
       <DynamicHeader count={transactions?.count} />
 
       <div className="admin-container">
         <DataTable
+          clear={() => setFilter(undefined)}
+          filter={
+            <div className="inline-flex gap-3 w-full flex-wrap">
+              {groups.map((item, i) => {
+                const { key } = item;
+                return (
+                  <FilterPopover
+                    content={item.items.map((it, index) => (
+                      <label
+                        key={index}
+                        className="flex items-center gap-2 cursor-pointer text-sm"
+                      >
+                        <Checkbox
+                          checked={filter?.[key] == it.value}
+                          onCheckedChange={() => changeFilter(key, it.value)}
+                        />
+                        <span>{it.label as string}</span>
+                      </label>
+                    ))}
+                    value={
+                      filter?.[key]
+                        ? item.items.filter(
+                            (item) => item.value == filter[key]
+                          )[0].label
+                        : undefined
+                    }
+                    label={item.label}
+                  />
+                );
+              })}
+              <FilterPopover
+                content={
+                  <div className="flex flex-col gap-2">
+                    <Calendar
+                      mode="single"
+                      selected={filter?.start}
+                      onSelect={(e) =>
+                        setFilter((prev) => ({ ...prev, start: e }))
+                      }
+                    />
+                  </div>
+                }
+                value={filter?.start?.toString()}
+                label={"Эхлэх огноо"}
+              />
+              <FilterPopover
+                content={
+                  <div className="flex flex-col gap-2">
+                    <Calendar
+                      mode="single"
+                      selected={filter?.end}
+                      onSelect={(e) =>
+                        setFilter((prev) => ({ ...prev, end: e }))
+                      }
+                    />
+                  </div>
+                }
+                value={filter?.end?.toString()}
+                label={"Дуусах огноо"}
+              />
+            </div>
+          }
           columns={columns}
           count={transactions?.count}
           data={transactions?.items ?? []}
@@ -153,7 +315,11 @@ export const ProductHistoryPage = ({ data, products }: { data: ListType<ProductL
               <FormProvider {...form}>
                 <div className="">
                   <div className="double-col">
-                    <FormItems label="Бараа" control={form.control} name="product_id">
+                    <FormItems
+                      label="Бараа"
+                      control={form.control}
+                      name="product_id"
+                    >
                       {(field) => {
                         return (
                           <ComboBox
@@ -168,17 +334,23 @@ export const ProductHistoryPage = ({ data, products }: { data: ListType<ProductL
                         );
                       }}
                     </FormItems>
-                    <FormItems label="Төлөв" control={form.control} name="product_log_status">
+                    <FormItems
+                      label="Төлөв"
+                      control={form.control}
+                      name="product_log_status"
+                    >
                       {(field) => {
                         return (
                           <ComboBox
                             props={{ ...field }}
-                            items={getEnumValues(ProductLogStatus).map((item) => {
-                              return {
-                                value: item.toString(),
-                                label: getValuesProductLogStatus[item],
-                              };
-                            })}
+                            items={getEnumValues(ProductLogStatus).map(
+                              (item) => {
+                                return {
+                                  value: item.toString(),
+                                  label: getValuesProductLogStatus[item],
+                                };
+                              }
+                            )}
                           />
                         );
                       }}
@@ -225,16 +397,33 @@ export const ProductHistoryPage = ({ data, products }: { data: ListType<ProductL
                       const name = item.key as keyof LogType;
                       const label = item.label as keyof LogType;
                       return (
-                        <FormItems control={form.control} name={name} key={i} className={item.key === "name" ? "col-span-2" : ""}>
+                        <FormItems
+                          control={form.control}
+                          name={name}
+                          key={i}
+                          className={item.key === "name" ? "col-span-2" : ""}
+                        >
                           {(field) => {
-                            return <TextField props={{ ...field }} type={item.type} label={label} />;
+                            return (
+                              <TextField
+                                props={{ ...field }}
+                                type={item.type}
+                                label={label}
+                              />
+                            );
                           }}
                         </FormItems>
                       );
                     })}
                     <FormItems control={form.control} name="date">
                       {(field) => {
-                        return <DatePicker name="Огноо" pl="Огноо сонгох" props={{ ...field }} />;
+                        return (
+                          <DatePicker
+                            name="Огноо"
+                            pl="Огноо сонгох"
+                            props={{ ...field }}
+                          />
+                        );
                       }}
                     </FormItems>
                   </div>

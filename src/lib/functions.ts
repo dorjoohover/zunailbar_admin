@@ -37,6 +37,14 @@ export function formatTime(input: string | number): string {
   return `${hour}:00`;
 }
 
+export const objectCompact = <T extends Record<string, any>>(v: T) =>
+  Object.fromEntries(
+    Object.entries(v).filter(
+      ([, val]) =>
+        !(val == null || (typeof val === "string" && val.trim() === ""))
+    )
+  ) as Partial<T>;
+
 export function getDayName(dayNumber: number): string {
   const days: Record<number, string> = {
     1: "Даваа",
@@ -100,7 +108,11 @@ export const numberArray = (count: number) => {
 };
 
 export const checkEmpty = (value?: string) => {
-  return value || value != "" ? value : "Хоосон";
+  return value && value != "" && value != null ? value : "Хоосон";
+};
+const pad = (n: number) => String(n).padStart(2, "0");
+export const dateOnly = (d: Date) => {
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 };
 
 export const changeValue = (
@@ -197,3 +209,5 @@ export function getPaginationRange(
 
   return range;
 }
+
+export const totalHours = 18;

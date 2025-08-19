@@ -1,10 +1,9 @@
 "use client";
-
 import { DataTable } from "@/components/data-table";
 import { Brand, Category, IProduct, Product } from "@/models";
 import { getColumns } from "./columns";
-import { useState } from "react";
-import { ListType, ACTION, PG, DEFAULT_PG } from "@/lib/constants";
+import { useEffect, useMemo, useState } from "react";
+import { ListType, ACTION, PG, DEFAULT_PG, Option } from "@/lib/constants";
 import { Modal } from "@/shared/components/modal";
 import z from "zod";
 import { FormProvider, useForm } from "react-hook-form";
@@ -16,10 +15,11 @@ import { ComboBox } from "@/shared/components/combobox";
 import { TextField } from "@/shared/components/text.field";
 import { fetcher } from "@/hooks/fetcher";
 import { CategoryType } from "@/lib/enum";
-import { toast } from "sonner";
 import { showToast } from "@/shared/components/showToast";
-import ContainerHeader from "@/components/containerHeader";
 import DynamicHeader from "@/components/dynamicHeader";
+import { objectCompact } from "@/lib/functions";
+import { FilterPopover } from "@/components/layout/popover";
+import { Checkbox } from "@radix-ui/react-checkbox";
 
 const formSchema = z.object({
   brand_id: z.string().nullable().optional(),
@@ -29,8 +29,21 @@ const formSchema = z.object({
   size: z.string().nullable().optional(),
   edit: z.string().nullable().optional(),
 });
+
+type FilterType = {
+  brand?: string;
+  category?: string;
+};
 type ProductType = z.infer<typeof formSchema>;
-export const ProductPage = ({ data, categories, brands }: { data: ListType<Product>; categories: ListType<Category>; brands: ListType<Brand> }) => {
+export const ProductPage = ({
+  data,
+  categories,
+  brands,
+}: {
+  data: ListType<Product>;
+  categories: ListType<Category>;
+  brands: ListType<Brand>;
+}) => {
   const [action, setAction] = useState(ACTION.DEFAULT);
   const [open, setOpen] = useState<undefined | boolean>(false);
   const form = useForm<ProductType>({
@@ -56,11 +69,12 @@ export const ProductPage = ({ data, categories, brands }: { data: ListType<Produ
     setAction(ACTION.RUNNING);
     const { page, limit, sort } = pg;
     await fetcher<Product>(Api.product, {
-      page,
-      limit,
-      sort,
+      page: page ?? DEFAULT_PG.page,
+      limit: limit ?? DEFAULT_PG.limit,
+      sort: sort ?? DEFAULT_PG.sort,
       name: pg.filter,
       type: CategoryType.DEFAULT,
+      ...pg,
     }).then((d) => {
       console.log(d);
       setProducts(d);
@@ -71,7 +85,9 @@ export const ProductPage = ({ data, categories, brands }: { data: ListType<Produ
     setAction(ACTION.RUNNING);
     const body = e as ProductType;
     const { edit, ...payload } = body;
-    const res = edit ? await updateOne<IProduct>(Api.product, edit ?? "", payload as IProduct) : await create<IProduct>(Api.product, e as IProduct);
+    const res = edit
+      ? await updateOne<IProduct>(Api.product, edit ?? "", payload as IProduct)
+      : await create<IProduct>(Api.product, e as IProduct);
     if (res.success) {
       refresh();
       setOpen(false);
@@ -84,7 +100,39 @@ export const ProductPage = ({ data, categories, brands }: { data: ListType<Produ
     console.log("error", e);
     showToast("error", "Мэдээлэл дутуу байна!");
   };
+  const [filter, setFilter] = useState<FilterType>();
+  const changeFilter = (key: string, value: number | string) => {
+    setFilter((prev) => ({ ...prev, [key]: value }));
+  };
 
+  useEffect(() => {
+    refresh(
+      objectCompact({
+        brand_id: filter?.brand,
+        category_id: filter?.category,
+        page: 0,
+      })
+    );
+  }, [filter]);
+  const groups: { key: keyof FilterType; label: string; items: Option[] }[] =
+    useMemo(
+      () => [
+        {
+          key: "brand",
+          label: "Brand",
+          items: brands.items.map((b) => ({ value: b.id, label: b.name })),
+        },
+        {
+          key: "category",
+          label: "Category",
+          items: categories.items.map((b) => ({
+            value: b.id,
+            label: b.name,
+          })),
+        },
+      ],
+      [brands.items, categories.items]
+    );
   return (
     <div className="">
       <DynamicHeader count={products.count} />
@@ -96,6 +144,38 @@ export const ProductPage = ({ data, categories, brands }: { data: ListType<Produ
           data={products.items}
           refresh={refresh}
           loading={action == ACTION.RUNNING}
+          clear={() => setFilter(undefined)}
+          filter={
+            <div className="inline-flex gap-3 w-full flex-wrap">
+              {groups.map((item, i) => {
+                const { key } = item;
+                return (
+                  <FilterPopover
+                    content={item.items.map((it, index) => (
+                      <label
+                        key={index}
+                        className="flex items-center gap-2 cursor-pointer text-sm"
+                      >
+                        <Checkbox
+                          checked={filter?.[key] == it.value}
+                          onCheckedChange={() => changeFilter(key, it.value)}
+                        />
+                        <span>{it.label as string}</span>
+                      </label>
+                    ))}
+                    value={
+                      filter?.[key]
+                        ? item.items.filter(
+                            (item) => item.value == filter[key]
+                          )[0].label
+                        : undefined
+                    }
+                    label={item.label}
+                  />
+                );
+              })}
+            </div>
+          }
           modalAdd={
             <Modal
               // w="md"
@@ -130,7 +210,11 @@ export const ProductPage = ({ data, categories, brands }: { data: ListType<Produ
                         );
                       }}
                     </FormItems>
-                    <FormItems control={form.control} name="brand_id" label="Брэнд">
+                    <FormItems
+                      control={form.control}
+                      name="brand_id"
+                      label="Брэнд"
+                    >
                       {(field) => {
                         return (
                           <ComboBox
@@ -164,9 +248,16 @@ export const ProductPage = ({ data, categories, brands }: { data: ListType<Produ
                       const name = item.key as keyof ProductType;
                       const label = item.label as keyof ProductType;
                       return (
-                        <FormItems control={form.control} name={name} key={i} className={item.key === "name" ? "col-span-2" : ""}>
+                        <FormItems
+                          control={form.control}
+                          name={name}
+                          key={i}
+                          className={item.key === "name" ? "col-span-2" : ""}
+                        >
                           {(field) => {
-                            return <TextField props={{ ...field }} label={label} />;
+                            return (
+                              <TextField props={{ ...field }} label={label} />
+                            );
                           }}
                         </FormItems>
                       );

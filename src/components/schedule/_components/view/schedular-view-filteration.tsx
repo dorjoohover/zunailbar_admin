@@ -49,8 +49,6 @@ export default function SchedulerViewFilteration({
   const [activeView, setActiveView] = useState<string>("day");
   const [clientSide, setClientSide] = useState(false);
 
-  console.log("activeView", activeView);
-
   useEffect(() => {
     setClientSide(true);
   }, []);
@@ -204,35 +202,48 @@ export default function SchedulerViewFilteration({
                 <AnimatePresence mode="wait">
                   <motion.div {...(animationConfig as any)}>
                     <DailyView
-                      events={orders.items.map(
-                        ({ order_date, start_time, end_time, id }) => {
-                          const date = new Date(order_date);
+                      events={orders.items.map((item) => {
+                        const {
+                          order_date,
+                          start_time,
+                          end_time,
+                          customer_desc,
+                          order_status,
+                          duration,
+                          id,
+                        } = item;
+                        const date = new Date(order_date);
 
-                          // Үндсэн өдөр/сар/жил
-                          const year = date.getFullYear();
-                          const month = date.getMonth(); // getMonth() нь 0-ээс эхэлдэг тул -1 хэрэггүй
-                          const day = date.getDate();
-
-                          const createDateTime = (hour: number) =>
-                            new Date(year, month, day, Number(hour) || 0);
-                          console.log({
-                            id,
-                            title: id,
-                            order_date,
-                            date,
-                            start_time,
-                            end_time,
-                            startDate: createDateTime(+start_time),
-                            endDate: createDateTime(+end_time),
-                          });
-                          return {
-                            id,
-                            title: id,
-                            startDate: createDateTime(+start_time),
-                            endDate: createDateTime(+end_time),
-                          };
-                        }
-                      )}
+                        // Үндсэн өдөр/сар/жил
+                        const year = date.getFullYear();
+                        const month = date.getMonth(); // getMonth() нь 0-ээс эхэлдэг тул -1 хэрэггүй
+                        const day = date.getDate();
+                        const createDateTime = (
+                          value: string,
+                          duration?: number
+                        ) => {
+                          let hour = +value.split(":")[0] - 5;
+                          if (duration)
+                            hour = Math.ceil((hour * 60 + duration) / 60);
+                          return new Date(year, month, day, Number(hour) || 0);
+                        };
+                        return {
+                          id,
+                          title:
+                            item.details
+                              ?.map((d) => d?.service_name)
+                              .filter(Boolean)
+                              .join(", ") || "",
+                          startDate: createDateTime(start_time),
+                          endDate: createDateTime(
+                            end_time ?? start_time,
+                            !end_time ? duration : undefined
+                          ),
+                          description: customer_desc,
+                          variant: "primary",
+                          status: order_status,
+                        };
+                      })}
                       stopDayEventSummary={stopDayEventSummary}
                       classNames={classNames?.buttons}
                       prevButton={

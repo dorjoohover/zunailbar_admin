@@ -4,7 +4,6 @@ import { cookies } from "next/headers";
 
 export async function imageUploader(images: FormData) {
   try {
-    console.log('asdf')
     const store = await cookies();
     const token = store.get("token")?.value;
     console.log(token)

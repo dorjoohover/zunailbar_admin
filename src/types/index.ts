@@ -1,3 +1,4 @@
+import { OrderStatus } from "@/lib/constants";
 import { Dispatch, SVGProps } from "react";
 import { z } from "zod";
 
@@ -14,7 +15,8 @@ export interface Event {
   description?: string;
   startDate: Date;
   endDate: Date;
-  variant?: Variant;
+  color?: number;
+  status?: OrderStatus;
 }
 
 // Define the state interface for the scheduler
@@ -29,17 +31,14 @@ export type Action =
   | { type: "UPDATE_EVENT"; payload: Event }
   | { type: "SET_EVENTS"; payload: Event[] };
 
-
-  
-
 // Define handlers interface
 export interface Handlers {
   handleEventStyling: (
     event: Event,
     dayEvents: Event[],
-    periodOptions?: { 
-      eventsInSamePeriod?: number; 
-      periodIndex?: number; 
+    periodOptions?: {
+      eventsInSamePeriod?: number;
+      periodIndex?: number;
       adjustForPeriod?: boolean;
     }
   ) => {
@@ -93,8 +92,7 @@ export const eventSchema = z.object({
   description: z.string().optional(),
   startDate: z.date(),
   endDate: z.date(),
-  variant: z.enum(["primary", "danger", "success", "warning", "default"]),
-  color: z.string().nonempty("Color selection is required"),
+  color: z.number(),
 });
 
 export type EventFormData = z.infer<typeof eventSchema>;

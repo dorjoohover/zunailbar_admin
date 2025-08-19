@@ -1,23 +1,42 @@
 "use client";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 import { ColumnDef } from "@tanstack/react-table";
 import { ArrowUpDown, Hammer, Pencil, UserRoundCog } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { IUserProduct } from "@/models";
-import { UserProductStatus } from "@/lib/enum";
+import { IUser, IUserProduct } from "@/models";
+import { UserProductStatus, UserStatus } from "@/lib/enum";
 import { getEnumValues, getValuesUserProductStatus } from "@/lib/constants";
 import TooltipWrapper from "@/components/tooltipWrapper";
 
-export const getColumns = (): //   onEdit: (product: IUser) => void,
-//   setStatus: (index: number, status: UserStatus) => void,
-//   giveProduct: (index: number) => void
-ColumnDef<IUserProduct>[] => [
+export const getColumns = (
+  onEdit: (product: IUser) => void,
+  setStatus: (index: number, status: UserProductStatus) => void
+): ColumnDef<IUserProduct>[] => [
   {
     id: "select",
-    header: ({ table }) => <Checkbox checked={table.getIsAllPageRowsSelected()} onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)} aria-label="Select all" />,
-    cell: ({ row }) => <Checkbox checked={row.getIsSelected()} onCheckedChange={(value) => row.toggleSelected(!!value)} aria-label="Select row" />,
+    header: ({ table }) => (
+      <Checkbox
+        checked={table.getIsAllPageRowsSelected()}
+        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+        aria-label="Select all"
+      />
+    ),
+    cell: ({ row }) => (
+      <Checkbox
+        checked={row.getIsSelected()}
+        onCheckedChange={(value) => row.toggleSelected(!!value)}
+        aria-label="Select row"
+      />
+    ),
     enableSorting: false,
     enableHiding: false,
   },
@@ -60,7 +79,10 @@ ColumnDef<IUserProduct>[] => [
     accessorKey: "user_product_status",
     header: "Status",
     cell: ({ row }) => {
-      const status = getValuesUserProductStatus[row.getValue<number>("user_product_status") as UserProductStatus];
+      const status =
+        getValuesUserProductStatus[
+          row.getValue<number>("user_product_status") as UserProductStatus
+        ];
       return <span>{status}</span>;
     },
   },
@@ -74,7 +96,7 @@ ColumnDef<IUserProduct>[] => [
             <Button
               variant="ghost"
               size="icon"
-              // onClick={() => onEdit(row.original)}
+              onClick={() => onEdit(row.original)}
             >
               <Pencil className="size-4" />
             </Button>
@@ -99,7 +121,7 @@ ColumnDef<IUserProduct>[] => [
                     <DropdownMenuItem
                       //   className={status.color}
                       key={i}
-                      //   onClick={() => setStatus(row.index, item)}
+                      onClick={() => setStatus(row.index, item)}
                     >
                       {status}
                     </DropdownMenuItem>
@@ -107,16 +129,6 @@ ColumnDef<IUserProduct>[] => [
                 })}
             </DropdownMenuContent>
           </DropdownMenu>
-
-          <TooltipWrapper tooltip="fix">
-            <Button
-              variant="ghost"
-              size="icon"
-              // onClick={() => giveProduct(row.index)}
-            >
-              <Hammer className="size-4" />
-            </Button>
-          </TooltipWrapper>
         </div>
       );
     },
