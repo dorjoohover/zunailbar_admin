@@ -8,12 +8,9 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import React, { ReactNode, useEffect, useRef, useState } from "react";
 import { DEFAULT_LIMIT } from "@/lib/constants";
-import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "./ui/select";
-import { ChevronDown, ChevronLeft, ChevronRight, Funnel, LoaderCircle, Search } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
+import { ChevronDown, ChevronLeft, ChevronRight, Funnel, LoaderCircle, RotateCw, Search, SlidersHorizontal } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
-import { Checkbox } from "./ui/checkbox";
-import { Calendar } from "./ui/calendar";
 import { ScrollArea, ScrollBar } from "./ui/scroll-area";
 
 interface DataTableProps<TData, TValue> {
@@ -104,43 +101,46 @@ export function DataTable<TData, TValue>({ columns, data, count = 0, limit = DEF
     <div className="space-y-4">
       {/* Table action */}
       <div className="border-b space-y-4 pb-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
+        <div className="flex flex-col lg:flex-row items-end justify-between gap-4">
+          <div className="flex items-center gap-2 w-full">
             {/* Search input */}
-            <div className="relative max-w-sm">
-              <div className="flex items-center">
-                <Search className="size-5 absolute top-[50%] -translate-y-[50%] left-2 text-slate-600" strokeWidth={2.5} />
-              </div>
-              <Input placeholder="Хайх..." value={globalFilter} onChange={(e) => setGlobalFilter(e.target.value)} className="w-full bg-white ring-1 ring-primary pl-10" />
-            </div>
+            <div className="relative w-full lg:max-w-lg max-w-full">
+              <Search className="size-5 absolute top-[50%] -translate-y-[50%] left-2 text-slate-600" strokeWidth={2.5} />
 
-            {/* Table filter trigger */}
-            <Button onClick={() => setShowFilter(!showFilter)} className={cn(showFilter ? "bg-primary text-white" : " bg-white text-dark hover:bg-gray-100", "ring-1 ring-primary cursor-pointer")}>
-              <Funnel />
+              <Input placeholder="Хайх..." value={globalFilter} onChange={(e) => setGlobalFilter(e.target.value)} className="w-full bg-white pl-10" />
+            </div>
+            <Button variant={"outline"} onClick={() => setShowFilter(!showFilter)} className={cn(showFilter ? "bg-primary text-white border-primary" : "hover:bg-gray-100", "border cursor-pointer")}>
+              <SlidersHorizontal />
+              Шүүлтүүр
+              <ChevronDown className={cn(showFilter ? "-rotate-180" : "", "duration-150")} />
             </Button>
+            {/* Table filter trigger */}
           </div>
 
-          {/* Add modal button */}
-          {modalAdd && <div> {modalAdd}</div>}
+          <div className="flex items-center justify-end space-x-2">
+            {/* Add modal button */}
+            <Button variant={"outline"}>Export</Button>
+            {modalAdd && <div> {modalAdd}</div>}
+          </div>
         </div>
 
         {/* Filter show */}
-        {!showFilter && filter != undefined && (
-          <div className="flex items-end justify-between gap-2 p-3 border rounded-md bg-white">
-            {filter}
-
-            <Button variant="outline" onClick={clear}>
+        {showFilter && filter != undefined && (
+          <div className="flex flex-col items-end">
+            <Button variant="ghost" onClick={clear} className="text-red-500 text-xs">
+              <RotateCw className="size-3.5" />
               Цэвэрлэх
             </Button>
+            <div className="flex items-end justify-between gap-2 p-3 border rounded-md bg-white w-full">{filter}</div>
           </div>
         )}
       </div>
-      <h2 className="space-x-2 my-2 font-bold">
+      {/* <h2 className="space-x-2 my-2 font-bold">
         Нийт:
         <span> {count} мөр</span>
-      </h2>
+      </h2> */}
 
-      <ScrollArea className="h-fit w-[calc(100vw-2rem)] lg:w-full rounded-md border pb-2">
+      <ScrollArea className="h-fit w-[calc(100vw-2rem)] lg:w-full rounded-md pb-2">
         {/* Table */}
         <div className="overflow-hidden rounded-md border border-slate-200">
           <Table>
@@ -148,14 +148,7 @@ export function DataTable<TData, TValue>({ columns, data, count = 0, limit = DEF
               {table.getHeaderGroups().map((headerGroup) => (
                 <TableRow key={headerGroup.id}>
                   {headerGroup.headers.map((header) => (
-                    <TableHead key={header.id}>
-                    {header.isPlaceholder
-                      ? null
-                      : flexRender(
-                          header.column.columnDef.header,
-                          header.getContext()
-                        )}
-                  </TableHead>
+                    <TableHead key={header.id}>{header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}</TableHead>
                   ))}
                 </TableRow>
               ))}
@@ -163,10 +156,7 @@ export function DataTable<TData, TValue>({ columns, data, count = 0, limit = DEF
             <TableBody>
               {loading ? (
                 <TableRow>
-                  <TableCell
-                  colSpan={columns.length}
-                  className="h-24 text-center"
-                >
+                  <TableCell colSpan={columns.length} className="h-24 text-center">
                     <div className="flex items-center justify-center gap-x-2">
                       <LoaderCircle className="animate-spin text-slate-700 size-8" />
                       Уншиж байна
@@ -175,26 +165,15 @@ export function DataTable<TData, TValue>({ columns, data, count = 0, limit = DEF
                 </TableRow>
               ) : table.getRowModel().rows.length ? (
                 table.getRowModel().rows.map((row) => (
-                  <TableRow
-                  key={row.id}
-                  data-state={row.getIsSelected() && "selected"}
-                >
+                  <TableRow key={row.id} data-state={row.getIsSelected() && "selected"}>
                     {row.getVisibleCells().map((cell) => (
-                      <TableCell key={cell.id}>
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext()
-                      )}
-                    </TableCell>
+                      <TableCell key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</TableCell>
                     ))}
                   </TableRow>
                 ))
               ) : (
                 <TableRow>
-                  <TableCell
-                  colSpan={columns.length}
-                  className="h-24 text-center"
-                >
+                  <TableCell colSpan={columns.length} className="h-24 text-center">
                     Хоосон байна
                   </TableCell>
                 </TableRow>
@@ -208,10 +187,10 @@ export function DataTable<TData, TValue>({ columns, data, count = 0, limit = DEF
 
       {/* Table pagination */}
       <div className="flex items-center justify-between">
-        <p className="text-sm text-muted-foreground">{table.getSelectedRowModel().rows.length} мөр сонгогдсон.</p>
+        <p className="text-sm font-medium">{table.getSelectedRowModel().rows.length} мөр сонгогдсон.</p>
 
         <div className="space-x-2 flex items-center">
-          <div className="flex items-center">{/* {pagination.pageIndex + 1} / {Math.ceil(count / limit)} */}</div>
+          {/* <div className="flex items-center">{pagination.pageIndex + 1} / {Math.ceil(count / limit)} </div> */}
 
           <div className="flex items-center space-x-3 h-11">
             <div className="flex bg-white border px-3 h-full pl-1 rounded-lg items-center gap-x-1">
@@ -222,7 +201,7 @@ export function DataTable<TData, TValue>({ columns, data, count = 0, limit = DEF
                   setPagination((old) => ({ ...old, pageIndex: page - 1 }));
                 }}
               >
-                <SelectTrigger size="sm" className="bg-gray-100 pl-2 pr-1">
+                <SelectTrigger size="sm" className="bg-gray-100 shadow-none border-none rounded-sm pl-2 pr-1">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>

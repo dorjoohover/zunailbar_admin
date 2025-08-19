@@ -1,4 +1,4 @@
-import React from "react";
+
 import DynamicHeader from "@/components/dynamicHeader";
 import { Button } from "@/components/ui/button";
 import Calendar04 from "@/components/calendar-04";
@@ -7,6 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { columns, Payment } from "./components/column";
 import { DataTable } from "./components/data-table";
+import RequestFreeTime from "./components/reqFreeTime";
 
 
 
@@ -64,15 +65,3 @@ export default  async function Page() {
   );
 }
 
-function RequestFreeTime() {
-  return (
-    <>
-      <div className="space-y-5">
-        <h4 className="text-sm font-semibold hidden lg:block">Чөлөө авах хүсэлт</h4>
-        <Calendar04 />
-        <h4 className="text-sm font-semibold">Чөлөө авах цаг</h4>
-      </div>
-      <Button>Илгээх</Button>
-    </>
-  );
-}
