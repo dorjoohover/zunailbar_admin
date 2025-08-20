@@ -68,7 +68,7 @@ export const mnDate = (now = new Date()): Date => {
 
 export function getDayNameWithDate(
   dayNumber: number,
-  date: number
+  date: number | Date
 ): {
   date: string;
   day: string;

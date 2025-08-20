@@ -19,7 +19,7 @@ export const ScheduleTable = ({
   artist = false,
 }: {
   edit: any;
-  d: number;
+  d: number | Date;
   artist?: boolean;
   value: string[];
 }) => {
@@ -136,7 +136,7 @@ export const ScheduleForm = ({
   setValue,
   artist = false,
 }: {
-  date: number;
+  date: number | Date;
   artist?: boolean;
   value: string[];
   setValue: (value: string[]) => void;
