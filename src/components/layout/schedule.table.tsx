@@ -1,12 +1,29 @@
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../ui/table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "../ui/table";
 import { formatTime, getDayNameWithDate, numberArray } from "@/lib/functions";
 import { Button } from "../ui/button";
 import { cn } from "@/lib/utils";
 import { ScrollArea } from "../ui/scroll-area";
 const days = numberArray(7);
 const today = new Date().getDay();
-export const ScheduleTable = ({ edit, d, value }: { edit: any; d: Date; value: string[] }) => {
-  const date = new Date(d);
+export const ScheduleTable = ({
+  edit,
+  d,
+  value,
+  artist = false,
+}: {
+  edit: any;
+  d: number;
+  artist?: boolean;
+  value: string[];
+}) => {
+  const date = d;
   const today = new Date();
 
   today.setHours(0, 0, 0, 0);
@@ -39,7 +56,10 @@ export const ScheduleTable = ({ edit, d, value }: { edit: any; d: Date; value: s
   }
 
   // Ашиглах нь
-  const disables = getDisabledDaysForWeek(checkDate /* Ням */, days /* [0..6] */);
+  const disables = getDisabledDaysForWeek(
+    checkDate /* Ням */,
+    days /* [0..6] */
+  );
   return (
     <Table className="table-fixed ">
       <TableHeader>
@@ -50,7 +70,7 @@ export const ScheduleTable = ({ edit, d, value }: { edit: any; d: Date; value: s
             return (
               <TableHead className="w-[60px] " key={day}>
                 <div className="flex items-center justify-center flex-col">
-                  <div>{d.date}</div>
+                  {!artist && <div>{d.date}</div>}
                   <div>{d.day}</div>
                 </div>
               </TableHead>
@@ -76,12 +96,21 @@ export const ScheduleTable = ({ edit, d, value }: { edit: any; d: Date; value: s
                   <TableCell key={day}>
                     <Button
                       type="button"
-                      className={cn(includes ? "bg-black text-white" : "bg-gray-300 text-black", "w-full")}
-                      disabled={disables[day]}
+                      className={cn(
+                        includes
+                          ? "bg-black text-white"
+                          : "bg-gray-300 text-black",
+                        "w-full"
+                      )}
+                      disabled={artist ? false : disables[day]}
                       onClick={() => {
-                        let nextTimes = includes ? times.filter((t) => t !== keyStr) : [...times, keyStr];
+                        let nextTimes = includes
+                          ? times.filter((t) => t !== keyStr)
+                          : [...times, keyStr];
 
-                        nextTimes = Array.from(new Set(nextTimes)).sort((a, b) => Number(a) - Number(b));
+                        nextTimes = Array.from(new Set(nextTimes)).sort(
+                          (a, b) => Number(a) - Number(b)
+                        );
 
                         const next = [...value];
                         next[idx] = nextTimes.join("|");
@@ -101,7 +130,17 @@ export const ScheduleTable = ({ edit, d, value }: { edit: any; d: Date; value: s
   );
 };
 
-export const ScheduleForm = ({ date, value, setValue }: { date: Date; value: string[]; setValue: (value: string[]) => void }) => {
+export const ScheduleForm = ({
+  date,
+  value,
+  setValue,
+  artist = false,
+}: {
+  date: number;
+  artist?: boolean;
+  value: string[];
+  setValue: (value: string[]) => void;
+}) => {
   return (
     <Table className="table-fixed ">
       <TableHeader>
@@ -113,7 +152,7 @@ export const ScheduleForm = ({ date, value, setValue }: { date: Date; value: str
             return (
               <TableHead className="w-[60px] " key={day}>
                 <div className="flex items-center justify-center flex-col">
-                  <div>{d.date}</div>
+                  {!artist && <div>{d.date}</div>}
                   <div>{d.day}</div>
                 </div>
               </TableHead>
@@ -140,12 +179,26 @@ export const ScheduleForm = ({ date, value, setValue }: { date: Date; value: str
                   <TableCell key={day}>
                     <Button
                       type="button"
-                      className={cn(includes ? "bg-black text-white" : "bg-gray-300 text-black", "w-full")}
-                      disabled={date && new Date(date).getDate() == new Date().getDate() && today > day}
+                      className={cn(
+                        includes
+                          ? "bg-black text-white"
+                          : "bg-gray-300 text-black",
+                        "w-full"
+                      )}
+                      disabled={
+                        false
+                        // date &&
+                        // new Date(date).getDate() == new Date().getDate() &&
+                        // today > day
+                      }
                       onClick={() => {
-                        let nextTimes = includes ? times.filter((t) => t !== keyStr) : [...times, keyStr];
+                        let nextTimes = includes
+                          ? times.filter((t) => t !== keyStr)
+                          : [...times, keyStr];
 
-                        nextTimes = Array.from(new Set(nextTimes)).sort((a, b) => Number(a) - Number(b));
+                        nextTimes = Array.from(new Set(nextTimes)).sort(
+                          (a, b) => Number(a) - Number(b)
+                        );
 
                         const next = [...value];
                         next[idx] = nextTimes.join("|");

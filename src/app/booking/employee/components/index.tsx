@@ -11,7 +11,7 @@ import { create, deleteOne, updateOne } from "@/app/(api)";
 import { FormItems } from "@/shared/components/form.field";
 import { ComboBox } from "@/shared/components/combobox";
 import { fetcher } from "@/hooks/fetcher";
-import { usernameFormatter } from "@/lib/functions";
+import { mnDate, usernameFormatter } from "@/lib/functions";
 import {
   ScheduleForm,
   ScheduleTable,
@@ -111,27 +111,22 @@ export const SchedulePage = ({
     setAction(ACTION.DEFAULT);
   };
   const onSubmit = async <T,>(e: T) => {
-    let lastDate = lastSchedule ? new Date(lastSchedule?.date) : new Date();
-    if (lastSchedule)
-      lastDate = new Date(lastDate.setDate(lastDate.getDate() + 7));
+    let lastDate = lastSchedule ? lastSchedule?.index : 0;
+    // if (lastSchedule)
+    //   lastDate = new Date(lastDate.setDate(lastDate.getDate() + 7));
     const date = lastDate;
     console.log(e, date);
     setAction(ACTION.RUNNING);
     const body = e as ScheduleType;
     const { edit, ...payload } = body;
     const user = users.items.filter((user) => user.id == body.user_id)[0];
-    const res = edit
-      ? await updateOne<Schedule>(
-          Api.schedule,
-          edit ?? "",
-          payload as unknown as Schedule
-        )
-      : await create<ISchedule>(Api.schedule, {
-          date: date,
-          times: body.dates,
-          user_id: body.user_id,
-          branch_id: user.branch_id,
-        });
+
+    const res = await create<ISchedule>(Api.schedule, {
+      index: date,
+      times: body.dates,
+      user_id: body.user_id,
+      branch_id: user.branch_id,
+    });
     if (res.success) {
       refresh();
       setOpen(false);
@@ -184,14 +179,11 @@ export const SchedulePage = ({
             <FormItems control={form.control} name={"dates"} className="">
               {(field) => {
                 const value = (field.value as string[]) ?? Array(7).fill("");
-                let date = new Date();
-                if (lastSchedule) {
-                  const lastDate = new Date(lastSchedule.date);
-                  date = new Date(lastDate.setDate(lastDate.getDate() + 7));
-                }
+                let date = lastSchedule?.index ?? 0;
 
                 return (
                   <ScheduleForm
+                    artist={true}
                     date={date}
                     value={value}
                     setValue={(next) =>
@@ -241,7 +233,8 @@ export const SchedulePage = ({
         </Pagination>
         {schedules?.items && schedules?.items?.length > 0 ? (
           <ScheduleTable
-            d={schedules.items?.[0]?.date}
+            artist={true}
+            d={schedules.items?.[0]?.index ?? 0}
             value={schedules.items.map((item) => item.times).reverse()}
             edit={null}
           />

@@ -10,10 +10,10 @@ export default async function Page() {
     {
       limit: 7,
       branch_id: branch.data.items[0].id,
+      sort: true
     },
     "employee"
   );
-  console.log(res);
   return (
     <section>
       <BookingPage data={res.data} branches={branch.data} />

@@ -22,6 +22,12 @@ export enum UserStatus {
   BANNED = 50,
 }
 
+
+export enum SalaryLogStatus {
+  Pending = 10,
+  Paid = 20,
+}
+
 // export enum EmployeeStatus {
 //   ACTIVE = 10,
 //   DEKIRIT = 20,

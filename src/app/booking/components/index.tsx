@@ -150,7 +150,14 @@ export const BookingPage = ({
   return (
     <div className="">
       <DynamicHeader count={bookings?.count} />
-
+      {JSON.stringify(
+        bookings?.items.map((item) => {
+          return {
+            times: item.times,
+            date: item.date,
+          };
+        })
+      )}
       <div className="admin-container space-y-0">
         <Modal
           maw="3xl"
