@@ -6,6 +6,7 @@ import {
   ProductLogStatus,
   ProductTransactionStatus,
   ROLE,
+  SalaryLogStatus,
   ScheduleStatus,
   UserProductStatus,
   UserStatus,
@@ -157,4 +158,9 @@ export const CategoryTypeValues = {
   [CategoryType.DEFAULT]: "Default",
   [CategoryType.COST]: "Хэрэглээний зардал",
   // [ProductLogStatus.Damaged]: "Эвдэрсэн",
+};
+
+export const SalaryLogValues = {
+  [SalaryLogStatus.Paid]: "Paid",
+  [SalaryLogStatus.Pending]: "Pending",
 };

@@ -11,7 +11,7 @@ import { create, deleteOne, updateOne } from "@/app/(api)";
 import { FormItems } from "@/shared/components/form.field";
 import { ComboBox } from "@/shared/components/combobox";
 import { fetcher } from "@/hooks/fetcher";
-import { usernameFormatter } from "@/lib/functions";
+import { mnDate, usernameFormatter } from "@/lib/functions";
 import { ScheduleForm, ScheduleTable } from "@/components/layout/schedule.table";
 import { Pagination, PaginationContent, PaginationItem, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
 import DynamicHeader from "@/components/dynamicHeader";
@@ -94,22 +94,22 @@ export const SchedulePage = ({ data, users }: { data: ListType<Schedule>; users:
     setAction(ACTION.DEFAULT);
   };
   const onSubmit = async <T,>(e: T) => {
-    let lastDate = lastSchedule ? new Date(lastSchedule?.date) : new Date();
-    if (lastSchedule) lastDate = new Date(lastDate.setDate(lastDate.getDate() + 7));
+    let lastDate = lastSchedule ? lastSchedule?.index : 0;
+    // if (lastSchedule)
+    //   lastDate = new Date(lastDate.setDate(lastDate.getDate() + 7));
     const date = lastDate;
     console.log(e, date);
     setAction(ACTION.RUNNING);
     const body = e as ScheduleType;
     const { edit, ...payload } = body;
     const user = users.items.filter((user) => user.id == body.user_id)[0];
-    const res = edit
-      ? await updateOne<Schedule>(Api.schedule, edit ?? "", payload as unknown as Schedule)
-      : await create<ISchedule>(Api.schedule, {
-          date: date,
-          times: body.dates,
-          user_id: body.user_id,
-          branch_id: user.branch_id,
-        });
+
+    const res = await create<ISchedule>(Api.schedule, {
+      index: date,
+      times: body.dates,
+      user_id: body.user_id,
+      branch_id: user.branch_id,
+    });
     if (res.success) {
       refresh();
       setOpen(false);
@@ -130,81 +130,79 @@ export const SchedulePage = ({ data, users }: { data: ListType<Schedule>; users:
     <div className="">
       <DynamicHeader />
 
-      <div className="admin-container space-y-0">
-        <Modal
-          maw="5xl"
-          title="Арчистын хуваарь оруулах форм"
-          name={"Арчистын хуваарь оруулах"}
-          submit={() => form.handleSubmit(onSubmit, onInvalid)()}
-          open={open == true}
-          reset={() => {
-            setOpen(false);
-            clear();
-          }}
-          setOpen={setOpen}
-          loading={action == ACTION.RUNNING}
-        >
-          <FormProvider {...form}>
-            <FormItems control={form.control} name="user_id">
-              {(field) => {
-                return (
-                  <ComboBox
-                    props={{ ...field }}
-                    items={users.items.map((item) => {
-                      return {
-                        value: item.id,
-                        label: usernameFormatter(item),
-                      };
-                    })}
-                  />
-                );
-              }}
-            </FormItems>
-            <div className={cn("max-h-[60vh] overflow-y-scroll")}>
-              <FormItems control={form.control} name={"dates"} className="">
+      <div className="admin-container space-y-2">
+        <div className="flex items-center justify-between">
+          <ComboBox
+            items={users.items.map((b, i) => {
+              return {
+                label: usernameFormatter(b),
+                value: b.id,
+              };
+            })}
+            props={{
+              onChange: (v: string) => {
+                const selected = users.items.filter((b) => b.id == v)[0];
+                setBranch(selected);
+              },
+              name: "",
+              onBlur: () => {},
+              ref: () => {},
+              value: branch?.id,
+            }}
+          />
+          <Modal
+            maw="5xl"
+            title="Арчистын хуваарь оруулах форм"
+            name={"Арчистын хуваарь оруулах"}
+            submit={() => form.handleSubmit(onSubmit, onInvalid)()}
+            open={open == true}
+            reset={() => {
+              setOpen(false);
+              clear();
+            }}
+            setOpen={setOpen}
+            loading={action == ACTION.RUNNING}
+          >
+            <FormProvider {...form}>
+              <FormItems control={form.control} name="user_id" className="block">
                 {(field) => {
-                  const value = (field.value as string[]) ?? Array(7).fill("");
-                  let date = new Date();
-                  if (lastSchedule) {
-                    const lastDate = new Date(lastSchedule.date);
-                    date = new Date(lastDate.setDate(lastDate.getDate() + 7));
-                  }
-
                   return (
-                    <ScheduleForm
-                      date={date}
-                      value={value}
-                      setValue={(next) =>
-                        form.setValue("dates", next, {
-                          shouldDirty: true,
-                          shouldTouch: true,
-                        })
-                      }
+                    <ComboBox
+                      props={{ ...field }}
+                      items={users.items.map((item) => {
+                        return {
+                          value: item.id,
+                          label: usernameFormatter(item),
+                        };
+                      })}
                     />
                   );
                 }}
               </FormItems>
-            </div>
-          </FormProvider>
-        </Modal>
-        <ComboBox
-          items={users.items.map((b, i) => {
-            return {
-              label: usernameFormatter(b),
-              value: b.id,
-            };
-          })}
-          props={{
-            onChange: (v: string) => {
-              const selected = users.items.filter((b) => b.id == v)[0];
-              setBranch(selected);
-            },
-            name: "",
-            onBlur: () => {},
-            ref: () => {},
-            value: branch?.id,
-          }}
-        />
+              <FormItems control={form.control} name={"dates"}>
+                {(field) => {
+                  const value = (field.value as string[]) ?? Array(7).fill("");
+                  let date = lastSchedule?.index ?? 0;
+                  return (
+                    <div className={cn("max-h-[60vh] overflow-y-scroll")}>
+                      <ScheduleForm
+                        artist={true}
+                        date={date}
+                        value={value}
+                        setValue={(next) =>
+                          form.setValue("dates", next, {
+                            shouldDirty: true,
+                            shouldTouch: true,
+                          })
+                        }
+                      />
+                    </div>
+                  );
+                }}
+              </FormItems>
+            </FormProvider>
+          </Modal>
+        </div>
         <Pagination>
           <PaginationContent>
             {page > 0 && (
@@ -220,7 +218,7 @@ export const SchedulePage = ({ data, users }: { data: ListType<Schedule>; users:
             )}
           </PaginationContent>
         </Pagination>
-        {schedules?.items && schedules?.items?.length > 0 ? <ScheduleTable d={schedules.items?.[0]?.date} value={schedules.items.map((item) => item.times).reverse()} edit={null} /> : null}
+        {schedules?.items && schedules?.items?.length > 0 ? <ScheduleTable artist={true} d={schedules.items?.[0]?.index ?? 0} value={schedules.items.map((item) => item.times).reverse()} edit={null} /> : null}
         {/* <DataTable
         columns={columns}
         count={Schedules?.count}

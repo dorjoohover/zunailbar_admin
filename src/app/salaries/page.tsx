@@ -1,18 +1,17 @@
-import { ProductPage } from "./components";
-import { Cost, Product } from "@/models";
-import { find } from "../(api)";
 import { Api } from "@/utils/api";
-import DynamicHeader from "@/components/dynamicHeader";
+import { SalaryLog, User } from "@/models";
+import { find } from "@/app/(api)";
+import { SalaryPage } from "./components";
+import { ROLE } from "@/lib/enum";
 
 export default async function Page() {
-  const { data } = await find<Product>(Api.product, {
-    isCost: true,
-  });
-
+  const [res, user] = await Promise.all([
+    find<SalaryLog>(Api.salary_log),
+    find<User>(Api.user, { role: ROLE.E_M, limit: -1 }),
+  ]);
   return (
-    <div className="w-full">
-      <DynamicHeader />
-      <ProductPage data={data} />
-    </div>
+    <section>
+      <SalaryPage data={res.data} users={user.data} />
+    </section>
   );
 }

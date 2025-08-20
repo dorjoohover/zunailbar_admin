@@ -9,8 +9,8 @@ const BASE = process.env.API
   ? process.env.API?.endsWith("/")
     ? process.env.API
     : process.env.API + "/"
-  // : "http://localhost:4000/api/v1/";
-: "https://srv952218.hstgr.cloud/api/v1/";
+  : "http://localhost:4000/api/v1/";
+// : "https://srv952218.hstgr.cloud/api/v1/";
 
 export enum Api {
   login = "login",
@@ -22,6 +22,7 @@ export enum Api {
   discount = "discount",
   file = "file",
   category = "category",
+  salary_log = "salary_log",
   service = "service",
   schedule = "schedule",
   booking = "booking",
@@ -45,6 +46,7 @@ export const API = {
   [Api.discount]: BASE + "discount",
   [Api.register]: BASE + "register",
   [Api.warehouse]: BASE + "warehouse",
+  [Api.salary_log]: BASE + "salary_log",
   [Api.product_warehouse]: BASE + "product_warehouse",
   [Api.cost]: BASE + "cost",
   [Api.user]: BASE + "user",
@@ -67,6 +69,6 @@ export const API = {
 };
 
 export const baseUrl =
-  // process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
-  process.env.NEXT_PUBLIC_BASE_URL ||
-  "https://zuunailbar-admin-jzsw.vercel.app";
+  process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
+// process.env.NEXT_PUBLIC_BASE_URL ||
+// "https://zuunailbar-admin-jzsw.vercel.app";

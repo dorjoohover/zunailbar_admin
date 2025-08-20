@@ -12,17 +12,8 @@ import { FormItems } from "@/shared/components/form.field";
 import { ComboBox } from "@/shared/components/combobox";
 import { fetcher } from "@/hooks/fetcher";
 import { getColumns } from "./columns";
-import {
-  ScheduleForm,
-  ScheduleTable,
-} from "@/components/layout/schedule.table";
-import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/components/ui/pagination";
+import { ScheduleForm, ScheduleTable } from "@/components/layout/schedule.table";
+import { Pagination, PaginationContent, PaginationItem, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
 import DynamicHeader from "@/components/dynamicHeader";
 import { cn } from "@/lib/utils";
 
@@ -39,13 +30,7 @@ const defaultValues: BookingType = {
   edit: undefined,
 };
 type BookingType = z.infer<typeof formSchema>;
-export const BookingPage = ({
-  data,
-  branches,
-}: {
-  data: ListType<Booking>;
-  branches: ListType<Branch>;
-}) => {
+export const BookingPage = ({ data, branches }: { data: ListType<Booking>; branches: ListType<Branch> }) => {
   const [action, setAction] = useState(ACTION.DEFAULT);
   const [open, setOpen] = useState<undefined | boolean>(false);
   const form = useForm<BookingType>({
@@ -56,10 +41,7 @@ export const BookingPage = ({
   const [lastBooking, setLastBooking] = useState<Booking | null>(null);
   const [page, setPage] = useState(0);
   const [branch, setBranch] = useState(branches.items[0]);
-  const branchMap = useMemo(
-    () => new Map(branches.items.map((b) => [b.id, b])),
-    [branches.items]
-  );
+  const branchMap = useMemo(() => new Map(branches.items.map((b) => [b.id, b])), [branches.items]);
 
   const bookingFormatter = (data: ListType<Booking>) => {
     const items: Booking[] = data.items.map((item) => {
@@ -113,19 +95,14 @@ export const BookingPage = ({
   };
   const onSubmit = async <T,>(e: T) => {
     let lastDate = lastBooking ? new Date(lastBooking?.date) : new Date();
-    if (lastBooking)
-      lastDate = new Date(lastDate.setDate(lastDate.getDate() + 7));
+    if (lastBooking) lastDate = new Date(lastDate.setDate(lastDate.getDate() + 7));
     const date = lastDate;
     console.log(e, date);
     setAction(ACTION.RUNNING);
     const body = e as BookingType;
     const { edit, ...payload } = body;
     const res = edit
-      ? await updateOne<Booking>(
-          Api.booking,
-          edit ?? "",
-          payload as unknown as Booking
-        )
+      ? await updateOne<Booking>(Api.booking, edit ?? "", payload as unknown as Booking)
       : await create<IBooking>(Api.booking, {
           date: date,
           times: body.dates,
@@ -150,38 +127,63 @@ export const BookingPage = ({
   return (
     <div className="">
       <DynamicHeader count={bookings?.count} />
-
-      <div className="admin-container space-y-0">
-        <Modal
-          maw="3xl"
-          title="Цагийн хуваарь оруулах форм"
-          name={"Цагийн хуваарь нэмэх"}
-          submit={() => form.handleSubmit(onSubmit, onInvalid)()}
-          open={open == true}
-          reset={() => {
-            setOpen(false);
-            clear();
-          }}
-          setOpen={setOpen}
-          loading={action == ACTION.RUNNING}
-        >
-          <FormProvider {...form}>
-            <FormItems control={form.control} name="branch_id">
-              {(field) => {
-                return (
-                  <ComboBox
-                    props={{ ...field }}
-                    items={branches.items.map((item) => {
-                      return {
-                        value: item.id,
-                        label: item.name,
-                      };
-                    })}
-                  />
-                );
-              }}
-            </FormItems>
-            <div className={cn("max-h-[60vh] overflow-y-scroll")}>
+      {JSON.stringify(
+        bookings?.items.map((item) => {
+          return {
+            times: item.times,
+            date: item.date,
+          };
+        })
+      )}
+      <div className="admin-container space-y-2">
+          <div className="flex items-center justify-between">
+            <ComboBox
+            items={branches.items.map((b, i) => {
+              return {
+                label: b.name,
+                value: b.id,
+              };
+            })}
+            props={{
+              onChange: (v: string) => {
+                const selected = branches.items.filter((b) => b.id == v)[0];
+                setBranch(selected);
+              },
+              name: "",
+              onBlur: () => {},
+              ref: () => {},
+              value: branch?.id,
+            }}
+                    />
+                    <Modal
+            maw="3xl"
+            title="Цагийн хуваарь оруулах форм"
+            name={"Цагийн хуваарь нэмэх"}
+            submit={() => form.handleSubmit(onSubmit, onInvalid)()}
+            open={open == true}
+            reset={() => {
+              setOpen(false);
+              clear();
+            }}
+            setOpen={setOpen}
+            loading={action == ACTION.RUNNING}
+                    >
+            <FormProvider {...form}>
+              <FormItems control={form.control} name="branch_id" className="block">
+                {(field) => {
+                  return (
+                    <ComboBox
+                      props={{ ...field }}
+                      items={branches.items.map((item) => {
+                        return {
+                          value: item.id,
+                          label: item.name,
+                        };
+                      })}
+                    />
+                  );
+                }}
+              </FormItems>
               <FormItems control={form.control} name={"dates"} className="">
                 {(field) => {
                   const value = (field.value as string[]) ?? Array(7).fill("");
@@ -190,42 +192,26 @@ export const BookingPage = ({
                     const lastDate = new Date(lastBooking.date);
                     date = new Date(lastDate.setDate(lastDate.getDate() + 7));
                   }
-
                   return (
-                    <ScheduleForm
-                      date={date}
-                      value={value}
-                      setValue={(next) =>
-                        form.setValue("dates", next, {
-                          shouldDirty: true,
-                          shouldTouch: true,
-                        })
-                      }
-                    />
+                    <div className={cn("max-h-[60vh] overflow-y-scroll")}>
+                      <ScheduleForm
+                        date={date}
+                        value={value}
+                        setValue={(next) =>
+                          form.setValue("dates", next, {
+                            shouldDirty: true,
+                            shouldTouch: true,
+                          })
+                        }
+                      />
+                    </div>
                   );
                 }}
               </FormItems>
-            </div>
-          </FormProvider>
-        </Modal>
-        <ComboBox
-          items={branches.items.map((b, i) => {
-            return {
-              label: b.name,
-              value: b.id,
-            };
-          })}
-          props={{
-            onChange: (v: string) => {
-              const selected = branches.items.filter((b) => b.id == v)[0];
-              setBranch(selected);
-            },
-            name: "",
-            onBlur: () => {},
-            ref: () => {},
-            value: branch?.id,
-          }}
-        />
+            </FormProvider>
+                    </Modal>
+          </div>
+      
         <Pagination>
           <PaginationContent>
             {page > 0 && (
@@ -241,13 +227,7 @@ export const BookingPage = ({
             )}
           </PaginationContent>
         </Pagination>
-        {bookings?.items && bookings?.items?.length > 0 ? (
-          <ScheduleTable
-            d={bookings.items?.[0]?.date}
-            value={bookings.items.map((item) => item.times).reverse()}
-            edit={null}
-          />
-        ) : null}
+        {bookings?.items && bookings?.items?.length > 0 ? <ScheduleTable d={bookings.items?.[0]?.date} value={bookings.items.map((item) => item.times).reverse()} edit={null} /> : null}
         {/* <DataTable
         columns={columns}
         count={bookings?.count}
