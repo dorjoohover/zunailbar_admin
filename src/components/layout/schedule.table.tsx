@@ -130,7 +130,7 @@ export const ScheduleForm = ({ date, value, setValue }: { date: Date; value: str
               <TableCell className="font-medium">{formatTime(hour)}</TableCell>
 
               {days.map((day) => {
-                const idx = day - 1; // 1=Даваа -> 0 индекс
+                const idx = day - 1; // 1 = Даваа -> 0 индекс
                 const times = (value[idx] ?? "").split("|").filter(Boolean);
 
                 const keyStr = String(hour);
