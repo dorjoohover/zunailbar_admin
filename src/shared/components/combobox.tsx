@@ -48,7 +48,7 @@ export function ComboBox<T extends FieldValues>({
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className="min-w-24 min-h-10 justify-between bg-white"
+          className="min-w-24 lg:min-h-10 justify-between bg-white text-xs lg:text-sm"
         >
           {value
             ? items.find((framework) => framework.value == value)?.label

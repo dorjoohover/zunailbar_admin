@@ -136,13 +136,8 @@ export const CategoryPage = ({ data }: { data: ListType<Category> }) => {
             >
               <FormProvider {...form}>
                 <div className="divide-y">
-                  <div className="grid grid-cols-2 gap-3 pb-5"></div>
-                  <div className="grid grid-cols-2 gap-3 pt-5">
-                    <FormItems
-                      control={form.control}
-                      name={"name"}
-                      className={"col-span-1"}
-                    >
+                  <div className="double-col">
+                    <FormItems control={form.control} name={"name"} className={"col-span-1"}>
                       {(field) => {
                         return (
                           <TextField

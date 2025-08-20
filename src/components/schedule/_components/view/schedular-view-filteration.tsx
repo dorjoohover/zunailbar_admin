@@ -132,14 +132,14 @@ export default function SchedulerViewFilteration({
   return (
     <div className="flex w-full flex-col">
       <div className="flex w-full">
-        <div className="dayly-weekly-monthly-selection relative w-full">
+        <div className="daily-weekly-monthly-selection relative w-full">
           <Tabs
             value={activeView}
             onValueChange={setActiveView}
             className={cn("w-full", classNames?.tabs)}
           >
             <div className="flex justify-between items-center mb-4">
-              <TabsList className="grid grid-cols-3">
+              <TabsList className="grid grid-cols-3 rounded-full overflow-hidden">
                 {viewsSelector?.includes("day") && (
                   <TabsTrigger value="day">
                     {CustomComponents?.customTabs?.CustomDayTab ? (
@@ -147,7 +147,7 @@ export default function SchedulerViewFilteration({
                     ) : (
                       <div className="flex items-center space-x-2">
                         <CalendarDaysIcon size={15} />
-                        <span>Day</span>
+                        <span>Өдөр</span>
                       </div>
                     )}
                   </TabsTrigger>
@@ -160,7 +160,7 @@ export default function SchedulerViewFilteration({
                     ) : (
                       <div className="flex items-center space-x-2">
                         <Calendar />
-                        <span>Week</span>
+                        <span>7 хоног</span>
                       </div>
                     )}
                   </TabsTrigger>
@@ -173,7 +173,7 @@ export default function SchedulerViewFilteration({
                     ) : (
                       <div className="flex items-center space-x-2">
                         <Calendar />
-                        <span>Month</span>
+                        <span>Сар</span>
                       </div>
                     )}
                   </TabsTrigger>

@@ -14,7 +14,7 @@
     -moz-appearance: textfield;
   }
   body {
-    background-image: "/zu-bg-2.png";
+    background-image: "/bg/image.png";
     background-repeat: no-repeat;
     background-size: cover;
     background-position: center;
@@ -22,7 +22,11 @@
 }
 
 @utility custom-bg {
-  @apply bg-[url(/zu-bg-2.png)];
+  @apply bg-[url(/bg/image.png)];
+}
+
+@utility transparent-input {
+  @apply bg-white/30;
 }
 
 @custom-variant dark (&:is(.dark *));
@@ -40,11 +44,11 @@
 }
 
 @utility admin-container {
-  @apply p-6 space-y-5 w-full;
+  @apply p-3 lg:p-6 space-y-5 w-full;
 }
 
 @utility double-col {
-  @apply grid grid-cols-2 gap-5;
+  @apply grid grid-cols-1 sm:grid-cols-2 gap-5;
 }
 
 @utility divide-x-gray {

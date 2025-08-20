@@ -93,8 +93,7 @@ export const CostPage = ({ data, categories }: { data: ListType<Product>; catego
           loading={action == ACTION.RUNNING}
           modalAdd={
             <Modal
-              name="Бараа нэмэх"
-              title="Бараа нэмэх форм"
+              title="Хэрэглээний зардал нэмэх форм"
               submit={() => form.handleSubmit(onSubmit, onInvalid)()}
               open={open == true}
               reset={() => {
@@ -106,7 +105,7 @@ export const CostPage = ({ data, categories }: { data: ListType<Product>; catego
             >
               <FormProvider {...form}>
                 <div className="divide-y">
-                  <div className="grid grid-cols-2 gap-3 pb-5">
+                  <div className="double-col pb-5">
                     <FormItems control={form.control} name="category_id" label="Төрөл">
                       {(field) => {
                         console.log(field.value);
@@ -124,7 +123,7 @@ export const CostPage = ({ data, categories }: { data: ListType<Product>; catego
                       }}
                     </FormItems>
                   </div>
-                  <div className="grid grid-cols-2 gap-3 pt-5">
+                  <div className="double-col pt-5">
                     {[
                       {
                         key: "name",
@@ -143,7 +142,7 @@ export const CostPage = ({ data, categories }: { data: ListType<Product>; catego
                       const name = item.key as keyof ProductType;
                       const label = item.label as keyof ProductType;
                       return (
-                        <FormItems control={form.control} name={name} key={i} className={item.key === "name" ? "col-span-2" : ""}>
+                        <FormItems control={form.control} name={name} key={i} className={item.key && "name"}>
                           {(field) => {
                             return <TextField props={{ ...field }} label={label} />;
                           }}

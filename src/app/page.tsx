@@ -69,7 +69,7 @@ export default function HomePage() {
   }, []);
 
   return (
-    <main className="p-4">
+    <main>
       <DashboardPage />
       {/* <h1 className="text-2xl font-bold">🚀 Firebase Push Test</h1>
       {token ? (

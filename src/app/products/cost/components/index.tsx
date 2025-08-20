@@ -280,7 +280,7 @@ export const CostPage = ({
             <Modal
               maw="lg"
               name="Бараа нэмэх"
-              title="Бараа нэмэх форм"
+              title="Хэрэглээний зардал"
               submit={() => form.handleSubmit(onSubmit, onInvalid)()}
               open={open == true}
               reset={() => {
@@ -313,12 +313,8 @@ export const CostPage = ({
                       }}
                     </FormItems>
                   </div>
-                  <div className="grid grid-cols-2 gap-3 pb-5">
-                    <FormItems
-                      control={form.control}
-                      name="branch_id"
-                      label="Салбар"
-                    >
+                  <div className="grid double-col gap-3 py-5">
+                    <FormItems control={form.control} name="branch_id" label="Салбар">
                       {(field) => {
                         return (
                           <ComboBox
@@ -354,7 +350,7 @@ export const CostPage = ({
                     </FormItems>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-3 pt-5">
+                  <div className="grid double-col gap-3 pt-5">
                     {[
                       {
                         key: "price",

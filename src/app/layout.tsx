@@ -1,16 +1,16 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { SidebarProvider } from "@/components/ui/sidebar";
 import { Toaster } from "@/components/ui/sonner";
 
 import { AppSidebar } from "@/components/app-sidebar";
 import Template from "./template";
-import { cookies, headers } from "next/headers";
-import { API } from "@/utils/api";
+import { cookies } from "next/headers";
 import ModalContainer from "@/components/modal/modal.container";
-import { ROLE } from "@/lib/enum";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { cn } from "@/lib/utils";
+import ScrollAreaWrapper from "@/shared/components/scrollAreaWrapper";
 // Mongoose bhgu bnshu
 // import connect from '../lib/mongoose';
 const geistSans = Geist({
@@ -40,20 +40,18 @@ export default async function RootLayout({
   return (
     <SidebarProvider defaultOpen={defaultOpen}>
       <html lang="en">
-        <body
-          className={`${geistSans.variable} ${geistMono.variable} antialiased custom-bg`}
-        >
+        <body className={`${geistSans.variable} ${geistMono.variable} antialiased custom-bg`}>
           <AppSidebar />
-          <main className="relative size-full p-2 pl-0 min-h-screen">
-            <ScrollArea className="rounded-xl overflow-hidden size-full bg-[#f8f9fb] h-[calc(100vh-1rem)] fixed top-0 left-0 ml-1">
-              <Template token={token}>
+          <div className="relative size-full p-2 pl-0 min-h-screen">
+            <Template token={token}>
+              <ScrollArea className={cn("rounded-xl overflow-hidden size-full h-[calc(100vh-1rem)] fixed top-0 left-0 ml-1", "bg-[#f8f9fb]")}>
                 {/* <Navbar /> */}
                 <Toaster />
                 {children}
                 {/* <Footer /> */}
-              </Template>
-            </ScrollArea>
-          </main>
+              </ScrollArea>
+            </Template>
+          </div>
           <ModalContainer />
         </body>
       </html>

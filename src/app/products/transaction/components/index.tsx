@@ -278,12 +278,8 @@ export const ProductTransactionPage = ({
               loading={action == ACTION.RUNNING}
             >
               <FormProvider {...form}>
-                <div className="grid grid-cols-2 gap-5">
-                  <FormItems
-                    label="Салбар"
-                    control={form.control}
-                    name="branch_id"
-                  >
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                  <FormItems label="Салбар" control={form.control} name="branch_id">
                     {(field) => {
                       return (
                         <ComboBox

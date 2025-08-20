@@ -131,8 +131,7 @@ export const DiscountPage = ({ data, services, branches }: { data: ListType<Disc
           modalAdd={
             <Modal
               maw="lg"
-              title="Үйлчилгээ жагсаалт форм"
-              name={"Бараа нэмэх"}
+              title="Үйлчилгээний урамшуулал форм"
               submit={() => form.handleSubmit(onSubmit, onInvalid)()}
               open={open == true}
               reset={() => {
@@ -214,7 +213,7 @@ export const DiscountPage = ({ data, services, branches }: { data: ListType<Disc
                     const name = item.key as keyof DiscountType;
                     const label = item.label as keyof DiscountType;
                     return (
-                      <FormItems label={label} control={form.control} name={name} key={i} className={item.key === "name" ? "col-span-2" : ""}>
+                      <FormItems label={label} control={form.control} name={name} key={i} className={item.key && "name"}>
                         {(field) => {
                           return <TextField props={{ ...field }} type={item.type} />;
                         }}
