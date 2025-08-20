@@ -12,18 +12,10 @@ import { FormItems } from "@/shared/components/form.field";
 import { ComboBox } from "@/shared/components/combobox";
 import { fetcher } from "@/hooks/fetcher";
 import { usernameFormatter } from "@/lib/functions";
-import {
-  ScheduleForm,
-  ScheduleTable,
-} from "@/components/layout/schedule.table";
-import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/components/ui/pagination";
+import { ScheduleForm, ScheduleTable } from "@/components/layout/schedule.table";
+import { Pagination, PaginationContent, PaginationItem, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
 import DynamicHeader from "@/components/dynamicHeader";
+import { cn } from "@/lib/utils";
 
 const hourLine = z.string();
 const limit = 7;
@@ -38,13 +30,7 @@ const defaultValues: ScheduleType = {
   edit: undefined,
 };
 type ScheduleType = z.infer<typeof formSchema>;
-export const SchedulePage = ({
-  data,
-  users,
-}: {
-  data: ListType<Schedule>;
-  users: ListType<User>;
-}) => {
+export const SchedulePage = ({ data, users }: { data: ListType<Schedule>; users: ListType<User> }) => {
   const [action, setAction] = useState(ACTION.DEFAULT);
   const [open, setOpen] = useState<undefined | boolean>(false);
   const form = useForm<ScheduleType>({
@@ -55,10 +41,7 @@ export const SchedulePage = ({
   const [lastSchedule, setLastSchedule] = useState<Schedule | null>(null);
   const [page, setPage] = useState(0);
   const [branch, setBranch] = useState(users.items[0]);
-  const userMap = useMemo(
-    () => new Map(users.items.map((b) => [b.id, b])),
-    [users.items]
-  );
+  const userMap = useMemo(() => new Map(users.items.map((b) => [b.id, b])), [users.items]);
 
   const ScheduleFormatter = (data: ListType<Schedule>) => {
     const items: Schedule[] = data.items.map((item) => {
@@ -112,8 +95,7 @@ export const SchedulePage = ({
   };
   const onSubmit = async <T,>(e: T) => {
     let lastDate = lastSchedule ? new Date(lastSchedule?.date) : new Date();
-    if (lastSchedule)
-      lastDate = new Date(lastDate.setDate(lastDate.getDate() + 7));
+    if (lastSchedule) lastDate = new Date(lastDate.setDate(lastDate.getDate() + 7));
     const date = lastDate;
     console.log(e, date);
     setAction(ACTION.RUNNING);
@@ -121,11 +103,7 @@ export const SchedulePage = ({
     const { edit, ...payload } = body;
     const user = users.items.filter((user) => user.id == body.user_id)[0];
     const res = edit
-      ? await updateOne<Schedule>(
-          Api.schedule,
-          edit ?? "",
-          payload as unknown as Schedule
-        )
+      ? await updateOne<Schedule>(Api.schedule, edit ?? "", payload as unknown as Schedule)
       : await create<ISchedule>(Api.schedule, {
           date: date,
           times: body.dates,
@@ -155,6 +133,7 @@ export const SchedulePage = ({
       <div className="admin-container space-y-0">
         <Modal
           maw="5xl"
+          title="Арчистын хуваарь оруулах форм"
           name={"Арчистын хуваарь оруулах"}
           submit={() => form.handleSubmit(onSubmit, onInvalid)()}
           open={open == true}
@@ -181,29 +160,31 @@ export const SchedulePage = ({
                 );
               }}
             </FormItems>
-            <FormItems control={form.control} name={"dates"} className="">
-              {(field) => {
-                const value = (field.value as string[]) ?? Array(7).fill("");
-                let date = new Date();
-                if (lastSchedule) {
-                  const lastDate = new Date(lastSchedule.date);
-                  date = new Date(lastDate.setDate(lastDate.getDate() + 7));
-                }
+            <div className={cn("max-h-[60vh] overflow-y-scroll")}>
+              <FormItems control={form.control} name={"dates"} className="">
+                {(field) => {
+                  const value = (field.value as string[]) ?? Array(7).fill("");
+                  let date = new Date();
+                  if (lastSchedule) {
+                    const lastDate = new Date(lastSchedule.date);
+                    date = new Date(lastDate.setDate(lastDate.getDate() + 7));
+                  }
 
-                return (
-                  <ScheduleForm
-                    date={date}
-                    value={value}
-                    setValue={(next) =>
-                      form.setValue("dates", next, {
-                        shouldDirty: true,
-                        shouldTouch: true,
-                      })
-                    }
-                  />
-                );
-              }}
-            </FormItems>
+                  return (
+                    <ScheduleForm
+                      date={date}
+                      value={value}
+                      setValue={(next) =>
+                        form.setValue("dates", next, {
+                          shouldDirty: true,
+                          shouldTouch: true,
+                        })
+                      }
+                    />
+                  );
+                }}
+              </FormItems>
+            </div>
           </FormProvider>
         </Modal>
         <ComboBox
@@ -239,13 +220,7 @@ export const SchedulePage = ({
             )}
           </PaginationContent>
         </Pagination>
-        {schedules?.items && schedules?.items?.length > 0 ? (
-          <ScheduleTable
-            d={schedules.items?.[0]?.date}
-            value={schedules.items.map((item) => item.times).reverse()}
-            edit={null}
-          />
-        ) : null}
+        {schedules?.items && schedules?.items?.length > 0 ? <ScheduleTable d={schedules.items?.[0]?.date} value={schedules.items.map((item) => item.times).reverse()} edit={null} /> : null}
         {/* <DataTable
         columns={columns}
         count={Schedules?.count}

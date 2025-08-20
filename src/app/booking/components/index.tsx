@@ -154,7 +154,8 @@ export const BookingPage = ({
       <div className="admin-container space-y-0">
         <Modal
           maw="3xl"
-          name={"Нэмэх"}
+          title="Цагийн хуваарь оруулах форм"
+          name={"Цагийн хуваарь нэмэх"}
           submit={() => form.handleSubmit(onSubmit, onInvalid)()}
           open={open == true}
           reset={() => {

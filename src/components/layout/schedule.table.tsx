@@ -140,7 +140,8 @@ export const ScheduleForm = ({ date, value, setValue }: { date: Date; value: str
                   <TableCell key={day}>
                     <Button
                       type="button"
-                      className={cn(includes ? "bg-black text-white" : "bg-gray-300 text-black", "w-full")}
+                      variant={"ghost"}
+                      className={cn(includes ? "bg-teal-500 text-white hover:bg-teal-500/80 hover:text-white" : "bg-gray-100 text-black hover:bg-gray-200", "w-full")}
                       disabled={date && new Date(date).getDate() == new Date().getDate() && today > day}
                       onClick={() => {
                         let nextTimes = includes ? times.filter((t) => t !== keyStr) : [...times, keyStr];
@@ -152,7 +153,8 @@ export const ScheduleForm = ({ date, value, setValue }: { date: Date; value: str
                         setValue(next);
                       }}
                     >
-                      {includes ? "✔" : ""}
+                      {formatTime(hour)}
+                      {includes ? "" : ""}
                     </Button>
                   </TableCell>
                 );
