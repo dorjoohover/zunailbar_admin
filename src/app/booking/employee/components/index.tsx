@@ -203,21 +203,6 @@ export const SchedulePage = ({ data, users }: { data: ListType<Schedule>; users:
             </FormProvider>
           </Modal>
         </div>
-        <Pagination>
-          <PaginationContent>
-            {page > 0 && (
-              <PaginationItem>
-                <PaginationNext onClick={() => setPage(page - 1)} />
-              </PaginationItem>
-            )}
-
-            {schedules && Math.ceil(+schedules.count / limit) - 1 > page && (
-              <PaginationItem>
-                <PaginationPrevious onClick={() => setPage(page + 1)} />
-              </PaginationItem>
-            )}
-          </PaginationContent>
-        </Pagination>
         {schedules?.items && schedules?.items?.length > 0 ? <ScheduleTable artist={true} d={schedules.items?.[0]?.index ?? 0} value={schedules.items.map((item) => item.times).reverse()} edit={null} /> : null}
         {/* <DataTable
         columns={columns}
