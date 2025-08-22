@@ -1,4 +1,4 @@
-import { OrderStatus } from "@/lib/constants";
+import { OrderStatus } from "@/lib/enum";
 import { Dispatch, SVGProps } from "react";
 import { z } from "zod";
 

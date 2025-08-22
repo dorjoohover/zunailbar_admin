@@ -1,13 +1,17 @@
-"use client";
-
+"use client";;
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { ROLE } from "@/lib/enum";
-import { API, baseUrl } from "@/utils/api";
-import Image from "next/image";
+import { API } from "@/utils/api";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect } from "react";
 
-export default function Template({ children, token }: { children: React.ReactNode; token?: string }) {
+export default function Template({
+  children,
+  token,
+}: {
+  children: React.ReactNode;
+  token?: string;
+}) {
   const pathname = usePathname();
   const router = useRouter();
   const deleteCookie = async () => {
@@ -48,7 +52,6 @@ export default function Template({ children, token }: { children: React.ReactNod
 
   return (
     <div className="w-full">
-
       {pathname != "/login" && <SidebarTrigger />}
 
       {children}
