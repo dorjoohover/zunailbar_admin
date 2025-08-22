@@ -18,8 +18,8 @@ function RequestFreeTime() {
     setSelectedTimes(
       (prev) =>
         prev.includes(time)
-          ? prev.filter((t) => t !== time) // дарсан бол арилгана
-          : [...prev, time] // эс бөгөөс нэмнэ
+          ? prev.filter((t) => t !== time) 
+          : [...prev, time] 
     );
   };
 
@@ -58,7 +58,7 @@ function RequestFreeTime() {
           </div>
         )}
       </div>
-      <Textarea rows={7} placeholder="Дэлгэрэнгүй хүсэлт..." />
+      <Textarea placeholder="Дэлгэрэнгүй хүсэлт бичих..." rows={9} className="h-full resize-none placeholder:text-gray-400"  />
       <Button className="w-full">Илгээх</Button>
     </div>
   );

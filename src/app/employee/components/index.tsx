@@ -107,7 +107,7 @@ export const OrderPage = ({ data, branches }: { data: ListType<Order>; branches:
       <div className="admin-container relative">
         <SchedulerProvider weekStartsOn="monday">
           <p>{/* {JSON.stringify(orders)} */}</p>
-          <SchedulerViewFilteration orders={orders} />
+          <SchedulerViewFilteration orders={orders} refresh={refresh} />
         </SchedulerProvider>
       </div>
     </div>

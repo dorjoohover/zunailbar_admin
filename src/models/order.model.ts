@@ -33,6 +33,8 @@ export interface Order {
   user_desc: string;
   discount: number;
   discount_type: number;
+  color?: number;
+  user_name?: string;
   status: number;
   created_at?: Date;
   updated_at?: Date;

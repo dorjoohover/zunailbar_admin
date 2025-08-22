@@ -22,12 +22,22 @@ export enum UserStatus {
   BANNED = 50,
 }
 
-
 export enum SalaryLogStatus {
   Pending = 10,
   Paid = 20,
 }
-
+export enum OrderStatus {
+  // uridchilgaa toloogui
+  Pending = 10,
+  // uridchilgaa tolson
+  Active = 20,
+  // uilchilgee ehelsen
+  Started = 30,
+  // duussan
+  Finished = 40,
+  // tsutsalsan
+  Cancelled = 50,
+}
 // export enum EmployeeStatus {
 //   ACTIVE = 10,
 //   DEKIRIT = 20,

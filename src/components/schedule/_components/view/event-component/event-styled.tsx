@@ -12,6 +12,8 @@ import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import CustomModal from "@/components/ui/custom-modal";
 import { getUserColor } from "@/lib/colors";
+import { OrderStatusValues } from "@/lib/constants";
+import { OrderStatus } from "@/lib/enum";
 
 // Function to format date
 const formatDate = (date: Date) => {
@@ -117,9 +119,8 @@ export default function EventStyled({
 
   // Get background color class based on variant
   const getBackgroundColor = (color: number | undefined) => {
-    const userColor = getUserColor(color ?? 0);
+    const userColor = getUserColor(color ? color - 1 : 0);
     const res = `${userColor.bg} ${userColor.border} `;
-    console.log(res);
     return res;
   };
 
@@ -190,8 +191,12 @@ export default function EventStyled({
 
             {/* Show time in minimized mode */}
             {event?.minmized && (
-              <div className="text-[10px] opacity-80">
-                {formatTime(event?.startDate)}
+              <div className="text-[10px] opacity-80 flex justify-between ">
+                <span> {formatTime(event?.startDate)} </span>
+                <span>
+                  {event?.status &&
+                    OrderStatusValues[event?.status as OrderStatus]}
+                </span>
               </div>
             )}
 

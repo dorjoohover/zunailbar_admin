@@ -24,8 +24,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "ZU Nailbar",
-  description: "Nail salon template built with Next.js and Tailwind CSS",
+  title: "ZU Nailbar Admin",
+  description: "Zu Nailbar salon Admin Panel",
 };
 
 export default async function RootLayout({

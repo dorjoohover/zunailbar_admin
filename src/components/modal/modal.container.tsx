@@ -20,7 +20,6 @@ const ModalContainer = ({ url }: { url?: string }) => {
   }
   useEffect(() => {
     if (value != undefined) setOpen(true);
-    console.log(value);
   }, [value]);
   return (
     <div>

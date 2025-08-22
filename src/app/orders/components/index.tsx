@@ -1,5 +1,5 @@
-"use client";;
-import { Branch, IOrder, Order } from "@/models";
+"use client";
+import { Branch, IOrder, Order, User } from "@/models";
 import { useEffect, useMemo, useState } from "react";
 import { ListType, ACTION, PG, DEFAULT_PG, ListDefault } from "@/lib/constants";
 import z from "zod";
@@ -11,16 +11,26 @@ import { fetcher } from "@/hooks/fetcher";
 import SchedulerViewFilteration from "@/components/schedule/_components/view/schedular-view-filteration";
 import { SchedulerProvider } from "@/providers/schedular-provider";
 import DynamicHeader from "@/components/dynamicHeader";
+import { mnDate, usernameFormatter } from "@/lib/functions";
 
 const formSchema = z.object({
   branch_id: z.string().min(1),
   name: z.string().min(1),
   max_price: z
-    .preprocess((val) => (typeof val === "string" ? parseFloat(val) : val), z.number())
+    .preprocess(
+      (val) => (typeof val === "string" ? parseFloat(val) : val),
+      z.number()
+    )
     .nullable()
     .optional() as unknown as number,
-  min_price: z.preprocess((val) => (typeof val === "string" ? parseFloat(val) : val), z.number()) as unknown as number,
-  duration: z.preprocess((val) => (typeof val === "string" ? parseFloat(val) : val), z.number()) as unknown as number,
+  min_price: z.preprocess(
+    (val) => (typeof val === "string" ? parseFloat(val) : val),
+    z.number()
+  ) as unknown as number,
+  duration: z.preprocess(
+    (val) => (typeof val === "string" ? parseFloat(val) : val),
+    z.number()
+  ) as unknown as number,
   edit: z.string().nullable().optional(),
 });
 const defaultValues: OrderType = {
@@ -32,32 +42,41 @@ const defaultValues: OrderType = {
   edit: undefined,
 };
 type OrderType = z.infer<typeof formSchema>;
-export const OrderPage = ({ data, branches }: { data: ListType<Order>; branches: ListType<Branch> }) => {
+export const OrderPage = ({
+  branches,
+  users,
+}: {
+  branches: ListType<Branch>;
+  users: ListType<User>;
+}) => {
   const [action, setAction] = useState(ACTION.DEFAULT);
   const [open, setOpen] = useState<undefined | boolean>(false);
   const form = useForm<OrderType>({
     resolver: zodResolver(formSchema),
     defaultValues,
   });
+  const [selectedBranch, setSelectedBranch] = useState(branches.items[0]);
   const [orders, setOrders] = useState<ListType<Order>>(ListDefault);
-  const branchMap = useMemo(() => new Map(branches.items.map((b) => [b.id, b])), [branches.items]);
+  const userMap = useMemo(
+    () => new Map(users.items.map((b) => [b.id, b])),
+    [users.items]
+  );
 
   const orderFormatter = (data: ListType<Order>) => {
-    console.log(data)
     const items: Order[] = data.items.map((item) => {
-      // const branch = branchMap.get(item.branch_id);
+      const user = userMap.get(item.user_id);
 
       return {
         ...item,
-        // branch_name: branch?.name ?? "",
+        user_name: user ? usernameFormatter(user) : "",
+        color: user?.color,
+        // branch_name: user?.name ?? "",
       };
     });
 
     setOrders({ items, count: data.count });
   };
-  useEffect(() => {
-    orderFormatter(data);
-  }, [data]);
+
   const clear = () => {
     form.reset(defaultValues);
     console.log(form.getValues());
@@ -72,15 +91,22 @@ export const OrderPage = ({ data, branches }: { data: ListType<Order>; branches:
     setOpen(true);
     form.reset({ ...e, edit: e.id });
   };
-  // const columns = getColumns(edit, deleteOrder);
 
   const refresh = async (pg: PG = DEFAULT_PG) => {
     setAction(ACTION.RUNNING);
     const { page, limit, sort } = pg;
+    console.log({
+      page: page ?? DEFAULT_PG.page,
+      limit: limit ?? DEFAULT_PG.limit,
+      sort: sort ?? DEFAULT_PG.sort,
+      date: pg.filter?.date,
+      //   name: pg.filter,
+    });
     await fetcher<Order>(Api.order, {
-      page,
-      limit,
-      sort,
+      page: page ?? DEFAULT_PG.page,
+      limit: limit ?? DEFAULT_PG.limit,
+      sort: sort ?? DEFAULT_PG.sort,
+      date: pg.filter?.date,
       //   name: pg.filter,
     }).then((d) => {
       orderFormatter(d);
@@ -92,7 +118,13 @@ export const OrderPage = ({ data, branches }: { data: ListType<Order>; branches:
     setAction(ACTION.RUNNING);
     const body = e as OrderType;
     const { edit, ...payload } = body;
-    const res = edit ? await updateOne<Order>(Api.order, edit ?? "", payload as unknown as Order) : await create<Order>(Api.order, e as Order);
+    const res = edit
+      ? await updateOne<Order>(
+          Api.order,
+          edit ?? "",
+          payload as unknown as Order
+        )
+      : await create<Order>(Api.order, e as Order);
     console.log(res);
     if (res.success) {
       refresh();
@@ -104,11 +136,10 @@ export const OrderPage = ({ data, branches }: { data: ListType<Order>; branches:
 
   return (
     <div className="relative">
-        <DynamicHeader count={orders?.count} />
+      <DynamicHeader count={orders?.count} />
       <div className="admin-container relative">
         <SchedulerProvider weekStartsOn="monday">
-          <p>{JSON.stringify(orders)}</p>
-          <SchedulerViewFilteration orders={orders} />
+          <SchedulerViewFilteration orders={orders} refresh={refresh} />
         </SchedulerProvider>
       </div>
     </div>

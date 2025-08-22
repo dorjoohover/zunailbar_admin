@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef, useState, useCallback } from "react";
+import React, { useRef, useState, useCallback, useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 
 import { ArrowLeft, ArrowRight } from "lucide-react";
@@ -13,8 +13,7 @@ import { CustomEventModal, Event } from "@/types";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import CustomModal from "@/components/ui/custom-modal";
-import { totalHours } from "@/lib/functions";
-import { OrderStatus } from "@/lib/constants";
+import { mnDate, totalHours } from "@/lib/functions";
 
 // Generate hours in 12-hour format
 const hours = Array.from({ length: totalHours }, (_, i) => {
@@ -158,8 +157,20 @@ export default function DailyView({
   stopDayEventSummary,
   events,
   classNames,
+  refresh,
 }: {
   prevButton?: React.ReactNode;
+  refresh: <T>({
+    page,
+    limit,
+    sort,
+    filter,
+  }: {
+    page?: number;
+    limit?: number;
+    sort?: boolean;
+    filter?: T;
+  }) => void;
   nextButton?: React.ReactNode;
   CustomEventComponent?: React.FC<Event>;
   events: Event[];
@@ -285,6 +296,18 @@ export default function DailyView({
     const prevDay = new Date(currentDate);
     prevDay.setDate(currentDate.getDate() - 1);
     setCurrentDate(prevDay);
+  }, [currentDate]);
+  useEffect(() => {
+    const d = mnDate(currentDate);
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    const date = `${y}-${m}-${day}`;
+    refresh<{ date: string }>({
+      filter: {
+        date,
+      },
+    });
   }, [currentDate]);
 
   return (

@@ -3,6 +3,7 @@ import {
   CategoryType,
   CostStatus,
   DISCOUNT,
+  OrderStatus,
   ProductLogStatus,
   ProductTransactionStatus,
   ROLE,
@@ -93,12 +94,6 @@ export const ListDefault = {
   items: [],
 };
 
-export enum OrderStatus {
-  Active = 10,
-  Pending = 20,
-  Hidden = 30,
-}
-
 // export const PG = (dto: PgDto = {}): Required<PgDto> => ({
 //   ...DEFAULT_PG,
 //   ...dto,
@@ -163,4 +158,12 @@ export const CategoryTypeValues = {
 export const SalaryLogValues = {
   [SalaryLogStatus.Paid]: "Paid",
   [SalaryLogStatus.Pending]: "Pending",
+};
+
+export const OrderStatusValues = {
+  [OrderStatus.Active]: "Active",
+  [OrderStatus.Started]: "Started",
+  [OrderStatus.Cancelled]: ".Cancelled",
+  [OrderStatus.Finished]: ".Finished",
+  [OrderStatus.Pending]: "Pending",
 };

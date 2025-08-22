@@ -38,12 +38,24 @@ export default function SchedulerViewFilteration({
   CustomComponents,
   classNames,
   orders,
+  refresh,
 }: {
   orders: ListType<Order>;
   views?: Views;
   stopDayEventSummary?: boolean;
   CustomComponents?: CustomComponents;
   classNames?: ClassNames;
+  refresh: <T>({
+    page,
+    limit,
+    sort,
+    filter,
+  }: {
+    page?: number;
+    limit?: number;
+    sort?: boolean;
+    filter?: T;
+  }) => void;
 }) {
   const { setOpen } = useModal();
   const [activeView, setActiveView] = useState<string>("day");
@@ -139,7 +151,7 @@ export default function SchedulerViewFilteration({
             className={cn("w-full", classNames?.tabs)}
           >
             <div className="flex justify-between items-center mb-4">
-              <TabsList className="grid grid-cols-3 rounded-full overflow-hidden">
+              {/* <TabsList className="grid grid-cols-3 rounded-full overflow-hidden">
                 {viewsSelector?.includes("day") && (
                   <TabsTrigger value="day">
                     {CustomComponents?.customTabs?.CustomDayTab ? (
@@ -178,8 +190,8 @@ export default function SchedulerViewFilteration({
                     )}
                   </TabsTrigger>
                 )}
-              </TabsList>
-
+              </TabsList> */}
+              <span></span>
               {/* Add Event Button */}
               {CustomComponents?.customButtons?.CustomAddEventButton ? (
                 <div onClick={() => handleAddEvent()}>
@@ -202,6 +214,7 @@ export default function SchedulerViewFilteration({
                 <AnimatePresence mode="wait">
                   <motion.div {...(animationConfig as any)}>
                     <DailyView
+                      refresh={refresh}
                       events={orders.items.map((item) => {
                         const {
                           order_date,
@@ -240,7 +253,7 @@ export default function SchedulerViewFilteration({
                             !end_time ? duration : undefined
                           ),
                           description: customer_desc,
-                          variant: "primary",
+                          color: item.color,
                           status: order_status,
                         };
                       })}
@@ -262,7 +275,7 @@ export default function SchedulerViewFilteration({
               </TabsContent>
             )}
 
-            {viewsSelector?.includes("week") && (
+            {/* {viewsSelector?.includes("week") && (
               <TabsContent value="week">
                 <AnimatePresence mode="wait">
                   <motion.div {...(animationConfig as any)}>
@@ -304,7 +317,7 @@ export default function SchedulerViewFilteration({
                   </motion.div>
                 </AnimatePresence>
               </TabsContent>
-            )}
+            )} */}
           </Tabs>
         </div>
       </div>
