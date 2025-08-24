@@ -27,33 +27,25 @@ import DynamicHeader from "@/components/dynamicHeader";
 import { objectCompact } from "@/lib/functions";
 import { FilterPopover } from "@/components/layout/popover";
 import { Checkbox } from "@radix-ui/react-checkbox";
+import { PasswordField } from "@/shared/components/password.field";
 
 const formSchema = z.object({
   mobile: z.string().min(1),
-  branch_id: z.string().min(1),
   nickname: z.string().min(1),
-  branch_name: z.string().min(1),
+  password: z.string().min(1),
   edit: z.string().nullable().optional(),
 });
 const defaultValues: UserType = {
   mobile: "",
   nickname: "",
-  branch_name: "",
-
-  branch_id: "",
+  password: "",
   edit: undefined,
 };
 type FilterType = {
   status?: number;
 };
 type UserType = z.infer<typeof formSchema>;
-export const UserPage = ({
-  data,
-  branches,
-}: {
-  data: ListType<User>;
-  branches: ListType<Branch>;
-}) => {
+export const UserPage = ({ data }: { data: ListType<User> }) => {
   const [action, setAction] = useState(ACTION.DEFAULT);
   const [open, setOpen] = useState<undefined | boolean>(false);
   const form = useForm<UserType>({
@@ -61,18 +53,11 @@ export const UserPage = ({
     defaultValues,
   });
   const [Users, setUsers] = useState<ListType<User> | null>(null);
-  const branchMap = useMemo(
-    () => new Map(branches.items.map((b) => [b.id, b])),
-    [branches.items]
-  );
 
   const UserFormatter = (data: ListType<User>) => {
     const items: User[] = data.items.map((item) => {
-      const branch = branchMap.get(item.branch_id);
-
       return {
         ...item,
-        branch_name: branch?.name ?? "",
       };
     });
 
@@ -118,8 +103,15 @@ export const UserPage = ({
     const body = e as UserType;
     const { edit, ...payload } = body;
     const res = edit
-      ? await updateOne<User>(Api.user, edit ?? "", payload as unknown as User)
-      : await create<User>(Api.user, e as User);
+      ? await updateOne<User>(Api.user, edit ?? "", {
+          ...payload,
+          birthday: null,
+        } as unknown as User)
+      : await create<User>(Api.user, {
+          ...e,
+          role: ROLE.CLIENT,
+          birthday: null,
+        } as any);
     console.log(res);
     if (res.success) {
       refresh();
@@ -157,11 +149,11 @@ export const UserPage = ({
           })),
         },
       ],
-      [branches.items]
+      []
     );
   return (
     <div className="">
-      <DynamicHeader count={Users?.count} />
+      <DynamicHeader />
 
       <div className="admin-container">
         <DataTable
@@ -207,7 +199,7 @@ export const UserPage = ({
             <Modal
               title="Хэрэглэгч нэмэх форм"
               w="2xl"
-              name={"Хэрэглэгч нэмэх" + Users?.count}
+              name={"Хэрэглэгч нэмэх"}
               submit={() => form.handleSubmit(onSubmit, onInvalid)()}
               open={open == true}
               reset={() => {
@@ -219,41 +211,14 @@ export const UserPage = ({
             >
               <FormProvider {...form}>
                 <div className="double-col gap-5">
-                  <FormItems
-                    label="Салбар"
-                    control={form.control}
-                    name="branch_id"
-                  >
-                    {(field) => {
-                      return (
-                        <ComboBox
-                          props={{ ...field }}
-                          items={branches.items.map((item) => {
-                            return {
-                              value: item.id,
-                              label: item.name,
-                            };
-                          })}
-                        />
-                      );
-                    }}
-                  </FormItems>
-
                   {[
                     {
-                      key: "min_price",
-                      type: "money",
-                      label: "Үнэ",
+                      key: "nickname",
+                      label: "Нэр",
                     },
                     {
-                      key: "max_price",
-                      type: "money",
-                      label: "Их үнэ",
-                    },
-                    {
-                      key: "duration",
-                      type: "number",
-                      label: "Хугацаа",
+                      key: "mobile",
+                      label: "Утас",
                     },
                   ].map((item, i) => {
                     const name = item.key as keyof UserType;
@@ -267,30 +232,26 @@ export const UserPage = ({
                         className={item.key === "name" ? "col-span-2" : ""}
                       >
                         {(field) => {
-                          return (
-                            <TextField
-                              props={{ ...field }}
-                              type={item.type}
-                              label={""}
-                            />
-                          );
+                          return <TextField props={{ ...field }} label={""} />;
                         }}
                       </FormItems>
                     );
                   })}
+                  <FormItems
+                    control={form.control}
+                    name="password"
+                    className="col-span-2"
+                  >
+                    {(field) => {
+                      return <PasswordField props={{ ...field }} view={true} />;
+                    }}
+                  </FormItems>
                 </div>
               </FormProvider>
             </Modal>
           }
         />
-        {action}
       </div>
-
-      {/* <ProductDialog
-        editingProduct={editingProduct}
-        onChange={onChange}
-        save={handleSave}
-      /> */}
     </div>
   );
 };
