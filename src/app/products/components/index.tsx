@@ -35,6 +35,14 @@ type FilterType = {
   category?: string;
 };
 type ProductType = z.infer<typeof formSchema>;
+const defaultValues = {
+  edit: undefined,
+  branch_id: undefined,
+  category_id: undefined,
+  name: '',
+  size: undefined,
+  color: undefined,
+};
 export const ProductPage = ({
   data,
   categories,
@@ -48,9 +56,7 @@ export const ProductPage = ({
   const [open, setOpen] = useState<undefined | boolean>(false);
   const form = useForm<ProductType>({
     resolver: zodResolver(formSchema),
-    defaultValues: {
-      edit: undefined,
-    },
+    defaultValues,
   });
   const [products, setProducts] = useState<ListType<Product>>(data);
   const deleteProduct = async (index: number) => {
@@ -88,10 +94,11 @@ export const ProductPage = ({
     const res = edit
       ? await updateOne<IProduct>(Api.product, edit ?? "", payload as IProduct)
       : await create<IProduct>(Api.product, e as IProduct);
+    console.log(res);
     if (res.success) {
       refresh();
       setOpen(false);
-      form.reset({});
+      clear();
     }
     setAction(ACTION.DEFAULT);
     showToast("success", "Амжилттай хадгалагдлаа!");
@@ -133,6 +140,10 @@ export const ProductPage = ({
       ],
       [brands.items, categories.items]
     );
+  const clear = () => {
+    form.reset(defaultValues);
+    console.log(form.getValues());
+  };
   return (
     <div className="">
       <DynamicHeader count={products.count} />
@@ -185,8 +196,8 @@ export const ProductPage = ({
               submit={() => form.handleSubmit(onSubmit, onInvalid)()}
               open={open == true}
               reset={() => {
+                clear();
                 setOpen(false);
-                form.reset({});
               }}
               setOpen={(v) => setOpen(v)}
               loading={action == ACTION.RUNNING}
@@ -194,9 +205,12 @@ export const ProductPage = ({
               <FormProvider {...form}>
                 <div className="divide-y">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pb-5">
-                    <FormItems control={form.control} name="category_id" label="Төрөл">
+                    <FormItems
+                      control={form.control}
+                      name="category_id"
+                      label="Төрөл"
+                    >
                       {(field) => {
-                        console.log(field.value);
                         return (
                           <ComboBox
                             props={{ ...field }}
@@ -256,7 +270,10 @@ export const ProductPage = ({
                         >
                           {(field) => {
                             return (
-                              <TextField props={{ ...field }} label={label} />
+                              <TextField
+                                props={{ ...field }}
+                                label={label}
+                              />
                             );
                           }}
                         </FormItems>

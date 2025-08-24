@@ -8,10 +8,7 @@ export async function GET(
   const { filename } = await context.params;
 
   try {
-    console.log("start");
-    console.log(`${API[Api.file]}/${filename}`);
     const res = await fetch(`${API[Api.file]}/${filename}`);
-    console.log(res);
     if (!res.ok) {
       return new NextResponse("Failed to fetch file", { status: 500 });
     }

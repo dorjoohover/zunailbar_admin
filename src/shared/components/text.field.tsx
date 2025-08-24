@@ -26,10 +26,11 @@ export const TextField = <T extends FieldValues>({
       ? money(String(props.value ?? ""))
       : String(props.value ?? "")
   );
-
   useEffect(() => {
     if (type === "money") {
       setDisplay(money(String(props.value ?? "0")));
+    } else {
+      if (!props.value || props.value == null) setDisplay("");
     }
   }, [props.value, type]);
 

@@ -161,7 +161,7 @@ export const ServicePage = ({
     );
   return (
     <div className="">
-      <DynamicHeader count={services?.count} />
+      <DynamicHeader />
 
       <div className="admin-container">
         <DataTable
@@ -208,7 +208,7 @@ export const ServicePage = ({
               // w="2xl"
               maw="lg"
               title="Үйлчилгээ жагсаалт форм"
-              name={"Бараа нэмэх" + services?.count}
+              name={"Үйлчилгээ нэмэх"}
               submit={() => form.handleSubmit(onSubmit, onInvalid)()}
               open={open == true}
               reset={() => {
@@ -266,7 +266,13 @@ export const ServicePage = ({
                     const name = item.key as keyof ServiceType;
                     const label = item.label as keyof ServiceType;
                     return (
-                      <FormItems label={label} control={form.control} name={name} key={i} className={item.key && "name"}>
+                      <FormItems
+                        label={label}
+                        control={form.control}
+                        name={name}
+                        key={i}
+                        className={item.key && "name"}
+                      >
                         {(field) => {
                           return (
                             <TextField props={{ ...field }} type={item.type} />

@@ -204,6 +204,7 @@ export const EmployeeUserServicePage = ({
               })}
             </div>
           }
+          search={false}
           clear={() => setFilter(undefined)}
           columns={columns}
           count={UserServices?.count}
