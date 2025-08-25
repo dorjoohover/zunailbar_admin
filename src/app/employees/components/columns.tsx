@@ -99,9 +99,12 @@ export const getColumns = (
     cell: ({ row }) => {
       return (
         <div
-          className={`h-5 w-10 bg-${
-            COLORS[+((row.getValue("color") as string) ?? -1)]
-          }-500`}
+          className={`h-5 w-10`}
+          style={{
+            backgroundColor: `${
+              COLORS[+((row.getValue("color") as string) ?? -1)]
+            }`,
+          }}
         ></div>
       );
     },

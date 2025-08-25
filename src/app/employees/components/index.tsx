@@ -36,6 +36,7 @@ import DynamicHeader from "@/components/dynamicHeader";
 import { COLORS } from "@/lib/colors";
 import { FilterPopover } from "@/components/layout/popover";
 import { Checkbox } from "@radix-ui/react-checkbox";
+import { toast } from "sonner";
 
 const formSchema = z.object({
   firstname: z.string().min(1),
@@ -46,7 +47,7 @@ const formSchema = z.object({
     (val) => (typeof val === "string" ? new Date(val) : val),
     z.date()
   ) as unknown as Date,
-  password: z.string().min(6),
+  password: z.string().min(6).nullable().optional(),
   experience: z.preprocess(
     (val) => (typeof val === "string" ? parseFloat(val) : val),
     z.number()
@@ -96,7 +97,11 @@ export const EmployeePage = ({
   const [editingUser, setEditingUser] = useState<IUser | null>(null);
   const [userProduct, setUserProduct] = useState<string | undefined>(undefined);
   const onSubmit = async <T,>(e: T) => {
-    const { file, ...body } = form.getValues();
+    const { file, password, ...body } = form.getValues();
+    if (!editingUser && password == null) {
+      toast("Нууц үг оруулна уу", {});
+      return;
+    }
     const formData = new FormData();
     let payload = {};
     if (file != null) {
@@ -113,7 +118,10 @@ export const EmployeePage = ({
     }
     const res = editingUser
       ? await updateOne<IUser>(Api.user, editingUser?.id as string, payload)
-      : await create<IUser>(Api.user, payload);
+      : await create<IUser>(Api.user, {
+          ...payload,
+          password: password ?? undefined,
+        });
 
     if (res.success) {
       refresh();
@@ -429,17 +437,19 @@ export const EmployeePage = ({
                     </FormItems>
                   </div>
                   <div className="double-col pt-5">
-                    <FormItems
-                      control={form.control}
-                      name="password"
-                      className="col-span-1"
-                    >
-                      {(field) => {
-                        return (
-                          <PasswordField props={{ ...field }} view={true} />
-                        );
-                      }}
-                    </FormItems>
+                    {!editingUser && (
+                      <FormItems
+                        control={form.control}
+                        name="password"
+                        className="col-span-1"
+                      >
+                        {(field) => {
+                          return (
+                            <PasswordField props={{ ...field }} view={true} />
+                          );
+                        }}
+                      </FormItems>
+                    )}
                     {[
                       "lastname",
                       "firstname",
@@ -499,11 +509,11 @@ export const EmployeePage = ({
                         return (
                           <ComboBox
                             props={{ ...field }}
-                            items={numberArray(22).map((number) => {
+                            items={COLORS.map((color, index) => {
                               return {
-                                color: COLORS[number],
-                                value: number.toString(),
-                                label: COLORS[number],
+                                color: color,
+                                value: index.toString(),
+                                label: color,
                               };
                             })}
                           />

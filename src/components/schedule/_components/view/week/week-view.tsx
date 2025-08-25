@@ -556,9 +556,12 @@ export default function WeeklyView({
                                         {dayEvents.map((event) => (
                                           <div
                                             key={event.id}
-                                            className={`p-4 rounded-lg shadow-sm border-l-4 border-${
-                                              COLORS[event.color ?? 0]
-                                            }-500 hover:shadow-md transition-shadow`}
+                                            className={`p-4 rounded-lg shadow-sm border-l-4  hover:shadow-md transition-shadow`}
+                                            style={{
+                                              borderColor: `${
+                                                COLORS[event.color ?? 0]
+                                              }`,
+                                            }}
                                           >
                                             <EventStyled
                                               event={{

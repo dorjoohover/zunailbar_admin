@@ -21,6 +21,8 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { Check, ChevronsUpDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ControllerRenderProps, FieldValues } from "react-hook-form";
+import { COLOR_HEX, ColorName } from "@/lib/colors";
+import { keyof } from "zod";
 
 type InputType = {
   value: string;
@@ -65,17 +67,18 @@ export function ComboBox<T extends FieldValues>({
               {items.map((framework) => (
                 <CommandItem
                   key={framework.value}
-                  value={framework.value}
+                  value={framework.color}
                   onSelect={(currentValue) => {
                     const vl = currentValue === value ? "" : currentValue;
                     onChange(vl);
                     setOpen(false);
                   }}
-                  className={
-                    framework.color
-                      ? `bg-${framework.color}-500 text-white`
-                      : ""
-                  }
+                  className={framework.color ? `text-white` : ""}
+                  style={{
+                    backgroundColor: framework?.color
+                      ? COLOR_HEX[framework.color as ColorName]
+                      : "",
+                  }}
                 >
                   {framework.label}
                   <Check

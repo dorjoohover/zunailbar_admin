@@ -120,8 +120,7 @@ export default function EventStyled({
   // Get background color class based on variant
   const getBackgroundColor = (color: number | undefined) => {
     const userColor = getUserColor(color ? color - 1 : 0);
-    const res = `${userColor.bg} ${userColor.border} `;
-    return res;
+    return userColor;
   };
 
   return (
@@ -180,9 +179,10 @@ export default function EventStyled({
           }}
           className={cn(
             "w-full p-2 rounded text-white",
-            getBackgroundColor(event?.color),
+
             event?.minmized ? "flex-grow overflow-hidden" : "min-h-fit"
           )}
+          style={{ backgroundColor: getBackgroundColor(event?.color) }}
         >
           <div className="flex flex-col h-full">
             <div className="font-semibold text-xs truncate mb-1">

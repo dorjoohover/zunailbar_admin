@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { requestNotificationPermission } from "../utils/notification";
 import DashboardPage from "./dashboard/page";
+import { useRouter } from "next/navigation";
 
 export default function HomePage() {
   const [token, setToken] = useState<string | null>(null);
@@ -43,6 +44,7 @@ export default function HomePage() {
 
     // setupFCM();
   }, []);
+  const router = useRouter();
 
   // 🔔 Foreground push popup харуулах
   useEffect(() => {
@@ -64,7 +66,7 @@ export default function HomePage() {
         }
       });
     }
-
+    router.refresh();
     // listenForForegroundPush();
   }, []);
 
