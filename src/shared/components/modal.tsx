@@ -72,7 +72,7 @@ export const Modal = ({ name = "Нэмэх", title = "Title", btn = <Loader2Icon
               {loading ? "Please wait..." : submitTxt}
             </Button>
           )}
-          {reset && (
+          {/* {reset && (
             <Button
               onClick={(e) => {
                 e.preventDefault();
@@ -81,7 +81,7 @@ export const Modal = ({ name = "Нэмэх", title = "Title", btn = <Loader2Icon
             >
               reset
             </Button>
-          )}
+          )} */}
         </DialogFooter>
       </DialogContent>
     </Dialog>
