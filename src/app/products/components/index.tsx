@@ -39,7 +39,7 @@ const defaultValues = {
   edit: undefined,
   branch_id: undefined,
   category_id: undefined,
-  name: '',
+  name: "",
   size: undefined,
   color: undefined,
 };
@@ -190,7 +190,7 @@ export const ProductPage = ({
           modalAdd={
             <Modal
               // w="md"
-              maw="lg"
+              maw="xl"
               name="Бараа нэмэх"
               title="Бараа нэмэх форм"
               submit={() => form.handleSubmit(onSubmit, onInvalid)()}
@@ -203,7 +203,7 @@ export const ProductPage = ({
               loading={action == ACTION.RUNNING}
             >
               <FormProvider {...form}>
-                <div className="divide-y">
+                <div className="divide-y ">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pb-5">
                     <FormItems
                       control={form.control}
@@ -270,10 +270,7 @@ export const ProductPage = ({
                         >
                           {(field) => {
                             return (
-                              <TextField
-                                props={{ ...field }}
-                                label={label}
-                              />
+                              <TextField props={{ ...field }} label={label} />
                             );
                           }}
                         </FormItems>

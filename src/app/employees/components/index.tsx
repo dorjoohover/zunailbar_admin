@@ -416,7 +416,11 @@ export const EmployeePage = ({
                       }}
                     </FormItems>
 
-                    <FormItems control={form.control} name="role" label="Үүрэг">
+                    <FormItems
+                      control={form.control}
+                      name="role"
+                      label="Эрхийн түвшин"
+                    >
                       {(field) => {
                         return (
                           <ComboBox
@@ -430,7 +434,9 @@ export const EmployeePage = ({
                                 value: role.toString(),
                               };
                             })}
-                            props={{ ...field }}
+                            props={{
+                              ...field,
+                            }}
                           />
                         );
                       }}

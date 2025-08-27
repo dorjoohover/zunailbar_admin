@@ -206,7 +206,7 @@ export const ServicePage = ({
           modalAdd={
             <Modal
               // w="2xl"
-              maw="lg"
+              maw="xl"
               title="Үйлчилгээ жагсаалт форм"
               name={"Үйлчилгээ нэмэх"}
               submit={() => form.handleSubmit(onSubmit, onInvalid)()}

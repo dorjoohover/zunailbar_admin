@@ -7,10 +7,9 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-
 import { ColumnDef } from "@tanstack/react-table";
 import { IUser } from "@/models/user.model";
-import { ArrowUpDown, Hammer, Pencil, UserRoundCog } from "lucide-react";
+import { ArrowUpDown, Hammer, UserRoundCog } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { IBranch } from "@/models";
@@ -22,11 +21,6 @@ import {
   RoleValue,
   UserStatusValue,
 } from "@/lib/constants";
-import { AppAlertDialog } from "@/components/AlertDialog";
-import { useState } from "react";
-import { Input } from "@/components/ui/input";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { EmployeeProductModal } from "./employee.product";
 import Image from "next/image";
 import TooltipWrapper from "@/components/tooltipWrapper";
 import { TableActionButtons } from "@/components/tableActionButtons";
@@ -97,6 +91,12 @@ export const getColumns = (
     accessorKey: "color",
     header: "color",
     cell: ({ row }) => {
+      console.log(
+        "name",
+        row.getValue("firstname") as string,
+        "color:",
+        row.getValue("color") as string
+      );
       return (
         <div
           className={`h-5 w-10`}

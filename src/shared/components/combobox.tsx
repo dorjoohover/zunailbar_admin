@@ -67,7 +67,7 @@ export function ComboBox<T extends FieldValues>({
               {items.map((framework) => (
                 <CommandItem
                   key={framework.value}
-                  value={framework.color}
+                  value={framework.value}
                   onSelect={(currentValue) => {
                     const vl = currentValue === value ? "" : currentValue;
                     onChange(vl);

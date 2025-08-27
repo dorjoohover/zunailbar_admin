@@ -20,7 +20,12 @@ import {
 } from "@/lib/constants";
 import { Modal } from "@/shared/components/modal";
 import z from "zod";
-import { FormProvider, useFieldArray, useForm } from "react-hook-form";
+import {
+  FormProvider,
+  useFieldArray,
+  useForm,
+  useWatch,
+} from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Api } from "@/utils/api";
 import { create, deleteOne, search, updateOne } from "@/app/(api)";
@@ -82,6 +87,7 @@ export const ProductWarehousePage = ({
     resolver: zodResolver(formSchema),
     defaultValues,
   });
+
   const [productWarehouse, setProductWarehouse] =
     useState<ListType<IProductWarehouse> | null>(null);
 
@@ -89,6 +95,7 @@ export const ProductWarehousePage = ({
     () => new Map(warehouses.items.map((p) => [p.id, p])),
     [warehouses.items]
   );
+
   const productWarehouseFormatter = (data: ListType<IProductWarehouse>) => {
     const items: IProductWarehouse[] = data.items.map((item) => {
       const warehouse = warehouseMap.get(item.warehouse_id);
@@ -100,20 +107,24 @@ export const ProductWarehousePage = ({
 
     setProductWarehouse({ items, count: data.count });
   };
+
   const [products, setProducts] = useState<SearchType<number>[]>([]);
   useEffect(() => {
     productWarehouseFormatter(data);
   }, [data]);
+
   const deleteLog = async (index: number) => {
     const id = productWarehouse!.items[index].id;
     const res = await deleteOne(Api.product_log, id);
     refresh();
     return res.success;
   };
+
   const edit = async (e: IProductWarehouse) => {
     setOpen(true);
     form.reset({ ...e, edit: e.id });
   };
+
   const columns = getColumns(edit, deleteLog);
 
   const refresh = async (pg: PG = DEFAULT_PG) => {
@@ -129,6 +140,7 @@ export const ProductWarehousePage = ({
     });
     setAction(ACTION.DEFAULT);
   };
+
   const onSubmit = async <T,>(e: T) => {
     setAction(ACTION.RUNNING);
     const body = e as ProductWarehouseType;
@@ -152,6 +164,7 @@ export const ProductWarehousePage = ({
     }
     setAction(ACTION.DEFAULT);
   };
+
   const onInvalid = async <T,>(e: T) => {
     console.log("error", e);
   };
@@ -160,13 +173,16 @@ export const ProductWarehousePage = ({
     const result = await search<number>(Api.product, { id: name });
     setProducts(result.data);
   };
+
   useEffect(() => {
     searchProduct();
   }, []);
+
   const { fields, append, replace } = useFieldArray({
     control: form.control,
     name: "products",
   });
+
   const handleProductClickOnce = (productId: string, quantity: number) => {
     const existing = form.getValues("products");
 
@@ -179,6 +195,7 @@ export const ProductWarehousePage = ({
       });
     }
   };
+
   const handleProductQuantityChange = (
     productId: string,
     change: number,
@@ -204,7 +221,7 @@ export const ProductWarehousePage = ({
 
       form.setValue("products", updated);
     } else {
-      if (change > 0 && qty > 0) {
+      if (change > 0 && qty > change) {
         append({
           product_id: productId,
           quantity: change,
@@ -384,7 +401,7 @@ export const ProductWarehousePage = ({
                     </FormItems>
                     <div className="bg-white border p-3 rounded-xl space-y-2">
                       <div className="grid grid-cols-20 items-center justify-between w-full py-2 font-bold px-4 text-sm">
-                        <span className="col-span-1">Дугаар</span>
+                        <span className="col-span-1">№</span>
                         <span className="col-span-4">Бренд</span>
                         <span className="col-span-4">Төрөл</span>
                         <span className="col-span-5">Бараа</span>
@@ -440,7 +457,7 @@ export const ProductWarehousePage = ({
                                         .watch("products")
                                         ?.find(
                                           (p) => p.product_id === product.id
-                                        )?.quantity as number) ?? ""
+                                        )?.quantity as number) ?? 0
                                     }
                                     onClick={() =>
                                       handleProductClickOnce(

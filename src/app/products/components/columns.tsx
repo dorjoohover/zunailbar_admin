@@ -1,12 +1,9 @@
 import { ColumnDef } from "@tanstack/react-table";
 import { IProduct } from "@/models/product.model";
-import { ArrowUpDown, Pencil, Trash2 } from "lucide-react";
+import { ArrowUpDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { AppAlertDialog } from "@/components/AlertDialog";
-import { toast } from "sonner";
-import { checkEmpty, parseDate } from "@/lib/functions";
-import TooltipWrapper from "@/components/tooltipWrapper";
+import { checkEmpty } from "@/lib/functions";
 import { TableActionButtons } from "@/components/tableActionButtons";
 
 export function getColumns(
@@ -23,13 +20,15 @@ export function getColumns(
           aria-label="Select all"
         />
       ),
-      cell: ({ row }) => (
-        <Checkbox
-          checked={row.getIsSelected()}
-          onCheckedChange={(value) => row.toggleSelected(!!value)}
-          aria-label="Select row"
-        />
-      ),
+      cell: ({ row }) => {
+        return (
+          <Checkbox
+            checked={row.getIsSelected()}
+            onCheckedChange={(value) => row.toggleSelected(!!value)}
+            aria-label="Select row"
+          />
+        );
+      },
       enableSorting: false,
       enableHiding: false,
     },

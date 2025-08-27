@@ -265,7 +265,7 @@ export const ProductTransactionPage = ({
           modalAdd={
             <Modal
               // w="2xl"
-              maw="lg"
+              maw="xl"
               title="Барааны хэрэглээ"
               name={"Бараа нэмэх" + transactions?.count}
               submit={() => form.handleSubmit(onSubmit, onInvalid)()}
@@ -279,7 +279,11 @@ export const ProductTransactionPage = ({
             >
               <FormProvider {...form}>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                  <FormItems label="Салбар" control={form.control} name="branch_id">
+                  <FormItems
+                    label="Салбар"
+                    control={form.control}
+                    name="branch_id"
+                  >
                     {(field) => {
                       return (
                         <ComboBox

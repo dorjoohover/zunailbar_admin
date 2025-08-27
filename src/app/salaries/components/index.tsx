@@ -155,6 +155,7 @@ export const SalaryPage = ({
           loading={action == ACTION.RUNNING}
           modalAdd={
             <Modal
+              maw="xl"
               title="Salary форм"
               name={"Нэмэх"}
               submit={() => form.handleSubmit(onSubmit, onInvalid)()}

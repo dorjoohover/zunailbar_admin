@@ -123,6 +123,7 @@ export const CategoryPage = ({ data }: { data: ListType<Category> }) => {
           loading={action == ACTION.RUNNING}
           modalAdd={
             <Modal
+              maw="xl"
               title="Category форм"
               name={"Нэмэх"}
               submit={() => form.handleSubmit(onSubmit, onInvalid)()}
@@ -137,7 +138,11 @@ export const CategoryPage = ({ data }: { data: ListType<Category> }) => {
               <FormProvider {...form}>
                 <div className="divide-y">
                   <div className="double-col">
-                    <FormItems control={form.control} name={"name"} className={"col-span-1"}>
+                    <FormItems
+                      control={form.control}
+                      name={"name"}
+                      className={"col-span-1"}
+                    >
                       {(field) => {
                         return (
                           <TextField
