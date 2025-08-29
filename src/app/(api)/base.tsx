@@ -1,21 +1,28 @@
-'use client'
-export async function imageUploader(form: FormData) {
-  // 1) upload ticket авах (backend URL + headers)
-  const ticketRes = await fetch("/api/cookie");
-  if (!ticketRes.ok) throw new Error("ticket авахад алдаа");
+"use server";
+import { Api, API } from "@/utils/api";
+import { cookies } from "next/headers";
 
-  const { uploadUrl, headers } = await ticketRes.json() as {
-    uploadUrl: string;
-    headers: Record<string, string>;
-  };
-
-  // 2) formdata-гаа шууд backend руу илгээнэ
-  const res = await fetch(uploadUrl, {
-    method: "POST",
-    headers,      // зөвхөн auth header-ууд
-    body: form,   // FormData → multipart/form-data автоматаар болно
-  });
-
-  if (!res.ok) throw new Error(`Upload failed: ${res.status}`);
-  return res.json();
+export async function imageUploader(images: FormData) {
+  try {
+    const store = await cookies();
+    const token = store.get("token")?.value;
+    console.log(token)
+    const merchant = store.get("merchant_id")?.value;
+    console.log(images.get("files"));
+    let res = await fetch(`${API[Api.upload]}`, {
+      method: "POST",
+      headers: {
+        cache: "no-store",
+        Authorization: `Bearer ${token ?? ""}`,
+        "merchant-id": merchant ?? "",
+      },
+      body: images,
+    }).then((d) => d.json());
+    images.delete("files");
+    console.log(res);
+    return res.payload.files;
+  } catch (error) {
+    console.log(error);
+    return false;
+  }
 }

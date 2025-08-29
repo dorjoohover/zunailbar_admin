@@ -5,6 +5,11 @@ const nextConfig: NextConfig = {
     ignoreDuringBuilds: true,
   },
   // reactStrictMode: false,
+  experimental: {
+    serverActions: {
+      bodySizeLimit: "20mb",
+    },
+  },
 };
 
 export default nextConfig;
