@@ -1,9 +1,10 @@
-"use client";;
+"use client";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { ROLE } from "@/lib/enum";
 import { API } from "@/utils/api";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import Loading from "./loading";
 
 export default function Template({
   children,
