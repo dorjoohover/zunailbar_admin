@@ -1,3 +1,4 @@
+'use client'
 export async function imageUploader(form: FormData) {
   // 1) upload ticket авах (backend URL + headers)
   const ticketRes = await fetch("/api/cookie");
