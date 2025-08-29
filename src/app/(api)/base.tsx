@@ -1,4 +1,4 @@
-"use server";
+"use client";
 import { Api, API } from "@/utils/api";
 import { cookies } from "next/headers";
 
