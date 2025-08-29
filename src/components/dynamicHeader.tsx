@@ -1,41 +1,40 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { items } from "./app-sidebar";
+import { sidebar_items } from "./app-sidebar";
 import ContainerHeader from "./containerHeader";
 
 interface DynamicHeaderProps {
   count?: number;
   titleOverride?: string;
-  groupOverride?: string;
 }
 
-export default function DynamicHeader({ count, titleOverride, groupOverride }: DynamicHeaderProps) {
+export default function DynamicHeader({ count, titleOverride }: DynamicHeaderProps) {
   const pathname = usePathname();
 
-  const findGroupAndTitle = () => {
-    for (const item of items) {
-      if (item.url && item.url === pathname) {
-        return { group: item.title, title: "" };
-      }
-      if (item.children) {
-        for (const child of item.children) {
-          if (child.url === pathname) {
-            return { group: item.title, title: child.title };
+  const findTriggerAndTitle = () => {
+    for (const group of sidebar_items) {
+      for (const item of group.item) {
+        // Top-level item тохирвол (child байхгүй)
+        if (item.url && item.url === pathname) {
+          return { trigger: item.triggerLabel, title: "" };
+        }
+
+        // Children дотор хайх
+        if (item.children) {
+          for (const child of item.children) {
+            if (child.url === pathname) {
+              return { trigger: item.triggerLabel, title: child.title };
+            }
           }
         }
       }
     }
-    return { group: "", title: "" };
+    return { trigger: "", title: "" };
   };
 
-  const { group, title } = findGroupAndTitle();
+  const { trigger, title } = findTriggerAndTitle();
+  const titlePath = titleOverride ?? title;
 
-  return (
-    <ContainerHeader
-      group={groupOverride ?? group}
-      title={titleOverride ?? title}
-      count={count}
-    />
-  );
+  return <ContainerHeader trigger={trigger} title={titlePath} count={count} />;
 }

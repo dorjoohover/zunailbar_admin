@@ -91,7 +91,6 @@ export const ProductWarehousePage = ({ data }: { data: ListType<Warehouse> }) =>
           loading={action == ACTION.RUNNING}
           modalAdd={
             <Modal
-              title="Warehouse форм"
               name={"Нэмэх"}
               submit={() => form.handleSubmit(onSubmit, onInvalid)()}
               open={open == true}
@@ -104,10 +103,10 @@ export const ProductWarehousePage = ({ data }: { data: ListType<Warehouse> }) =>
             >
               <FormProvider {...form}>
                 <div className="divide-y">
-                  <div className="double-col">
-                    <FormItems control={form.control} name={"name"} className={"col-span-1"}>
+                  <div className="">
+                    <FormItems label={"Агуулахын нэр"} control={form.control} name={"name"} className={"col-span-1"}>
                       {(field) => {
-                        return <TextField props={{ ...field }} label={"Warehouse name"} />;
+                        return <TextField props={{ ...field }}  />;
                       }}
                     </FormItems>
                   </div>

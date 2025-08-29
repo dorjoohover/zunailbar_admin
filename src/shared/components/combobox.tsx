@@ -34,11 +34,13 @@ export function ComboBox<T extends FieldValues>({
   items,
   search,
   name = "Choose",
+  className,
   props,
 }: {
   items: InputType[];
   name?: string;
   search?: string;
+  className?: string;
   props: ControllerRenderProps<T>;
 }) {
   const [open, setOpen] = React.useState(false);
@@ -50,7 +52,7 @@ export function ComboBox<T extends FieldValues>({
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className="min-w-64 lg:min-h-10 justify-between bg-white text-xs lg:text-sm"
+          className={cn(className, "min-w-64 lg:min-h-10 justify-between bg-white text-xs w-full lg:text-sm")}
         >
           {value
             ? items.find((framework) => framework.value == value)?.label

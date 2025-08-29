@@ -93,7 +93,7 @@ export const CostPage = ({ data, categories }: { data: ListType<Product>; catego
           loading={action == ACTION.RUNNING}
           modalAdd={
             <Modal
-              title="Хэрэглээний зардал нэмэх форм"
+              name="Нэмэх"
               submit={() => form.handleSubmit(onSubmit, onInvalid)()}
               open={open == true}
               reset={() => {
@@ -104,7 +104,7 @@ export const CostPage = ({ data, categories }: { data: ListType<Product>; catego
               loading={action == ACTION.RUNNING}
             >
               <FormProvider {...form}>
-                <div className="divide-y">
+                <div className="divide-y space-y-4">
                   <div className="double-col pb-5">
                     <FormItems control={form.control} name="category_id" label="Төрөл">
                       {(field) => {
@@ -118,12 +118,13 @@ export const CostPage = ({ data, categories }: { data: ListType<Product>; catego
                                 label: item.name,
                               };
                             })}
+                            className="max-w-96! w-full"
                           />
                         );
                       }}
                     </FormItems>
                   </div>
-                  <div className="double-col pt-5">
+                  <div className="space-y-4">
                     {[
                       {
                         key: "name",
@@ -142,9 +143,9 @@ export const CostPage = ({ data, categories }: { data: ListType<Product>; catego
                       const name = item.key as keyof ProductType;
                       const label = item.label as keyof ProductType;
                       return (
-                        <FormItems control={form.control} name={name} key={i} className={item.key && "name"}>
+                        <FormItems label={label} control={form.control} name={name} key={i} className={item.key && "name"}>
                           {(field) => {
-                            return <TextField props={{ ...field }} label={label} />;
+                            return <TextField props={{ ...field }}  />;
                           }}
                         </FormItems>
                       );

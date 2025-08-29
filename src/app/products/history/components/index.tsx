@@ -301,8 +301,7 @@ export const ProductHistoryPage = ({
             <Modal
               // w="2xl"
               maw="xl"
-              title="Барааны худалдаж авсан түүх форм"
-              name={"Нэмэх"}
+              name="Барааны түүх нэмэх"
               submit={() => form.handleSubmit(onSubmit, onInvalid)()}
               open={open == true}
               reset={() => {

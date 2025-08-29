@@ -169,7 +169,7 @@ export const DiscountPage = ({
           modalAdd={
             <Modal
               maw="xl"
-              title="Үйлчилгээний урамшуулал форм"
+              name="Урамшуулал нэмэх"
               submit={() => form.handleSubmit(onSubmit, onInvalid)()}
               open={open == true}
               reset={() => {

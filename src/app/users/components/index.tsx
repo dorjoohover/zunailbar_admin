@@ -197,7 +197,6 @@ export const UserPage = ({ data }: { data: ListType<User> }) => {
           loading={action == ACTION.RUNNING}
           modalAdd={
             <Modal
-              title="Хэрэглэгч нэмэх форм"
               w="2xl"
               name={"Хэрэглэгч нэмэх"}
               submit={() => form.handleSubmit(onSubmit, onInvalid)()}

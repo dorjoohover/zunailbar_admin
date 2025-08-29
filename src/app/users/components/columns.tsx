@@ -55,7 +55,7 @@ export function getColumns(
       accessorKey: "nickname",
       header: ({ column }) => (
         <Button
-          variant="ghost"
+          variant="table_header"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           className="font-bold"
         >
@@ -71,7 +71,7 @@ export function getColumns(
       accessorKey: "mobile",
       header: ({ column }) => (
         <Button
-          variant="ghost"
+          variant="table_header"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           className="font-bold"
         >
@@ -88,7 +88,7 @@ export function getColumns(
       accessorKey: "created_at",
       header: ({ column }) => (
         <Button
-          variant="ghost"
+          variant="table_header"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           className="font-bold"
         >

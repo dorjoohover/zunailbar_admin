@@ -266,8 +266,7 @@ export const ProductTransactionPage = ({
             <Modal
               // w="2xl"
               maw="xl"
-              title="Барааны хэрэглээ"
-              name={"Бараа нэмэх" + transactions?.count}
+              name="Хэрэглээ нэмэх"
               submit={() => form.handleSubmit(onSubmit, onInvalid)()}
               open={open == true}
               reset={() => {
@@ -381,6 +380,7 @@ export const ProductTransactionPage = ({
                         control={form.control}
                         name={name}
                         key={i}
+                        label={label}
                         className={item.key === "name" ? "col-span-2" : ""}
                       >
                         {(field) => {
@@ -388,7 +388,6 @@ export const ProductTransactionPage = ({
                             <TextField
                               props={{ ...field }}
                               type={item.type}
-                              label={label}
                             />
                           );
                         }}

@@ -23,7 +23,7 @@ export function getColumns(onEdit: (product: IVoucher) => void, remove: (index: 
     {
       accessorKey: "branch_name",
       header: ({ column }) => (
-        <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")} className="font-bold">
+        <Button variant="table_header" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")} className="font-bold">
           Branch <ArrowUpDown className="w-4 h-4 ml-2" />
         </Button>
       ),
@@ -31,7 +31,7 @@ export function getColumns(onEdit: (product: IVoucher) => void, remove: (index: 
     {
       accessorKey: "name",
       header: ({ column }) => (
-        <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")} className="font-bold">
+        <Button variant="table_header" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")} className="font-bold">
           Name <ArrowUpDown className="w-4 h-4 ml-2" />
         </Button>
       ),
@@ -40,7 +40,7 @@ export function getColumns(onEdit: (product: IVoucher) => void, remove: (index: 
     {
       accessorKey: "duration",
       header: ({ column }) => (
-        <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")} className="font-bold">
+        <Button variant="table_header" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")} className="font-bold">
           Duration <ArrowUpDown className="w-4 h-4 ml-2" />
         </Button>
       ),
@@ -49,7 +49,7 @@ export function getColumns(onEdit: (product: IVoucher) => void, remove: (index: 
     {
       accessorKey: "min_price",
       header: ({ column }) => (
-        <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")} className="font-bold">
+        <Button variant="table_header" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")} className="font-bold">
           Price <ArrowUpDown className="w-4 h-4 ml-2" />
         </Button>
       ),
@@ -58,7 +58,7 @@ export function getColumns(onEdit: (product: IVoucher) => void, remove: (index: 
     {
       accessorKey: "max_price",
       header: ({ column }) => (
-        <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")} className="font-bold">
+        <Button variant="table_header" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")} className="font-bold">
           Max Price <ArrowUpDown className="w-4 h-4 ml-2" />
         </Button>
       ),
@@ -67,7 +67,7 @@ export function getColumns(onEdit: (product: IVoucher) => void, remove: (index: 
     {
       accessorKey: "created_at",
       header: ({ column }) => (
-        <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")} className="font-bold">
+        <Button variant="table_header" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")} className="font-bold">
           Created <ArrowUpDown className="w-4 h-4 ml-2" />
         </Button>
       ),

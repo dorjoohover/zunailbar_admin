@@ -99,7 +99,7 @@ export const getColumns = (
       );
       return (
         <div
-          className={`h-5 w-10`}
+          className={`size-8 rounded`}
           style={{
             backgroundColor: `${
               COLORS[+((row.getValue("color") as string) ?? -1)]

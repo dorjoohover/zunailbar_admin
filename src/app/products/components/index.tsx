@@ -191,8 +191,7 @@ export const ProductPage = ({
             <Modal
               // w="md"
               maw="xl"
-              name="Бараа нэмэх"
-              title="Бараа нэмэх форм"
+              name="Бүтээгдэхүүн нэмэх"
               submit={() => form.handleSubmit(onSubmit, onInvalid)()}
               open={open == true}
               reset={() => {

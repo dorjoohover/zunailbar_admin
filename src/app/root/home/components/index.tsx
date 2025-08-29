@@ -46,15 +46,13 @@ export const HomePage = ({ data }: { data: ListType<Home> }) => {
     index: idx1, // 1-based хадгалъя
   });
   const normalizeHomes = (items: Home[] | undefined) => {
-    const base: HomeType[] = Array.from({ length: 12 }, (_, i) =>
-      makeEmptyHome(i + 1)
-    );
+    const base: HomeType[] = Array.from({ length: 12 }, (_, i) => makeEmptyHome(i + 1));
 
     if (!items?.length) return base;
 
     for (const it of items) {
       const pos = (it.index ?? 1) - 1; // 1-based → 0-based
-      if (pos < 0 ) continue;
+      if (pos < 0) continue;
 
       base[pos] = {
         ...base[pos],
@@ -137,12 +135,7 @@ export const HomePage = ({ data }: { data: ListType<Home> }) => {
           // Засварын үед аль item-ыг явуулах нь бизнесийн дүрмээс хамаарна
           // Жишээ нь index==1-ийг илгээе, олдохгүй бол эхнийх
           const target = payload.find((p) => p.index === 1) ?? payload[0];
-          res = await updateOne<IHome>(
-            Api.home,
-            data.edit as string,
-            target,
-            "home"
-          );
+          res = await updateOne<IHome>(Api.home, data.edit as string, target, "home");
         } else {
           res = await create<IHomes>(Api.home, { items: payload }, "home");
         }
@@ -175,20 +168,19 @@ export const HomePage = ({ data }: { data: ListType<Home> }) => {
     form.setValue("homes", next, { shouldDirty: true });
   };
 
-  const handleFileChange =
-    (idx: number) => (e: React.ChangeEvent<HTMLInputElement>) => {
-      const file = e.target.files?.[0];
-      if (!file) return;
+  const handleFileChange = (idx: number) => (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
 
-      ensureHomeAt(idx);
-      const next = (form.getValues("homes") ?? []).slice();
-      next[idx] = { ...(next[idx] ?? {}), file, index: idx };
+    ensureHomeAt(idx);
+    const next = (form.getValues("homes") ?? []).slice();
+    next[idx] = { ...(next[idx] ?? {}), file, index: idx };
 
-      form.setValue("homes", next, {
-        shouldDirty: true,
-        shouldValidate: true,
-      });
-    };
+    form.setValue("homes", next, {
+      shouldDirty: true,
+      shouldValidate: true,
+    });
+  };
   const handleRemove = (idx: number) => () => {
     ensureHomeAt(idx);
     const next = (form.getValues("homes") ?? []).slice();
@@ -200,16 +192,11 @@ export const HomePage = ({ data }: { data: ListType<Home> }) => {
       <DynamicHeader />
       <div className="admin-container">
         <FormProvider {...form}>
-          <div className="divide-y grid grid-cols-12 gap-4">
+          <div className="grid grid-cols-12 gap-2">
             {numberArray(30).map((index) => {
               return (
-                <div key={index} className="col-span-3 gap-3 pt-5">
-                  <FormItems
-                    control={form.control}
-                    name="homes"
-                    message={false}
-                    label={`Дугаар ${index}`}
-                  >
+                <div key={index} className="col-span-3 gap-3 p-2 border-b">
+                  <FormItems control={form.control} name="homes" message={false} label={`Зураг ${index}`}>
                     {(field) => {
                       const values = (field.value ?? []) as HomeType[];
                       const value = values[index];
@@ -218,14 +205,9 @@ export const HomePage = ({ data }: { data: ListType<Home> }) => {
                       const inputId = `file-upload-${index}`;
 
                       // Preview URL: File -> objectURL, else string URL
-                      const objectUrl =
-                        typeof window !== "undefined" && value?.file
-                          ? URL.createObjectURL(value.file)
-                          : null;
+                      const objectUrl = typeof window !== "undefined" && value?.file ? URL.createObjectURL(value.file) : null;
 
-                      const fileUrl =
-                        objectUrl ??
-                        (typeof value?.image === "string" ? value.image : null);
+                      const fileUrl = objectUrl ?? (typeof value?.image === "string" ? value.image : null);
 
                       // cleanup objectURL
                       useEffect(() => {
@@ -236,24 +218,16 @@ export const HomePage = ({ data }: { data: ListType<Home> }) => {
 
                       return (
                         <div className="flex gap-4">
-                          <div className="relative w-32 h-32 flex-1 ">
+                          <div className="relative h-36 aspect-[5/7]">
                             {fileUrl ? (
                               <>
                                 {/* Preview */}
-                                <img
-                                  src={
-                                    value?.image && !value.file
-                                      ? `/api/file/${fileUrl}`
-                                      : fileUrl
-                                  }
-                                  alt="preview"
-                                  className="w-full h-full object-cover rounded-md border bg-white overflow-hidden"
-                                />
+                                <img src={value?.image && !value.file ? `/api/file/${fileUrl}` : fileUrl} alt="preview" className="size-full object-cover rounded bg-white overflow-hidden" />
 
                                 {/* Change */}
                                 <label
                                   htmlFor={inputId} // ✅ зөв input руу заана
-                                  className="absolute top-1 right-7 bg-primary p-1 rounded shadow cursor-pointer hover:bg-slate-600"
+                                  className="absolute top-1 right-7 bg-primary p-1 rounded cursor-pointer hover:bg-slate-600"
                                 >
                                   <Pencil className="size-3 text-white" />
                                 </label>
@@ -262,20 +236,15 @@ export const HomePage = ({ data }: { data: ListType<Home> }) => {
                                 <button
                                   type="button"
                                   onClick={handleRemove(index)} // ✅ index “түгжсэн”
-                                  className="absolute top-1 right-1 bg-primary p-1 rounded shadow cursor-pointer hover:bg-slate-600"
+                                  className="absolute top-1 right-1 bg-primary p-1 rounded cursor-pointer hover:bg-slate-600"
                                 >
                                   <X className="size-3 text-white" />
                                 </button>
                               </>
                             ) : (
-                              <label
-                                htmlFor={inputId}
-                                className="flex flex-col items-center justify-center w-full h-full bg-white border rounded-md shadow-sm cursor-pointer hover:bg-gray-50 transition-colors"
-                              >
+                              <label htmlFor={inputId} className="flex flex-col items-center justify-center w-full h-full bg-white border rounded-md cursor-pointer hover:bg-gray-50 transition-colors">
                                 <UploadCloud className="w-6 h-6 text-gray-500" />
-                                <span className="mt-1 text-xs text-gray-500">
-                                  Browse
-                                </span>
+                                <span className="mt-1 text-xs text-gray-500">Browse</span>
                               </label>
                             )}
 
@@ -304,34 +273,30 @@ export const HomePage = ({ data }: { data: ListType<Home> }) => {
                                   });
                                 } else {
                                   // хоорондын index-үүдийг бөглөөд тухайн index дээр оруулна
-                                  for (let i = fields.length; i < index; i++)
-                                    insert(i, { index: i } as any);
+                                  for (let i = fields.length; i < index; i++) insert(i, { index: i } as any);
                                   insert(index, { file, index } as any);
                                 }
                               }}
                             />
                           </div>
 
-                          <div className="flex-1">
-                            {" "}
+                          <div className="flex-1 w-full space-y-4">
                             {HOME_FIELDS.map(({ key, label }) => {
                               // ✅ watch/setValue/trigger-д зориулсан зөв төрөл
-                              const path =
-                                `homes.${index}.${key}` as Path<RootType>;
+                              const path = `homes.${index}.${key}` as Path<RootType>;
                               const v = (form.watch(path) ?? "") as string;
                               return (
                                 <TextField
                                   key={`${index}-${key}`}
                                   label={label}
+                                  pl={label + "..."}
+                                  className="pr-0 h-9 text-sm! placeholder:text-gray-400"
                                   props={{
                                     name: path, // path = `homes.${index}.${key}` as Path<RootType>
                                     value: v, // const v = form.watch(path) ?? ''
                                     onChange: (evOrValue) => {
                                       // TextField чинь string эсвэл event өгч болно гэж үзээд хамгаална
-                                      const nextVal =
-                                        typeof evOrValue === "string"
-                                          ? evOrValue
-                                          : evOrValue?.target?.value ?? "";
+                                      const nextVal = typeof evOrValue === "string" ? evOrValue : evOrValue?.target?.value ?? "";
 
                                       ensureHomeAt(index); // ← байхгүй бол мөрийг үүсгэнэ
                                       form.setValue(path, nextVal, {
@@ -375,9 +340,9 @@ export const HomePage = ({ data }: { data: ListType<Home> }) => {
               );
             })}
           </div>
-          <Button onClick={() => form.handleSubmit(onSubmit, onInvalid)()}>
-            Submit
-          </Button>
+          <div className="fixed bottom-4 right-4">
+            <Button onClick={() => form.handleSubmit(onSubmit, onInvalid)()}>Хадгалах</Button>
+          </div>
         </FormProvider>
       </div>
     </div>

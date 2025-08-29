@@ -268,8 +268,7 @@ export const EmployeePage = ({
               submit={() => {
                 form.handleSubmit(onSubmit, onInvalid)();
               }}
-              name="Шинээр нэмэх"
-              title="Ажилтан форм"
+              name="Ажилтан нэмэх"
               submitTxt={editingUser ? "Засах" : "Нэмэх"}
               open={!open ? false : open}
               setOpen={(v) => {

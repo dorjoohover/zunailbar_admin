@@ -91,8 +91,7 @@ export const BrandPage = ({ data }: { data: ListType<Brand> }) => {
           loading={action == ACTION.RUNNING}
           modalAdd={
             <Modal
-              title="Brand форм"
-              name={"Нэмэх"}
+              name={"Бренд нэмэх"}
               submit={() => form.handleSubmit(onSubmit, onInvalid)()}
               open={open == true}
               reset={() => {
@@ -104,10 +103,10 @@ export const BrandPage = ({ data }: { data: ListType<Brand> }) => {
             >
               <FormProvider {...form}>
                 <div className="divide-y">
-                  <div className="double-col">
-                    <FormItems control={form.control} name={"name"} className={"col-span-1"}>
+                  <div className="">
+                    <FormItems label="Брендийн нэр" control={form.control} name={"name"} className={"col-span-1"}>
                       {(field) => {
-                        return <TextField props={{ ...field }} label={"Brand name"} />;
+                        return <TextField props={{ ...field }}/>;
                       }}
                     </FormItems>
                   </div>

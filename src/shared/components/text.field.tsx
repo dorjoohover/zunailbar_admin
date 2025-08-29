@@ -37,13 +37,13 @@ export const TextField = <T extends FieldValues>({
   if (type !== "money") {
     return (
       <div className="relative space-y-2">
-        {label && <Label htmlFor={id}>{label}</Label>}
+        {label && <Label htmlFor={id} className="truncate">{label}</Label>}
         <Input
           {...props}
           type={type}
           id={id}
           placeholder={pl}
-          className="pr-10 bg-white h-10 hide-number-arrows"
+          className={className}
         />
       </div>
     );

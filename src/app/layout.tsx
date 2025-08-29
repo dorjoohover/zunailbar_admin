@@ -42,7 +42,7 @@ export default async function RootLayout({
       <html lang="en">
         <body className={`${geistSans.variable} ${geistMono.variable} antialiased custom-bg`}>
           <AppSidebar />
-          <div className="relative size-full p-2 pl-0 min-h-screen">
+          <div className="relative size-full p-2 pl-0 min-h-screen overflow-x-auto">
             <Template token={token}>
               <ScrollArea className={cn("rounded-xl overflow-hidden size-full h-[calc(100vh-1rem)] fixed top-0 left-0 ml-1", "bg-[#f8f9fb]")}>
                 {/* <Navbar /> */}

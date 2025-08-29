@@ -156,8 +156,7 @@ export const SalaryPage = ({
           modalAdd={
             <Modal
               maw="xl"
-              title="Salary форм"
-              name={"Нэмэх"}
+              name={"Цалин нэмэх"}
               submit={() => form.handleSubmit(onSubmit, onInvalid)()}
               open={open == true}
               reset={() => {

@@ -124,7 +124,7 @@ export const VoucherPage = ({ data, services }: { data: ListType<Voucher>; servi
           loading={action == ACTION.RUNNING}
           modalAdd={
             <Modal
-              name={"Хөнгөлөлт" + vouchers?.count}
+              name={"Хөнгөлөлт нэмэх"}
               submit={() => form.handleSubmit(onSubmit, onInvalid)()}
               open={open == true}
               reset={() => {

@@ -40,7 +40,7 @@ export function getColumns(
       accessorKey: "product_name",
       header: ({ column }) => (
         <Button
-          variant="ghost"
+          variant="table_header"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           className="font-bold"
         >
@@ -71,7 +71,7 @@ export function getColumns(
       accessorKey: "date",
       header: ({ column }) => (
         <Button
-          variant="ghost"
+          variant="table_header"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           className="font-bold"
         >

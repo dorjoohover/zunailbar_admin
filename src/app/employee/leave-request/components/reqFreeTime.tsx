@@ -24,7 +24,7 @@ function RequestFreeTime() {
   };
 
   return (
-    <div className="flex flex-col h-full space-y-6">
+    <div className="flex flex-col space-y-6 justify-between">
       <div className="space-y-5 w-full h-full">
         <div className="flex overflow-hidden rounded-2xl ring ring-gray-200">
           <Button variant={tab === "day" ? "default" : "outline"} onClick={() => setTab("day")} className={cn(tab === "day" ? "default" : "bg-slate-100", "flex-1 rounded-none border-none")}>
@@ -58,7 +58,7 @@ function RequestFreeTime() {
           </div>
         )}
       </div>
-      <Textarea placeholder="Дэлгэрэнгүй хүсэлт бичих..." rows={9} className="h-full resize-none placeholder:text-gray-400"  />
+      <Textarea placeholder="Дэлгэрэнгүй хүсэлт бичих..." rows={5} className="h-full resize-none placeholder:text-gray-400"  />
       <Button className="w-full">Илгээх</Button>
     </div>
   );

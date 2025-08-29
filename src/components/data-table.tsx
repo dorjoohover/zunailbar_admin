@@ -222,9 +222,9 @@ export function DataTable<TData, TValue>({
         <span> {count} мөр</span>
       </h2> */}
 
-      <ScrollArea className="h-fit w-[calc(100vw-2rem)] lg:w-full rounded-md pb-2">
+      <ScrollArea className="h-fit w-[calc(100vw-2rem)] lg:w-full rounded-md pb-2 overflow-x-scroll">
         {/* Table */}
-        <div className="overflow-hidden rounded-md border border-slate-200">
+        <div className="overflow-hidden rounded-md">
           <Table>
             <TableHeader>
               {table.getHeaderGroups().map((headerGroup) => (

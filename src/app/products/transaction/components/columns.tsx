@@ -22,7 +22,7 @@ export function getColumns(onEdit: (product: IProductTransaction) => void, remov
     {
       accessorKey: "branch_name",
       header: ({ column }) => (
-        <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")} className="font-bold">
+        <Button variant="table_header" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")} className="font-bold">
           Branch <ArrowUpDown className="w-4 h-4 ml-2" />
         </Button>
       ),
@@ -38,7 +38,7 @@ export function getColumns(onEdit: (product: IProductTransaction) => void, remov
     {
       accessorKey: "quantity",
       header: ({ column }) => (
-        <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")} className="font-bold">
+        <Button variant="table_header" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")} className="font-bold">
           Quantity <ArrowUpDown className="w-4 h-4 ml-2" />
         </Button>
       ),
@@ -55,7 +55,7 @@ export function getColumns(onEdit: (product: IProductTransaction) => void, remov
     //   accessorKey: "price",
     //   header: ({ column }) => (
     //     <Button
-    //       variant="ghost"
+    //       variant="table_header"
     //       onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
     //       className="font-bold"
     //     >
@@ -67,7 +67,7 @@ export function getColumns(onEdit: (product: IProductTransaction) => void, remov
     {
       accessorKey: "created_at",
       header: ({ column }) => (
-        <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")} className="font-bold">
+        <Button variant="table_header" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")} className="font-bold">
           Created <ArrowUpDown className="w-4 h-4 ml-2" />
         </Button>
       ),
@@ -93,7 +93,7 @@ export function getColumns(onEdit: (product: IProductTransaction) => void, remov
 }
 // <div className="flex items-center gap-2">
 //   <Button
-//     variant="ghost"
+//     variant="table_header"
 //     size="icon"
 //     onClick={() => onEdit(row.original)}
 //   >
@@ -109,7 +109,7 @@ export function getColumns(onEdit: (product: IProductTransaction) => void, remov
 //       toast("Амжилттай устгалаа!" + res, {});
 //     }}
 //     trigger={
-//       <Button variant="ghost" size="icon">
+//       <Button variant="table_header" size="icon">
 //         <Trash2 className="w-4 h-4 text-red-500" />
 //       </Button>
 //     }

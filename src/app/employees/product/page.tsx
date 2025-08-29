@@ -14,14 +14,12 @@ export default async function EmployeesPage() {
   ]);
   return (
     <section>
-      <div className="admin-container">
         <EmployeeProductPage
           data={userProductRes.data}
           branches={branch.data}
           users={user.data}
           products={product.data}
         />
-      </div>
     </section>
   );
 }

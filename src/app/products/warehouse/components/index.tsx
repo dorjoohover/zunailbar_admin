@@ -340,8 +340,7 @@ export const ProductWarehousePage = ({
           loading={action == ACTION.RUNNING}
           modalAdd={
             <Modal
-              title="Барааны түүх форм"
-              name={"Нэмэх "}
+              name={"Бараа нэмэх"}
               submit={() => form.handleSubmit(onSubmit, onInvalid)()}
               open={open == true}
               reset={() => {

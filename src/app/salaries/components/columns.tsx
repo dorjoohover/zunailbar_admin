@@ -37,7 +37,7 @@ export function getColumns(
       accessorKey: "user_name",
       header: ({ column }) => (
         <Button
-          variant="ghost"
+          variant="table_header"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           className="font-bold"
         >

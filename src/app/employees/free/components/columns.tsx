@@ -40,7 +40,7 @@ export function getColumns(
       accessorKey: "branch_name",
       header: ({ column }) => (
         <Button
-          variant="ghost"
+          variant="table_header"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           className="font-bold"
         >
@@ -52,7 +52,7 @@ export function getColumns(
       accessorKey: "user_name",
       header: ({ column }) => (
         <Button
-          variant="ghost"
+          variant="table_header"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           className="font-bold"
         >
@@ -108,7 +108,7 @@ export function getColumns(
       accessorKey: "created_at",
       header: ({ column }) => (
         <Button
-          variant="ghost"
+          variant="table_header"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           className="font-bold"
         >
@@ -129,7 +129,7 @@ export function getColumns(
       accessorKey: "updated_at",
       header: ({ column }) => (
         <Button
-          variant="ghost"
+          variant="table_header"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           className="font-bold"
         >
@@ -161,7 +161,7 @@ export function getColumns(
 }
 // <div className="flex items-center gap-2">
 //   <TooltipWrapper tooltip="Засварлах">
-//     <Button variant="ghost" size="icon" onClick={() => onEdit(row.original)}>
+//     <Button variant="table_header" size="icon" onClick={() => onEdit(row.original)}>
 //       <Pencil className="w-4 h-4" />
 //     </Button>
 //   </TooltipWrapper>
@@ -176,7 +176,7 @@ export function getColumns(
 //     }}
 //     trigger={
 //       <TooltipWrapper tooltip="Устгах">
-//         <Button variant="ghost" size="icon">
+//         <Button variant="table_header" size="icon">
 //           <Trash2 className="w-4 h-4 text-red-500" />
 //         </Button>
 //       </TooltipWrapper>

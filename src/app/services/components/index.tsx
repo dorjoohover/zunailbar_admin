@@ -207,7 +207,6 @@ export const ServicePage = ({
             <Modal
               // w="2xl"
               maw="xl"
-              title="Үйлчилгээ жагсаалт форм"
               name={"Үйлчилгээ нэмэх"}
               submit={() => form.handleSubmit(onSubmit, onInvalid)()}
               open={open == true}

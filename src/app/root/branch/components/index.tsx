@@ -90,8 +90,7 @@ export const BranchPage = ({ data }: { data: ListType<Branch> }) => {
           loading={action == ACTION.RUNNING}
           modalAdd={
             <Modal
-              title="Branch форм"
-              name={"Нэмэх"}
+              name={"Салбар нэмэх"}
               submit={() => form.handleSubmit(onSubmit, onInvalid)()}
               open={open == true}
               reset={() => {
@@ -103,10 +102,10 @@ export const BranchPage = ({ data }: { data: ListType<Branch> }) => {
             >
               <FormProvider {...form}>
                 <div className="divide-y">
-                  <div className="double-col">
-                    <FormItems control={form.control} name={"name"} className={"col-span-1"}>
+                  <div className="">
+                    <FormItems label={"Салбарын нэр"} control={form.control} name={"name"} className={"col-span-1"}>
                       {(field) => {
-                        return <TextField props={{ ...field }} label={"Branch name"} />;
+                        return <TextField props={{ ...field }}  />;
                       }}
                     </FormItems>
                   </div>

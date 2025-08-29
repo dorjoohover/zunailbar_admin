@@ -1,16 +1,6 @@
 "use client";
 import { DataTable } from "@/components/data-table";
-import {
-  ACTION,
-  DEFAULT_PG,
-  getEnumValues,
-  getValuesUserProductStatus,
-  ListDefault,
-  ListType,
-  Option,
-  PG,
-  RoleValue,
-} from "@/lib/constants";
+import { ACTION, DEFAULT_PG, getEnumValues, getValuesUserProductStatus, ListDefault, ListType, Option, PG, RoleValue } from "@/lib/constants";
 import { useEffect, useMemo, useState } from "react";
 import { ROLE, UserProductStatus } from "@/lib/enum";
 import z from "zod";
@@ -24,11 +14,7 @@ import DynamicHeader from "@/components/dynamicHeader";
 import { create, updateOne } from "@/app/(api)";
 import { imageUploader } from "@/app/(api)/base";
 import { Input } from "@/components/ui/input";
-import {
-  firstLetterUpper,
-  objectCompact,
-  usernameFormatter,
-} from "@/lib/functions";
+import { firstLetterUpper, objectCompact, usernameFormatter } from "@/lib/functions";
 import { ComboBox } from "@/shared/components/combobox";
 import { DatePicker } from "@/shared/components/date.picker";
 import { FormItems } from "@/shared/components/form.field";
@@ -50,17 +36,7 @@ type FilterType = {
   product?: string;
   status?: number;
 };
-export const EmployeeProductPage = ({
-  data,
-  products,
-  branches,
-  users,
-}: {
-  data: ListType<UserProduct>;
-  branches: ListType<Branch>;
-  users: ListType<User>;
-  products: ListType<Product>;
-}) => {
+export const EmployeeProductPage = ({ data, products, branches, users }: { data: ListType<UserProduct>; branches: ListType<Branch>; users: ListType<User>; products: ListType<Product> }) => {
   const [action, setAction] = useState(ACTION.DEFAULT);
   const [open, setOpen] = useState<boolean | undefined>(false);
 
@@ -141,38 +117,37 @@ export const EmployeeProductPage = ({
       })
     );
   }, [filter]);
-  const groups: { key: keyof FilterType; label: string; items: Option[] }[] =
-    useMemo(
-      () => [
-        {
-          key: "branch",
-          label: "Салбар",
-          items: branches.items.map((b) => ({ value: b.id, label: b.name })),
-        },
-        {
-          key: "user",
-          label: "Артист",
-          items: users.items.map((b) => ({
-            value: b.id,
-            label: usernameFormatter(b),
-          })),
-        },
-        {
-          key: "product",
-          label: "Бүтээгдэхүүн",
-          items: products.items.map((b) => ({ value: b.id, label: b.name })),
-        },
-        {
-          key: "status",
-          label: "Статус",
-          items: getEnumValues(UserProductStatus).map((s) => ({
-            value: s,
-            label: getValuesUserProductStatus[s],
-          })),
-        },
-      ],
-      [branches.items]
-    );
+  const groups: { key: keyof FilterType; label: string; items: Option[] }[] = useMemo(
+    () => [
+      {
+        key: "branch",
+        label: "Салбар",
+        items: branches.items.map((b) => ({ value: b.id, label: b.name })),
+      },
+      {
+        key: "user",
+        label: "Артист",
+        items: users.items.map((b) => ({
+          value: b.id,
+          label: usernameFormatter(b),
+        })),
+      },
+      {
+        key: "product",
+        label: "Бүтээгдэхүүн",
+        items: products.items.map((b) => ({ value: b.id, label: b.name })),
+      },
+      {
+        key: "status",
+        label: "Статус",
+        items: getEnumValues(UserProductStatus).map((s) => ({
+          value: s,
+          label: getValuesUserProductStatus[s],
+        })),
+      },
+    ],
+    [branches.items]
+  );
 
   return (
     <div className="w-full relative">
@@ -187,25 +162,14 @@ export const EmployeeProductPage = ({
                 const { key } = item;
                 return (
                   <FilterPopover
+                    key={i}
                     content={item.items.map((it, index) => (
-                      <label
-                        key={index}
-                        className="flex items-center gap-2 cursor-pointer text-sm"
-                      >
-                        <Checkbox
-                          checked={filter?.[key] == it.value}
-                          onCheckedChange={() => changeFilter(key, it.value)}
-                        />
+                      <label key={index} className="flex items-center gap-2 cursor-pointer text-sm">
+                        <Checkbox checked={filter?.[key] == it.value} onCheckedChange={() => changeFilter(key, it.value)} />
                         <span>{it.label as string}</span>
                       </label>
                     ))}
-                    value={
-                      filter?.[key]
-                        ? item.items.filter(
-                            (item) => item.value == filter[key]
-                          )[0].label
-                        : undefined
-                    }
+                    value={filter?.[key] ? item.items.filter((item) => item.value == filter[key])[0].label : undefined}
                     label={item.label}
                   />
                 );

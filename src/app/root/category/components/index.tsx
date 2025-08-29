@@ -124,8 +124,7 @@ export const CategoryPage = ({ data }: { data: ListType<Category> }) => {
           modalAdd={
             <Modal
               maw="xl"
-              title="Category форм"
-              name={"Нэмэх"}
+              name={"Ангилал нэмэх"}
               submit={() => form.handleSubmit(onSubmit, onInvalid)()}
               open={open == true}
               reset={() => {

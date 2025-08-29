@@ -279,8 +279,7 @@ export const CostPage = ({
           modalAdd={
             <Modal
               maw="xl"
-              name="Бараа нэмэх"
-              title="Хэрэглээний зардал"
+              name="Зардал нэмэх"
               submit={() => form.handleSubmit(onSubmit, onInvalid)()}
               open={open == true}
               reset={() => {

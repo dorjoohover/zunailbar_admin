@@ -39,7 +39,7 @@ export function getColumns(
       accessorKey: "warehouse_name",
       header: ({ column }) => (
         <Button
-          variant="ghost"
+          variant="table_header"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           className="font-bold"
         >
@@ -51,7 +51,7 @@ export function getColumns(
       accessorKey: "product_name",
       header: ({ column }) => (
         <Button
-          variant="ghost"
+          variant="table_header"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           className="font-bold"
         >
@@ -64,7 +64,7 @@ export function getColumns(
       accessorKey: "quantity",
       header: ({ column }) => (
         <Button
-          variant="ghost"
+          variant="table_header"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           className="font-bold"
         >
@@ -85,7 +85,7 @@ export function getColumns(
       accessorKey: "created_at",
       header: ({ column }) => (
         <Button
-          variant="ghost"
+          variant="table_header"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           className="font-bold"
         >

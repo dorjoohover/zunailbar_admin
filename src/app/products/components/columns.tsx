@@ -6,28 +6,13 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { checkEmpty } from "@/lib/functions";
 import { TableActionButtons } from "@/components/tableActionButtons";
 
-export function getColumns(
-  onEdit: (product: IProduct) => void,
-  remove: (index: number) => Promise<boolean>
-): ColumnDef<IProduct>[] {
+export function getColumns(onEdit: (product: IProduct) => void, remove: (index: number) => Promise<boolean>): ColumnDef<IProduct>[] {
   return [
     {
       id: "select",
-      header: ({ table }) => (
-        <Checkbox
-          checked={table.getIsAllPageRowsSelected()}
-          onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-          aria-label="Select all"
-        />
-      ),
+      header: ({ table }) => <Checkbox checked={table.getIsAllPageRowsSelected()} onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)} aria-label="Select all" />,
       cell: ({ row }) => {
-        return (
-          <Checkbox
-            checked={row.getIsSelected()}
-            onCheckedChange={(value) => row.toggleSelected(!!value)}
-            aria-label="Select row"
-          />
-        );
+        return <Checkbox checked={row.getIsSelected()} onCheckedChange={(value) => row.toggleSelected(!!value)} aria-label="Select row" />;
       },
       enableSorting: false,
       enableHiding: false,
@@ -35,11 +20,7 @@ export function getColumns(
     {
       accessorKey: "name",
       header: ({ column }) => (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          className="font-bold"
-        >
+        <Button variant="table_header" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")} className="font-bold">
           Name <ArrowUpDown className="w-4 h-4 ml-2" />
         </Button>
       ),
@@ -62,11 +43,7 @@ export function getColumns(
     {
       accessorKey: "quantity",
       header: ({ column }) => (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          className="font-bold"
-        >
+        <Button variant="table_header" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")} className="font-bold">
           Quantity <ArrowUpDown className="w-4 h-4 ml-2" />
         </Button>
       ),
@@ -88,11 +65,7 @@ export function getColumns(
       header: "Actions",
       cell: ({ row }) => (
         // Bagasgasan
-        <TableActionButtons
-          rowData={row.original}
-          onEdit={(data) => onEdit(data)}
-          onRemove={(data) => remove(row.index)}
-        ></TableActionButtons>
+        <TableActionButtons rowData={row.original} onEdit={(data) => onEdit(data)} onRemove={(data) => remove(row.index)}></TableActionButtons>
       ),
     },
   ];

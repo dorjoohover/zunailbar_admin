@@ -221,7 +221,6 @@ export const EmployeeUserServicePage = ({
                 setOpen(false);
                 clear();
               }}
-              title="Нэмэх"
               setOpen={setOpen}
               loading={action == ACTION.RUNNING}
             >

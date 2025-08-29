@@ -127,8 +127,7 @@ export const PendingSchedulePage = ({ data, users }: { data: ListType<Schedule>;
           modalAdd={
             <Modal
               maw="md"
-              title="Чөлөө авах хүсэлт форм"
-              name={"Нэмэх"}
+              name={"Чөлөө нэмэх"}
               submit={() => form.handleSubmit(onSubmit, onInvalid)()}
               open={open == true}
               reset={() => {
