@@ -5,6 +5,9 @@ const nextConfig: NextConfig = {
     ignoreDuringBuilds: true,
   },
   // reactStrictMode: false,
+  images: {
+    domains: ["srv952218.hstgr.cloud", "localhost"],
+  },
   experimental: {
     serverActions: {
       bodySizeLimit: "20mb",
