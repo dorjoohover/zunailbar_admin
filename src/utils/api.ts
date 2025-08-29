@@ -71,4 +71,4 @@ export const API = {
 // export const baseUrl =
 //   process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
 process.env.NEXT_PUBLIC_BASE_URL ||
-"https://zuunailbar-admin-jzsw.vercel.app";
+"https://admin.srv952218.hstgr.cloud";
