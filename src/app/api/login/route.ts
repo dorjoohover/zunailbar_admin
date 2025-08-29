@@ -15,7 +15,7 @@ export async function POST(request: Request) {
     console.log("✅ Cookie set:", body);
 
     return NextResponse.redirect(
-      new URL("/", process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000")
+      new URL("/", process.env.NEXT_PUBLIC_BASE_URL || "https://admin.srv952218.hstgr.cloud")
     );
   } catch (error) {
     console.error("⛔ Route error:", error);
