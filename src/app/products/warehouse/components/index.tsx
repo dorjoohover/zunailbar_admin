@@ -28,7 +28,7 @@ import {
 } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Api } from "@/utils/api";
-import { create, deleteOne, search, updateOne } from "@/app/(api)";
+import { create, deleteOne, excel, search, updateOne } from "@/app/(api)";
 import { FormItems } from "@/shared/components/form.field";
 import { ComboBox } from "@/shared/components/combobox";
 import { TextField } from "@/shared/components/text.field";
@@ -38,13 +38,14 @@ import { DatePicker } from "@/shared/components/date.picker";
 import { Input } from "@/components/ui/input";
 
 import { Button } from "@/components/ui/button";
-import { checkEmpty, dateOnly, objectCompact } from "@/lib/functions";
+import { checkEmpty, dateOnly, mnDate, objectCompact } from "@/lib/functions";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import ContainerHeader from "@/components/containerHeader";
 import DynamicHeader from "@/components/dynamicHeader";
 import { FilterPopover } from "@/components/layout/popover";
 import { Checkbox } from "@radix-ui/react-checkbox";
 import { Calendar } from "@/components/ui/calendar";
+import { showToast } from "@/shared/components/showToast";
 const productItemSchema = z.object({
   quantity: z.preprocess(
     (val) => (typeof val === "string" ? parseFloat(val) : val),
@@ -156,7 +157,6 @@ export const ProductWarehousePage = ({
           Api.product_warehouse,
           e as IProductsWarehouse
         );
-    console.log(res);
     if (res.success) {
       refresh();
       setOpen(false);
@@ -264,12 +264,44 @@ export const ProductWarehousePage = ({
       [productData.items, warehouses.items]
     );
 
+  const downloadExcel = async (pg: PG = DEFAULT_PG) => {
+    setAction(ACTION.RUNNING);
+    const { page, limit, sort } = pg;
+    const res = await excel(Api.product_warehouse, {
+      page: page ?? DEFAULT_PG.page,
+      limit: limit ?? -1,
+      sort: sort ?? DEFAULT_PG.sort,
+      ...pg,
+    });
+    if (res.success && res.data) {
+      const blob = new Blob([res.data], { type: "application/xlsx" });
+      const url = window.URL.createObjectURL(blob);
+
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute(
+        "download",
+        `product_warehouse_${mnDate().toISOString().slice(0, 10)}.xlsx`
+      );
+      document.body.appendChild(link);
+      link.click();
+
+      link.parentNode?.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } else {
+      showToast("error", res.message);
+    }
+    console.log(res);
+    setAction(ACTION.DEFAULT);
+  };
+
   return (
     <div className="">
       <DynamicHeader count={productWarehouse?.count} />
 
       <div className="admin-container">
         <DataTable
+          excel={downloadExcel}
           clear={() => setFilter(undefined)}
           filter={
             <div className="inline-flex gap-3 w-full flex-wrap">

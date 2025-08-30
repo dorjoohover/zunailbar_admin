@@ -113,7 +113,7 @@ export function getColumns(onEdit: (product: IBooking) => void, remove: (index: 
               onConfirm={async () => {
                 const res = await remove(row.index);
                 console.log(res);
-                toast("Амжилттай устгалаа!" + res, {});
+                toast("Амжилттай устгалаа!" , {});
               }}
               trigger={
                 <Button variant="ghost" size="icon">

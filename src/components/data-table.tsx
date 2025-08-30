@@ -42,6 +42,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ScrollArea, ScrollBar } from "./ui/scroll-area";
+import { excel } from "@/app/(api)";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -62,6 +63,17 @@ interface DataTableProps<TData, TValue> {
   }) => void;
   modalAdd?: React.ReactNode;
   filter?: ReactNode;
+  excel?: <T>({
+    page,
+    limit,
+    sort,
+    filter,
+  }: {
+    page?: number;
+    limit?: number;
+    sort?: boolean;
+    filter?: T;
+  }) => void;
   clear?: () => void;
   search?: boolean;
 }
@@ -70,6 +82,7 @@ export function DataTable<TData, TValue>({
   columns,
   data,
   count = 0,
+  excel,
   limit = DEFAULT_LIMIT,
   refresh,
   loading = false,
@@ -151,7 +164,15 @@ export function DataTable<TData, TValue>({
     );
   };
   const [date, setDate] = React.useState<Date | undefined>(new Date());
-
+  const downloadExcel = () => {
+    if (excel) {
+      excel({
+        page: pagination.pageIndex,
+        limit: pagination.pageSize,
+        filter: globalFilter,
+      });
+    }
+  };
   return (
     <div className="space-y-4">
       {/* Table action */}
@@ -195,7 +216,11 @@ export function DataTable<TData, TValue>({
 
           <div className="flex items-center justify-end space-x-2">
             {/* Add modal button */}
-            <Button variant={"outline"}>Export</Button>
+            {excel && (
+              <Button variant={"outline"} onClick={downloadExcel}>
+                Export
+              </Button>
+            )}
             {modalAdd && <div> {modalAdd}</div>}
           </div>
         </div>

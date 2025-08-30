@@ -38,6 +38,7 @@ export default function SchedulerViewFilteration({
   CustomComponents,
   classNames,
   orders,
+  excel,
   refresh,
 }: {
   orders: ListType<Order>;
@@ -46,6 +47,17 @@ export default function SchedulerViewFilteration({
   CustomComponents?: CustomComponents;
   classNames?: ClassNames;
   refresh: <T>({
+    page,
+    limit,
+    sort,
+    filter,
+  }: {
+    page?: number;
+    limit?: number;
+    sort?: boolean;
+    filter?: T;
+  }) => void;
+  excel?: <T>({
     page,
     limit,
     sort,
@@ -140,7 +152,11 @@ export default function SchedulerViewFilteration({
       setActiveView(viewsSelector[0]);
     }
   }, []);
-
+  const downloadExcel = () => {
+    if (excel) {
+      excel({});
+    }
+  };
   return (
     <div className="flex w-full flex-col">
       <div className="flex w-full">
@@ -191,7 +207,11 @@ export default function SchedulerViewFilteration({
                   </TabsTrigger>
                 )}
               </TabsList> */}
-              <span></span>
+              {excel && (
+                <Button variant={"outline"} onClick={downloadExcel}>
+                  Export
+                </Button>
+              )}
               {/* Add Event Button */}
               {CustomComponents?.customButtons?.CustomAddEventButton ? (
                 <div onClick={() => handleAddEvent()}>

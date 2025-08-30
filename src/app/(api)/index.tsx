@@ -46,6 +46,45 @@ export const find = async <T,>(
     };
   }
 };
+export const excel = async <T,>(uri: keyof typeof API, p: Pagination = {}) => {
+  try {
+    const store = await cookies();
+    const token = store.get("token")?.value;
+    const branch = store.get("branch_id")?.value;
+    const merchant = store.get("merchant_id")?.value;
+
+    const merged: Pagination = {
+      ...defaultPagination,
+      ...p,
+    };
+    const url = paginationToQuery(uri, merged, "report");
+    const response = await fetch(url, {
+      cache: "no-store",
+      headers: {
+        Authorization: token ? `Bearer ${token}` : "",
+        "branch-id": branch || "",
+        "merchant-id": merchant || "",
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! Status: ${response.status}`);
+    }
+
+    const blob = await response.blob();
+
+    return {
+      data: blob,
+      token: true,
+      success: true,
+    };
+  } catch (error: any) {
+    return {
+      success: false,
+      message: error?.message || "Сервертэй холбогдоход алдаа гарлаа.",
+    };
+  }
+};
 export const findOne = async (
   uri: keyof typeof API,
   id: string,

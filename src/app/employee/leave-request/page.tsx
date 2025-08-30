@@ -5,27 +5,15 @@ import Calendar04 from "@/components/calendar-04";
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { columns, Payment } from "./components/column";
-import { DataTable } from "./components/data-table";
+// import { columns, Payment } from "./components/column";
+// import { DataTable } from "./components/data-table";
 import RequestFreeTime from "./components/reqFreeTime";
 
 
 
-async function getData(): Promise<Payment[]> {
-  // Fetch data from your API here.
-  return [
-    {
-      id: "728ed52f",
-      amount: 100,
-      status: "pending",
-      email: "m@example.com",
-    },
-    // ...
-  ]
-}
 
 export default  async function Page() {
-    const data = await getData()
+    // const data = await getData()
   return (
     <section className="h-[calc(100vh-1rem)] flex flex-col">
       <DynamicHeader />
@@ -37,7 +25,7 @@ export default  async function Page() {
             <ScrollArea className="h-full relative p-4">
             <div className="sticky top-0 left-0 bg-white w-full py-4"><h1>
               Чөлөө авсан өдөр</h1></div>
-               <DataTable columns={columns} data={data} />
+               {/* <DataTable columns={columns} data={data} /> */}
             </ScrollArea>
           </div>
         </div>
@@ -49,7 +37,7 @@ export default  async function Page() {
           <Dialog>
             <form>
               <DialogTrigger asChild>
-                <Button variant="default">Чөлөөний хүсэлт</Button>
+                {/* <Button variant="default">Чөлөөний хүсэлт</Button> */}
               </DialogTrigger>
               <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader>
