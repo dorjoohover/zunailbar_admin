@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import React, { ReactNode, useEffect, useRef, useState } from "react";
 import { DEFAULT_LIMIT } from "@/lib/constants";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
-import { ChevronDown, ChevronLeft, ChevronRight, Funnel, LoaderCircle, RotateCw, Search, SlidersHorizontal } from "lucide-react";
+import { ChevronDown, ChevronLeft, ChevronRight, CircleX, Funnel, LoaderCircle, RotateCcw, RotateCw, Search, SlidersHorizontal } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ScrollArea, ScrollBar } from "./ui/scroll-area";
 import { useSidebar } from "./ui/sidebar";
@@ -120,10 +120,9 @@ export function DataTable<TData, TValue>({ columns, data, count = 0, limit = DEF
 
   useEffect(() => {
     if (open) {
-      console.log("✅ Sidebar нээгдлээ!");
-      // 👉 энд API дуудна, event илгээнэ, эсвэл custom функц ажиллуулна
+      console.log("Sidebar open!");
     } else {
-      console.log("❌ Sidebar хаагдлаа!");
+      console.log("Sidebar close!");
     }
   }, [open]); // open өөрчлөгдөх бүрт ажиллана
 
@@ -147,91 +146,88 @@ export function DataTable<TData, TValue>({ columns, data, count = 0, limit = DEF
   return (
     <div className={cn("space-y-4 w-full transition-all duration-300", open ? "lg:w-[calc(100vw-20rem-3rem)] w-[calc(100vw-2rem)]" : "lg:w-[calc(100vw-8rem)] w-[calc(100vw-2rem)]")}>
       {/* Table action */}
-      <div className="w-full pb-4 space-y-4 border-b">
-        <div className="flex flex-wrap items-end justify-between gap-y-4">
-          <div className="flex flex-wrap items-end gap-2">
-            {/* Search input */}
-            {search && (
-              <div className="relative w-full space-y-2 min-w-40 max-w-40 xl:max-w-auto">
-                <h1 className="text-xs font-bold text-gray-500">Хайх</h1>
-                <div className="relative w-full">
-                  <Search className="size-5 absolute top-[50%] -translate-y-[50%] left-2 text-slate-600" strokeWidth={2.5} />
+      <div className="flex flex-wrap items-end gap-2">
+        {filter != undefined && <>{filter}
+        <Button variant="ghost" onClick={clear} className="text-xs text-red-500 hover:text-red-500  lg:h-10">
+          <RotateCcw className="size-3.5" />
+        </Button>
+        </>}
 
-                  <Input placeholder="Хайх..." value={globalFilter} onChange={(e) => setGlobalFilter(e.target.value)} className="w-full pl-10 text-sm! bg-white" />
-                </div>
-              </div>
-            )}
-            {filter != undefined && <>{filter}</>}{" "}
-            <Button variant="ghost" onClick={clear} className="text-xs text-red-500 bg-white border">
-              <RotateCw className="size-3.5" />
-            </Button>
-            {/* <Button variant={"outline"} onClick={() => setShowFilter(!showFilter)} className={cn(showFilter ? "bg-primary text-white border-primary" : "hover:bg-gray-100", "border cursor-pointer")}>
+        {/* <Button variant="ghost" onClick={clear} className="text-xs text-red-500  lg:min-h-10 hover:text-red-500">
+          Цэвэрлэх
+        </Button> */}
+        {/* <Button variant={"outline"} onClick={() => setShowFilter(!showFilter)} className={cn(showFilter ? "bg-primary text-white border-primary" : "hover:bg-gray-100", "border cursor-pointer")}>
               <SlidersHorizontal />
               Шүүлтүүр
               <ChevronDown className={cn(showFilter ? "-rotate-180" : "", "duration-150")} />
             </Button> */}
-            {/* Table filter trigger */}
-          </div>
+      </div>
 
+      <div className="bg-white rounded-xl border p-2 pt-0">
+        <div className="w-full flex justify-end gap-4 lg:gap-20 py-3">
+        {/* <div className="w-full flex justify-between gap-4 lg:gap-20 py-3"> */}
+          {search && (
+            <div className="relative w-full space-y-2">
+              <Search className="size-5 absolute top-[50%] -translate-y-[50%] left-2 text-slate-600" strokeWidth={2.5} />
+
+              <Input placeholder="Хайх..." value={globalFilter} onChange={(e) => setGlobalFilter(e.target.value)} className="w-full pl-10 text-sm! bg-white" />
+            </div>
+          )}
           <div className="flex items-center justify-end space-x-2">
             {/* Add modal button */}
             <Button variant={"outline"}>Export</Button>
             {modalAdd && <div> {modalAdd}</div>}
           </div>
         </div>
-      </div>
-      {/* <h2 className="my-2 space-x-2 font-bold">
-        Нийт:
-        <span> {count} мөр</span>
-      </h2> */}
 
-      <ScrollArea className={cn("h-fit w-full transition-all duration-300")}>
-        {/* Table */}
-        <ScrollAreaViewport ref={viewportRef}>
-          <div className="overflow-hidden border-slate-200">
-            <Table>
-              <TableHeader>
-                {table.getHeaderGroups().map((headerGroup) => (
-                  <TableRow key={headerGroup.id}>
-                    {headerGroup.headers.map((header) => (
-                      <TableHead key={header.id}>{header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}</TableHead>
-                    ))}
-                  </TableRow>
-                ))}
-              </TableHeader>
-              <TableBody>
-                {loading ? (
-                  <TableRow>
-                    <TableCell colSpan={columns.length} className="h-24 text-center">
-                      <div className="flex items-center justify-center gap-x-2">
-                        <LoaderCircle className="animate-spin text-slate-700 size-8" />
-                        Уншиж байна
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ) : table.getRowModel().rows.length ? (
-                  table.getRowModel().rows.map((row) => (
-                    <TableRow key={row.id} data-state={row.getIsSelected() && "selected"}>
-                      {row.getVisibleCells().map((cell) => (
-                        <TableCell key={cell.id} className={cn()}>
-                          {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                        </TableCell>
+        <ScrollArea className={cn("h-fit w-full transition-all duration-300")}>
+          {/* Table */}
+          <ScrollAreaViewport ref={viewportRef}>
+            <div className="overflow-hidden border-slate-200">
+              <Table>
+                <TableHeader>
+                  {table.getHeaderGroups().map((headerGroup) => (
+                    <TableRow key={headerGroup.id}>
+                      {headerGroup.headers.map((header) => (
+                        <TableHead key={header.id}>{header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}</TableHead>
                       ))}
                     </TableRow>
-                  ))
-                ) : (
-                  <TableRow>
-                    <TableCell colSpan={columns.length} className="h-24 text-center">
-                      Хоосон байна
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </div>
-        </ScrollAreaViewport>
-        <ScrollBar orientation="horizontal" className="" />
-      </ScrollArea>
+                  ))}
+                </TableHeader>
+                <TableBody>
+                  {loading ? (
+                    <TableRow>
+                      <TableCell colSpan={columns.length} className="h-24 text-center">
+                        <div className="flex items-center justify-center gap-x-2">
+                          <LoaderCircle className="animate-spin text-slate-700 size-8" />
+                          Уншиж байна
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ) : table.getRowModel().rows.length ? (
+                    table.getRowModel().rows.map((row) => (
+                      <TableRow key={row.id} data-state={row.getIsSelected() && "selected"}>
+                        {row.getVisibleCells().map((cell) => (
+                          <TableCell key={cell.id} className={cn()}>
+                            {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                          </TableCell>
+                        ))}
+                      </TableRow>
+                    ))
+                  ) : (
+                    <TableRow>
+                      <TableCell colSpan={columns.length} className="h-24 text-center">
+                        Хоосон байна
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
+            </div>
+          </ScrollAreaViewport>
+          <ScrollBar orientation="horizontal" className="" />
+        </ScrollArea>
+      </div>
 
       {!atEnd && <div className="absolute top-0 right-0 w-12 h-full pointer-events-none bg-gradient-to-l from-red-500/60 to-transparent" />}
 

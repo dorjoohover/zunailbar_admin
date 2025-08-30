@@ -115,12 +115,12 @@ export const ProductPage = ({ data, categories, brands }: { data: ListType<Produ
     () => [
       {
         key: "brand",
-        label: "Brand",
+        label: "Брэнд",
         items: brands.items.map((b) => ({ value: b.id, label: b.name })),
       },
       {
         key: "category",
-        label: "Category",
+        label: "Ангилал",
         items: categories.items.map((b) => ({
           value: b.id,
           label: b.name,
@@ -150,17 +150,38 @@ export const ProductPage = ({ data, categories, brands }: { data: ListType<Produ
               {groups.map((item, i) => {
                 const { key } = item;
                 return (
-                  <FilterPopover
-                    key={i}
-                    content={item.items.map((it, index) => (
-                      <label key={index} className="checkbox-label">
-                        <Checkbox checked={filter?.[key] == it.value} onCheckedChange={() => changeFilter(key, it.value)} />
-                        <span>{it.label as string}</span>
-                      </label>
-                    ))}
-                    value={filter?.[key] ? item.items.filter((item) => item.value == filter[key])[0].label : undefined}
-                    label={item.label}
-                  />
+                  // <FilterPopover
+                  //   key={i}
+                  //   content={item.items.map((it, index) => (
+                  //     <label key={index} className="checkbox-label">
+                  //       <Checkbox checked={filter?.[key] == it.value} onCheckedChange={() => changeFilter(key, it.value)} />
+                  //       <span>{it.label as string}</span>
+                  //     </label>
+                  //   ))}
+                  //   value={filter?.[key] ? item.items.filter((item) => item.value == filter[key])[0].label : undefined}
+                  //   label={item.label}
+                  // />
+                  <label key={i}>
+                    <span className="filter-label">{item.label as string}</span>
+                    <ComboBox
+                      pl={item.label}
+                      name={item.label}
+                      className="max-w-36 text-xs!"
+                      search={true}
+                      value={filter?.[key] ? String(filter[key]) : ""} //
+                      items={item.items.map((it) => ({
+                        value: String(it.value),
+                        label: it.label as string,
+                      }))}
+                      props={{
+                        value: filter?.[key] ? String(filter[key]) : "",
+                        onChange: (val: string) => changeFilter(key, val),
+                        onBlur: () => {},
+                        name: key,
+                        ref: () => {},
+                      }}
+                    />
+                  </label>
                 );
               })}
             </>
@@ -180,7 +201,7 @@ export const ProductPage = ({ data, categories, brands }: { data: ListType<Produ
               loading={action == ACTION.RUNNING}
             >
               <FormProvider {...form}>
-                <div className="divide-y ">
+                <div className="divide-y">
                   <div className="grid grid-cols-1 gap-3 pb-5 sm:grid-cols-2">
                     <FormItems control={form.control} name="category_id" label="Ангилал">
                       {(field) => {

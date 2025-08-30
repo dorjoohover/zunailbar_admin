@@ -11,6 +11,21 @@ import { ProductTransactionStatus } from "@/lib/enum";
 import { IService } from "@/models/service.model";
 import TooltipWrapper from "@/components/tooltipWrapper";
 import { TableActionButtons } from "@/components/tableActionButtons";
+import { EmployeeUserServicePage } from ".";
+
+// Generate service badge color
+function stringToNiceColor(str: string) {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    hash = str.charCodeAt(i) + ((hash << 10) - hash);
+  }
+
+  // 0–360 хүртэл hue гаргана
+  const hue = Math.abs(hash) % 360;
+
+  // гоё өнгө гаргахын тулд saturation / lightness тогтмол байлгана
+  return `hsl(${hue}, 70%, 60%)`;
+}
 
 export function getColumns(onEdit: (product: IUserService) => void, remove: (index: number) => Promise<boolean>): ColumnDef<IUserService>[] {
   return [
@@ -36,6 +51,18 @@ export function getColumns(onEdit: (product: IUserService) => void, remove: (ind
           Үйлчилгээний нэр <ArrowUpDown className="w-4 h-4 ml-2" />
         </Button>
       ),
+
+      // Badge nemsen
+      cell: ({ row }) => {
+        const service = row.getValue("service_name") as string;
+        const color = stringToNiceColor(service);
+
+        return (
+          <span className="badge" style={{ backgroundColor: color }}>
+            {service}
+          </span>
+        );
+      },
     },
 
     {

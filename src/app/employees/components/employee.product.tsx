@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Switch } from "@/components/ui/switch";
 import { AppAlertDialog } from "@/components/AlertDialog";
-import { Hammer } from "lucide-react";
+import { Hammer, Minus, Plus } from "lucide-react";
 
 import { searchProduct } from "@/app/(api)/product";
 import { fetcher } from "@/hooks/fetcher";
@@ -179,12 +179,12 @@ export const EmployeeProductModal = ({ id, clear }: { id?: string; clear: () => 
         clear();
       }}
       name={``}
-      title="Бараа олгох"
+      title="Ажилчинд бараа олгох"
       submit={onConfirm}
     >
       <FormProvider {...form}>
         <div className="w-full space-y-5">
-          <div className="flex flex-col gap-4">
+          <div className="flex items-center gap-4">
             <Input
               placeholder="Бүтээгдэхүүн хайх..."
               onChange={(e) => {
@@ -192,41 +192,41 @@ export const EmployeeProductModal = ({ id, clear }: { id?: string; clear: () => 
                 if (value.length >= 2) searchProduct(value);
                 else searchProduct("");
               }}
-              className="w-full bg-white"
+              className="w-full bg-white flex-1"
             />
 
-            <div className="flex items-center gap-2 mt-2">
-              <Switch checked={compare} onCheckedChange={(val) => form.setValue("compare", val)} id="compare-switch" />
+            <div className="flex items-center gap-2 flex-1 justify-end">
               <label htmlFor="compare-switch" className="text-sm text-muted-foreground">
                 Зөвхөн хэрэглэгчийн авсан бүтээгдэхүүнүүд ({visibleProducts.length})
               </label>
+              <Switch checked={compare} onCheckedChange={(val) => form.setValue("compare", val)} id="compare-switch" />
             </div>
           </div>
 
-          <div className="bg-white border p-3 rounded-xl space-y-2">
-            <div className="grid grid-cols-10 items-center justify-between w-full py-2 font-bold px-4 text-sm">
+          <div className="bg-white border p-2 rounded-xl space-y-2">
+            <div className="grid grid-cols-10 items-center justify-between w-full py-1 font-bold px-4 text-sm">
               <span className="col-span-2">Брэнд</span>
               <span className="col-span-4">Төрөл</span>
               <span className="col-span-2">Бараа</span>
               <span className="col-span-2"></span>
             </div>
-            <ScrollArea className="h-[55vh] w-full divide-y border pt-0 bg-white">
+            <ScrollArea className="h-[55vh] w-full divide-y border border-b-0 rounded pt-0 bg-white">
               {visibleProducts.map((product, index) => {
                 const [brand, category, name] = product.value.split("__");
                 return (
-                  <div key={product.id} className="flex items-center justify-between p-3 pr-6 border-b last:border-none">
+                  <div key={product.id} className="flex items-center justify-between p-2 pr-6 border-b last:border-none">
                     <div className="grid grid-cols-10 items-center justify-between w-full gap-4">
                       <span className="text-sm text-start font-medium text-gray-700 truncate col-span-2">{brand} brand</span>
                       <span className="text-sm font-medium text-gray-700 truncate col-span-4">{category}</span>
                       <span className="text-sm font-medium text-gray-700 col-span-2">{name}</span>
                       <div className="flex items-center justify-end gap-1 col-span-2">
                         <Button variant="default" className="" size="icon" onClick={() => handleProductQuantityChange(product.id, -1)}>
-                          −
+                          <Minus strokeWidth={3} className="size-3.5" />
                         </Button>
 
                         <Input
                           type="number"
-                          className="w-16 text-center bg-white no-spinner hide-number-arrows border-primary border-2"
+                          className="w-16 text-center bg-gray-200 no-spinner hide-number-arrows border-none"
                           value={(form.watch("products")?.find((p) => p.product_id === product.id)?.quantity as number) ?? ""}
                           onClick={() => handleProductClickOnce(product.id)}
                           onChange={(e) => {
@@ -253,7 +253,7 @@ export const EmployeeProductModal = ({ id, clear }: { id?: string; clear: () => 
                         />
 
                         <Button variant="default" className="" size="icon" onClick={() => handleProductQuantityChange(product.id, 1)}>
-                          +
+                          <Plus strokeWidth={3} className="size-3.5" />
                         </Button>
                       </div>
                     </div>

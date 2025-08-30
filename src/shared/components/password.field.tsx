@@ -19,7 +19,7 @@ export const PasswordField = <T extends FieldValues>({
   const [isView, setIsView] = useState(view);
   return (
     <>
-      <Label htmlFor="password">{label}</Label>
+      {label && <Label htmlFor="password">{label}</Label>}
       <div className="relative h-10 space-y-1">
         <Input
           {...props}

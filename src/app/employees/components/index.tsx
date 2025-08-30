@@ -35,8 +35,8 @@ const formSchema = z.object({
   branch_id: z.string().min(1),
   mobile: z.string().length(8, { message: "8 тэмдэгт байх ёстой" }),
   birthday: z.preprocess((val) => (typeof val === "string" ? new Date(val) : val), z.date()) as unknown as Date,
-  password: z.string().min(6).nullable().optional(),
   experience: z.preprocess((val) => (typeof val === "string" ? parseFloat(val) : val), z.number()) as unknown as number,
+  password: z.string().nullable().optional(),
   nickname: z.string().min(1),
   profile_img: z.string().nullable().optional(),
   color: z.preprocess((val) => (typeof val === "string" ? parseFloat(val) : val), z.number()) as unknown as number,
@@ -74,7 +74,7 @@ export const EmployeePage = ({ data, branches }: { data: ListType<User>; branche
   const [userProduct, setUserProduct] = useState<string | undefined>(undefined);
   const onSubmit = async <T,>(e: T) => {
     const { file, password, ...body } = form.getValues();
-    if (!editingUser && password == null) {
+    if (editingUser == null && password == null) {
       toast("Нууц үг оруулна уу", {});
       return;
     }
@@ -202,17 +202,39 @@ export const EmployeePage = ({ data, branches }: { data: ListType<User>; branche
               {groups.map((item, i) => {
                 const { key } = item;
                 return (
-                  <FilterPopover
-                    key={i}
-                    label={item.label}
-                    content={item.items.map((it, index) => (
-                      <label key={index} className="checkbox-label">
-                        <Checkbox checked={filter?.[key] == it.value} onCheckedChange={() => changeFilter(key, it.value)} />
-                        <span>{it.label as string}</span>
-                      </label>
-                    ))}
-                    value={filter?.[key] ? item.items.filter((item) => item.value == filter[key])[0].label : undefined}
-                  />
+                  <label key={i}>
+                    <span className="filter-label">{item.label as string}</span>
+                    <ComboBox
+                      pl={item.label}
+                      name={item.label}
+                      className="max-w-36 text-xs!"
+                      search={true}
+                      value={filter?.[key] ? String(filter[key]) : ""} //
+                      items={item.items.map((it) => ({
+                        value: String(it.value),
+                        label: it.label as string,
+                      }))}
+                      props={{
+                        value: filter?.[key] ? String(filter[key]) : "",
+                        onChange: (val: string) => changeFilter(key, val),
+                        onBlur: () => {},
+                        name: key,
+                        ref: () => {},
+                      }}
+                    />
+                  </label>
+                  // <FilterPopover
+                  //   key={i}
+                  //   label={item.label}
+                  //   content={item.items.map((it, index) => (
+                  //     <label key={index} className="checkbox-label">
+                  //       <Checkbox checked={filter?.[key] == it.value} onCheckedChange={() => changeFilter(key, it.value)} />
+                  //       <span>{it.label as string}</span>
+                  //     </label>
+
+                  //   ))}
+                  //   value={filter?.[key] ? item.items.filter((item) => item.value == filter[key])[0].label : undefined}
+                  // />
                 );
               })}
             </>
@@ -329,7 +351,7 @@ export const EmployeePage = ({ data, branches }: { data: ListType<User>; branche
                       {(field) => {
                         return (
                           <ComboBox
-                          search={true}
+                            search={true}
                             props={{ ...field }}
                             items={branches.items.map((branch) => {
                               return {
@@ -362,9 +384,9 @@ export const EmployeePage = ({ data, branches }: { data: ListType<User>; branche
                   </div>
                   <div className="pt-5 double-col">
                     {!editingUser && (
-                      <FormItems control={form.control} name="password" className="col-span-1">
+                      <FormItems  label='Нууц үг' control={form.control} name="password" className="col-span-1">
                         {(field) => {
-                          return <PasswordField props={{ ...field }} view={true} />;
+                          return <PasswordField label="" props={{ ...field }} view={true} />;
                         }}
                       </FormItems>
                     )}
@@ -400,7 +422,7 @@ export const EmployeePage = ({ data, branches }: { data: ListType<User>; branche
                         return <DatePicker name="" pl="Огноо сонгох" props={{ ...field }} />;
                       }}
                     </FormItems>
-                    <FormItems control={form.control} name="color" label="Өнгө">
+                    <FormItems label="Өнгө" control={form.control} name="color">
                       {(field) => {
                         return (
                           <ComboBox

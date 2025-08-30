@@ -7,8 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { IBranch } from "@/models";
 import { mobileFormatter, parseDate } from "@/lib/functions";
-import { ROLE, UserStatus } from "@/lib/enum";
-import { getEnumValues, roleIconMap, RoleValue, UserStatusValue } from "@/lib/constants";
+import { EmployeeStatus, ROLE, UserStatus } from "@/lib/enum";
+import { EmployeeStatusValue, getEnumValues, roleIconMap, RoleValue, UserStatusValue } from "@/lib/constants";
 import Image from "next/image";
 import TooltipWrapper from "@/components/tooltipWrapper";
 import { TableActionButtons } from "@/components/tableActionButtons";
@@ -21,7 +21,8 @@ const branches: IBranch[] = [
   { id: "3", name: "Airport Branch", address: "Buyant Ukhaa", user_id: "102" },
 ];
 
-export const getColumns = (onEdit: (product: IUser) => void, setStatus: (index: number, status: UserStatus) => void, giveProduct: (index: number) => void): ColumnDef<IUser>[] => [
+
+export const getColumns = (onEdit: (product: IUser) => void, setStatus: (index: number, status: EmployeeStatus) => void, giveProduct: (index: number) => void): ColumnDef<IUser>[] => [
   // {
   //   id: "select",
   //   header: ({ table }) => (
@@ -45,8 +46,8 @@ export const getColumns = (onEdit: (product: IUser) => void, setStatus: (index: 
     id: "index",
     header: "#",
     cell: ({ row }) => row.index + 1,
-    enableSorting: true,
-    enableHiding: true,
+    enableSorting: false,
+    enableHiding: false,
     size: 40,
   },
   {
@@ -151,7 +152,7 @@ export const getColumns = (onEdit: (product: IUser) => void, setStatus: (index: 
     accessorKey: "user_status",
     header: "Статус",
     cell: ({ row }) => {
-      const status = UserStatusValue[row.getValue<number>("user_status") as UserStatus];
+      const status = EmployeeStatusValue[row.getValue<number>("user_status") as UserStatus];
       return <span className={cn(`${status.color} badge`)}>{status.name}</span>;
     },
   },
@@ -176,10 +177,10 @@ export const getColumns = (onEdit: (product: IUser) => void, setStatus: (index: 
             <DropdownMenuContent>
               <DropdownMenuLabel>Статус солих</DropdownMenuLabel>
               <DropdownMenuSeparator />
-              {getEnumValues(UserStatus)
+              {getEnumValues(EmployeeStatus)
                 .splice(0, 4)
                 .map((item, i) => {
-                  const status = UserStatusValue[item];
+                  const status = EmployeeStatusValue[item];
                   return (
                     <DropdownMenuItem key={i} onClick={() => setStatus(row.index, item)}>
                       <span className={cn(status.color)}>{status.name}</span>

@@ -1,17 +1,5 @@
 import { Crown, Shield, User2 } from "lucide-react";
-import {
-  CategoryType,
-  CostStatus,
-  DISCOUNT,
-  OrderStatus,
-  ProductLogStatus,
-  ProductTransactionStatus,
-  ROLE,
-  SalaryLogStatus,
-  ScheduleStatus,
-  UserProductStatus,
-  UserStatus,
-} from "./enum";
+import { CategoryType, CostStatus, DISCOUNT, EmployeeStatus, OrderStatus, ProductLogStatus, ProductTransactionStatus, ROLE, SalaryLogStatus, ScheduleStatus, UserProductStatus, UserStatus } from "./enum";
 import z from "zod";
 
 export const roleIconMap = {
@@ -34,18 +22,18 @@ export const RoleValue = {
 };
 export const zStrOpt = z.string().nullable().optional();
 export const zNumOpt = z.number().nullable().optional();
-// export const EmployeeStatusValue = {
-//   [EmployeeStatus.ACTIVE]: { name: "Идэвхтэй", color: "green" },
-//   [EmployeeStatus.DEKIRIT]: { name: "Декирит", color: "orange" },
-//   [EmployeeStatus.VACATION]: { name: "Амралт", color: "yellow" },
-//   [EmployeeStatus.FIRED]: { name: "Халагдсан", color: "red" },
-// };
+
+export const EmployeeStatusValue = {
+  [EmployeeStatus.ACTIVE]: { name: "Active", color: "green-badge badge" },
+  [EmployeeStatus.FIRED]: { name: "Халагдсан", color: "slate-badge badge" },
+  [EmployeeStatus.DEKIRIT]: { name: "Декирит", color: "red-badge badge" },
+  [EmployeeStatus.VACATION]: { name: "Амарсан", color: "yellow-badge badge" },
+  [EmployeeStatus.BANNED]: { name: "Banned", color: "red-badge badge" },
+};
 export type Option<T = string | number> = { value: T; label: string };
+
 export const UserStatusValue = {
   [UserStatus.ACTIVE]: { name: "Active", color: "green-badge badge" },
-  [UserStatus.FIRED]: { name: "Халагдсан", color: "slate-badge badge" },
-  [UserStatus.DEKIRIT]: { name: "Декирит", color: "red-badge badge" },
-  [UserStatus.VACATION]: { name: "Амарсан", color: "yellow-badge badge" },
   [UserStatus.BANNED]: { name: "Banned", color: "red-badge badge" },
 };
 export const ScheduleStatusValue = {
@@ -116,24 +104,29 @@ export const MODAL_ACTION = {
   add_salary: "add_salary",
 };
 
-export function getEnumValues<T extends Record<string, string | number>>(
-  e: T
-): T[keyof T][] {
+export function getEnumValues<T extends Record<string, string | number>>(e: T): T[keyof T][] {
   return Object.values(e).filter((v) => typeof v !== "string") as T[keyof T][];
 }
 
 export const getValuesUserProductStatus = {
-  
-  [UserProductStatus.Active]: {name: "Active", color: "green-badge badge",},
-  [UserProductStatus.Damaged]: {name: "Damaged", color: "red-badge badge"},
-  [UserProductStatus.Lost]: {name: "Lost", color: "yellow-badge badge"},
-  [UserProductStatus.Replaced]: {name: "Replaced", color: "slate-badge badge"},
-  [UserProductStatus.Returned]: {name: "Returned", color: "neutral-badge badge"},
+  [UserProductStatus.Active]: { name: "Active", color: "green-badge badge" },
+  [UserProductStatus.Damaged]: { name: "Damaged", color: "red-badge badge" },
+  [UserProductStatus.Lost]: { name: "Lost", color: "yellow-badge badge" },
+  [UserProductStatus.Replaced]: { name: "Replaced", color: "slate-badge badge" },
+  [UserProductStatus.Returned]: { name: "Returned", color: "neutral-badge badge" },
 };
+
+// export const getValuesCostStatus = {
+//   [CostStatus.Paid]: { name: "Төлсөн", color: "green-badge badge" },
+//   [CostStatus.Remainder]: { name: "Үлдэгдэлтэй", color: "yellow-badge badge" },
+// };
+
 export const getValuesCostStatus = {
-  [CostStatus.Paid]: {name: "Төлсөн", color: "green-badge badge"},
-  [CostStatus.Remainder]: {name: "Үлдэгдэлтэй", color: "yellow-badge badge"},
+  [CostStatus.Paid]: "Төлсөн",
+  [CostStatus.Remainder]: "Үлдэгдэлтэй",
 };
+
+
 export const getValueDiscount = {
   [DISCOUNT.Percent]: "Хувиар",
   [DISCOUNT.Price]: "Үнээр",
@@ -145,8 +138,8 @@ export const getValuesProductTransactionStatus = {
   [ProductTransactionStatus.Damaged]: "Эвдэрсэн",
 };
 export const getValuesProductLogStatus = {
-  [ProductLogStatus.Bought]: {name: "Худалдаж авсан", color: "green-badge badge"},
-  [ProductLogStatus.Remainder]: {name: "Үлдэгдэлтэй", color: "yellow-badge badge"},
+  [ProductLogStatus.Bought]: { name: "Худалдаж авсан", color: "green-badge badge" },
+  [ProductLogStatus.Remainder]: { name: "Үлдэгдэлтэй", color: "yellow-badge badge" },
   // [ProductLogStatus.Damaged]: "Эвдэрсэн",
 };
 

@@ -1,24 +1,23 @@
 export const COLOR_HEX = {
-  blue: "#3B82F6",
-  red: "#EF4444",
-  green: "#22C55E",
-  yellow: "#EAB308",
-  purple: "#A855F7",
-  pink: "#EC4899",
-  // indigo: "#6366F1",
-  teal: "#14B8A6",
-  cyan: "#06B6D4",
-  sky: "#0EA5E9",
-  rose: "#F43F5E",
-  orange: "#F97316",
-  amber: "#F59E0B",
-  lime: "#84CC16",
-  emerald: "#10B981",
-  violet: "#8B5CF6",
-  fuchsia: "#D946EF",
-  slate: "#64748B",
-  stone: "#78716C",
+  slate: "#94A3B8",   // neutral
+  stone: "#A8A29E",   // neutral
+  blue: "#60A5FA",    // soft blue
+  sky: "#38BDF8",     // bright blue
+  cyan: "#22D3EE",    // bright cyan
+  teal: "#2DD4BF",    // soft teal
+  green: "#4ADE80",   // soft green
+  lime: "#A3E635",    // bright green
+  yellow: "#FACC15",  // bright yellow
+  amber: "#FBBF24",   // warm yellow
+  orange: "#FB923C",  // bright orange
+  red: "#F87171",     // soft red
+  pink: "#F472B6",    // soft pink
+  purple: "#A78BFA",  // soft purple
+  fuchsia: "#D946EF", // bright fuchsia
 } as const;
+
+
+
 export type ColorName = keyof typeof COLOR_HEX;
 
 export const COLORS: ColorName[] = Object.keys(COLOR_HEX) as ColorName[];

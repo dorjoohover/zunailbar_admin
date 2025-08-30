@@ -15,7 +15,6 @@ import { create, updateOne } from "@/app/(api)";
 import { imageUploader } from "@/app/(api)/base";
 import { Input } from "@/components/ui/input";
 import { firstLetterUpper, objectCompact, usernameFormatter } from "@/lib/functions";
-import { ComboBox } from "@/shared/components/combobox";
 import { DatePicker } from "@/shared/components/date.picker";
 import { FormItems } from "@/shared/components/form.field";
 import { Modal } from "@/shared/components/modal";
@@ -29,6 +28,7 @@ import { FilterPopover } from "@/components/layout/popover";
 import { Checkbox } from "@radix-ui/react-checkbox";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
+import { ComboBox } from "@/shared/components/combobox";
 
 type FilterType = {
   branch?: string;
@@ -161,17 +161,38 @@ export const EmployeeProductPage = ({ data, products, branches, users }: { data:
               {groups.map((item, i) => {
                 const { key } = item;
                 return (
-                  <FilterPopover
-                    key={i}
-                    content={item.items.map((it, index) => (
-                      <label key={index} className="checkbox-label">
-                        <Checkbox checked={filter?.[key] == it.value} onCheckedChange={() => changeFilter(key, it.value)} />
-                        <span className="">{it.label as string}</span>
-                      </label>
-                    ))}
-                    value={filter?.[key] ? item.items.filter((item) => item.value == filter[key])[0].label : undefined}
-                    label={item.label}
-                  />
+                  // <FilterPopover
+                  //   key={i}
+                  //   content={item.items.map((it, index) => (
+                  //     <label key={index} className="checkbox-label">
+                  //       <Checkbox checked={filter?.[key] == it.value} onCheckedChange={() => changeFilter(key, it.value)} />
+                  //       <span className="">{it.label as string}</span>
+                  //     </label>
+                  //   ))}
+                  //   value={filter?.[key] ? item.items.filter((item) => item.value == filter[key])[0].label : undefined}
+                  //   label={item.label}
+                  // />
+                   <label key={i}>
+                    <span className="filter-label">{item.label as string}</span>
+                    <ComboBox
+                      pl={item.label}
+                      name={item.label}
+                      className="max-w-36 text-xs!"
+                      search={true}
+                      value={filter?.[key] ? String(filter[key]) : ""} //
+                      items={item.items.map((it) => ({
+                        value: String(it.value),
+                        label: it.label as string,
+                      }))}
+                      props={{
+                        value: filter?.[key] ? String(filter[key]) : "",
+                        onChange: (val: string) => changeFilter(key, val),
+                        onBlur: () => {},
+                        name: key,
+                        ref: () => {},
+                      }}
+                    />
+                  </label>
                 );
               })}
             </>
