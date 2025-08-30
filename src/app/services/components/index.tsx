@@ -167,7 +167,7 @@ export const ServicePage = ({
         <DataTable
           clear={() => setFilter(undefined)}
           filter={
-            <div className="inline-flex gap-3 w-full flex-wrap">
+            <>
               {groups.map((item, i) => {
                 const { key } = item;
                 return (
@@ -176,7 +176,7 @@ export const ServicePage = ({
                     content={item.items.map((it, index) => (
                       <label
                         key={index}
-                        className="flex items-center gap-2 cursor-pointer text-sm"
+                        className="checkbox-label"
                       >
                         <Checkbox
                           checked={filter?.[key] == it.value}
@@ -196,7 +196,7 @@ export const ServicePage = ({
                   />
                 );
               })}
-            </div>
+            </>
           }
           columns={columns}
           count={services?.count}

@@ -168,7 +168,6 @@ export const SalaryPage = ({
             >
               <FormProvider {...form}>
                 <div className="divide-y">
-                  <div className="grid grid-cols-2 gap-3 pb-5"></div>
                   <div className="grid grid-cols-2 gap-3 pt-5">
                     <FormItems
                       label="Статус"
@@ -212,10 +211,7 @@ export const SalaryPage = ({
                         );
                       }}
                     </FormItems>
-                    <div>
-                      <p>{form.getValues("order_count") as string}</p>
-                    </div>
-                    <FormItems control={form.control} name="date">
+                        <FormItems control={form.control} name="date">
                       {(field) => {
                         return (
                           <DatePicker
@@ -226,6 +222,10 @@ export const SalaryPage = ({
                         );
                       }}
                     </FormItems>
+                    <div>
+                      <h1>Нийт хийсэн үйлчилгээ</h1>
+                      <p>{form.getValues("order_count") as string}</p>
+                    </div>
                   </div>
                 </div>
               </FormProvider>

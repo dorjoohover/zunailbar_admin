@@ -1,12 +1,5 @@
 "use client";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { ColumnDef } from "@tanstack/react-table";
 import { IUser } from "@/models/user.model";
 import { ArrowUpDown, Hammer, UserRoundCog } from "lucide-react";
@@ -15,16 +8,12 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { IBranch } from "@/models";
 import { mobileFormatter, parseDate } from "@/lib/functions";
 import { ROLE, UserStatus } from "@/lib/enum";
-import {
-  getEnumValues,
-  roleIconMap,
-  RoleValue,
-  UserStatusValue,
-} from "@/lib/constants";
+import { getEnumValues, roleIconMap, RoleValue, UserStatusValue } from "@/lib/constants";
 import Image from "next/image";
 import TooltipWrapper from "@/components/tooltipWrapper";
 import { TableActionButtons } from "@/components/tableActionButtons";
 import { COLORS } from "@/lib/colors";
+import { cn } from "@/lib/utils";
 
 const branches: IBranch[] = [
   { id: "1", name: "Head Office", address: "UB Center", user_id: "100" },
@@ -32,29 +21,33 @@ const branches: IBranch[] = [
   { id: "3", name: "Airport Branch", address: "Buyant Ukhaa", user_id: "102" },
 ];
 
-export const getColumns = (
-  onEdit: (product: IUser) => void,
-  setStatus: (index: number, status: UserStatus) => void,
-  giveProduct: (index: number) => void
-): ColumnDef<IUser>[] => [
+export const getColumns = (onEdit: (product: IUser) => void, setStatus: (index: number, status: UserStatus) => void, giveProduct: (index: number) => void): ColumnDef<IUser>[] => [
+  // {
+  //   id: "select",
+  //   header: ({ table }) => (
+  //     <Checkbox
+  //       checked={table.getIsAllPageRowsSelected()}
+  //       onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+  //       aria-label="Select all"
+  //     />
+  //   ),
+  //   cell: ({ row }) => (
+  //     <Checkbox
+  //       checked={row.getIsSelected()}
+  //       onCheckedChange={(value) => row.toggleSelected(!!value)}
+  //       aria-label="Select row"
+  //     />
+  //   ),
+  //   enableSorting: false,
+  //   enableHiding: false,
+  // },
   {
-    id: "select",
-    header: ({ table }) => (
-      <Checkbox
-        checked={table.getIsAllPageRowsSelected()}
-        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-        aria-label="Select all"
-      />
-    ),
-    cell: ({ row }) => (
-      <Checkbox
-        checked={row.getIsSelected()}
-        onCheckedChange={(value) => row.toggleSelected(!!value)}
-        aria-label="Select row"
-      />
-    ),
-    enableSorting: false,
-    enableHiding: false,
+    id: "index",
+    header: "#",
+    cell: ({ row }) => row.index + 1,
+    enableSorting: true,
+    enableHiding: true,
+    size: 40,
   },
   {
     accessorKey: "firstname",
@@ -64,7 +57,7 @@ export const getColumns = (
         variant="table_header"
         onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
       >
-        First Name <ArrowUpDown className="ml-2 h-4 w-4" />
+        Нэр <ArrowUpDown className="w-4 h-4 ml-2" />
       </Button>
     ),
   },
@@ -76,34 +69,26 @@ export const getColumns = (
         variant="table_header"
         onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
       >
-        Nickname <ArrowUpDown className="ml-2 h-4 w-4" />
+        Ник нэр <ArrowUpDown className="w-4 h-4 ml-2" />
       </Button>
     ),
   },
   {
     accessorKey: "mobile",
-    header: "mobile",
+    header: "Утас",
     cell: ({ row }) => {
       return <p>{mobileFormatter(row.getValue("mobile"))}</p>;
     },
   },
   {
     accessorKey: "color",
-    header: "color",
+    header: "Өнгө",
     cell: ({ row }) => {
-      console.log(
-        "name",
-        row.getValue("firstname") as string,
-        "color:",
-        row.getValue("color") as string
-      );
       return (
         <div
-          className={`size-8 rounded`}
+          className={`h-6 w-8 rounded-sm`}
           style={{
-            backgroundColor: `${
-              COLORS[+((row.getValue("color") as string) ?? -1)]
-            }`,
+            backgroundColor: `${COLORS[+((row.getValue("color") as string) ?? -1)]}`,
           }}
         ></div>
       );
@@ -111,7 +96,7 @@ export const getColumns = (
   },
   {
     accessorKey: "branch_name",
-    header: "Branch",
+    header: "Салбар",
     cell: ({ row }) => {
       const branch = row.getValue("branch_name");
       return branch || "Unknown";
@@ -119,7 +104,7 @@ export const getColumns = (
   },
   {
     accessorKey: "birthday",
-    header: "Birthday",
+    header: "Т/өдөр",
     cell: ({ row }) => {
       const date = parseDate(new Date(row.getValue("birthday")), false);
       return date;
@@ -127,27 +112,25 @@ export const getColumns = (
   },
   {
     accessorKey: "profile_img",
-    header: "Img",
+    header: "Профайл",
     cell: ({ row }) => {
       const role = (row.getValue<number>("role") ?? ROLE.ANY) as ROLE;
       const profile = row.getValue<string | null>("profile_img");
       return (
         <>
           {profile ? (
-            <span
-              className={`flex gap-2 items-center overflow-hidden font-bold aspect-square size-12 rounded bg-gray-100 border`}
-            >
+            <span className={`flex gap-2 items-center overflow-hidden font-bold aspect-square size-12 rounded bg-gray-100`}>
               <Image
                 src={`/api/file/${profile}`}
                 width={100}
                 height={100}
                 // objectFit="contain"
-                className="rounded-full  object-cover"
+                className="object-cover size-full"
                 alt={role.toString()}
               />
             </span>
           ) : (
-            `Байхгүй`
+            `-`
           )}
         </>
       );
@@ -155,43 +138,38 @@ export const getColumns = (
   },
   {
     accessorKey: "role",
-    header: "Role",
+    header: "Үүрэг",
     cell: ({ row }) => {
       const role = (row.getValue<number>("role") ?? ROLE.ANY) as ROLE;
 
       const name = RoleValue[role];
       const { color } = roleIconMap[role] ?? {};
-      return (
-        <span className={`flex gap-2 items-center text-${color}-500 font-bold`}>
-          {name}
-        </span>
-      );
+      return <span className={`flex gap-2 items-center text-${color}-500 font-bold`}>{name}</span>;
     },
   },
   {
     accessorKey: "user_status",
-    header: "Status",
+    header: "Статус",
     cell: ({ row }) => {
-      const status =
-        UserStatusValue[row.getValue<number>("user_status") as UserStatus];
-      return <span className={status.color}>{status.name}</span>;
+      const status = UserStatusValue[row.getValue<number>("user_status") as UserStatus];
+      return <span className={cn(`${status.color} badge`)}>{status.name}</span>;
     },
   },
   {
     id: "actions",
-    header: "Actions",
+    header: "Үйлдэл",
     cell: ({ row }) => {
       return (
-        <TableActionButtons
-          rowData={row.original}
-          onEdit={(data) => onEdit(data)}
-        >
+        <TableActionButtons rowData={row.original} onEdit={(data) => onEdit(data)}>
           <DropdownMenu>
             <TooltipWrapper tooltip="Статус солих">
-              <DropdownMenuTrigger>
-                <div className="size-9 flex-center items-center justify-center">
+              <DropdownMenuTrigger asChild>
+                {/* <div className="items-center justify-center size-9 flex-center hover:bg-gray-100 rounded-sm hover:text-slate-800 duration-150 cursor-pointer">
                   <UserRoundCog className="size-4" />
-                </div>
+                </div> */}
+                <Button variant="ghost" size="icon">
+                  <UserRoundCog className="size-4" />
+                </Button>
               </DropdownMenuTrigger>
             </TooltipWrapper>
 
@@ -203,12 +181,8 @@ export const getColumns = (
                 .map((item, i) => {
                   const status = UserStatusValue[item];
                   return (
-                    <DropdownMenuItem
-                      className={status.color}
-                      key={i}
-                      onClick={() => setStatus(row.index, item)}
-                    >
-                      {status.name}
+                    <DropdownMenuItem key={i} onClick={() => setStatus(row.index, item)}>
+                      <span className={cn(status.color)}>{status.name}</span>
                     </DropdownMenuItem>
                   );
                 })}
@@ -216,11 +190,7 @@ export const getColumns = (
           </DropdownMenu>
 
           <TooltipWrapper tooltip="Бүтээгдэхүүн өгөх">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => giveProduct(row.index)}
-            >
+            <Button variant="ghost" size="icon" onClick={() => giveProduct(row.index)}>
               <Hammer className="size-4" />
             </Button>
           </TooltipWrapper>
@@ -240,7 +210,7 @@ export const getColumns = (
 //   <DropdownMenu>
 //     <TooltipWrapper tooltip="Статус солих">
 //       <DropdownMenuTrigger>
-//         <div className="size-9 flex-center items-center justify-center">
+//         <div className="items-center justify-center size-9 flex-center">
 //           <UserRoundCog className="size-4" />
 //         </div>
 //       </DropdownMenuTrigger>

@@ -159,7 +159,7 @@ export const UserPage = ({ data }: { data: ListType<User> }) => {
         <DataTable
           clear={() => setFilter(undefined)}
           filter={
-            <div className="inline-flex gap-3 w-full flex-wrap">
+            <>
               {groups.map((item, i) => {
                 const { key } = item;
                 return (
@@ -168,7 +168,7 @@ export const UserPage = ({ data }: { data: ListType<User> }) => {
                     content={item.items.map((it, index) => (
                       <label
                         key={index}
-                        className="flex items-center gap-2 cursor-pointer text-sm"
+                        className="checkbox-label"
                       >
                         <Checkbox
                           checked={filter?.[key] == it.value}
@@ -188,7 +188,7 @@ export const UserPage = ({ data }: { data: ListType<User> }) => {
                   />
                 );
               })}
-            </div>
+            </>
           }
           columns={columns}
           count={Users?.count}
@@ -209,7 +209,7 @@ export const UserPage = ({ data }: { data: ListType<User> }) => {
               loading={action == ACTION.RUNNING}
             >
               <FormProvider {...form}>
-                <div className="double-col gap-5">
+                <div className="gap-5 double-col">
                   {[
                     {
                       key: "nickname",

@@ -39,7 +39,7 @@ export function getColumns(
       accessorKey: "branch_name",
       header: ({ column }) => (
         <Button
-          variant="ghost"
+          variant="table_header"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           className="font-bold"
         >
@@ -51,7 +51,7 @@ export function getColumns(
       accessorKey: "name",
       header: ({ column }) => (
         <Button
-          variant="ghost"
+          variant="table_header"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           className="font-bold"
         >
@@ -73,7 +73,7 @@ export function getColumns(
       accessorKey: "value",
       header: ({ column }) => (
         <Button
-          variant="ghost"
+          variant="table_header"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           className="font-bold"
         >
@@ -92,7 +92,7 @@ export function getColumns(
       accessorKey: "start_date",
       header: ({ column }) => (
         <Button
-          variant="ghost"
+          variant="table_header"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           className="font-bold"
         >
@@ -113,7 +113,7 @@ export function getColumns(
       accessorKey: "end_date",
       header: ({ column }) => (
         <Button
-          variant="ghost"
+          variant="table_header"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           className="font-bold"
         >

@@ -142,7 +142,7 @@ export const EmployeeProductPage = ({ data, products, branches, users }: { data:
         label: "Статус",
         items: getEnumValues(UserProductStatus).map((s) => ({
           value: s,
-          label: getValuesUserProductStatus[s],
+          label: getValuesUserProductStatus[s].name,
         })),
       },
     ],
@@ -150,21 +150,21 @@ export const EmployeeProductPage = ({ data, products, branches, users }: { data:
   );
 
   return (
-    <div className="w-full relative">
+    <div className="relative w-full">
       <DynamicHeader count={data.count} />
 
       <div className="admin-container">
         <DataTable
           clear={() => setFilter(undefined)}
           filter={
-            <div className="inline-flex gap-3 w-full flex-wrap">
+            <>
               {groups.map((item, i) => {
                 const { key } = item;
                 return (
                   <FilterPopover
                     key={i}
                     content={item.items.map((it, index) => (
-                      <label key={index} className="flex items-center gap-2 cursor-pointer text-sm">
+                      <label key={index} className="checkbox-label">
                         <Checkbox checked={filter?.[key] == it.value} onCheckedChange={() => changeFilter(key, it.value)} />
                         <span>{it.label as string}</span>
                       </label>
@@ -174,7 +174,7 @@ export const EmployeeProductPage = ({ data, products, branches, users }: { data:
                   />
                 );
               })}
-            </div>
+            </>
           }
           columns={columns}
           data={userProduct.items}

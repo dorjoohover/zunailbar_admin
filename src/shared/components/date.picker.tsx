@@ -9,15 +9,17 @@ import { Label } from "@/components/ui/label";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { ControllerRenderProps, FieldValues } from "react-hook-form";
 
-export function DatePicker<T extends FieldValues>({ pl = "Select", name = "Choose", props }: { name?: string; pl?: string; props: ControllerRenderProps<T> }) {
+export function DatePicker<T extends FieldValues>({ pl = "Select", name = 'Choose', props }: { name?: string; pl?: string; props: ControllerRenderProps<T> }) {
   const [open, setOpen] = React.useState(false);
 
   const { value, onChange } = props;
   return (
     <div className="flex flex-col space-y-2">
-      <Label htmlFor="date" className="px-1">
-        {name}
-      </Label>
+      {name && (
+        <Label htmlFor="date" className="px-1">
+          {name}
+        </Label>
+      )}
 
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>

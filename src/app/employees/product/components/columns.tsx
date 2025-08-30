@@ -9,13 +9,14 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 import { ColumnDef } from "@tanstack/react-table";
-import { ArrowUpDown, Hammer, Pencil, UserRoundCog } from "lucide-react";
+import { ArrowUpDown, CircleSmall, Hammer, Pencil, UserRoundCog } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { IUser, IUserProduct } from "@/models";
 import { UserProductStatus, UserStatus } from "@/lib/enum";
 import { getEnumValues, getValuesUserProductStatus } from "@/lib/constants";
 import TooltipWrapper from "@/components/tooltipWrapper";
+import { cn } from "@/lib/utils";
 
 export const getColumns = (
   onEdit: (product: IUser) => void,
@@ -50,7 +51,7 @@ export const getColumns = (
         onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
       >
         user name
-        <ArrowUpDown className="ml-2 h-4 w-4" />
+        <ArrowUpDown className="w-4 h-4 ml-2" />
       </Button>
     ),
   },
@@ -63,7 +64,7 @@ export const getColumns = (
         onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
       >
         product name
-        <ArrowUpDown className="ml-2 h-4 w-4" />
+        <ArrowUpDown className="w-4 h-4 ml-2" />
       </Button>
     ),
   },
@@ -83,7 +84,8 @@ export const getColumns = (
         getValuesUserProductStatus[
           row.getValue<number>("user_product_status") as UserProductStatus
         ];
-      return <span>{status}</span>;
+      return <span className={cn(`badge ${status.color} inline-flex items-center`)}>
+        {status.name}</span>;
     },
   },
   {
@@ -105,7 +107,7 @@ export const getColumns = (
           <DropdownMenu>
             <DropdownMenuTrigger>
               <TooltipWrapper tooltip="Статус солих">
-                <div className="size-9 flex-center items-center justify-center">
+                <div className="items-center justify-center size-9 flex-center">
                   <UserRoundCog className="size-4" />
                 </div>
               </TooltipWrapper>
@@ -116,14 +118,17 @@ export const getColumns = (
               {getEnumValues(UserProductStatus)
                 .splice(0, 4)
                 .map((item, i) => {
-                  const status = UserProductStatus[item];
+                  const status = getValuesUserProductStatus[item];
+                  // const status = UserProductStatus[item];
                   return (
                     <DropdownMenuItem
                       //   className={status.color}
                       key={i}
                       onClick={() => setStatus(row.index, item)}
                     >
-                      {status}
+                      <span className={cn(status.color)}>
+                      {status.name}
+                      </span>
                     </DropdownMenuItem>
                   );
                 })}

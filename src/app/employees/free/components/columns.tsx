@@ -11,6 +11,7 @@ import { ScheduleStatus } from "@/lib/enum";
 import { ScheduleStatusValue } from "@/lib/constants";
 import TooltipWrapper from "@/components/tooltipWrapper";
 import { TableActionButtons } from "@/components/tableActionButtons";
+import { cn } from "@/lib/utils";
 
 export function getColumns(
   onEdit: (product: Schedule) => void,
@@ -101,7 +102,7 @@ export function getColumns(
           ScheduleStatusValue[
             row.getValue<number>("schedule_status") as ScheduleStatus
           ];
-        return <span className={status.color}>{status.name}</span>;
+        return <span className={cn(status.color,)}>{status.name}</span>;
       },
     },
     {

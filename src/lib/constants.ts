@@ -42,17 +42,17 @@ export const zNumOpt = z.number().nullable().optional();
 // };
 export type Option<T = string | number> = { value: T; label: string };
 export const UserStatusValue = {
-  [UserStatus.ACTIVE]: { name: "Active", color: "text-green-600" },
-  [UserStatus.FIRED]: { name: "Халагдсан", color: "text-gray-600" },
-  [UserStatus.DEKIRIT]: { name: "Декирит", color: "text-red-500" },
-  [UserStatus.VACATION]: { name: "Амарсан", color: "text-yellow-500" },
-  [UserStatus.BANNED]: { name: "Banned", color: "text-red-500" },
+  [UserStatus.ACTIVE]: { name: "Active", color: "green-badge badge" },
+  [UserStatus.FIRED]: { name: "Халагдсан", color: "slate-badge badge" },
+  [UserStatus.DEKIRIT]: { name: "Декирит", color: "red-badge badge" },
+  [UserStatus.VACATION]: { name: "Амарсан", color: "yellow-badge badge" },
+  [UserStatus.BANNED]: { name: "Banned", color: "red-badge badge" },
 };
 export const ScheduleStatusValue = {
-  [ScheduleStatus.Active]: { name: "Active", color: "text-green-600" },
-  [ScheduleStatus.Pending]: { name: "Pending", color: "text-gray-600" },
-  [ScheduleStatus.Absent]: { name: "Absent", color: "text-red-500" },
-  [ScheduleStatus.Hidden]: { name: "Hidden", color: "text-red-500" },
+  [ScheduleStatus.Active]: { name: "Active", color: "green-badge badge" },
+  [ScheduleStatus.Pending]: { name: "Pending", color: "text-gray-600 badge" },
+  [ScheduleStatus.Absent]: { name: "Absent", color: "text-red-500 badge" },
+  [ScheduleStatus.Hidden]: { name: "Hidden", color: "text-red-500 badge" },
 };
 
 export interface ListType<T> {
@@ -123,15 +123,16 @@ export function getEnumValues<T extends Record<string, string | number>>(
 }
 
 export const getValuesUserProductStatus = {
-  [UserProductStatus.Active]: "Active",
-  [UserProductStatus.Damaged]: "Damaged",
-  [UserProductStatus.Lost]: "Lost",
-  [UserProductStatus.Replaced]: "Replaced",
-  [UserProductStatus.Returned]: "Returned",
+  
+  [UserProductStatus.Active]: {name: "Active", color: "green-badge badge",},
+  [UserProductStatus.Damaged]: {name: "Damaged", color: "red-badge badge"},
+  [UserProductStatus.Lost]: {name: "Lost", color: "yellow-badge badge"},
+  [UserProductStatus.Replaced]: {name: "Replaced", color: "slate-badge badge"},
+  [UserProductStatus.Returned]: {name: "Returned", color: "neutral-badge badge"},
 };
 export const getValuesCostStatus = {
-  [CostStatus.Paid]: "Төлсөн",
-  [CostStatus.Remainder]: "Үлдэгдэлтэй",
+  [CostStatus.Paid]: {name: "Төлсөн", color: "green-badge badge"},
+  [CostStatus.Remainder]: {name: "Үлдэгдэлтэй", color: "yellow-badge badge"},
 };
 export const getValueDiscount = {
   [DISCOUNT.Percent]: "Хувиар",
@@ -144,8 +145,8 @@ export const getValuesProductTransactionStatus = {
   [ProductTransactionStatus.Damaged]: "Эвдэрсэн",
 };
 export const getValuesProductLogStatus = {
-  [ProductLogStatus.Bought]: "Худалдаж авсан",
-  [ProductLogStatus.Remainder]: "Үлдэгдэлтэй",
+  [ProductLogStatus.Bought]: {name: "Худалдаж авсан", color: "green-badge badge"},
+  [ProductLogStatus.Remainder]: {name: "Үлдэгдэлтэй", color: "yellow-badge badge"},
   // [ProductLogStatus.Damaged]: "Эвдэрсэн",
 };
 

@@ -114,7 +114,6 @@ export const BranchPage = ({ data }: { data: ListType<Branch> }) => {
             </Modal>
           }
         />
-        {action}
       </div>
     </div>
   );

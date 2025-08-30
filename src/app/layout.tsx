@@ -37,20 +37,22 @@ export default async function RootLayout({
   const store = await cookies();
   const token = store.get("token")?.value;
   const defaultOpen = store.get("sidebar_state")?.value === "false";
-
+  
+console.log('',store.get("sidebar_state")?.value)
   return (
-    <SidebarProvider defaultOpen={defaultOpen}>
+    <SidebarProvider defaultOpen={defaultOpen} >
       <html lang="en">
         <body
           className={`${geistSans.variable} ${geistMono.variable} antialiased custom-bg`}
         >
           <AppSidebar />
-          <div className="relative size-full p-2 pl-0 min-h-screen overflow-x-auto">
+          <div className={cn("relative size-full p-2 pl-0 min-h-screen overflow-x-auto flex-1")}>
             <Template token={token}>
               <ScrollArea
                 className={cn(
                   "rounded-xl overflow-hidden size-full h-[calc(100vh-1rem)] fixed top-0 left-0 ml-1",
-                  "bg-[#f8f9fb]"
+                  "bg-[#f8f9fb]",
+                  // store.get("sidebar_state")?.value == "false" ? "bg-red-500" : ''
                 )}
               >
                 {/* <Navbar /> */}

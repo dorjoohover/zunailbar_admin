@@ -17,7 +17,7 @@ export const FormItems = <T extends FieldValues>({
   name,
   label,
   className,
-  message = true,
+  message = false,
   children,
 }: {
   name: Path<T>;
@@ -35,7 +35,7 @@ export const FormItems = <T extends FieldValues>({
         <FormItem className={className}>
           <FormLabel>{label}</FormLabel>
           {children(field)}
-          {message && <FormMessage />}
+          {/* {message && <FormMessage />} */}
         </FormItem>
       )}
     />

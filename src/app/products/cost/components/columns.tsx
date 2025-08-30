@@ -56,7 +56,7 @@ export function getColumns(
     {
       accessorKey: "price",
       header: "Price",
-      cell: ({ row }) => money(row.getValue("price"), "₮") ?? "Хоосон",
+      cell: ({ row }) => money(row.getValue("price"), "₮") ?? "-",
     },
     {
       accessorKey: "cost_status",
@@ -64,7 +64,7 @@ export function getColumns(
       cell: ({ row }) => {
         const status =
           getValuesCostStatus[row.getValue<number>("cost_status") as CostStatus];
-        return <span>{status}</span>;
+        return <span className={status.color}>{status.name}</span>;
       },
     },
     {

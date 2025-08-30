@@ -21,8 +21,34 @@
   }
 }
 
+
+
 @utility custom-bg {
   @apply bg-[url(/bg/image.png)];
+}
+
+/* Badges */
+@utility badge {
+  @apply p-1 px-2 rounded-full text-white text-xs font-semibold;
+}
+@utility green-badge {
+  @apply text-green-700  bg-green-200;
+}
+@utility slate-badge {
+  @apply text-slate-700 bg-slate-300;
+}
+@utility red-badge {
+  @apply text-red-700 bg-red-200;
+}
+@utility yellow-badge {
+  @apply text-yellow-900 bg-amber-200;
+}
+@utility neutral-badge {
+  @apply text-neutral-700 bg-neutral-300;
+}
+
+@utility checkbox-label {
+  @apply flex items-center gap-2 p-1 rounded text-sm cursor-pointer hover:bg-gray-100
 }
 
 @utility transparent-input {
@@ -32,23 +58,23 @@
 @custom-variant dark (&:is(.dark *));
 
 @utility flex-center {
-  @apply flex justify-center items-center;
+  @apply flex items-center justify-center;
 }
 
 @utility col-center {
-  @apply flex flex-col justify-center items-center;
+  @apply flex flex-col items-center justify-center;
 }
 
 @utility container {
-  @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+  @apply px-4 mx-auto max-w-7xl sm:px-6 lg:px-8;
 }
 
 @utility admin-container {
-  @apply p-3 lg:p-6 space-y-5 w-full;
+  @apply w-full p-3 space-y-5 lg:p-6;
 }
 
 @utility double-col {
-  @apply grid grid-cols-1 sm:grid-cols-2 gap-5;
+  @apply grid grid-cols-1 gap-5 sm:grid-cols-2;
 }
 
 @utility divide-x-gray {

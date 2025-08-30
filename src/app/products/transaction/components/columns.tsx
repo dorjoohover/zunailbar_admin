@@ -48,7 +48,7 @@ export function getColumns(onEdit: (product: IProductTransaction) => void, remov
       header: "Status",
       cell: ({ row }) => {
         const status = ProductTransactionStatus[row.getValue<number>("product_transaction_status") as ProductTransactionStatus];
-        return <span>{status}</span>;
+        return <span className={""}>{status}</span>;
       },
     },
     // {

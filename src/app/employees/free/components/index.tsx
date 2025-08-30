@@ -184,13 +184,7 @@ export const PendingSchedulePage = ({ data, users }: { data: ListType<Schedule>;
             </Modal>
           }
         />
-        {action}
       </div>
-      {/* <ProductDialog
-        editingProduct={editingProduct}
-        onChange={onChange}
-        save={handleSave}
-      /> */}
     </div>
   );
 };

@@ -25,7 +25,7 @@ export const FilterPopover = ({
       <Popover>
         <PopoverTrigger asChild>
           <Button variant="outline" className="inline-flex items-center justify-start text-left gap-1 w-[160px] truncate px-2 rounded">
-            <div className="font-normal w-full flex items-center justify-between">
+            <div className="flex items-center justify-between w-full font-normal">
               <span className="w-full truncate">{value ?? "Сонгох"}</span>
 
               <ChevronDown />
