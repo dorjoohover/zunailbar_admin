@@ -1,7 +1,13 @@
 "use client";
 import { ISchedule, User, Schedule } from "@/models";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ListType, ACTION, PG, DEFAULT_PG } from "@/lib/constants";
+import {
+  ListType,
+  ACTION,
+  PG,
+  DEFAULT_PG,
+  ScheduleEdit,
+} from "@/lib/constants";
 import { Modal } from "@/shared/components/modal";
 import z from "zod";
 import { FormProvider, useForm } from "react-hook-form";
@@ -12,8 +18,17 @@ import { FormItems } from "@/shared/components/form.field";
 import { ComboBox } from "@/shared/components/combobox";
 import { fetcher } from "@/hooks/fetcher";
 import { mnDate, usernameFormatter } from "@/lib/functions";
-import { ScheduleForm, ScheduleTable } from "@/components/layout/schedule.table";
-import { Pagination, PaginationContent, PaginationItem, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
+import {
+  ScheduleForm,
+  ScheduleTable,
+} from "@/components/layout/schedule.table";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 import DynamicHeader from "@/components/dynamicHeader";
 import { cn } from "@/lib/utils";
 
@@ -30,7 +45,13 @@ const defaultValues: ScheduleType = {
   edit: undefined,
 };
 type ScheduleType = z.infer<typeof formSchema>;
-export const SchedulePage = ({ data, users }: { data: ListType<Schedule>; users: ListType<User> }) => {
+export const SchedulePage = ({
+  data,
+  users,
+}: {
+  data: ListType<Schedule>;
+  users: ListType<User>;
+}) => {
   const [action, setAction] = useState(ACTION.DEFAULT);
   const [open, setOpen] = useState<undefined | boolean>(false);
   const form = useForm<ScheduleType>({
@@ -41,7 +62,10 @@ export const SchedulePage = ({ data, users }: { data: ListType<Schedule>; users:
   const [lastSchedule, setLastSchedule] = useState<Schedule | null>(null);
   const [page, setPage] = useState(0);
   const [branch, setBranch] = useState(users.items[0]);
-  const userMap = useMemo(() => new Map(users.items.map((b) => [b.id, b])), [users.items]);
+  const userMap = useMemo(
+    () => new Map(users.items.map((b) => [b.id, b])),
+    [users.items]
+  );
 
   const ScheduleFormatter = (data: ListType<Schedule>) => {
     const items: Schedule[] = data.items.map((item) => {
@@ -125,7 +149,7 @@ export const SchedulePage = ({ data, users }: { data: ListType<Schedule>; users:
   useEffect(() => {
     mounted.current ? refresh() : (mounted.current = true);
   }, [page, branch]);
-
+  const [editSchedule, setEdit] = useState<ScheduleEdit[]>([]);
   return (
     <div className="">
       <DynamicHeader />
@@ -133,7 +157,7 @@ export const SchedulePage = ({ data, users }: { data: ListType<Schedule>; users:
       <div className="admin-container">
         <div className="flex items-center justify-between max-w-lg">
           <ComboBox
-          className="h-9"
+            className="h-9"
             items={users.items.map((b, i) => {
               return {
                 label: usernameFormatter(b),
@@ -165,7 +189,11 @@ export const SchedulePage = ({ data, users }: { data: ListType<Schedule>; users:
             loading={action == ACTION.RUNNING}
           >
             <FormProvider {...form}>
-              <FormItems control={form.control} name="user_id" className="block">
+              <FormItems
+                control={form.control}
+                name="user_id"
+                className="block"
+              >
                 {(field) => {
                   return (
                     <ComboBox
@@ -204,7 +232,15 @@ export const SchedulePage = ({ data, users }: { data: ListType<Schedule>; users:
             </FormProvider>
           </Modal>
         </div>
-        {schedules?.items && schedules?.items?.length > 0 ? <ScheduleTable artist={true} d={schedules.items?.[0]?.index ?? 0} value={schedules.items.map((item) => item.times).reverse()} edit={null} /> : null}
+        {schedules?.items && schedules?.items?.length > 0 ? (
+          <ScheduleTable
+            artist={true}
+            d={schedules.items?.[0]?.index ?? 0}
+            value={schedules.items.map((item) => item.times).reverse()}
+            edit={editSchedule}
+            setEdit={setEdit}
+          />
+        ) : null}
         {/* <DataTable
         columns={columns}
         count={Schedules?.count}

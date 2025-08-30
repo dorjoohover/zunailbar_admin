@@ -13,11 +13,19 @@ export const TextField = <T extends FieldValues>({
   type = "text",
   symbol = "₮",
   className = "bg-white h-10",
+  max,
+  min,
+  disabled = false,
+  pattern,
 }: {
   pl?: string;
+  pattern?: string;
   symbol?: string;
   type?: string; // "money" бол форматлана
   label?: string;
+  disabled?: boolean;
+  max?: string;
+  min?: string;
   className?: string;
   props: ControllerRenderProps<T>;
 }) => {
@@ -35,11 +43,37 @@ export const TextField = <T extends FieldValues>({
     }
   }, [props.value, type]);
 
+  if (type == "date") {
+    return (
+      <div className="relative space-y-2">
+        {label && (
+          <Label htmlFor={id} className="truncate">
+            {label}
+          </Label>
+        )}
+        <Input
+          {...props}
+          type={type}
+          max={max}
+          min={min}
+          disabled={disabled}
+          id={id}
+          placeholder={pl}
+          className={cn("h-10", className)}
+        />
+      </div>
+    );
+  }
   if (type !== "money") {
     return (
       <div className="relative space-y-2">
-        {label && <Label htmlFor={id} className="truncate">{label}</Label>}
+        {label && (
+          <Label htmlFor={id} className="truncate">
+            {label}
+          </Label>
+        )}
         <Input
+          pattern={pattern}
           {...props}
           type={type}
           id={id}

@@ -1,12 +1,9 @@
 import { ColumnDef } from "@tanstack/react-table";
 import { IProduct } from "@/models/product.model";
-import { ArrowUpDown, Pencil, Trash2 } from "lucide-react";
+import { ArrowUpDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { AppAlertDialog } from "@/components/AlertDialog";
-import { toast } from "sonner";
 import { parseDate } from "@/lib/functions";
-import TooltipWrapper from "@/components/tooltipWrapper";
 import { TableActionButtons } from "@/components/tableActionButtons";
 
 export function getColumns(
@@ -45,10 +42,10 @@ export function getColumns(
         </Button>
       ),
     },
-    {
-      accessorKey: "ref",
-      header: "Reference",
-    },
+    // {
+    //   accessorKey: "ref",
+    //   header: "Reference",
+    // },
     {
       accessorKey: "quantity",
       header: ({ column }) => (
@@ -62,16 +59,16 @@ export function getColumns(
       ),
     },
 
-    {
-      accessorKey: "color",
-      header: "Color",
-      cell: ({ row }) => row.getValue("color") ?? "-",
-    },
-    {
-      accessorKey: "size",
-      header: "Size",
-      cell: ({ row }) => row.getValue("size") ?? "-",
-    },
+    // {
+    //   accessorKey: "color",
+    //   header: "Color",
+    //   cell: ({ row }) => row.getValue("color") ?? "-",
+    // },
+    // {
+    //   accessorKey: "size",
+    //   header: "Size",
+    //   cell: ({ row }) => row.getValue("size") ?? "-",
+    // },
     {
       accessorKey: "created_at",
       header: ({ column }) => (

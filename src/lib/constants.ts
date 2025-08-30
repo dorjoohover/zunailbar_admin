@@ -143,15 +143,25 @@ export const getValuesCostStatus = {
   [CostStatus.Remainder]: { name: "Үлдэгдэлтэй", color: "yellow-badge badge" },
 };
 
+export type ScheduleEdit = {
+  times: number[];
+  day: number;
+};
 export const getValueDiscount = {
   [DISCOUNT.Percent]: "Хувиар",
   [DISCOUNT.Price]: "Үнээр",
 };
 
 export const getValuesProductTransactionStatus = {
-  [ProductTransactionStatus.Used]: {name: "Хэрэглэсэн", color: "green-badge badge"},
+  [ProductTransactionStatus.Used]: {
+    name: "Хэрэглэсэн",
+    color: "green-badge badge",
+  },
   // [ProductTransactionStatus.Sold]:  {name: "Зарсан", color: "yellow-badge badge"},
-  [ProductTransactionStatus.Damaged]: {name: "Эвдэрсэн", color: "red-badge badge"},
+  [ProductTransactionStatus.Damaged]: {
+    name: "Эвдэрсэн",
+    color: "red-badge badge",
+  },
 };
 
 export const getValuesProductLogStatus = {

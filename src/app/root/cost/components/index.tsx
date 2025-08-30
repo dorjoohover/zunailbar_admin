@@ -1,7 +1,7 @@
 "use client";
 
 import { DataTable } from "@/components/data-table";
-import { Brand, Category, IProduct, Product } from "@/models";
+import { Category, IProduct, Product } from "@/models";
 import { getColumns } from "./columns";
 import { useState } from "react";
 import { ListType, ACTION, PG, DEFAULT_PG } from "@/lib/constants";
@@ -17,24 +17,32 @@ import { TextField } from "@/shared/components/text.field";
 import { fetcher } from "@/hooks/fetcher";
 import { CategoryType } from "@/lib/enum";
 import DynamicHeader from "@/components/dynamicHeader";
+import { showToast } from "@/shared/components/showToast";
 
 const formSchema = z.object({
   category_id: z.string().min(1),
   name: z.string().min(1),
-  color: z.string().nullable().optional(),
+  // color: z.string().nullable().optional(),
 
-  size: z.string().nullable().optional(),
+  // size: z.string().nullable().optional(),
   edit: z.string().nullable().optional(),
 });
+const defaultValues = {
+  edit: undefined,
+};
 type ProductType = z.infer<typeof formSchema>;
-export const CostPage = ({ data, categories }: { data: ListType<Product>; categories: ListType<Category> }) => {
+export const CostPage = ({
+  data,
+  categories,
+}: {
+  data: ListType<Product>;
+  categories: ListType<Category>;
+}) => {
   const [action, setAction] = useState(ACTION.DEFAULT);
   const [open, setOpen] = useState<undefined | boolean>(false);
   const form = useForm<ProductType>({
     resolver: zodResolver(formSchema),
-    defaultValues: {
-      edit: undefined,
-    },
+    defaultValues,
   });
   const [products, setProducts] = useState<ListType<Product>>(data);
   const deleteProduct = async (index: number) => {
@@ -68,11 +76,22 @@ export const CostPage = ({ data, categories }: { data: ListType<Product>; catego
     setAction(ACTION.RUNNING);
     const body = e as ProductType;
     const { edit, ...payload } = body;
-    const res = edit ? await updateOne<IProduct>(Api.product, edit ?? "", payload as IProduct) : await create<IProduct>(Api.product, e as IProduct);
+    const res = edit
+      ? await updateOne<IProduct>(Api.product, edit ?? "", {
+          type: CategoryType.COST,
+          ...payload,
+        } as IProduct)
+      : await create<IProduct>(Api.product, {
+          type: CategoryType.COST,
+          ...payload,
+        } as IProduct);
     if (res.success) {
       refresh();
       setOpen(false);
-      form.reset({});
+      form.reset(defaultValues);
+      showToast("success", edit ? "Мэдээлэл засагдсан." : "Амжилттай нэмлээ.");
+    } else {
+      showToast("error", res.error ?? "");
     }
     setAction(ACTION.DEFAULT);
   };
@@ -96,19 +115,21 @@ export const CostPage = ({ data, categories }: { data: ListType<Product>; catego
               name="Нэмэх"
               submit={() => form.handleSubmit(onSubmit, onInvalid)()}
               open={open == true}
-              reset={() => {
-                setOpen(false);
-                form.reset({});
+              setOpen={(v) => {
+                setOpen(v);
+                form.reset(defaultValues);
               }}
-              setOpen={(v) => setOpen(v)}
               loading={action == ACTION.RUNNING}
             >
               <FormProvider {...form}>
                 <div className="divide-y space-y-4">
                   <div className="double-col pb-5">
-                    <FormItems control={form.control} name="category_id" label="Төрөл">
+                    <FormItems
+                      control={form.control}
+                      name="category_id"
+                      label="Төрөл"
+                    >
                       {(field) => {
-                        console.log(field.value);
                         return (
                           <ComboBox
                             props={{ ...field }}
@@ -130,22 +151,28 @@ export const CostPage = ({ data, categories }: { data: ListType<Product>; catego
                         key: "name",
                         label: "Нэр",
                       },
-                      {
-                        key: "color",
-                        label: "Өнгө",
-                      },
+                      // {
+                      //   key: "color",
+                      //   label: "Өнгө",
+                      // },
 
-                      {
-                        key: "size",
-                        label: "Хэмжээ  ",
-                      },
+                      // {
+                      //   key: "size",
+                      //   label: "Хэмжээ  ",
+                      // },
                     ].map((item, i) => {
                       const name = item.key as keyof ProductType;
                       const label = item.label as keyof ProductType;
                       return (
-                        <FormItems label={label} control={form.control} name={name} key={i} className={item.key && "name"}>
+                        <FormItems
+                          label={label}
+                          control={form.control}
+                          name={name}
+                          key={i}
+                          className={item.key && "name"}
+                        >
                           {(field) => {
-                            return <TextField props={{ ...field }}  />;
+                            return <TextField props={{ ...field }} />;
                           }}
                         </FormItems>
                       );

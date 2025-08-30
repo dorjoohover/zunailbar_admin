@@ -3,7 +3,15 @@
 import { DataTable } from "@/components/data-table";
 import { Branch, IDiscount, Discount, Service } from "@/models";
 import { useEffect, useMemo, useState } from "react";
-import { ListType, ACTION, PG, DEFAULT_PG, ListDefault, getEnumValues, getValueDiscount } from "@/lib/constants";
+import {
+  ListType,
+  ACTION,
+  PG,
+  DEFAULT_PG,
+  ListDefault,
+  getEnumValues,
+  getValueDiscount,
+} from "@/lib/constants";
 import { Modal } from "@/shared/components/modal";
 import z from "zod";
 import { FormProvider, useForm } from "react-hook-form";
@@ -24,10 +32,24 @@ const formSchema = z.object({
   branch_id: z.string().min(1),
   name: z.string().min(1),
   service_id: z.string().min(1),
-  start_date: z.preprocess((val) => (typeof val === "string" ? mnDate(new Date(val)) : val), z.date()) as unknown as Date,
-  end_date: z.preprocess((val) => (typeof val === "string" ? mnDate(new Date(val)) : val), z.date()) as unknown as Date,
-  value: z.preprocess((val) => (typeof val === "string" ? parseFloat(val) : val), z.number()) as unknown as number,
-  type: z.preprocess((val) => (typeof val === "string" ? parseInt(val, 10) : val), z.nativeEnum(DISCOUNT).nullable()).optional() as unknown as number,
+  start_date: z.preprocess(
+    (val) => (typeof val === "string" ? mnDate(new Date(val)) : val),
+    z.date()
+  ) as unknown as Date,
+  end_date: z.preprocess(
+    (val) => (typeof val === "string" ? mnDate(new Date(val)) : val),
+    z.date()
+  ) as unknown as Date,
+  value: z.preprocess(
+    (val) => (typeof val === "string" ? parseFloat(val) : val),
+    z.number()
+  ) as unknown as number,
+  type: z
+    .preprocess(
+      (val) => (typeof val === "string" ? parseInt(val, 10) : val),
+      z.nativeEnum(DISCOUNT).nullable()
+    )
+    .optional() as unknown as number,
   edit: z.string().nullable().optional(),
 });
 const defaultValues: DiscountType = {
@@ -41,7 +63,15 @@ const defaultValues: DiscountType = {
   edit: undefined,
 };
 type DiscountType = z.infer<typeof formSchema>;
-export const DiscountPage = ({ data, services, branches }: { data: ListType<Discount>; services: ListType<Service>; branches: ListType<Branch> }) => {
+export const DiscountPage = ({
+  data,
+  services,
+  branches,
+}: {
+  data: ListType<Discount>;
+  services: ListType<Service>;
+  branches: ListType<Branch>;
+}) => {
   const [action, setAction] = useState(ACTION.DEFAULT);
   const [open, setOpen] = useState<undefined | boolean>(false);
   const form = useForm<DiscountType>({
@@ -49,8 +79,14 @@ export const DiscountPage = ({ data, services, branches }: { data: ListType<Disc
     defaultValues,
   });
   const [discounts, setDiscounts] = useState<ListType<Discount>>(ListDefault);
-  const serviceMap = useMemo(() => new Map(services.items.map((b) => [b.id, b])), [services.items]);
-  const branchMap = useMemo(() => new Map(branches.items.map((b) => [b.id, b])), [branches.items]);
+  const serviceMap = useMemo(
+    () => new Map(services.items.map((b) => [b.id, b])),
+    [services.items]
+  );
+  const branchMap = useMemo(
+    () => new Map(branches.items.map((b) => [b.id, b])),
+    [branches.items]
+  );
 
   const discountFormatter = (data: ListType<Discount>) => {
     const items: Discount[] = data.items.map((item) => {
@@ -103,7 +139,9 @@ export const DiscountPage = ({ data, services, branches }: { data: ListType<Disc
     setAction(ACTION.RUNNING);
     const body = e as DiscountType;
     const { edit } = body;
-    const res = edit ? await updateOne<Discount>(Api.discount, edit ?? "", e as Discount) : await create<Discount>(Api.discount, e as Discount);
+    const res = edit
+      ? await updateOne<Discount>(Api.discount, edit ?? "", e as Discount)
+      : await create<Discount>(Api.discount, e as Discount);
     console.log(res);
     if (res.success) {
       refresh();
@@ -143,7 +181,11 @@ export const DiscountPage = ({ data, services, branches }: { data: ListType<Disc
             >
               <FormProvider {...form}>
                 <div className="double-col">
-                  <FormItems label="Үйлчилгээ" control={form.control} name="service_id">
+                  <FormItems
+                    label="Үйлчилгээ"
+                    control={form.control}
+                    name="service_id"
+                  >
                     {(field) => {
                       return (
                         <ComboBox
@@ -158,7 +200,11 @@ export const DiscountPage = ({ data, services, branches }: { data: ListType<Disc
                       );
                     }}
                   </FormItems>
-                  <FormItems label="Салбар" control={form.control} name="branch_id">
+                  <FormItems
+                    label="Салбар"
+                    control={form.control}
+                    name="branch_id"
+                  >
                     {(field) => {
                       return (
                         <ComboBox
@@ -194,16 +240,7 @@ export const DiscountPage = ({ data, services, branches }: { data: ListType<Disc
                       type: "number",
                       label: "Дүн",
                     },
-                    {
-                      key: "start_date",
-                      label: "Эхлэх огноо",
-                      type: "date",
-                    },
-                    {
-                      key: "end_date",
-                      label: "Дуусах огноо",
-                      type: "date",
-                    },
+
                     {
                       key: "name",
                       label: "Урамшууллын нэр",
@@ -213,13 +250,54 @@ export const DiscountPage = ({ data, services, branches }: { data: ListType<Disc
                     const name = item.key as keyof DiscountType;
                     const label = item.label as keyof DiscountType;
                     return (
-                      <FormItems label={label} control={form.control} name={name} key={i} className={item.key && "name"}>
+                      <FormItems
+                        label={label}
+                        control={form.control}
+                        name={name}
+                        key={i}
+                        className={item.key && "name"}
+                      >
                         {(field) => {
-                          return <TextField props={{ ...field }} type={item.type} />;
+                          return (
+                            <TextField props={{ ...field }} type={item.type} />
+                          );
                         }}
                       </FormItems>
                     );
                   })}
+
+                  <FormItems
+                    label={"Эхлэх огноо"}
+                    control={form.control}
+                    name={"start_date"}
+                    className={"name"}
+                  >
+                    {(field) => {
+                      return (
+                        <TextField
+                          props={{ ...field }}
+                          max={form.watch("end_date") as string}
+                          type={"date"}
+                        />
+                      );
+                    }}
+                  </FormItems>
+                  <FormItems
+                    label={"Дуусах огноо"}
+                    control={form.control}
+                    name={"end_date"}
+                    className={"name"}
+                  >
+                    {(field) => {
+                      return (
+                        <TextField
+                          min={form.watch("start_date") as string}
+                          props={{ ...field }}
+                          type={"date"}
+                        />
+                      );
+                    }}
+                  </FormItems>
                 </div>
               </FormProvider>
             </Modal>

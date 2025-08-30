@@ -1,40 +1,27 @@
 "use client";
-
 import { DataTable } from "@/components/data-table";
-import {
-  Product,
-  Category,
-  Warehouse,
-  ICategory,
-  IProductsWarehouse,
-} from "@/models";
-import { useEffect, useMemo, useState } from "react";
+import { Category, ICategory } from "@/models";
+import { useState } from "react";
 import {
   ListType,
   ACTION,
   PG,
   DEFAULT_PG,
   getEnumValues,
-  SearchType,
   CategoryTypeValues,
 } from "@/lib/constants";
 import { Modal } from "@/shared/components/modal";
 import z from "zod";
-import { FormProvider, useFieldArray, useForm } from "react-hook-form";
+import { FormProvider, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Api } from "@/utils/api";
-import { create, deleteOne, search, updateOne } from "@/app/(api)";
+import { create, deleteOne, updateOne } from "@/app/(api)";
 import { FormItems } from "@/shared/components/form.field";
 import { ComboBox } from "@/shared/components/combobox";
 import { TextField } from "@/shared/components/text.field";
 import { fetcher } from "@/hooks/fetcher";
 import { getColumns } from "./columns";
-import { DatePicker } from "@/shared/components/date.picker";
-import { Input } from "@/components/ui/input";
-import { ScrollArea } from "@radix-ui/react-scroll-area";
-import { Button } from "@/components/ui/button";
 import { CategoryType as CategoryTypEnum } from "@/lib/enum";
-import ContainerHeader from "@/components/containerHeader";
 import DynamicHeader from "@/components/dynamicHeader";
 
 const formSchema = z.object({

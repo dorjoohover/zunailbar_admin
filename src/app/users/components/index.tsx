@@ -28,13 +28,31 @@ import { objectCompact } from "@/lib/functions";
 import { FilterPopover } from "@/components/layout/popover";
 import { Checkbox } from "@radix-ui/react-checkbox";
 import { PasswordField } from "@/shared/components/password.field";
+import { showToast } from "@/shared/components/showToast";
 
-const formSchema = z.object({
-  mobile: z.string().min(1),
-  nickname: z.string().min(1),
-  password: z.string().min(1),
-  edit: z.string().nullable().optional(),
-});
+const formSchema = z
+  .object({
+    mobile: z.string().length(8),
+    nickname: z
+      .string()
+      .min(1)
+      .regex(/^[\p{L}\s\-']+$/u, "Зөвхөн үсэг, зай, -, '"),
+    password: z.string().nullable().optional(),
+    edit: z.string().nullable().optional(),
+  })
+  .superRefine((val, ctx) => {
+    // edit нь undefined биш бол (null ч байсан OK) password заавал байх ёстой
+    if (val.edit === undefined) {
+      const pass = val.password ?? "";
+      if (pass.trim().length === 0) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["password"],
+          message: "Хэрэглэгч нэмэх үед нууц үг заавал.",
+        });
+      }
+    }
+  });
 const defaultValues: UserType = {
   mobile: "",
   nickname: "",
@@ -102,6 +120,7 @@ export const UserPage = ({ data }: { data: ListType<User> }) => {
     setAction(ACTION.RUNNING);
     const body = e as UserType;
     const { edit, ...payload } = body;
+
     const res = edit
       ? await updateOne<User>(Api.user, edit ?? "", {
           ...payload,
@@ -112,16 +131,24 @@ export const UserPage = ({ data }: { data: ListType<User> }) => {
           role: ROLE.CLIENT,
           birthday: null,
         } as any);
-    console.log(res);
+
     if (res.success) {
       refresh();
       setOpen(false);
+      showToast(
+        "success",
+        !edit ? "Мэдээлэл шинэчлэлээ." : "Амжилттай нэмлээ."
+      );
       clear();
+    } else {
+      showToast("error", res.error ?? "");
     }
     setAction(ACTION.DEFAULT);
   };
   const onInvalid = async <T,>(e: T) => {
-    console.log("error", e);
+    const value = e as any;
+    if (value.password != undefined)
+      showToast("info", value.password?.message ?? "");
   };
   const [filter, setFilter] = useState<FilterType>();
   const changeFilter = (key: string, value: number | string) => {
@@ -186,7 +213,7 @@ export const UserPage = ({ data }: { data: ListType<User> }) => {
                   //   }
                   //   label={item.label}
                   // />
-                     <label key={i}>
+                  <label key={i}>
                     <span className="filter-label">{item.label as string}</span>
                     <ComboBox
                       pl={item.label}
@@ -235,6 +262,7 @@ export const UserPage = ({ data }: { data: ListType<User> }) => {
                     {
                       key: "nickname",
                       label: "Нэр",
+                      pattern: true,
                     },
                     {
                       key: "mobile",
@@ -243,6 +271,7 @@ export const UserPage = ({ data }: { data: ListType<User> }) => {
                   ].map((item, i) => {
                     const name = item.key as keyof UserType;
                     const label = item.label as keyof UserType;
+
                     return (
                       <FormItems
                         label={label}
@@ -252,20 +281,45 @@ export const UserPage = ({ data }: { data: ListType<User> }) => {
                         className={item.key === "name" ? "col-span-2" : ""}
                       >
                         {(field) => {
-                          return <TextField props={{ ...field }} label={""} />;
+                          const blockRe: RegExp | undefined = item.pattern
+                            ? /[^\p{L}\s\-']/gu
+                            : undefined;
+                          const onChange: React.ChangeEventHandler<
+                            HTMLInputElement
+                          > = (e) => {
+                            if (blockRe) {
+                              const raw = e.target.value ?? "";
+                              const cleaned = raw.replace(blockRe, "");
+                              console.log(cleaned);
+                              // RHF-д value-гаар нь дамжуулна
+                              (field.onChange as (v: string) => void)(cleaned);
+                            } else {
+                              field.onChange(e); // хэвийн дамжуул
+                            }
+                          };
+                          return (
+                            <TextField
+                              props={{ ...field, onChange }}
+                              label={""}
+                            />
+                          );
                         }}
                       </FormItems>
                     );
                   })}
-                  <FormItems
-                    control={form.control}
-                    name="password"
-                    className="col-span-2"
-                  >
-                    {(field) => {
-                      return <PasswordField props={{ ...field }} view={true} />;
-                    }}
-                  </FormItems>
+                  {form.watch("edit") == undefined && (
+                    <FormItems
+                      control={form.control}
+                      name="password"
+                      className="col-span-2"
+                    >
+                      {(field) => {
+                        return (
+                          <PasswordField props={{ ...field }} view={true} />
+                        );
+                      }}
+                    </FormItems>
+                  )}
                 </div>
               </FormProvider>
             </Modal>
