@@ -29,26 +29,12 @@ export const Modal = ({ name = "Нэмэх", title = name, btn = <Loader2Icon cl
     "7xl": "max-w-[calc(theme(maxWidth.7xl)-1rem)]",
   };
 
-  //   const mawClasses: Record<string, string> = {
-  //   xs: "max-w-xs",
-  //   sm: "max-w-sm",
-  //   md: "max-w-md",
-  //   lg: "max-w-lg",
-  //   xl: "max-w-xl",
-  //   "2xl": "max-w-2xl",
-  //   "3xl": "max-w-3xl",
-  //   "4xl": "max-w-4xl",
-  //   "5xl": "max-w-5xl",
-  //   "6xl": "max-w-6xl",
-  //   "7xl": "max-w-7xl",
-  // };
-
   return (
     <Dialog open={open} onOpenChange={(v) => setOpen(v)}>
       {name && name !== "" && (
         <DialogTrigger asChild>
-          <Button variant="default" className="cursor-pointer uppercase text-xs font-bold ml-1">
-            <Plus />
+          <Button variant="purple" className="cursor-pointer uppercase text-xs font-bold ml-1">
+            <Plus strokeWidth={2.5} />
             <span className="hidden md:block">{name}</span>
           </Button>
         </DialogTrigger>
@@ -67,7 +53,7 @@ export const Modal = ({ name = "Нэмэх", title = name, btn = <Loader2Icon cl
             </Button>
           </DialogClose>
           {submit && (
-            <Button onClick={(e) => handleSubmit(e)}>
+            <Button variant={"purple"} onClick={(e) => handleSubmit(e)}>
               {loading && btn}
               {loading ? "Please wait..." : submitTxt}
             </Button>

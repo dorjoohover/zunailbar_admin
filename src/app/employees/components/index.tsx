@@ -1,12 +1,12 @@
 "use client";
 import { DataTable } from "@/components/data-table";
-import { ACTION, DEFAULT_PG, getEnumValues, ListType, Option, PG, RoleValue, UserStatusValue } from "@/lib/constants";
+import { ACTION, DEFAULT_PG, EmployeeStatusValue, getEnumValues, ListType, Option, PG, RoleValue, UserStatusValue } from "@/lib/constants";
 import { Branch, IUser, User } from "@/models";
 import { getColumns } from "./columns";
 import { Modal } from "@/shared/components/modal";
 import { ComboBox } from "@/shared/components/combobox";
 import { useEffect, useMemo, useState } from "react";
-import { ROLE, UserStatus } from "@/lib/enum";
+import { EmployeeStatus, ROLE, UserStatus } from "@/lib/enum";
 import { PasswordField } from "@/shared/components/password.field";
 import z from "zod";
 import { FormProvider, useForm } from "react-hook-form";
@@ -28,6 +28,7 @@ import { COLORS } from "@/lib/colors";
 import { FilterPopover } from "@/components/layout/popover";
 import { Checkbox } from "@radix-ui/react-checkbox";
 import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
 
 const formSchema = z.object({
   firstname: z.string().min(1),
@@ -181,269 +182,252 @@ export const EmployeePage = ({ data, branches }: { data: ListType<User>; branche
       {
         key: "status",
         label: "Статус",
-        items: getEnumValues(UserStatus).map((s) => ({
+        items: getEnumValues(EmployeeStatus).map((s) => ({
           value: s,
-          label: UserStatusValue[s].name,
+          label: EmployeeStatusValue[s].name,
         })),
       },
     ],
     [branches.items]
   );
+
+
   return (
     <div className="relative w-full">
       <DynamicHeader />
 
       <div className="admin-container">
-        <EmployeeProductModal id={userProduct} clear={() => setUserProduct(undefined)} />
-        <DataTable
-          clear={() => setFilter(undefined)}
-          filter={
-            <>
-              {groups.map((item, i) => {
-                const { key } = item;
-                return (
-                  <label key={i}>
-                    <span className="filter-label">{item.label as string}</span>
-                    <ComboBox
-                      pl={item.label}
-                      name={item.label}
-                      className="max-w-36 text-xs!"
-                      search={true}
-                      value={filter?.[key] ? String(filter[key]) : ""} //
-                      items={item.items.map((it) => ({
-                        value: String(it.value),
-                        label: it.label as string,
-                      }))}
-                      props={{
-                        value: filter?.[key] ? String(filter[key]) : "",
-                        onChange: (val: string) => changeFilter(key, val),
-                        onBlur: () => {},
-                        name: key,
-                        ref: () => {},
-                      }}
-                    />
-                  </label>
-                  // <FilterPopover
-                  //   key={i}
-                  //   label={item.label}
-                  //   content={item.items.map((it, index) => (
-                  //     <label key={index} className="checkbox-label">
-                  //       <Checkbox checked={filter?.[key] == it.value} onCheckedChange={() => changeFilter(key, it.value)} />
-                  //       <span>{it.label as string}</span>
-                  //     </label>
 
-                  //   ))}
-                  //   value={filter?.[key] ? item.items.filter((item) => item.value == filter[key])[0].label : undefined}
-                  // />
-                );
-              })}
-            </>
-          }
-          columns={columns}
-          data={users.items}
-          refresh={refresh}
-          loading={action === ACTION.RUNNING}
-          count={users.count}
-          modalAdd={
-            <Modal
-              maw="3xl"
-              submit={() => {
-                form.handleSubmit(onSubmit, onInvalid)();
-              }}
-              name="Ажилтан нэмэх"
-              submitTxt={editingUser ? "Засах" : "Нэмэх"}
-              open={!open ? false : open}
-              setOpen={(v) => {
-                setOpen(v);
-                setEditingUser(null);
-              }}
-              loading={action == ACTION.RUNNING}
-            >
-              <FormProvider {...form}>
-                {/* Profile Image */}
-                <div className="divide-y">
-                  <div className="grid grid-cols-2 pb-5">
-                    {/* <FormItems control={form.control} name="file">
-              {(field) => {
-                return (
-                  <>
-                  <p className="text-sm font-medium">Профайл зураг</p>
-                    <Input
-                      type="file"
-                      accept="image/*"
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        if (file) {
-                          field.onChange(file);
-                        }
-                      }}
-                    />
-                    {field.value && <img src={URL.createObjectURL(field.value as any)} alt="preview" className="object-cover mt-2 bg-white border rounded size-32 aspect-square" />}
-                  </>
-                );
-              }}
-            </FormItems> */}
-                    <FormItems control={form.control} name="file" label="Зураг өөрчлөх">
-                      {(field) => {
-                        const fileUrl = field.value ? URL.createObjectURL(field.value as any) : null;
+            <EmployeeProductModal id={userProduct} clear={() => setUserProduct(undefined)} />
+            <DataTable
+              clear={() => setFilter(undefined)}
+              filter={
+                <>
+                  {groups.map((item, i) => {
+                    const { key } = item;
+                    return (
+                      <label key={i}>
+                        <span className="filter-label">{item.label as string}</span>
+                        <ComboBox
+                          pl={item.label}
+                          name={item.label}
+                          className="max-w-36 text-xs!"
+                          search={true}
+                          value={filter?.[key] ? String(filter[key]) : ""} //
+                          items={item.items.map((it) => ({
+                            value: String(it.value),
+                            label: it.label as string,
+                          }))}
+                          props={{
+                            value: filter?.[key] ? String(filter[key]) : "",
+                            onChange: (val: string) => changeFilter(key, val),
+                            onBlur: () => {},
+                            name: key,
+                            ref: () => {},
+                          }}
+                        />
+                      </label>
+                      // <FilterPopover
+                      //   key={i}
+                      //   label={item.label}
+                      //   content={item.items.map((it, index) => (
+                      //     <label key={index} className="checkbox-label">
+                      //       <Checkbox checked={filter?.[key] == it.value} onCheckedChange={() => changeFilter(key, it.value)} />
+                      //       <span>{it.label as string}</span>
+                      //     </label>
 
-                        return (
-                          <div className="relative w-32 h-32">
-                            {fileUrl ? (
-                              <>
-                                {/* Preview */}
-                                <img src={fileUrl} alt="preview" className="object-cover w-full h-full overflow-hidden bg-white border rounded-md" />
-
-                                {/* Change */}
-                                <label htmlFor="file-upload" className="absolute p-1 rounded cursor-pointer top-1 right-7 bg-primary hover:bg-slate-600">
-                                  <Pencil className="text-white size-3" />
-                                </label>
-
-                                {/* Remove */}
-                                <button type="button" onClick={() => field.onChange(null)} className="absolute p-1 rounded cursor-pointer top-1 right-1 bg-primary hover:bg-slate-600">
-                                  <X className="text-white size-3" />
-                                </button>
-                              </>
-                            ) : (
-                              // Empty state uploader
-                              <label htmlFor="file-upload" className="flex flex-col items-center justify-center w-full h-full transition-colors bg-white border rounded-md cursor-pointer hover:bg-gray-50">
-                                <UploadCloud className="w-6 h-6 text-gray-500" />
-                                <span className="mt-1 text-xs text-gray-500">Browse</span>
-                              </label>
-                            )}
-
-                            {/* Hidden input */}
-                            <input
-                              id="file-upload"
-                              type="file"
-                              accept="image/*"
-                              className="hidden"
-                              onChange={(e) => {
-                                const file = e.target.files?.[0];
-                                if (file) {
-                                  field.onChange(file);
-                                }
-                              }}
-                            />
-                          </div>
-                        );
-                      }}
-                    </FormItems>
-                    {/* odoogiin */}
-                    {form.getValues("profile_img") && (
-                      <FormItems control={form.control} name="profile_img" label="Одоогийн зураг">
-                        {(field) => {
-                          return (
-                            <>
-                              {field.value && (
-                                <div className="relative w-32 h-32 bg-white">
-                                  <img src={`/api/file/${field.value}`} alt="preview" className="object-cover overflow-hidden border rounded-md size-full bg-gray" />
-                                </div>
-                              )}
-                            </>
-                          );
-                        }}
-                      </FormItems>
-                    )}
-                  </div>
-                  <div className="py-5 double-col">
-                    <FormItems control={form.control} name="branch_id" label="Салбар">
-                      {(field) => {
-                        return (
-                          <ComboBox
-                            search={true}
-                            props={{ ...field }}
-                            items={branches.items.map((branch) => {
-                              return {
-                                value: branch.id,
-                                label: branch.name,
-                              };
-                            })}
-                          />
-                        );
-                      }}
-                    </FormItems>
-
-                    <FormItems control={form.control} name="role" label="Эрхийн түвшин">
-                      {(field) => {
-                        return (
-                          <ComboBox
-                            items={[ROLE.ADMIN, ROLE.EMPLOYEE, ROLE.MANAGER].map((role) => {
-                              return {
-                                label: RoleValue[role],
-                                value: role.toString(),
-                              };
-                            })}
-                            props={{
-                              ...field,
-                            }}
-                          />
-                        );
-                      }}
-                    </FormItems>
-                  </div>
-                  <div className="pt-5 double-col">
-                    {!editingUser && (
-                      <FormItems  label='Нууц үг' control={form.control} name="password" className="col-span-1">
-                        {(field) => {
-                          return <PasswordField label="" props={{ ...field }} view={true} />;
-                        }}
-                      </FormItems>
-                    )}
-                    {["lastname", "firstname", "mobile", "nickname", "experience"].map((i, index) => {
-                      const item = i as keyof UserType;
-                      return (
-                        <FormItems label={firstLetterUpper(item)} control={form.control} name={item} key={index} className={"col-span-1"}>
+                      //   ))}
+                      //   value={filter?.[key] ? item.items.filter((item) => item.value == filter[key])[0].label : undefined}
+                      // />
+                    );
+                  })}
+                </>
+              }
+              columns={columns}
+              data={users.items}
+              refresh={refresh}
+              loading={action === ACTION.RUNNING}
+              count={users.count}
+              modalAdd={
+                <Modal
+                  maw="3xl"
+                  submit={() => {
+                    form.handleSubmit(onSubmit, onInvalid)();
+                  }}
+                  name="Ажилтан нэмэх"
+                  submitTxt={editingUser ? "Засах" : "Нэмэх"}
+                  open={!open ? false : open}
+                  setOpen={(v) => {
+                    setOpen(v);
+                    setEditingUser(null);
+                  }}
+                  loading={action == ACTION.RUNNING}
+                >
+                  <FormProvider {...form}>
+                    {/* Profile Image */}
+                    <div className="divide-y">
+                      <div className="grid grid-cols-2 pb-5">
+                        <FormItems control={form.control} name="file" label="Зураг өөрчлөх">
                           {(field) => {
+                            const fileUrl = field.value ? URL.createObjectURL(field.value as any) : null;
+
                             return (
-                              <>
-                                {/* <TextField type={"mobile" == item ? "number" : "text"} props={{ ...field }} label={firstLetterUpper(item)} /> */}
-                                <TextField
-                                  type={item === "mobile" ? "number" : "text"}
-                                  props={{
-                                    ...field,
-                                    ...(item === "mobile"
-                                      ? {
-                                          inputMode: "numeric",
-                                          pattern: "[0-9]*",
-                                        }
-                                      : {}),
+                              <div className="relative w-32 h-32">
+                                {fileUrl ? (
+                                  <>
+                                    {/* Preview */}
+                                    <img src={fileUrl} alt="preview" className="object-cover w-full h-full overflow-hidden bg-white border rounded-md" />
+
+                                    {/* Change */}
+                                    <label htmlFor="file-upload" className="absolute p-1 rounded cursor-pointer top-1 right-7 bg-primary hover:bg-slate-600">
+                                      <Pencil className="text-white size-3" />
+                                    </label>
+
+                                    {/* Remove */}
+                                    <button type="button" onClick={() => field.onChange(null)} className="absolute p-1 rounded cursor-pointer top-1 right-1 bg-primary hover:bg-slate-600">
+                                      <X className="text-white size-3" />
+                                    </button>
+                                  </>
+                                ) : (
+                                  // Empty state uploader
+                                  <label htmlFor="file-upload" className="flex flex-col items-center justify-center w-full h-full transition-colors bg-white border rounded-md cursor-pointer hover:bg-gray-50">
+                                    <UploadCloud className="w-6 h-6 text-gray-500" />
+                                    <span className="mt-1 text-xs text-gray-500">Browse</span>
+                                  </label>
+                                )}
+
+                                {/* Hidden input */}
+                                <input
+                                  id="file-upload"
+                                  type="file"
+                                  accept="image/*"
+                                  className="hidden"
+                                  onChange={(e) => {
+                                    const file = e.target.files?.[0];
+                                    if (file) {
+                                      field.onChange(file);
+                                    }
                                   }}
-                                  className={cn(item === "mobile" ? "hide-number-arrows" : "")}
                                 />
-                              </>
+                              </div>
                             );
                           }}
                         </FormItems>
-                      );
-                    })}
-                    <FormItems label="Төрсөн өдөр" control={form.control} name="birthday">
-                      {(field) => {
-                        return <DatePicker name="" pl="Огноо сонгох" props={{ ...field }} />;
-                      }}
-                    </FormItems>
-                    <FormItems label="Өнгө" control={form.control} name="color">
-                      {(field) => {
-                        return (
-                          <ComboBox
-                            props={{ ...field }}
-                            items={COLORS.map((color, index) => {
-                              return {
-                                color: color,
-                                value: index.toString(),
-                                label: color,
-                              };
-                            })}
-                          />
-                        );
-                      }}
-                    </FormItems>
-                  </div>
-                </div>
-              </FormProvider>
-            </Modal>
-          }
-        />
+                        {/* odoogiin */}
+                        {form.getValues("profile_img") && (
+                          <FormItems control={form.control} name="profile_img" label="Одоогийн зураг">
+                            {(field) => {
+                              return (
+                                <>
+                                  {field.value && (
+                                    <div className="relative w-32 h-32 bg-white">
+                                      <img src={`/api/file/${field.value}`} alt="preview" className="object-cover overflow-hidden border rounded-md size-full bg-gray" />
+                                    </div>
+                                  )}
+                                </>
+                              );
+                            }}
+                          </FormItems>
+                        )}
+                      </div>
+                      <div className="py-5 double-col">
+                        <FormItems control={form.control} name="branch_id" label="Салбар">
+                          {(field) => {
+                            return (
+                              <ComboBox
+                                search={true}
+                                props={{ ...field }}
+                                items={branches.items.map((branch) => {
+                                  return {
+                                    value: branch.id,
+                                    label: branch.name,
+                                  };
+                                })}
+                              />
+                            );
+                          }}
+                        </FormItems>
+
+                        <FormItems control={form.control} name="role" label="Эрхийн түвшин">
+                          {(field) => {
+                            return (
+                              <ComboBox
+                                items={[ROLE.ADMIN, ROLE.EMPLOYEE, ROLE.MANAGER].map((role) => {
+                                  return {
+                                    label: RoleValue[role],
+                                    value: role.toString(),
+                                  };
+                                })}
+                                props={{
+                                  ...field,
+                                }}
+                              />
+                            );
+                          }}
+                        </FormItems>
+                      </div>
+                      <div className="pt-5 double-col">
+                        {!editingUser && (
+                          <FormItems label="Нууц үг" control={form.control} name="password" className="col-span-1">
+                            {(field) => {
+                              return <PasswordField label="" props={{ ...field }} view={true} />;
+                            }}
+                          </FormItems>
+                        )}
+                        {["lastname", "firstname", "mobile", "nickname", "experience"].map((i, index) => {
+                          const item = i as keyof UserType;
+                          return (
+                            <FormItems label={firstLetterUpper(item)} control={form.control} name={item} key={index} className={"col-span-1"}>
+                              {(field) => {
+                                return (
+                                  <>
+                                    {/* <TextField type={"mobile" == item ? "number" : "text"} props={{ ...field }} label={firstLetterUpper(item)} /> */}
+                                    <TextField
+                                      type={item === "mobile" ? "number" : "text"}
+                                      props={{
+                                        ...field,
+                                        ...(item === "mobile"
+                                          ? {
+                                              inputMode: "numeric",
+                                              pattern: "[0-9]*",
+                                            }
+                                          : {}),
+                                      }}
+                                      className={cn(item === "mobile" ? "hide-number-arrows" : "")}
+                                    />
+                                  </>
+                                );
+                              }}
+                            </FormItems>
+                          );
+                        })}
+                        <FormItems label="Төрсөн өдөр" control={form.control} name="birthday">
+                          {(field) => {
+                            return <DatePicker name="" pl="Огноо сонгох" props={{ ...field }} />;
+                          }}
+                        </FormItems>
+                        <FormItems label="Өнгө" control={form.control} name="color">
+                          {(field) => {
+                            return (
+                              <ComboBox
+                                props={{ ...field }}
+                                items={COLORS.map((color, index) => {
+                                  return {
+                                    color: color,
+                                    value: index.toString(),
+                                    label: color,
+                                  };
+                                })}
+                              />
+                            );
+                          }}
+                        </FormItems>
+                      </div>
+                    </div>
+                  </FormProvider>
+                </Modal>
+              }
+            />
       </div>
     </div>
   );

@@ -9,7 +9,7 @@ interface ContainerHeaderProps {
 
 export default function ContainerHeader({ trigger, title, count }: ContainerHeaderProps) {
   return (
-    <div className="sticky top-0 left-0 right-0 z-40 flex items-center h-16 px-10 pr-4 space-x-2 bg-white border shadow lg:pr-10 border-slate-200 lg:space-x-5">
+    <div className="sticky top-0 left-0 right-0 z-40 flex items-center h-16 px-10 pr-4 space-x-2 bg-white border lg:pr-10 border-slate-100 shadow-light lg:space-x-5">
       <div className="flex items-center text-sm font-semibold lg:text-lg gap-x-2">
         <span className="opacity-80">{trigger}</span>
  

@@ -37,8 +37,7 @@ export default async function RootLayout({
   const store = await cookies();
   const token = store.get("token")?.value;
   const defaultOpen = store.get("sidebar_state")?.value === "false";
-  
-console.log('',store.get("sidebar_state")?.value)
+
   return (
     <SidebarProvider defaultOpen={defaultOpen} >
       <html lang="en">

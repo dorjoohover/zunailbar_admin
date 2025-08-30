@@ -158,7 +158,7 @@ export const ProductTransactionPage = ({ data, users, branches, products }: { da
         label: "Статус",
         items: getEnumValues(ProductTransactionStatus).map((s) => ({
           value: s,
-          label: getValuesProductTransactionStatus[s],
+          label: getValuesProductTransactionStatus[s].name,
         })),
       },
     ],
@@ -286,7 +286,7 @@ export const ProductTransactionPage = ({ data, users, branches, products }: { da
                           items={getEnumValues(ProductTransactionStatus).map((item) => {
                             return {
                               value: item.toString(),
-                              label: getValuesProductTransactionStatus[item],
+                              label: getValuesProductTransactionStatus[item].name,
                             };
                           })}
                         />

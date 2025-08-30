@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import React, { ReactNode, useEffect, useRef, useState } from "react";
 import { DEFAULT_LIMIT } from "@/lib/constants";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
-import { ChevronDown, ChevronLeft, ChevronRight, CircleX, Funnel, LoaderCircle, RotateCcw, RotateCw, Search, SlidersHorizontal } from "lucide-react";
+import { ChevronDown, ChevronLeft, ChevronRight, CircleX, FileInput, Funnel, LoaderCircle, RotateCcw, RotateCw, Search, SlidersHorizontal } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ScrollArea, ScrollBar } from "./ui/scroll-area";
 import { useSidebar } from "./ui/sidebar";
@@ -120,9 +120,8 @@ export function DataTable<TData, TValue>({ columns, data, count = 0, limit = DEF
 
   useEffect(() => {
     if (open) {
-      console.log("Sidebar open!");
     } else {
-      console.log("Sidebar close!");
+      // console.log("Sidebar close!");
     }
   }, [open]); // open өөрчлөгдөх бүрт ажиллана
 
@@ -146,10 +145,11 @@ export function DataTable<TData, TValue>({ columns, data, count = 0, limit = DEF
   return (
     <div className={cn("space-y-4 w-full transition-all duration-300", open ? "lg:w-[calc(100vw-20rem-3rem)] w-[calc(100vw-2rem)]" : "lg:w-[calc(100vw-8rem)] w-[calc(100vw-2rem)]")}>
       {/* Table action */}
-      <div className="flex flex-wrap items-end gap-2">
+      <div className="flex flex-wrap bg-white p-3 rounded-2xl shadow-light items-end gap-1 border-light">
         {filter != undefined && <>{filter}
         <Button variant="ghost" onClick={clear} className="text-xs text-red-500 hover:text-red-500  lg:h-10">
-          <RotateCcw className="size-3.5" />
+          {/* <RotateCcw className="size-3.5" /> */}
+          Цэвэрлэх
         </Button>
         </>}
 
@@ -163,8 +163,8 @@ export function DataTable<TData, TValue>({ columns, data, count = 0, limit = DEF
             </Button> */}
       </div>
 
-      <div className="bg-white rounded-xl border p-2 pt-0">
-        <div className="w-full flex justify-end gap-4 lg:gap-20 py-3">
+      <div className="bg-white rounded-xl shadow-light border-light p-5 pt-0">
+        <div className="w-full flex justify-end gap-4 lg:gap-20 py-5">
         {/* <div className="w-full flex justify-between gap-4 lg:gap-20 py-3"> */}
           {search && (
             <div className="relative w-full space-y-2">
@@ -175,7 +175,9 @@ export function DataTable<TData, TValue>({ columns, data, count = 0, limit = DEF
           )}
           <div className="flex items-center justify-end space-x-2">
             {/* Add modal button */}
-            <Button variant={"outline"}>Export</Button>
+            <Button variant={"ghost"} className="bg-green-500 text-white hover:bg-green-500/80 gap-1 hover:text-white">
+            <FileInput />
+            Excel</Button>
             {modalAdd && <div> {modalAdd}</div>}
           </div>
         </div>
@@ -227,19 +229,17 @@ export function DataTable<TData, TValue>({ columns, data, count = 0, limit = DEF
           </ScrollAreaViewport>
           <ScrollBar orientation="horizontal" className="" />
         </ScrollArea>
-      </div>
 
-      {!atEnd && <div className="absolute top-0 right-0 w-12 h-full pointer-events-none bg-gradient-to-l from-red-500/60 to-transparent" />}
 
       {/* Table pagination */}
-      <div className="flex items-center justify-between">
-        <p className="text-sm font-medium">{table.getSelectedRowModel().rows.length} мөр сонгогдсон.</p>
+      <div className="flex items-center mt-10 justify-end">
+        {/* <p className="text-sm font-medium">{table.getSelectedRowModel().rows.length} мөр сонгогдсон.</p> */}
 
         <div className="flex items-center space-x-2">
           {/* <div className="flex items-center">{pagination.pageIndex + 1} / {Math.ceil(count / limit)} </div> */}
 
           <div className="flex items-center space-x-3 h-11">
-            <div className="flex items-center h-full px-3 pl-1 bg-white border rounded-lg gap-x-2">
+            <div className="flex items-center h-full px-3 pl-1 bg-white rounded-lg gap-x-2 border-gray-200">
               <Select
                 value={(currentPage + 1).toString()}
                 onValueChange={(value) => {
@@ -258,6 +258,7 @@ export function DataTable<TData, TValue>({ columns, data, count = 0, limit = DEF
                   ))}
                 </SelectContent>
               </Select>
+              of
               {/* <span>/</span> */}
               <p>{Math.ceil(count / limit)}</p>
             </div>
@@ -294,6 +295,10 @@ export function DataTable<TData, TValue>({ columns, data, count = 0, limit = DEF
           </div>
         </div>
       </div>
+      </div>
+{/* 
+      {!atEnd && <div className="absolute top-0 right-0 w-12 h-full pointer-events-none bg-gradient-to-l from-red-500/60 to-transparent" />} */}
+
     </div>
   );
 }

@@ -58,7 +58,7 @@ export function getColumns(onEdit: (product: IUserService) => void, remove: (ind
         const color = stringToNiceColor(service);
 
         return (
-          <span className="badge" style={{ backgroundColor: color }}>
+          <span className="badge bg-brand-blue">
             {service}
           </span>
         );

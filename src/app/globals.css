@@ -21,8 +21,6 @@
   }
 }
 
-
-
 @utility custom-bg {
   @apply bg-[url(/bg/image.png)];
 }
@@ -47,12 +45,13 @@
   @apply text-neutral-700 bg-neutral-300;
 }
 
+/* Label */
 @utility checkbox-label {
   @apply flex items-center gap-2 p-1 rounded text-sm cursor-pointer hover:bg-gray-100
 }
 
 @utility filter-label {
-  @apply flex items-center gap-2 p-1 font-semibold rounded text-xs text-gray-500;
+  @apply flex items-center gap-2 p-1 font-semibold rounded text-xs text-primary;
 }
 
 @utility transparent-input {
@@ -85,10 +84,15 @@
   @apply bg-gray-200 h-[1px] w-full my-5;
 }
 
+@utility border-light {
+  @apply border border-gray-100;
+}
+
 @theme {
   /* Brand */
   --color-brand: #1e293b;
   --color-brand-blue: #1a80f8;
+  --color-brand-purple: #283ab7;
   --color-active: #eff5fe;
 
   /* System colors */
@@ -219,7 +223,7 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-[#f3f5f7];
+    @apply bg-[#f8f9fb];
   }
 }
 
@@ -232,6 +236,7 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
+  --shadow-light: rgba(149, 157, 165, 0.1) 0px 8px 24px;
 }
 
 @layer base {

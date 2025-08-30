@@ -17,6 +17,7 @@ import { useState } from "react";
 import { Warehouse, IWarehouse } from "@/models";
 import ContainerHeader from "@/components/containerHeader";
 import DynamicHeader from "@/components/dynamicHeader";
+import { Button } from "@/components/ui/button";
 
 const formSchema = z.object({
   name: z.string().min(1),
@@ -106,7 +107,7 @@ export const ProductWarehousePage = ({ data }: { data: ListType<Warehouse> }) =>
                   <div className="">
                     <FormItems label={"Агуулахын нэр"} control={form.control} name={"name"} className={"col-span-1"}>
                       {(field) => {
-                        return <TextField props={{ ...field }}  />;
+                        return <TextField props={{ ...field }} />;
                       }}
                     </FormItems>
                   </div>

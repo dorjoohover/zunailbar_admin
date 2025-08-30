@@ -309,7 +309,7 @@ export const ProductHistoryPage = ({ data, products }: { data: ListType<ProductL
                           );
                         }}
                       </FormItems>
-                      <FormItems control={form.control} name="currency_value" className="absolute bottom-0.5 right-0.5">
+                      <FormItems control={form.control} name="currency" className="absolute bottom-0.5 right-0.5">
                         {(field) => {
                           return (
                             <Select defaultValue="mnt">

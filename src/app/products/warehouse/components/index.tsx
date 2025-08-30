@@ -27,6 +27,7 @@ import { FilterPopover } from "@/components/layout/popover";
 import { Checkbox } from "@radix-ui/react-checkbox";
 import { Calendar } from "@/components/ui/calendar";
 import { Label } from "@/components/ui/label";
+import { cn } from "@/lib/utils";
 const productItemSchema = z.object({
   quantity: z.preprocess((val) => (typeof val === "string" ? parseFloat(val) : val), z.number().nullable()) as unknown as number,
   product_id: z.string().min(1, "Бүтээгдэхүүн заавал сонгоно").nullable(),
@@ -215,92 +216,104 @@ export const ProductWarehousePage = ({ data, warehouses, productData }: { data: 
     [productData.items, warehouses.items]
   );
 
+  const [tab, setTab] = useState("1");
+
   return (
     <div className="">
       <DynamicHeader count={productWarehouse?.count} />
 
-      <div className="admin-container">
-        <DataTable
-          clear={() => setFilter(undefined)}
-          filter={
-            <>
-              {groups.map((item, i) => {
-                const { key } = item;
-                return (
-                  // <FilterPopover
-                  //   key={i}
-                  //   content={item.items.map((it, index) => (
-                  //     <label key={index} className="checkbox-label">
-                  //       <Checkbox checked={filter?.[key] == it.value} onCheckedChange={() => changeFilter(key, it.value)} />
-                  //       <span>{it.label as string}</span>
-                  //     </label>
-                  //   ))}
-                  //   value={filter?.[key] ? item.items.filter((item) => item.value == filter[key])[0].label : undefined}
-                  //   label={item.label}
-                  // />
-                  <label key={i}>
-                    <span className="filter-label">{item.label as string}</span>
-                    <ComboBox
-                      pl={item.label}
-                      className="max-w-36 text-xs!"
-                      search={true}
-                      value={filter?.[key] ? String(filter[key]) : ""} //
-                      items={item.items.map((it) => ({
-                        value: String(it.value),
-                        label: it.label as string,
-                      }))}
-                      props={{
-                        value: filter?.[key] ? String(filter[key]) : "",
-                        onChange: (val: string) => changeFilter(key, val),
-                        onBlur: () => {},
-                        name: key,
-                        ref: () => {},
-                      }}
-                    />
-                  </label>
-                );
-              })}
-              <FilterPopover
-                content={
-                  <div className="flex flex-col gap-2">
-                    <Calendar mode="single" selected={filter?.start} onSelect={(e) => setFilter((prev) => ({ ...prev, start: e }))} />
-                  </div>
-                }
-                value={filter?.start?.toString()}
-                label={"Эхлэх огноо"}
-              />
-              <FilterPopover
-                content={
-                  <div className="flex flex-col gap-2">
-                    <Calendar mode="single" selected={filter?.end} onSelect={(e) => setFilter((prev) => ({ ...prev, end: e }))} />
-                  </div>
-                }
-                value={filter?.end?.toString()}
-                label={"Дуусах огноо"}
-              />
-            </>
-          }
-          columns={columns}
-          count={productWarehouse?.count}
-          data={productWarehouse?.items ?? []}
-          refresh={refresh}
-          loading={action == ACTION.RUNNING}
-          modalAdd={
-            <Modal
-              name={"Бараа нэмэх"}
-              title="Агуулахад бараа нэмэх"
-              submit={() => form.handleSubmit(onSubmit, onInvalid)()}
-              open={open == true}
-              reset={() => {
-                setOpen(false);
-                form.reset({});
-              }}
-              maw="5xl"
-              setOpen={setOpen}
-              loading={action == ACTION.RUNNING}
-            >
-              <FormProvider {...form}>
-                {/* <div className="flex items-center gap-2 mt-2">
+      <div className="admin-container py-2">
+        <div className="bg-white shadow-light border-light rounded px-4">
+        {/* Tab trigger */}
+          <Button variant="ghost" className={cn("w-fit rounded-none hover:bg-white py-6 px-14", tab === "1" && "border-b-2 border-brand ")} onClick={() => setTab("1")}>
+            Агуулах
+          </Button>
+          <Button variant="ghost" className={cn("w-fit rounded-none hover:bg-white py-6 px-14", tab === "2" && "border-b-2 border-brand ")} onClick={() => setTab("2")}>
+            Агуулах дэлгэрэнгүй
+          </Button>
+        </div>
+        {tab === "1" && (
+          <DataTable
+            clear={() => setFilter(undefined)}
+            filter={
+              <>
+                {groups.map((item, i) => {
+                  const { key } = item;
+                  return (
+                    // <FilterPopover
+                    //   key={i}
+                    //   content={item.items.map((it, index) => (
+                    //     <label key={index} className="checkbox-label">
+                    //       <Checkbox checked={filter?.[key] == it.value} onCheckedChange={() => changeFilter(key, it.value)} />
+                    //       <span>{it.label as string}</span>
+                    //     </label>
+                    //   ))}
+                    //   value={filter?.[key] ? item.items.filter((item) => item.value == filter[key])[0].label : undefined}
+                    //   label={item.label}
+                    // />
+                    <label key={i}>
+                      <span className="filter-label">{item.label as string}</span>
+                      <ComboBox
+                        pl={item.label}
+                        className="max-w-36 text-xs!"
+                        search={true}
+                        value={filter?.[key] ? String(filter[key]) : ""} //
+                        items={item.items.map((it) => ({
+                          value: String(it.value),
+                          label: it.label as string,
+                        }))}
+                        props={{
+                          value: filter?.[key] ? String(filter[key]) : "",
+                          onChange: (val: string) => changeFilter(key, val),
+                          onBlur: () => {},
+                          name: key,
+                          ref: () => {},
+                        }}
+                      />
+                    </label>
+                  );
+                })}
+                <FilterPopover
+                  content={
+                    <div className="flex flex-col gap-2">
+                      <Calendar mode="single" selected={filter?.start} onSelect={(e) => setFilter((prev) => ({ ...prev, start: e }))} />
+                    </div>
+                  }
+                  value={filter?.start?.toString()}
+                  label={"Эхлэх огноо"}
+                />
+                <FilterPopover
+                  content={
+                    <div className="flex flex-col gap-2">
+                      <Calendar mode="single" selected={filter?.end} onSelect={(e) => setFilter((prev) => ({ ...prev, end: e }))} />
+                    </div>
+                  }
+                  value={filter?.end?.toString()}
+                  label={"Дуусах огноо"}
+                />
+              </>
+            }
+            columns={columns}
+            count={productWarehouse?.count}
+            data={productWarehouse?.items ?? []}
+            refresh={refresh}
+            loading={action == ACTION.RUNNING}
+            modalAdd={
+              <Modal
+                name={"Бараа нэмэх"}
+                title="Агуулахад бараа нэмэх"
+                submit={() => form.handleSubmit(onSubmit, onInvalid)()}
+                open={open == true}
+                reset={() => {
+                  setOpen(false);
+                  form.reset({});
+                }}
+                maw="5xl"
+                setOpen={setOpen}
+                loading={action == ACTION.RUNNING}
+              >
+                <FormProvider {...form}>
+                  {/* <div className="flex items-center gap-2 mt-2">
                   <Switch
                     checked={compare}
                     onCheckedChange={(val) => form.setValue("compare", val)}
@@ -314,105 +327,108 @@ export const ProductWarehousePage = ({ data, warehouses, productData }: { data: 
                     {visibleProducts.length})
                   </label>
                 </div> */}
-                <div className="flex flex-col gap-3">
-                  <div className="double-col">
-                    <div className="space-y-1">
-                      <Label htmlFor="" className="text-sm font-semibold">
-                        Хайх
-                      </Label>
-                      <Input
-                        placeholder="Бүтээгдэхүүн хайх..."
-                        onChange={(e) => {
-                          const value = e.target.value;
-                          if (value.length >= 2) searchProduct(value);
-                          else searchProduct("");
+                  <div className="flex flex-col gap-3">
+                    <div className="double-col">
+                      <div className="space-y-1">
+                        <Label htmlFor="" className="text-sm font-semibold">
+                          Хайх
+                        </Label>
+                        <Input
+                          placeholder="Бүтээгдэхүүн хайх..."
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            if (value.length >= 2) searchProduct(value);
+                            else searchProduct("");
+                          }}
+                          className="w-full h-10 bg-white"
+                        />
+                      </div>
+                      <FormItems label="Агуулах" control={form.control} name="warehouse_id">
+                        {(field) => {
+                          return (
+                            <ComboBox
+                              props={{ ...field }}
+                              items={warehouses.items.map((item) => {
+                                return {
+                                  value: item.id,
+                                  label: item.name,
+                                };
+                              })}
+                            />
+                          );
                         }}
-                        className="w-full h-10 bg-white"
-                      />
+                      </FormItems>
                     </div>
-                    <FormItems label="Агуулах" control={form.control} name="warehouse_id">
-                      {(field) => {
-                        return (
-                          <ComboBox
-                            props={{ ...field }}
-                            items={warehouses.items.map((item) => {
-                              return {
-                                value: item.id,
-                                label: item.name,
-                              };
-                            })}
-                          />
-                        );
-                      }}
-                    </FormItems>
-                  </div>
-                  <div className="p-3 space-y-2 bg-white border rounded-xl">
-                    <div className="grid items-center justify-between w-full px-4 py-1 text-sm font-bold grid-cols-20">
-                      <span className="col-span-1">№</span>
-                      <span className="col-span-4">Брэнд</span>
-                      <span className="col-span-4">Төрөл</span>
-                      <span className="col-span-5">Бараа</span>
-                      <span className="col-span-1">Тоо</span>
-                      <span className="col-span-5 text-center">Үйлдэл</span>
-                    </div>
-                    <ScrollArea className="h-[50vh] w-full divide-y pt-0 bg-white border border-b-0 rounded">
-                      {products.map((product, index) => {
-                        const [brand, category, name, quantity] = product.value.split("__");
-                        return (
-                          <div key={product.id} className="flex items-center justify-between p-3 pr-6 border-b last:border-none">
-                            <div className="grid items-center justify-between w-full gap-4 grid-cols-20">
-                              <span className="col-span-1 text-sm font-medium text-gray-700 truncate text-start">{index + 1}</span>
-                              <span className="col-span-4 text-sm font-medium text-gray-700 truncate text-start">{checkEmpty(brand)}</span>
-                              <span className="col-span-4 text-sm font-medium text-gray-700 truncate">{checkEmpty(category)}</span>
-                              <span className="col-span-5 text-sm font-medium text-gray-700">{checkEmpty(name)}</span>
-                              <span className="col-span-1 text-sm font-medium text-gray-700">{quantity}</span>
-                              <div className="flex items-center justify-center col-span-5 gap-1">
-                                <Button variant="default" className="" size="icon" onClick={() => handleProductQuantityChange(product.id, -1, +quantity)}>
-                                  −
-                                </Button>
-                                <Input
-                                  type="number"
-                                  className="w-16 text-center bg-white border-2 no-spinner hide-number-arrows border-primary"
-                                  max={quantity}
-                                  value={(form.watch("products")?.find((p) => p.product_id === product.id)?.quantity as number) ?? 0}
-                                  onClick={() => handleProductClickOnce(product.id, +quantity)}
-                                  onChange={(e) => {
-                                    const val = parseInt(e.target.value || "0", 10);
-                                    const existing = form.getValues("products");
-                                    const index = existing.findIndex((p) => p.product_id === product.id);
-                                    const updated = [...existing];
-                                    if (val > +quantity) return;
-                                    if (val <= 0 && index !== -1) {
-                                      updated.splice(index, 1);
-                                    } else if (index !== -1) {
-                                      updated[index] = {
-                                        ...updated[index],
-                                        quantity: val,
-                                      };
-                                    } else if (val > 0) {
-                                      updated.push({
-                                        product_id: product.id,
-                                        quantity: val,
-                                      });
-                                    }
-                                    form.setValue("products", updated);
-                                  }}
-                                />
-                                <Button variant="default" className="" size="icon" onClick={() => handleProductQuantityChange(product.id, 1, +quantity)}>
-                                  +
-                                </Button>
+                    <div className="p-3 space-y-2 bg-white border rounded-xl">
+                      <div className="grid items-center justify-between w-full px-4 py-1 text-sm font-bold grid-cols-20">
+                        <span className="col-span-1">№</span>
+                        <span className="col-span-4">Брэнд</span>
+                        <span className="col-span-4">Төрөл</span>
+                        <span className="col-span-5">Бараа</span>
+                        <span className="col-span-1">Тоо</span>
+                        <span className="col-span-5 text-center">Үйлдэл</span>
+                      </div>
+                      <ScrollArea className="h-[50vh] w-full divide-y pt-0 bg-white border border-b-0 rounded">
+                        {products.map((product, index) => {
+                          const [brand, category, name, quantity] = product.value.split("__");
+                          return (
+                            <div key={product.id} className="flex items-center justify-between p-3 pr-6 border-b last:border-none">
+                              <div className="grid items-center justify-between w-full gap-4 grid-cols-20">
+                                <span className="col-span-1 text-sm font-medium text-gray-700 truncate text-start">{index + 1}</span>
+                                <span className="col-span-4 text-sm font-medium text-gray-700 truncate text-start">{checkEmpty(brand)}</span>
+                                <span className="col-span-4 text-sm font-medium text-gray-700 truncate">{checkEmpty(category)}</span>
+                                <span className="col-span-5 text-sm font-medium text-gray-700">{checkEmpty(name)}</span>
+                                <span className="col-span-1 text-sm font-medium text-gray-700">{quantity}</span>
+                                <div className="flex items-center justify-center col-span-5 gap-1">
+                                  <Button variant="purple" className="" size="icon" onClick={() => handleProductQuantityChange(product.id, -1, +quantity)}>
+                                    −
+                                  </Button>
+                                  <Input
+                                    type="number"
+                                    className="w-16 text-center bg-white border-2 no-spinner hide-number-arrows border-brand-purple"
+                                    max={quantity}
+                                    value={(form.watch("products")?.find((p) => p.product_id === product.id)?.quantity as number) ?? 0}
+                                    onClick={() => handleProductClickOnce(product.id, +quantity)}
+                                    onChange={(e) => {
+                                      const val = parseInt(e.target.value || "0", 10);
+                                      const existing = form.getValues("products");
+                                      const index = existing.findIndex((p) => p.product_id === product.id);
+                                      const updated = [...existing];
+                                      if (val > +quantity) return;
+                                      if (val <= 0 && index !== -1) {
+                                        updated.splice(index, 1);
+                                      } else if (index !== -1) {
+                                        updated[index] = {
+                                          ...updated[index],
+                                          quantity: val,
+                                        };
+                                      } else if (val > 0) {
+                                        updated.push({
+                                          product_id: product.id,
+                                          quantity: val,
+                                        });
+                                      }
+                                      form.setValue("products", updated);
+                                    }}
+                                  />
+                                  <Button variant="purple" className="" size="icon" onClick={() => handleProductQuantityChange(product.id, 1, +quantity)}>
+                                    +
+                                  </Button>
+                                </div>
                               </div>
                             </div>
-                          </div>
-                        );
-                      })}
-                    </ScrollArea>
+                          );
+                        })}
+                      </ScrollArea>
+                    </div>
                   </div>
-                </div>
-              </FormProvider>
-            </Modal>
-          }
-        />
+                </FormProvider>
+              </Modal>
+            }
+          />
+        )}
+
+        {tab === "1" && <>tab 2 </>}
       </div>
     </div>
   );

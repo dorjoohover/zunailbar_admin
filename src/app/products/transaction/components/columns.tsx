@@ -9,6 +9,7 @@ import { parseDate } from "@/lib/functions";
 import { IProductTransaction } from "@/models";
 import { ProductTransactionStatus } from "@/lib/enum";
 import { TableActionButtons } from "@/components/tableActionButtons";
+import { getValuesProductTransactionStatus } from "@/lib/constants";
 
 export function getColumns(onEdit: (product: IProductTransaction) => void, remove: (index: number) => Promise<boolean>): ColumnDef<IProductTransaction>[] {
   return [
@@ -47,8 +48,8 @@ export function getColumns(onEdit: (product: IProductTransaction) => void, remov
       accessorKey: "product_transaction_status",
       header: "Status",
       cell: ({ row }) => {
-        const status = ProductTransactionStatus[row.getValue<number>("product_transaction_status") as ProductTransactionStatus];
-        return <span className={""}>{status}</span>;
+        const status = getValuesProductTransactionStatus[row.getValue<number>("product_transaction_status") as ProductTransactionStatus];
+        return <span className={status.color}>{status.name}</span>;
       },
     },
     // {

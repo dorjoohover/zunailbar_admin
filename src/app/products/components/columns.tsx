@@ -7,15 +7,24 @@ import { checkEmpty } from "@/lib/functions";
 import { TableActionButtons } from "@/components/tableActionButtons";
 
 export function getColumns(onEdit: (product: IProduct) => void, remove: (index: number) => Promise<boolean>): ColumnDef<IProduct>[] {
+
   return [
+    // {
+    //   id: "select",
+    //   header: ({ table }) => <Checkbox checked={table.getIsAllPageRowsSelected()} onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)} aria-label="Select all" />,
+    //   cell: ({ row }) => {
+    //     return <Checkbox checked={row.getIsSelected()} onCheckedChange={(value) => row.toggleSelected(!!value)} aria-label="Select row" />;
+    //   },
+    //   enableSorting: false,
+    //   enableHiding: false,
+    // },
     {
-      id: "select",
-      header: ({ table }) => <Checkbox checked={table.getIsAllPageRowsSelected()} onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)} aria-label="Select all" />,
-      cell: ({ row }) => {
-        return <Checkbox checked={row.getIsSelected()} onCheckedChange={(value) => row.toggleSelected(!!value)} aria-label="Select row" />;
-      },
+      id: "index",
+      header: "#",
+      cell: ({ row }) => row.index + 1,
       enableSorting: false,
       enableHiding: false,
+      size: 40,
     },
     {
       accessorKey: "name",

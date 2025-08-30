@@ -87,7 +87,7 @@ export const getColumns = (onEdit: (product: IUser) => void, setStatus: (index: 
     cell: ({ row }) => {
       return (
         <div
-          className={`h-6 w-8 rounded-sm`}
+          className={`h-5 w-8 rounded-full`}
           style={{
             backgroundColor: `${COLORS[+((row.getValue("color") as string) ?? -1)]}`,
           }}
@@ -165,9 +165,6 @@ export const getColumns = (onEdit: (product: IUser) => void, setStatus: (index: 
           <DropdownMenu>
             <TooltipWrapper tooltip="Статус солих">
               <DropdownMenuTrigger asChild>
-                {/* <div className="items-center justify-center size-9 flex-center hover:bg-gray-100 rounded-sm hover:text-slate-800 duration-150 cursor-pointer">
-                  <UserRoundCog className="size-4" />
-                </div> */}
                 <Button variant="ghost" size="icon">
                   <UserRoundCog className="size-4" />
                 </Button>
@@ -183,7 +180,7 @@ export const getColumns = (onEdit: (product: IUser) => void, setStatus: (index: 
                   const status = EmployeeStatusValue[item];
                   return (
                     <DropdownMenuItem key={i} onClick={() => setStatus(row.index, item)}>
-                      <span className={cn(status.color)}>{status.name}</span>
+                      <span className={cn(status.color, 'w-full text-center')}>{status.name}</span>
                     </DropdownMenuItem>
                   );
                 })}

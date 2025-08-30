@@ -24,17 +24,17 @@ export const zStrOpt = z.string().nullable().optional();
 export const zNumOpt = z.number().nullable().optional();
 
 export const EmployeeStatusValue = {
-  [EmployeeStatus.ACTIVE]: { name: "Active", color: "green-badge badge" },
+  [EmployeeStatus.ACTIVE]: { name: "Идэвхтэй", color: "green-badge badge" },
   [EmployeeStatus.FIRED]: { name: "Халагдсан", color: "slate-badge badge" },
   [EmployeeStatus.DEKIRIT]: { name: "Декирит", color: "red-badge badge" },
   [EmployeeStatus.VACATION]: { name: "Амарсан", color: "yellow-badge badge" },
-  [EmployeeStatus.BANNED]: { name: "Banned", color: "red-badge badge" },
+  [EmployeeStatus.BANNED]: { name: "Бандуулсан", color: "red-badge badge" },
 };
 export type Option<T = string | number> = { value: T; label: string };
 
 export const UserStatusValue = {
-  [UserStatus.ACTIVE]: { name: "Active", color: "green-badge badge" },
-  [UserStatus.BANNED]: { name: "Banned", color: "red-badge badge" },
+  [UserStatus.ACTIVE]: { name: "Идэвхтэй", color: "green-badge badge" },
+  [UserStatus.BANNED]: { name: "Бандуулсан", color: "red-badge badge" },
 };
 export const ScheduleStatusValue = {
   [ScheduleStatus.Active]: { name: "Active", color: "green-badge badge" },
@@ -116,15 +116,15 @@ export const getValuesUserProductStatus = {
   [UserProductStatus.Returned]: { name: "Returned", color: "neutral-badge badge" },
 };
 
-// export const getValuesCostStatus = {
-//   [CostStatus.Paid]: { name: "Төлсөн", color: "green-badge badge" },
-//   [CostStatus.Remainder]: { name: "Үлдэгдэлтэй", color: "yellow-badge badge" },
-// };
-
 export const getValuesCostStatus = {
-  [CostStatus.Paid]: "Төлсөн",
-  [CostStatus.Remainder]: "Үлдэгдэлтэй",
+  [CostStatus.Paid]: { name: "Төлсөн", color: "green-badge badge" },
+  [CostStatus.Remainder]: { name: "Үлдэгдэлтэй", color: "yellow-badge badge" },
 };
+
+// export const getValuesCostStatus = {
+//   [CostStatus.Paid]: "Төлсөн",
+//   [CostStatus.Remainder]: "Үлдэгдэлтэй",
+// };
 
 
 export const getValueDiscount = {
@@ -133,10 +133,11 @@ export const getValueDiscount = {
 };
 
 export const getValuesProductTransactionStatus = {
-  [ProductTransactionStatus.Used]: "Хэрэглэсэн",
-  [ProductTransactionStatus.Sold]: "Зарсан",
-  [ProductTransactionStatus.Damaged]: "Эвдэрсэн",
+  [ProductTransactionStatus.Used]: {name: "Хэрэглэсэн", color: "green-badge badge"},
+  [ProductTransactionStatus.Sold]:  {name: "Зарсан", color: "yellow-badge badge"},
+  [ProductTransactionStatus.Damaged]: {name: "Эвдэрсэн", color: "red-badge badge"},
 };
+
 export const getValuesProductLogStatus = {
   [ProductLogStatus.Bought]: { name: "Худалдаж авсан", color: "green-badge badge" },
   [ProductLogStatus.Remainder]: { name: "Үлдэгдэлтэй", color: "yellow-badge badge" },
