@@ -130,9 +130,10 @@ export const SchedulePage = ({ data, users }: { data: ListType<Schedule>; users:
     <div className="">
       <DynamicHeader />
 
-      <div className="admin-container space-y-2">
-        <div className="flex items-center justify-between">
+      <div className="admin-container">
+        <div className="flex items-center justify-between max-w-lg">
           <ComboBox
+          className="h-9"
             items={users.items.map((b, i) => {
               return {
                 label: usernameFormatter(b),

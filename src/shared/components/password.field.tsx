@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 
 export const PasswordField = <T extends FieldValues>({
   props,
-  view = true,
+  view = false,
   label = "Password",
   className,
 }: {
@@ -20,7 +20,7 @@ export const PasswordField = <T extends FieldValues>({
   return (
     <>
       <Label htmlFor="password">{label}</Label>
-      <div className="relative space-y-1 h-10">
+      <div className="relative h-10 space-y-1">
         <Input
           {...props}
           id="password"

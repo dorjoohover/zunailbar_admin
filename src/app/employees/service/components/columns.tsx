@@ -25,7 +25,7 @@ export function getColumns(onEdit: (product: IUserService) => void, remove: (ind
       accessorKey: "user_name",
       header: ({ column }) => (
         <Button variant="table_header" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")} className="font-bold">
-          Branch <ArrowUpDown className="w-4 h-4 ml-2" />
+          Артист <ArrowUpDown className="w-4 h-4 ml-2" />
         </Button>
       ),
     },
@@ -33,7 +33,7 @@ export function getColumns(onEdit: (product: IUserService) => void, remove: (ind
       accessorKey: "service_name",
       header: ({ column }) => (
         <Button variant="table_header" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")} className="font-bold">
-          Name <ArrowUpDown className="w-4 h-4 ml-2" />
+          Үйлчилгээний нэр <ArrowUpDown className="w-4 h-4 ml-2" />
         </Button>
       ),
     },

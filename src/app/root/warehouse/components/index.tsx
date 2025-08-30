@@ -115,7 +115,6 @@ export const ProductWarehousePage = ({ data }: { data: ListType<Warehouse> }) =>
             </Modal>
           }
         />
-        {action}
       </div>
     </div>
   );

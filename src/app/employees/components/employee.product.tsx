@@ -205,7 +205,7 @@ export const EmployeeProductModal = ({ id, clear }: { id?: string; clear: () => 
 
           <div className="bg-white border p-3 rounded-xl space-y-2">
             <div className="grid grid-cols-10 items-center justify-between w-full py-2 font-bold px-4 text-sm">
-              <span className="col-span-2">Бренд</span>
+              <span className="col-span-2">Брэнд</span>
               <span className="col-span-4">Төрөл</span>
               <span className="col-span-2">Бараа</span>
               <span className="col-span-2"></span>

@@ -63,7 +63,7 @@ export function getColumns(
         </Button>
       ),
       cell: ({ row }) => {
-        const date = row.getValue("nickname") ?? "Хоосон";
+        const date = row.getValue("nickname") ?? "-";
         return date;
       },
     },
@@ -79,7 +79,7 @@ export function getColumns(
         </Button>
       ),
       cell: ({ row }) => {
-        const date = row.getValue("mobile") ?? "Хоосон";
+        const date = row.getValue("mobile") ?? "-";
         return date;
       },
     },

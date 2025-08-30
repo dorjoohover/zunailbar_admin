@@ -65,12 +65,12 @@ export function getColumns(
     {
       accessorKey: "color",
       header: "Color",
-      cell: ({ row }) => row.getValue("color") ?? "Хоосон",
+      cell: ({ row }) => row.getValue("color") ?? "-",
     },
     {
       accessorKey: "size",
       header: "Size",
-      cell: ({ row }) => row.getValue("size") ?? "Хоосон",
+      cell: ({ row }) => row.getValue("size") ?? "-",
     },
     {
       accessorKey: "created_at",

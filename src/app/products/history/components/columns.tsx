@@ -10,6 +10,7 @@ import { ProductLogStatus, ProductTransactionStatus } from "@/lib/enum";
 import { IProductLog } from "@/models";
 import TooltipWrapper from "@/components/tooltipWrapper";
 import { TableActionButtons } from "@/components/tableActionButtons";
+import { getValuesProductLogStatus } from "@/lib/constants";
 
 export function getColumns(
   onEdit: (product: IProductLog) => void,
@@ -75,10 +76,10 @@ export function getColumns(
       header: "Status",
       cell: ({ row }) => {
         const status =
-          ProductLogStatus[
+          getValuesProductLogStatus[
             row.getValue<number>("product_log_status") as ProductLogStatus
           ];
-        return <span>{status}</span>;
+        return <span className={status.color}>{status.name}</span>;
       },
     },
 

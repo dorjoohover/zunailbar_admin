@@ -43,15 +43,7 @@ const defaultValues = {
   size: undefined,
   color: undefined,
 };
-export const ProductPage = ({
-  data,
-  categories,
-  brands,
-}: {
-  data: ListType<Product>;
-  categories: ListType<Category>;
-  brands: ListType<Brand>;
-}) => {
+export const ProductPage = ({ data, categories, brands }: { data: ListType<Product>; categories: ListType<Category>; brands: ListType<Brand> }) => {
   const [action, setAction] = useState(ACTION.DEFAULT);
   const [open, setOpen] = useState<undefined | boolean>(false);
   const form = useForm<ProductType>({
@@ -91,9 +83,7 @@ export const ProductPage = ({
     setAction(ACTION.RUNNING);
     const body = e as ProductType;
     const { edit, ...payload } = body;
-    const res = edit
-      ? await updateOne<IProduct>(Api.product, edit ?? "", payload as IProduct)
-      : await create<IProduct>(Api.product, e as IProduct);
+    const res = edit ? await updateOne<IProduct>(Api.product, edit ?? "", payload as IProduct) : await create<IProduct>(Api.product, e as IProduct);
     console.log(res);
     if (res.success) {
       refresh();
@@ -121,25 +111,24 @@ export const ProductPage = ({
       })
     );
   }, [filter]);
-  const groups: { key: keyof FilterType; label: string; items: Option[] }[] =
-    useMemo(
-      () => [
-        {
-          key: "brand",
-          label: "Brand",
-          items: brands.items.map((b) => ({ value: b.id, label: b.name })),
-        },
-        {
-          key: "category",
-          label: "Category",
-          items: categories.items.map((b) => ({
-            value: b.id,
-            label: b.name,
-          })),
-        },
-      ],
-      [brands.items, categories.items]
-    );
+  const groups: { key: keyof FilterType; label: string; items: Option[] }[] = useMemo(
+    () => [
+      {
+        key: "brand",
+        label: "Brand",
+        items: brands.items.map((b) => ({ value: b.id, label: b.name })),
+      },
+      {
+        key: "category",
+        label: "Category",
+        items: categories.items.map((b) => ({
+          value: b.id,
+          label: b.name,
+        })),
+      },
+    ],
+    [brands.items, categories.items]
+  );
   const clear = () => {
     form.reset(defaultValues);
     console.log(form.getValues());
@@ -189,35 +178,24 @@ export const ProductPage = ({
           loading={action == ACTION.RUNNING}
           clear={() => setFilter(undefined)}
           filter={
-            <div className="inline-flex gap-3 w-full flex-wrap">
+            <>
               {groups.map((item, i) => {
                 const { key } = item;
                 return (
                   <FilterPopover
+                    key={i}
                     content={item.items.map((it, index) => (
-                      <label
-                        key={index}
-                        className="flex items-center gap-2 cursor-pointer text-sm"
-                      >
-                        <Checkbox
-                          checked={filter?.[key] == it.value}
-                          onCheckedChange={() => changeFilter(key, it.value)}
-                        />
+                      <label key={index} className="checkbox-label">
+                        <Checkbox checked={filter?.[key] == it.value} onCheckedChange={() => changeFilter(key, it.value)} />
                         <span>{it.label as string}</span>
                       </label>
                     ))}
-                    value={
-                      filter?.[key]
-                        ? item.items.filter(
-                            (item) => item.value == filter[key]
-                          )[0].label
-                        : undefined
-                    }
+                    value={filter?.[key] ? item.items.filter((item) => item.value == filter[key])[0].label : undefined}
                     label={item.label}
                   />
                 );
               })}
-            </div>
+            </>
           }
           modalAdd={
             <Modal
@@ -235,12 +213,8 @@ export const ProductPage = ({
             >
               <FormProvider {...form}>
                 <div className="divide-y ">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pb-5">
-                    <FormItems
-                      control={form.control}
-                      name="category_id"
-                      label="Төрөл"
-                    >
+                  <div className="grid grid-cols-1 gap-3 pb-5 sm:grid-cols-2">
+                    <FormItems control={form.control} name="category_id" label="Ангилал">
                       {(field) => {
                         return (
                           <ComboBox
@@ -255,11 +229,7 @@ export const ProductPage = ({
                         );
                       }}
                     </FormItems>
-                    <FormItems
-                      control={form.control}
-                      name="brand_id"
-                      label="Брэнд"
-                    >
+                    <FormItems control={form.control} name="brand_id" label="Брэнд">
                       {(field) => {
                         return (
                           <ComboBox
@@ -293,16 +263,9 @@ export const ProductPage = ({
                       const name = item.key as keyof ProductType;
                       const label = item.label as keyof ProductType;
                       return (
-                        <FormItems
-                          control={form.control}
-                          name={name}
-                          key={i}
-                          className={item.key === "name" ? "col-span-2" : ""}
-                        >
+                        <FormItems control={form.control} name={name} label={label} key={i} className={item.key === "name" ? "col-span-2" : ""}>
                           {(field) => {
-                            return (
-                              <TextField props={{ ...field }} label={label} />
-                            );
+                            return <TextField props={{ ...field }} />;
                           }}
                         </FormItems>
                       );

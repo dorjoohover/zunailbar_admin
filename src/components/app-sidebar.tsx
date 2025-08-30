@@ -72,7 +72,7 @@ export const sidebar_items = [
             // icon: Milk,
           },
           {
-            title: "Худалдаж авсан түүх",
+            title: "Худалдан авалт",
             url: "/products/history",
             // icon: Milk,
           },
@@ -253,6 +253,7 @@ export const sidebar_items = [
     ],
   },
 ];
+
 
 export function AppSidebar() {
   const pathname = usePathname();

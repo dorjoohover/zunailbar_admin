@@ -60,7 +60,7 @@ export function ComboBox<T extends FieldValues>({
           <ChevronsUpDown className="opacity-50" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="min-w-24 max-w-64 p-0 bg-white">
+      <PopoverContent className="p-0 bg-white min-w-24 max-w-64">
         <Command>
           {search && <CommandInput placeholder={search} className="h-9" />}
           <CommandList>
@@ -77,11 +77,17 @@ export function ComboBox<T extends FieldValues>({
                   }}
                   className={framework.color ? `text-white` : ""}
                   style={{
-                    backgroundColor: framework?.color
+                    color: framework?.color
                       ? COLOR_HEX[framework.color as ColorName]
                       : "",
                   }}
                 >
+                  <div className="size-4 rounded" style={{
+                    backgroundColor: framework?.color
+                      ? COLOR_HEX[framework.color as ColorName]
+                      : "",
+                  }}></div>
+
                   {framework.label}
                   <Check
                     className={cn(

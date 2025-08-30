@@ -182,13 +182,7 @@ export const VoucherPage = ({ data, services }: { data: ListType<Voucher>; servi
             </Modal>
           }
         />
-        {action}
       </div>
-      {/* <ProductDialog
-        editingProduct={editingProduct}
-        onChange={onChange}
-        save={handleSave}
-      /> */}
     </div>
   );
 };
