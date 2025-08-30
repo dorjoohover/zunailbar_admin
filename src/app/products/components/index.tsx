@@ -9,7 +9,7 @@ import z from "zod";
 import { FormProvider, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Api } from "@/utils/api";
-import { create, deleteOne, updateOne } from "@/app/(api)";
+import { create, deleteOne, excel, updateOne } from "@/app/(api)";
 import { FormItems } from "@/shared/components/form.field";
 import { ComboBox } from "@/shared/components/combobox";
 import { TextField } from "@/shared/components/text.field";
@@ -17,7 +17,7 @@ import { fetcher } from "@/hooks/fetcher";
 import { CategoryType } from "@/lib/enum";
 import { showToast } from "@/shared/components/showToast";
 import DynamicHeader from "@/components/dynamicHeader";
-import { objectCompact } from "@/lib/functions";
+import { mnDate, objectCompact } from "@/lib/functions";
 import { FilterPopover } from "@/components/layout/popover";
 import { Checkbox } from "@radix-ui/react-checkbox";
 
@@ -133,6 +133,37 @@ export const ProductPage = ({ data, categories, brands }: { data: ListType<Produ
     form.reset(defaultValues);
     console.log(form.getValues());
   };
+
+  const downloadExcel = async (pg: PG = DEFAULT_PG) => {
+    setAction(ACTION.RUNNING);
+    const { page, limit, sort } = pg;
+    const res = await excel(Api.product, {
+      page: page ?? DEFAULT_PG.page,
+      limit: -1,
+      sort: sort ?? DEFAULT_PG.sort,
+      ...pg,
+    });
+    if (res.success && res.data) {
+      const blob = new Blob([res.data], { type: "application/xlsx" });
+      const url = window.URL.createObjectURL(blob);
+
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute(
+        "download",
+        `product_${mnDate().toISOString().slice(0, 10)}.xlsx`
+      );
+      document.body.appendChild(link);
+      link.click();
+
+      link.parentNode?.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } else {
+      showToast("error", res.message);
+    }
+    console.log(res);
+    setAction(ACTION.DEFAULT);
+  };
   return (
     <div className="">
       <DynamicHeader count={products.count} />
@@ -143,6 +174,7 @@ export const ProductPage = ({ data, categories, brands }: { data: ListType<Produ
           count={products.count}
           data={products.items}
           refresh={refresh}
+          excel={downloadExcel}
           loading={action == ACTION.RUNNING}
           clear={() => setFilter(undefined)}
           filter={

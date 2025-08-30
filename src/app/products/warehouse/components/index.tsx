@@ -9,7 +9,7 @@ import z from "zod";
 import { FormProvider, useFieldArray, useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Api } from "@/utils/api";
-import { create, deleteOne, search, updateOne } from "@/app/(api)";
+import { create, deleteOne, excel, search, updateOne } from "@/app/(api)";
 import { FormItems } from "@/shared/components/form.field";
 import { ComboBox } from "@/shared/components/combobox";
 import { TextField } from "@/shared/components/text.field";
@@ -19,13 +19,14 @@ import { DatePicker } from "@/shared/components/date.picker";
 import { Input } from "@/components/ui/input";
 
 import { Button } from "@/components/ui/button";
-import { checkEmpty, dateOnly, objectCompact } from "@/lib/functions";
+import { checkEmpty, dateOnly, mnDate, objectCompact } from "@/lib/functions";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import ContainerHeader from "@/components/containerHeader";
 import DynamicHeader from "@/components/dynamicHeader";
 import { FilterPopover } from "@/components/layout/popover";
 import { Checkbox } from "@radix-ui/react-checkbox";
 import { Calendar } from "@/components/ui/calendar";
+import { showToast } from "@/shared/components/showToast";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 const productItemSchema = z.object({
@@ -113,7 +114,6 @@ export const ProductWarehousePage = ({ data, warehouses, productData }: { data: 
     const { edit, ...payload } = body;
 
     const res = edit ? await updateOne<IProductsWarehouse>(Api.product_warehouse, edit ?? "", payload as IProductsWarehouse) : await create<IProductsWarehouse>(Api.product_warehouse, e as IProductsWarehouse);
-    console.log(res);
     if (res.success) {
       refresh();
       setOpen(false);
@@ -216,7 +216,35 @@ export const ProductWarehousePage = ({ data, warehouses, productData }: { data: 
     [productData.items, warehouses.items]
   );
 
-  const [tab, setTab] = useState("1");
+  const downloadExcel = async (pg: PG = DEFAULT_PG) => {
+    setAction(ACTION.RUNNING);
+    const { page, limit, sort } = pg;
+    const res = await excel(Api.product_warehouse, {
+      page: page ?? DEFAULT_PG.page,
+      limit: limit ?? -1,
+      sort: sort ?? DEFAULT_PG.sort,
+      ...pg,
+    });
+    if (res.success && res.data) {
+      const blob = new Blob([res.data], { type: "application/xlsx" });
+      const url = window.URL.createObjectURL(blob);
+
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", `product_warehouse_${mnDate().toISOString().slice(0, 10)}.xlsx`);
+      document.body.appendChild(link);
+      link.click();
+
+      link.parentNode?.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } else {
+      showToast("error", res.message);
+    }
+    console.log(res);
+    setAction(ACTION.DEFAULT);
+  };
+
+  const [tab, setTab] = useState("2");
 
   return (
     <div className="">
@@ -224,7 +252,7 @@ export const ProductWarehousePage = ({ data, warehouses, productData }: { data: 
 
       <div className="admin-container py-2">
         <div className="bg-white shadow-light border-light rounded px-4">
-        {/* Tab trigger */}
+          {/* Tab trigger */}
           <Button variant="ghost" className={cn("w-fit rounded-none hover:bg-white py-6 px-14", tab === "1" && "border-b-2 border-brand ")} onClick={() => setTab("1")}>
             Агуулах
           </Button>
@@ -314,6 +342,89 @@ export const ProductWarehousePage = ({ data, warehouses, productData }: { data: 
               >
                 <FormProvider {...form}>
                   {/* <div className="flex items-center gap-2 mt-2">
+      <div className="admin-container">
+        <DataTable
+          excel={downloadExcel}
+          clear={() => setFilter(undefined)}
+          filter={
+            <>
+              {groups.map((item, i) => {
+                const { key } = item;
+                return (
+                  // <FilterPopover
+                  //   key={i}
+                  //   content={item.items.map((it, index) => (
+                  //     <label key={index} className="checkbox-label">
+                  //       <Checkbox checked={filter?.[key] == it.value} onCheckedChange={() => changeFilter(key, it.value)} />
+                  //       <span>{it.label as string}</span>
+                  //     </label>
+                  //   ))}
+                  //   value={filter?.[key] ? item.items.filter((item) => item.value == filter[key])[0].label : undefined}
+                  //   label={item.label}
+                  // />
+                  <label key={i}>
+                    <span className="filter-label">{item.label as string}</span>
+                    <ComboBox
+                      pl={item.label}
+                      className="max-w-36 text-xs!"
+                      search={true}
+                      value={filter?.[key] ? String(filter[key]) : ""} //
+                      items={item.items.map((it) => ({
+                        value: String(it.value),
+                        label: it.label as string,
+                      }))}
+                      props={{
+                        value: filter?.[key] ? String(filter[key]) : "",
+                        onChange: (val: string) => changeFilter(key, val),
+                        onBlur: () => {},
+                        name: key,
+                        ref: () => {},
+                      }}
+                    />
+                  </label>
+                );
+              })}
+              <FilterPopover
+                content={
+                  <div className="flex flex-col gap-2">
+                    <Calendar mode="single" selected={filter?.start} onSelect={(e) => setFilter((prev) => ({ ...prev, start: e }))} />
+                  </div>
+                }
+                value={filter?.start?.toString()}
+                label={"Эхлэх огноо"}
+              />
+              <FilterPopover
+                content={
+                  <div className="flex flex-col gap-2">
+                    <Calendar mode="single" selected={filter?.end} onSelect={(e) => setFilter((prev) => ({ ...prev, end: e }))} />
+                  </div>
+                }
+                value={filter?.end?.toString()}
+                label={"Дуусах огноо"}
+              />
+            </>
+          }
+          columns={columns}
+          count={productWarehouse?.count}
+          data={productWarehouse?.items ?? []}
+          refresh={refresh}
+          loading={action == ACTION.RUNNING}
+          modalAdd={
+            <Modal
+              name={"Бараа нэмэх"}
+              title="Агуулахад бараа нэмэх"
+              submit={() => form.handleSubmit(onSubmit, onInvalid)()}
+              open={open == true}
+              reset={() => {
+                setOpen(false);
+                form.reset({});
+              }}
+              maw="5xl"
+              setOpen={setOpen}
+              loading={action == ACTION.RUNNING}
+            >
+              <FormProvider {...form}>
+                {/* <div className="flex items-center gap-2 mt-2">
                   <Switch
                     checked={compare}
                     onCheckedChange={(val) => form.setValue("compare", val)}

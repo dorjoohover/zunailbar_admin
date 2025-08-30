@@ -17,6 +17,7 @@ import { UserProductStatus, UserStatus } from "@/lib/enum";
 import { getEnumValues, getValuesUserProductStatus } from "@/lib/constants";
 import TooltipWrapper from "@/components/tooltipWrapper";
 import { cn } from "@/lib/utils";
+import { formatTime, mnDate, mnDateFormat } from "@/lib/functions";
 
 export const getColumns = (
   onEdit: (product: IUser) => void,
@@ -84,8 +85,16 @@ export const getColumns = (
         getValuesUserProductStatus[
           row.getValue<number>("user_product_status") as UserProductStatus
         ];
-      return <span className={cn(`badge ${status.color} inline-flex items-center`)}>
-        {status.name}</span>;
+      return <span className={cn(`badge ${status?.color} inline-flex items-center`)}>
+        {status?.name}</span>;
+    },
+  },
+  {
+    accessorKey: "created_at",
+    header: "Огноо",
+    cell: ({ row }) => {
+      const date = mnDateFormat(new Date(row.getValue('created_at') as string)) 
+      return <span>{date}</span>
     },
   },
   {
@@ -126,8 +135,8 @@ export const getColumns = (
                       key={i}
                       onClick={() => setStatus(row.index, item)}
                     >
-                      <span className={cn(status.color)}>
-                      {status.name}
+                      <span className={cn(status?.color)}>
+                      {status?.name}
                       </span>
                     </DropdownMenuItem>
                   );

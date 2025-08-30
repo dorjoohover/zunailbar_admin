@@ -65,7 +65,14 @@ export const mnDate = (now = new Date()): Date => {
   );
   return mongoliaTime;
 };
-
+export function mnDateFormat(d: Date | string | number = new Date()) {
+  return new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Asia/Ulaanbaatar',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).format(new Date(d));
+}
 export function getDayNameWithDate(
   dayNumber: number,
   date: number | Date

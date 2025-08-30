@@ -12,30 +12,62 @@ import { Hammer, Minus, Plus } from "lucide-react";
 
 import { searchProduct } from "@/app/(api)/product";
 import { fetcher } from "@/hooks/fetcher";
-import { ACTION, DEFAULT_PG, PG, ListType, SearchType, DEFAULT_LIMIT } from "@/lib/constants";
+import {
+  ACTION,
+  DEFAULT_PG,
+  PG,
+  ListType,
+  SearchType,
+  DEFAULT_LIMIT,
+} from "@/lib/constants";
 import { UserProductStatus } from "@/lib/enum";
 import { IUserProduct, Product, UserProduct } from "@/models";
 import { API, Api } from "@/utils/api";
 import { create, search } from "@/app/(api)";
 import { toast } from "sonner";
 import { Modal } from "@/shared/components/modal";
-import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 import { getPaginationRange } from "@/lib/functions";
+import { showToast } from "@/shared/components/showToast";
 
 const productItemSchema = z.object({
-  quantity: z.preprocess((val) => (typeof val === "string" ? parseFloat(val) : val), z.number().nullable()) as unknown as number,
+  quantity: z.preprocess(
+    (val) => (typeof val === "string" ? parseFloat(val) : val),
+    z.number().nullable()
+  ) as unknown as number,
   product_id: z.string().min(1, "Бүтээгдэхүүн заавал сонгоно").nullable(),
-  status: z.preprocess((val) => (typeof val === "string" ? parseInt(val, 10) : val), z.nativeEnum(UserProductStatus).nullable()).optional() as unknown as number,
+  status: z
+    .preprocess(
+      (val) => (typeof val === "string" ? parseInt(val, 10) : val),
+      z.nativeEnum(UserProductStatus).nullable()
+    )
+    .optional() as unknown as number,
 });
 
 const formSchema = z.object({
   compare: z.boolean(),
-  products: z.array(productItemSchema).min(1, "Хамгийн багадаа 1 бүтээгдэхүүн нэмнэ"),
+  products: z
+    .array(productItemSchema)
+    .min(1, "Хамгийн багадаа 1 бүтээгдэхүүн нэмнэ"),
 });
 
 type UserProductType = z.infer<typeof formSchema>;
 
-export const EmployeeProductModal = ({ id, clear }: { id?: string; clear: () => void }) => {
+export const EmployeeProductModal = ({
+  id,
+  clear,
+}: {
+  id?: string;
+  clear: () => void;
+}) => {
   const form = useForm<UserProductType>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -45,7 +77,8 @@ export const EmployeeProductModal = ({ id, clear }: { id?: string; clear: () => 
 
   const [action, setAction] = useState(ACTION.DEFAULT);
   const [open, setOpen] = useState<boolean | undefined>(false);
-  const [userProducts, setUserProducts] = useState<ListType<UserProduct> | null>(null);
+  const [userProducts, setUserProducts] =
+    useState<ListType<UserProduct> | null>(null);
   const [products, setProducts] = useState<SearchType<number>[]>([]);
 
   const { fields, append, replace } = useFieldArray({
@@ -55,7 +88,9 @@ export const EmployeeProductModal = ({ id, clear }: { id?: string; clear: () => 
 
   const compare = form.watch("compare");
   const selectedIds = form.watch("products")?.map((p) => p.product_id);
-  const userProductIds = new Set(userProducts?.items.map((up) => up.product_id));
+  const userProductIds = new Set(
+    userProducts?.items.map((up) => up.product_id)
+  );
 
   const visibleProducts = products.filter((p) => {
     if (compare && !userProductIds.has(p.id)) return false;
@@ -72,7 +107,7 @@ export const EmployeeProductModal = ({ id, clear }: { id?: string; clear: () => 
     const { page, limit, sort } = pg;
     const d = await fetcher<UserProduct>(Api.user_product, {
       page,
-      limit: 100,
+      limit: -1,
       sort,
       user_id: id,
     });
@@ -164,15 +199,17 @@ export const EmployeeProductModal = ({ id, clear }: { id?: string; clear: () => 
     if (res.success) {
       form.reset(undefined);
       setUserProducts(null);
+      showToast("success", "Бараа олгогдлоо.");
       clear();
+    } else {
+      showToast("error", res.error ?? "");
     }
-    toast(`${res.success} ${res.error}`);
   };
   const totalPages = Math.ceil(visibleProducts.length / DEFAULT_LIMIT);
   // const paginationRange = getPaginationRange(page + 1, totalPages);
   return (
     <Modal
-    maw="7xl"
+      maw="7xl"
       open={open === true}
       setOpen={(v) => {
         setOpen(v);
@@ -195,9 +232,18 @@ export const EmployeeProductModal = ({ id, clear }: { id?: string; clear: () => 
               className="w-full bg-white flex-1"
             />
 
-            <div className="flex items-center gap-2 flex-1 justify-end">
-              <label htmlFor="compare-switch" className="text-sm text-muted-foreground">
-                Зөвхөн хэрэглэгчийн авсан бүтээгдэхүүнүүд ({visibleProducts.length})
+            <div className="flex items-center gap-2 mt-2">
+              <Switch
+                checked={compare}
+                onCheckedChange={(val) => form.setValue("compare", val)}
+                id="compare-switch"
+              />
+              <label
+                htmlFor="compare-switch"
+                className="text-sm text-muted-foreground"
+              >
+                Зөвхөн хэрэглэгчийн авсан бүтээгдэхүүнүүд (
+                {visibleProducts.length})
               </label>
               <Switch checked={compare} onCheckedChange={(val) => form.setValue("compare", val)} id="compare-switch" />
             </div>
@@ -216,9 +262,15 @@ export const EmployeeProductModal = ({ id, clear }: { id?: string; clear: () => 
                 return (
                   <div key={product.id} className="flex items-center justify-between p-2 pr-6 border-b last:border-none">
                     <div className="grid grid-cols-10 items-center justify-between w-full gap-4">
-                      <span className="text-sm text-start font-medium text-gray-700 truncate col-span-2">{brand} brand</span>
-                      <span className="text-sm font-medium text-gray-700 truncate col-span-4">{category}</span>
-                      <span className="text-sm font-medium text-gray-700 col-span-2">{name}</span>
+                      <span className="text-sm text-start font-medium text-gray-700 truncate col-span-2">
+                        {brand} brand
+                      </span>
+                      <span className="text-sm font-medium text-gray-700 truncate col-span-4">
+                        {category}
+                      </span>
+                      <span className="text-sm font-medium text-gray-700 col-span-2">
+                        {name}
+                      </span>
                       <div className="flex items-center justify-end gap-1 col-span-2">
                         <Button variant="default" className="" size="icon" onClick={() => handleProductQuantityChange(product.id, -1)}>
                           <Minus strokeWidth={3} className="size-3.5" />
@@ -232,14 +284,19 @@ export const EmployeeProductModal = ({ id, clear }: { id?: string; clear: () => 
                           onChange={(e) => {
                             const val = parseInt(e.target.value || "0", 10);
                             const existing = form.getValues("products");
-                            const index = existing.findIndex((p) => p.product_id === product.id);
+                            const index = existing.findIndex(
+                              (p) => p.product_id === product.id
+                            );
 
                             const updated = [...existing];
 
                             if (val <= 0 && index !== -1) {
                               updated.splice(index, 1);
                             } else if (index !== -1) {
-                              updated[index] = { ...updated[index], quantity: val };
+                              updated[index] = {
+                                ...updated[index],
+                                quantity: val,
+                              };
                             } else if (val > 0) {
                               updated.push({
                                 product_id: product.id,

@@ -15,7 +15,7 @@ import z from "zod";
 import { FormProvider, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Api } from "@/utils/api";
-import { create, deleteOne, updateOne } from "@/app/(api)";
+import { create, deleteOne, excel, updateOne } from "@/app/(api)";
 import { FormItems } from "@/shared/components/form.field";
 import { ComboBox } from "@/shared/components/combobox";
 import { TextField } from "@/shared/components/text.field";
@@ -24,8 +24,9 @@ import { getColumns } from "./columns";
 import DynamicHeader from "@/components/dynamicHeader";
 import { SalaryLogStatus } from "@/lib/enum";
 import { ISalaryLog, SalaryLog, User } from "@/models";
-import { usernameFormatter } from "@/lib/functions";
+import { mnDate, usernameFormatter } from "@/lib/functions";
 import { DatePicker } from "@/shared/components/date.picker";
+import { showToast } from "@/shared/components/showToast";
 
 const formSchema = z.object({
   date: z.preprocess(
@@ -141,7 +142,36 @@ export const SalaryPage = ({
   const onInvalid = async <T,>(e: T) => {
     console.log("error", e);
   };
+  const downloadExcel = async (pg: PG = DEFAULT_PG) => {
+    setAction(ACTION.RUNNING);
+    const { page, limit, sort } = pg;
+    const res = await excel(Api.salary_log, {
+      page: page ?? DEFAULT_PG.page,
+      limit:  -1,
+      sort: sort ?? DEFAULT_PG.sort,
+      ...pg,
+    });
+    if (res.success && res.data) {
+      const blob = new Blob([res.data], { type: "application/xlsx" });
+      const url = window.URL.createObjectURL(blob);
 
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute(
+        "download",
+        `salary_${mnDate().toISOString().slice(0, 10)}.xlsx`
+      );
+      document.body.appendChild(link);
+      link.click();
+
+      link.parentNode?.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } else {
+      showToast("error", res.message);
+    }
+    console.log(res);
+    setAction(ACTION.DEFAULT);
+  };
   return (
     <div className="">
       <DynamicHeader />
@@ -153,6 +183,7 @@ export const SalaryPage = ({
           data={salaries?.items ?? []}
           refresh={refresh}
           loading={action == ACTION.RUNNING}
+          excel={downloadExcel}
           modalAdd={
             <Modal
               maw="xl"

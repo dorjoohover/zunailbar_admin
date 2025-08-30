@@ -1,13 +1,52 @@
 "use client";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import { Loader2Icon, Plus } from "lucide-react";
 
 import { ReactNode } from "react";
 
-export const Modal = ({ name = "Нэмэх", title = name, btn = <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />, description, children, submit, submitTxt = "Нэмэх", open, setOpen, loading, w = "md", maw = "sm", size, reset }: { name?: string; maw?: string; title?: string; description?: string; submitTxt?: string; w?: string; size?: string; children?: ReactNode; btn?: ReactNode; submit?: () => void; reset?: () => void; open: boolean; loading?: boolean; setOpen: (v: boolean) => void }) => {
+export const Modal = ({
+  name = "Нэмэх",
+  title = "Title",
+  btn = <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />,
+  description,
+  children,
+  submit,
+  submitTxt = "Submit",
+  open,
+  setOpen,
+  loading,
+  w = "md",
+  maw = "sm",
+  size,
+  reset,
+}: {
+  name?: string;
+  maw?: string;
+  title?: string;
+  description?: string;
+  submitTxt?: string;
+  w?: string;
+  size?: string;
+  children?: ReactNode;
+  btn?: ReactNode;
+  submit?: () => void;
+  reset?: () => void;
+  open: boolean;
+  loading?: boolean;
+  setOpen: (v: boolean) => void;
+}) => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 

@@ -6,8 +6,10 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { checkEmpty } from "@/lib/functions";
 import { TableActionButtons } from "@/components/tableActionButtons";
 
-export function getColumns(onEdit: (product: IProduct) => void, remove: (index: number) => Promise<boolean>): ColumnDef<IProduct>[] {
-
+export function getColumns(
+  onEdit: (product: IProduct) => void,
+  remove: (index: number) => Promise<boolean>
+): ColumnDef<IProduct>[] {
   return [
     // {
     //   id: "select",
@@ -19,9 +21,23 @@ export function getColumns(onEdit: (product: IProduct) => void, remove: (index: 
     //   enableHiding: false,
     // },
     {
-      id: "index",
-      header: "#",
-      cell: ({ row }) => row.index + 1,
+      id: "select",
+      header: ({ table }) => (
+        <Checkbox
+          checked={table.getIsAllPageRowsSelected()}
+          onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+          aria-label="Select all"
+        />
+      ),
+      cell: ({ row }) => {
+        return (
+          <Checkbox
+            checked={row.getIsSelected()}
+            onCheckedChange={(value) => row.toggleSelected(!!value)}
+            aria-label="Select row"
+          />
+        );
+      },
       enableSorting: false,
       enableHiding: false,
       size: 40,
@@ -29,7 +45,11 @@ export function getColumns(onEdit: (product: IProduct) => void, remove: (index: 
     {
       accessorKey: "name",
       header: ({ column }) => (
-        <Button variant="table_header" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")} className="font-bold">
+        <Button
+          variant="table_header"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          className="font-bold"
+        >
           Name <ArrowUpDown className="w-4 h-4 ml-2" />
         </Button>
       ),
@@ -46,27 +66,16 @@ export function getColumns(onEdit: (product: IProduct) => void, remove: (index: 
     },
 
     {
-      accessorKey: "ref",
-      header: "Reference",
-    },
-    {
       accessorKey: "quantity",
       header: ({ column }) => (
-        <Button variant="table_header" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")} className="font-bold">
+        <Button
+          variant="table_header"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          className="font-bold"
+        >
           Quantity <ArrowUpDown className="w-4 h-4 ml-2" />
         </Button>
       ),
-    },
-
-    {
-      accessorKey: "color",
-      header: "Color",
-      cell: ({ row }) => row.getValue("color") ?? "-",
-    },
-    {
-      accessorKey: "size",
-      header: "Size",
-      cell: ({ row }) => row.getValue("size") ?? "-",
     },
 
     {
@@ -74,7 +83,11 @@ export function getColumns(onEdit: (product: IProduct) => void, remove: (index: 
       header: "Actions",
       cell: ({ row }) => (
         // Bagasgasan
-        <TableActionButtons rowData={row.original} onEdit={(data) => onEdit(data)} onRemove={(data) => remove(row.index)}></TableActionButtons>
+        <TableActionButtons
+          rowData={row.original}
+          onEdit={(data) => onEdit(data)}
+          onRemove={(data) => remove(row.index)}
+        ></TableActionButtons>
       ),
     },
   ];

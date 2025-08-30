@@ -1,8 +1,23 @@
 "use client";
 
-import { flexRender, getCoreRowModel, getPaginationRowModel, getSortedRowModel, getFilteredRowModel, useReactTable, ColumnDef } from "@tanstack/react-table";
+import {
+  flexRender,
+  getCoreRowModel,
+  getPaginationRowModel,
+  getSortedRowModel,
+  getFilteredRowModel,
+  useReactTable,
+  ColumnDef,
+} from "@tanstack/react-table";
 
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -12,6 +27,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from ".
 import { ChevronDown, ChevronLeft, ChevronRight, CircleX, FileInput, Funnel, LoaderCircle, RotateCcw, RotateCw, Search, SlidersHorizontal } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ScrollArea, ScrollBar } from "./ui/scroll-area";
+import { excel } from "@/app/(api)";
 import { useSidebar } from "./ui/sidebar";
 import { ScrollAreaViewport } from "@radix-ui/react-scroll-area";
 
@@ -21,14 +37,47 @@ interface DataTableProps<TData, TValue> {
   limit?: number;
   count?: number;
   loading?: boolean;
-  refresh: <T>({ page, limit, sort, filter }: { page?: number; limit?: number; sort?: boolean; filter?: T }) => void;
+  refresh: <T>({
+    page,
+    limit,
+    sort,
+    filter,
+  }: {
+    page?: number;
+    limit?: number;
+    sort?: boolean;
+    filter?: T;
+  }) => void;
   modalAdd?: React.ReactNode;
   filter?: ReactNode;
+  excel?: <T>({
+    page,
+    limit,
+    sort,
+    filter,
+  }: {
+    page?: number;
+    limit?: number;
+    sort?: boolean;
+    filter?: T;
+  }) => void;
   clear?: () => void;
   search?: boolean;
 }
 
-export function DataTable<TData, TValue>({ columns, data, count = 0, limit = DEFAULT_LIMIT, refresh, loading = false, modalAdd, clear, filter, search = true }: DataTableProps<TData, TValue>) {
+export function DataTable<TData, TValue>({
+  columns,
+  data,
+  excel,
+  count = 0,
+  limit = DEFAULT_LIMIT,
+  refresh,
+  loading = false,
+  modalAdd,
+  clear,
+  filter,
+  search = true,
+}: DataTableProps<TData, TValue>) {
   const [globalFilter, setGlobalFilter] = useState("");
   const [pagination, setPagination] = useState({
     pageIndex: 0,
@@ -36,7 +85,8 @@ export function DataTable<TData, TValue>({ columns, data, count = 0, limit = DEF
   });
   const onPaginationChange = (updater: any) => {
     setPagination((old) => {
-      const newPagination = typeof updater === "function" ? updater(old) : updater;
+      const newPagination =
+        typeof updater === "function" ? updater(old) : updater;
       return newPagination;
     });
   };
@@ -96,9 +146,20 @@ export function DataTable<TData, TValue>({ columns, data, count = 0, limit = DEF
 
   const [selectedRoles, setSelectedRoles] = useState<string[]>([]);
   const toggleRole = (role: string) => {
-    setSelectedRoles((prev) => (prev.includes(role) ? prev.filter((r) => r !== role) : [...prev, role]));
+    setSelectedRoles((prev) =>
+      prev.includes(role) ? prev.filter((r) => r !== role) : [...prev, role]
+    );
   };
   const [date, setDate] = React.useState<Date | undefined>(new Date());
+  const downloadExcel = () => {
+    if (excel) {
+      excel({
+        page: pagination.pageIndex,
+        limit: pagination.pageSize,
+        filter: globalFilter,
+      });
+    }
+  };
 
   const [width, setWidth] = useState(0);
 
@@ -143,7 +204,14 @@ export function DataTable<TData, TValue>({ columns, data, count = 0, limit = DEF
   }, []);
 
   return (
-    <div className={cn("space-y-4 w-full transition-all duration-300", open ? "lg:w-[calc(100vw-20rem-3rem)] w-[calc(100vw-2rem)]" : "lg:w-[calc(100vw-8rem)] w-[calc(100vw-2rem)]")}>
+    <div
+      className={cn(
+        "space-y-4 w-full transition-all duration-300",
+        open
+          ? "lg:w-[calc(100vw-20rem-3rem)] w-[calc(100vw-2rem)]"
+          : "lg:w-[calc(100vw-8rem)] w-[calc(100vw-2rem)]"
+      )}
+    >
       {/* Table action */}
       <div className="flex flex-wrap bg-white p-3 rounded-2xl shadow-light items-end gap-1 border-light">
         {filter != undefined && <>{filter}
@@ -175,9 +243,11 @@ export function DataTable<TData, TValue>({ columns, data, count = 0, limit = DEF
           )}
           <div className="flex items-center justify-end space-x-2">
             {/* Add modal button */}
-            <Button variant={"ghost"} className="bg-green-500 text-white hover:bg-green-500/80 gap-1 hover:text-white">
-            <FileInput />
-            Excel</Button>
+            {excel && (
+              <Button variant={"outline"} onClick={downloadExcel} className="bg-green-500 text-white hover:bg-green-500/80 gap-1 hover:text-white">
+                Export
+              </Button>
+            )}
             {modalAdd && <div> {modalAdd}</div>}
           </div>
         </div>
@@ -247,15 +317,20 @@ export function DataTable<TData, TValue>({ columns, data, count = 0, limit = DEF
                   setPagination((old) => ({ ...old, pageIndex: page - 1 }));
                 }}
               >
-                <SelectTrigger size="sm" className="pl-2 pr-1 bg-gray-100 border-none rounded-sm shadow-none">
+                <SelectTrigger
+                  size="sm"
+                  className="pl-2 pr-1 bg-gray-100 border-none rounded-sm shadow-none"
+                >
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                    <SelectItem key={page} value={page.toString()}>
-                      {page}
-                    </SelectItem>
-                  ))}
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                    (page) => (
+                      <SelectItem key={page} value={page.toString()}>
+                        {page}
+                      </SelectItem>
+                    )
+                  )}
                 </SelectContent>
               </Select>
               of

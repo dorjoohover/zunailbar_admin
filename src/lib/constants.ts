@@ -134,7 +134,7 @@ export const getValueDiscount = {
 
 export const getValuesProductTransactionStatus = {
   [ProductTransactionStatus.Used]: {name: "Хэрэглэсэн", color: "green-badge badge"},
-  [ProductTransactionStatus.Sold]:  {name: "Зарсан", color: "yellow-badge badge"},
+  // [ProductTransactionStatus.Sold]:  {name: "Зарсан", color: "yellow-badge badge"},
   [ProductTransactionStatus.Damaged]: {name: "Эвдэрсэн", color: "red-badge badge"},
 };
 
