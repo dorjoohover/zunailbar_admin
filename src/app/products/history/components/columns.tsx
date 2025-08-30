@@ -1,6 +1,6 @@
 import { ColumnDef } from "@tanstack/react-table";
 import { IProduct } from "@/models/product.model";
-import { ArrowUpDown, Pencil, Trash2 } from "lucide-react";
+import { ArrowUpDown, Pencil, Trash2, UserRoundCog } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { AppAlertDialog } from "@/components/AlertDialog";
@@ -10,11 +10,21 @@ import { ProductLogStatus, ProductTransactionStatus } from "@/lib/enum";
 import { IProductLog } from "@/models";
 import TooltipWrapper from "@/components/tooltipWrapper";
 import { TableActionButtons } from "@/components/tableActionButtons";
-import { getValuesProductLogStatus } from "@/lib/constants";
+import { getEnumValues, getValuesProductLogStatus } from "@/lib/constants";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { cn } from "@/lib/utils";
 
 export function getColumns(
   onEdit: (product: IProductLog) => void,
-  remove: (index: number) => Promise<boolean>
+  remove: (index: number) => Promise<boolean>,
+  setStatus: (index: number, status: ProductLogStatus) => void
 ): ColumnDef<IProductLog>[] {
   return [
     {
@@ -119,8 +129,37 @@ export function getColumns(
         <TableActionButtons
           rowData={row.original}
           onEdit={(data) => onEdit(data)}
-          onRemove={(data) => remove(row.index)}
-        ></TableActionButtons>
+          onRemove={(d) => remove(row.index)}
+        >
+          <DropdownMenu>
+            <TooltipWrapper tooltip="Статус солих">
+              <DropdownMenuTrigger asChild>
+                {/* <div className="items-center justify-center size-9 flex-center hover:bg-gray-100 rounded-sm hover:text-slate-800 duration-150 cursor-pointer">
+                  <UserRoundCog className="size-4" />
+                </div> */}
+                <Button variant="ghost" size="icon">
+                  <UserRoundCog className="size-4" />
+                </Button>
+              </DropdownMenuTrigger>
+            </TooltipWrapper>
+
+            <DropdownMenuContent>
+              <DropdownMenuLabel>Статус солих</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              {getEnumValues(ProductLogStatus).map((item, i) => {
+                const status = getValuesProductLogStatus[item];
+                return (
+                  <DropdownMenuItem
+                    key={i}
+                    onClick={() => setStatus(row.index, item)}
+                  >
+                    <span className={cn(status.color)}>{status.name}</span>
+                  </DropdownMenuItem>
+                );
+              })}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </TableActionButtons>
       ),
     },
   ];

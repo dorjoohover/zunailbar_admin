@@ -59,6 +59,11 @@ export function getColumns(
       cell: ({ row }) => money(row.getValue("price"), "₮") ?? "-",
     },
     {
+      accessorKey: "paid_amount",
+      header: "Paid",
+      cell: ({ row }) => money(row.getValue("paid_amount") ?? 0, "₮") ?? "-",
+    },
+    {
       accessorKey: "cost_status",
       header: "Status",
       cell: ({ row }) => {

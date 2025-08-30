@@ -1,12 +1,31 @@
 "use client";
 
 import { DataTable } from "@/components/data-table";
-import { Product, ProductWarehouse, Warehouse, IProductWarehouse, IProductsWarehouse } from "@/models";
+import {
+  Product,
+  ProductWarehouse,
+  Warehouse,
+  IProductWarehouse,
+  IProductsWarehouse,
+} from "@/models";
 import { useEffect, useMemo, useState } from "react";
-import { ListType, ACTION, PG, DEFAULT_PG, getEnumValues, SearchType, Option } from "@/lib/constants";
+import {
+  ListType,
+  ACTION,
+  PG,
+  DEFAULT_PG,
+  getEnumValues,
+  SearchType,
+  Option,
+} from "@/lib/constants";
 import { Modal } from "@/shared/components/modal";
 import z from "zod";
-import { FormProvider, useFieldArray, useForm, useWatch } from "react-hook-form";
+import {
+  FormProvider,
+  useFieldArray,
+  useForm,
+  useWatch,
+} from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Api } from "@/utils/api";
 import { create, deleteOne, excel, search, updateOne } from "@/app/(api)";
@@ -30,13 +49,18 @@ import { showToast } from "@/shared/components/showToast";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 const productItemSchema = z.object({
-  quantity: z.preprocess((val) => (typeof val === "string" ? parseFloat(val) : val), z.number().nullable()) as unknown as number,
+  quantity: z.preprocess(
+    (val) => (typeof val === "string" ? parseFloat(val) : val),
+    z.number().nullable()
+  ) as unknown as number,
   product_id: z.string().min(1, "Бүтээгдэхүүн заавал сонгоно").nullable(),
 });
 
 const formSchema = z.object({
   warehouse_id: z.string().min(1),
-  products: z.array(productItemSchema).min(1, "Хамгийн багадаа 1 бүтээгдэхүүн нэмнэ"),
+  products: z
+    .array(productItemSchema)
+    .min(1, "Хамгийн багадаа 1 бүтээгдэхүүн нэмнэ"),
   edit: z.string().nullable().optional(),
 });
 const defaultValues = {
@@ -51,7 +75,15 @@ type FilterType = {
   end?: Date;
 };
 type ProductWarehouseType = z.infer<typeof formSchema>;
-export const ProductWarehousePage = ({ data, warehouses, productData }: { data: ListType<ProductWarehouse>; warehouses: ListType<Warehouse>; productData: ListType<Product> }) => {
+export const ProductWarehousePage = ({
+  data,
+  warehouses,
+  productData,
+}: {
+  data: ListType<ProductWarehouse>;
+  warehouses: ListType<Warehouse>;
+  productData: ListType<Product>;
+}) => {
   const [action, setAction] = useState(ACTION.DEFAULT);
   const [open, setOpen] = useState<undefined | boolean>(false);
   const form = useForm<ProductWarehouseType>({
@@ -59,9 +91,12 @@ export const ProductWarehousePage = ({ data, warehouses, productData }: { data: 
     defaultValues,
   });
 
-  const [productWarehouse, setProductWarehouse] = useState<ListType<IProductWarehouse> | null>(null);
-
-  const warehouseMap = useMemo(() => new Map(warehouses.items.map((p) => [p.id, p])), [warehouses.items]);
+  const [productWarehouse, setProductWarehouse] =
+    useState<ListType<IProductWarehouse> | null>(null);
+  const warehouseMap = useMemo(
+    () => new Map(warehouses.items.map((p) => [p.id, p])),
+    [warehouses.items]
+  );
 
   const productWarehouseFormatter = (data: ListType<IProductWarehouse>) => {
     const items: IProductWarehouse[] = data.items.map((item) => {
@@ -82,14 +117,15 @@ export const ProductWarehousePage = ({ data, warehouses, productData }: { data: 
 
   const deleteLog = async (index: number) => {
     const id = productWarehouse!.items[index].id;
-    const res = await deleteOne(Api.product_log, id);
+    const res = await deleteOne(Api.product_warehouse, id);
     refresh();
     return res.success;
   };
 
   const edit = async (e: IProductWarehouse) => {
     setOpen(true);
-    form.reset({ ...e, edit: e.id });
+
+    form.reset({ edit: e.id, products: [e], warehouse_id: e.warehouse_id });
   };
 
   const columns = getColumns(edit, deleteLog);
@@ -112,12 +148,19 @@ export const ProductWarehousePage = ({ data, warehouses, productData }: { data: 
     setAction(ACTION.RUNNING);
     const body = e as ProductWarehouseType;
     const { edit, ...payload } = body;
+    const products = payload.products;
 
     const res = edit ? await updateOne<IProductsWarehouse>(Api.product_warehouse, edit ?? "", payload as IProductsWarehouse) : await create<IProductsWarehouse>(Api.product_warehouse, e as IProductsWarehouse);
     if (res.success) {
       refresh();
       setOpen(false);
-      form.reset({});
+      form.reset(defaultValues);
+      showToast(
+        "success",
+        edit ? "Мэдээлэл шинэчлэгдлээ." : "Амжилттай нэмлээ."
+      );
+    } else {
+      showToast("error", res.error ?? "");
     }
     setAction(ACTION.DEFAULT);
   };
@@ -153,8 +196,13 @@ export const ProductWarehousePage = ({ data, warehouses, productData }: { data: 
     }
   };
 
-  const handleProductQuantityChange = (productId: string, change: number, qty: number) => {
+  const handleProductQuantityChange = (
+    productId: string,
+    change: number,
+    qty: number
+  ) => {
     const products = form.getValues("products");
+    console.log(products);
     const index = products.findIndex((p) => p.product_id === productId);
 
     if (index !== -1) {
@@ -199,22 +247,47 @@ export const ProductWarehousePage = ({ data, warehouses, productData }: { data: 
       })
     );
   }, [filter]);
-  const groups: { key: keyof FilterType; label: string; items: Option[] }[] = useMemo(
-    () => [
-      {
-        key: "warehouse",
-        label: "Агуулах",
-        items: warehouses.items.map((b) => ({ value: b.id, label: b.name })),
-      },
+  const toKey = (id: number | string) => String(id);
+  const qtyByProduct = useMemo(() => {
+    const m = new Map<string, number>();
+    const items = productWarehouse?.items ?? [];
+    for (const w of items) {
+      const pid =
+        (w as any).product_id ?? (w as any).productId ?? (w as any).id;
+      m.set(toKey(pid), Number((w as any).quantity) || 0);
+    }
+    return m;
+  }, [productWarehouse?.items]);
+  type ProductWithQty = SearchType<number> & { quantity?: number };
+  const productsWithQty: ProductWithQty[] = useMemo(() => {
+    const edit = form.getValues("edit");
+    if (edit != undefined) {
+      const pw = productWarehouse?.items.filter((p) => p.id == edit)?.[0];
+      return products.filter((p) => p.id == pw?.product_id);
+    }
+    return products.map((p) => {
+      const q = qtyByProduct.get(toKey(p.id)) ?? 0;
+      return { ...p, quantity: q };
+    });
+  }, [products, qtyByProduct, form.getValues("edit")]);
 
-      {
-        key: "product",
-        label: "Бүтээгдэхүүн",
-        items: productData.items.map((b) => ({ value: b.id, label: b.name })),
-      },
-    ],
-    [productData.items, warehouses.items]
-  );
+  const groups: { key: keyof FilterType; label: string; items: Option[] }[] =
+    useMemo(
+      () => [
+        {
+          key: "warehouse",
+          label: "Агуулах",
+          items: warehouses.items.map((b) => ({ value: b.id, label: b.name })),
+        },
+
+        {
+          key: "product",
+          label: "Бүтээгдэхүүн",
+          items: productData.items.map((b) => ({ value: b.id, label: b.name })),
+        },
+      ],
+      [productData.items, warehouses.items]
+    );
 
   const downloadExcel = async (pg: PG = DEFAULT_PG) => {
     setAction(ACTION.RUNNING);
@@ -387,7 +460,13 @@ export const ProductWarehousePage = ({ data, warehouses, productData }: { data: 
               <FilterPopover
                 content={
                   <div className="flex flex-col gap-2">
-                    <Calendar mode="single" selected={filter?.start} onSelect={(e) => setFilter((prev) => ({ ...prev, start: e }))} />
+                    <Calendar
+                      mode="single"
+                      selected={filter?.start}
+                      onSelect={(e) =>
+                        setFilter((prev) => ({ ...prev, start: e }))
+                      }
+                    />
                   </div>
                 }
                 value={filter?.start?.toString()}
@@ -396,7 +475,13 @@ export const ProductWarehousePage = ({ data, warehouses, productData }: { data: 
               <FilterPopover
                 content={
                   <div className="flex flex-col gap-2">
-                    <Calendar mode="single" selected={filter?.end} onSelect={(e) => setFilter((prev) => ({ ...prev, end: e }))} />
+                    <Calendar
+                      mode="single"
+                      selected={filter?.end}
+                      onSelect={(e) =>
+                        setFilter((prev) => ({ ...prev, end: e }))
+                      }
+                    />
                   </div>
                 }
                 value={filter?.end?.toString()}

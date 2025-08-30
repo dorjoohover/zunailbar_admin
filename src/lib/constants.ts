@@ -1,5 +1,18 @@
 import { Crown, Shield, User2 } from "lucide-react";
-import { CategoryType, CostStatus, DISCOUNT, EmployeeStatus, OrderStatus, ProductLogStatus, ProductTransactionStatus, ROLE, SalaryLogStatus, ScheduleStatus, UserProductStatus, UserStatus } from "./enum";
+import {
+  CategoryType,
+  CostStatus,
+  DISCOUNT,
+  EmployeeStatus,
+  OrderStatus,
+  ProductLogStatus,
+  ProductTransactionStatus,
+  ROLE,
+  SalaryLogStatus,
+  ScheduleStatus,
+  UserProductStatus,
+  UserStatus,
+} from "./enum";
 import z from "zod";
 
 export const roleIconMap = {
@@ -51,6 +64,7 @@ export interface SearchType<T> {
   id: string;
   value: string;
   item?: T;
+  quantity?: number;
 }
 
 export enum ACTION {
@@ -104,7 +118,9 @@ export const MODAL_ACTION = {
   add_salary: "add_salary",
 };
 
-export function getEnumValues<T extends Record<string, string | number>>(e: T): T[keyof T][] {
+export function getEnumValues<T extends Record<string, string | number>>(
+  e: T
+): T[keyof T][] {
   return Object.values(e).filter((v) => typeof v !== "string") as T[keyof T][];
 }
 
@@ -112,20 +128,20 @@ export const getValuesUserProductStatus = {
   [UserProductStatus.Active]: { name: "Active", color: "green-badge badge" },
   [UserProductStatus.Damaged]: { name: "Damaged", color: "red-badge badge" },
   [UserProductStatus.Lost]: { name: "Lost", color: "yellow-badge badge" },
-  [UserProductStatus.Replaced]: { name: "Replaced", color: "slate-badge badge" },
-  [UserProductStatus.Returned]: { name: "Returned", color: "neutral-badge badge" },
+  [UserProductStatus.Replaced]: {
+    name: "Replaced",
+    color: "slate-badge badge",
+  },
+  [UserProductStatus.Returned]: {
+    name: "Returned",
+    color: "neutral-badge badge",
+  },
 };
 
 export const getValuesCostStatus = {
   [CostStatus.Paid]: { name: "Төлсөн", color: "green-badge badge" },
   [CostStatus.Remainder]: { name: "Үлдэгдэлтэй", color: "yellow-badge badge" },
 };
-
-// export const getValuesCostStatus = {
-//   [CostStatus.Paid]: "Төлсөн",
-//   [CostStatus.Remainder]: "Үлдэгдэлтэй",
-// };
-
 
 export const getValueDiscount = {
   [DISCOUNT.Percent]: "Хувиар",
@@ -139,8 +155,14 @@ export const getValuesProductTransactionStatus = {
 };
 
 export const getValuesProductLogStatus = {
-  [ProductLogStatus.Bought]: { name: "Худалдаж авсан", color: "green-badge badge" },
-  [ProductLogStatus.Remainder]: { name: "Үлдэгдэлтэй", color: "yellow-badge badge" },
+  [ProductLogStatus.Bought]: {
+    name: "Худалдаж авсан",
+    color: "green-badge badge",
+  },
+  [ProductLogStatus.Remainder]: {
+    name: "Үлдэгдэлтэй",
+    color: "yellow-badge badge",
+  },
   // [ProductLogStatus.Damaged]: "Эвдэрсэн",
 };
 

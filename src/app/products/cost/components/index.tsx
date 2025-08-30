@@ -42,12 +42,11 @@ const formSchema = z.object({
     (val) => (typeof val === "string" ? parseFloat(val) : val),
     z.number()
   ) as unknown as number,
-  cost_status: z
-    .preprocess(
-      (val) => (typeof val === "string" ? parseInt(val, 10) : val),
-      z.nativeEnum(CostStatus).nullable()
-    )
-    .optional() as unknown as number,
+  paid_amount: z.preprocess(
+    (val) => (typeof val === "string" ? parseFloat(val) : val),
+    z.number()
+  ) as unknown as number,
+
   edit: z.string().nullable().optional(),
 });
 const defaultValues = {
@@ -56,8 +55,8 @@ const defaultValues = {
   product_id: "",
   date: mnDate(),
   price: 0,
+  paid_amount: 0,
   edit: undefined,
-  cost_status: CostStatus.Paid,
 };
 type CostType = z.infer<typeof formSchema>;
 type FilterType = {
@@ -114,7 +113,7 @@ export const CostPage = ({
   }, [data]);
   const deleteProduct = async (index: number) => {
     const id = costs?.items?.[index]?.id ?? "";
-    const res = await deleteOne(Api.product, id);
+    const res = await deleteOne(Api.cost, id);
     refresh();
     return res.success;
   };
@@ -238,7 +237,7 @@ export const CostPage = ({
                   //   }
                   //   label={item.label}
                   // />
-                    <label key={i}>
+                  <label key={i}>
                     <span className="filter-label">{item.label as string}</span>
                     <ComboBox
                       pl={item.label}
@@ -354,32 +353,18 @@ export const CostPage = ({
                         );
                       }}
                     </FormItems>
-                    <FormItems
-                      label="Төлөв"
-                      control={form.control}
-                      name="cost_status"
-                    >
-                      {(field) => {
-                        return (
-                          <ComboBox
-                            props={{ ...field }}
-                            items={getEnumValues(CostStatus).map((item) => {
-                              return {
-                                value: item.toString(),
-                                label: getValuesCostStatus[item].name,
-                              };
-                            })}
-                          />
-                        );
-                      }}
-                    </FormItems>
                   </div>
 
                   <div className="grid gap-3 pt-5 double-col">
                     {[
                       {
                         key: "price",
-                        label: "Үнэ",
+                        label: "Нийт төлбөр",
+                        type: "money",
+                      },
+                      {
+                        key: "paid_amount",
+                        label: "Төлсөн төлбөр",
                         type: "money",
                       },
                       {
