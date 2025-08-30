@@ -10,17 +10,39 @@ import { IProductTransaction, IUser } from "@/models";
 import { ProductTransactionStatus, UserStatus } from "@/lib/enum";
 import { IService } from "@/models/service.model";
 import { TableActionButtons } from "@/components/tableActionButtons";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import TooltipWrapper from "@/components/tooltipWrapper";
 import { getEnumValues, UserStatusValue } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 
-export function getColumns(onEdit: (product: IUser) => void, remove: (index: number, status: UserStatus) => Promise<boolean>): ColumnDef<IUser>[] {
+export function getColumns(
+  onEdit: (product: IUser) => void,
+  remove: (index: number) => Promise<boolean>
+): ColumnDef<IUser>[] {
   return [
     {
       id: "select",
-      header: ({ table }) => <Checkbox checked={table.getIsAllPageRowsSelected()} onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)} aria-label="Select all" />,
-      cell: ({ row }) => <Checkbox checked={row.getIsSelected()} onCheckedChange={(value) => row.toggleSelected(!!value)} aria-label="Select row" />,
+      header: ({ table }) => (
+        <Checkbox
+          checked={table.getIsAllPageRowsSelected()}
+          onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+          aria-label="Select all"
+        />
+      ),
+      cell: ({ row }) => (
+        <Checkbox
+          checked={row.getIsSelected()}
+          onCheckedChange={(value) => row.toggleSelected(!!value)}
+          aria-label="Select row"
+        />
+      ),
       enableSorting: false,
       enableHiding: false,
     },
@@ -43,7 +65,11 @@ export function getColumns(onEdit: (product: IUser) => void, remove: (index: num
     {
       accessorKey: "nickname",
       header: ({ column }) => (
-        <Button variant="table_header" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")} className="font-bold">
+        <Button
+          variant="table_header"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          className="font-bold"
+        >
           Name <ArrowUpDown className="w-4 h-4 ml-2" />
         </Button>
       ),
@@ -55,7 +81,11 @@ export function getColumns(onEdit: (product: IUser) => void, remove: (index: num
     {
       accessorKey: "mobile",
       header: ({ column }) => (
-        <Button variant="table_header" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")} className="font-bold">
+        <Button
+          variant="table_header"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          className="font-bold"
+        >
           Name <ArrowUpDown className="w-4 h-4 ml-2" />
         </Button>
       ),
@@ -68,7 +98,11 @@ export function getColumns(onEdit: (product: IUser) => void, remove: (index: num
     {
       accessorKey: "created_at",
       header: ({ column }) => (
-        <Button variant="table_header" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")} className="font-bold">
+        <Button
+          variant="table_header"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          className="font-bold"
+        >
           Created <ArrowUpDown className="w-4 h-4 ml-2" />
         </Button>
       ),
@@ -87,8 +121,12 @@ export function getColumns(onEdit: (product: IUser) => void, remove: (index: num
       header: "Actions",
       cell: ({ row }) => (
         // Bagasgasan
-        <TableActionButtons rowData={row.original} onEdit={(data) => onEdit(data)} onRemove={(data) => remove(row.index)}>
-            {/* <DropdownMenu>
+        <TableActionButtons
+          rowData={row.original}
+          onEdit={(data) => onEdit(data)}
+          onRemove={(data) => remove(row.index)}
+        >
+          {/* <DropdownMenu>
               <TooltipWrapper tooltip="Статус солих">
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" size="icon">
