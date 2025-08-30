@@ -59,7 +59,7 @@ export const ScheduleTable = ({
       // Өнгөрсөн 7 хоног → бүх өдөр өнөөдрөөс өмнө
       return days.map(() => true);
     }
-    if (hour >= time + 6) {
+    if (hour >= time + 7) {
       return days.map(() => true);
     }
 
@@ -121,22 +121,17 @@ export const ScheduleTable = ({
                           : getDisabledDaysForWeek(days, time)[day - 1]
                       }
                       onClick={() => {
-                        if (setEdit) {
+                        if (setEdit && !includes) {
                           setEdit((prev0: ScheduleEdit[]) => {
                             const prev = Array.isArray(prev0) ? prev0 : []; // анхны []-г баталгаажуулж байна
                             const newTime = time + 7;
 
                             // тухайн өдрийн индекс
-                            const idx = prev.findIndex((d) =>
-                              d.day == day
-                            );
+                            const idx = prev.findIndex((d) => d.day == day);
 
                             // 1) Байхгүй бол шинээр нэмнэ
                             if (idx === -1) {
-                              return [
-                                ...prev,
-                                { day: day, times: [newTime] },
-                              ];
+                              return [...prev, { day: day, times: [newTime] }];
                             }
 
                             // 2) Байсан бол times дээр toggle
