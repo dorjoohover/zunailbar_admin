@@ -59,7 +59,7 @@ export const ScheduleTable = ({
       // Өнгөрсөн 7 хоног → бүх өдөр өнөөдрөөс өмнө
       return days.map(() => true);
     }
-    if (hour >= time - 7) {
+    if (hour >= time + 6) {
       return days.map(() => true);
     }
 
