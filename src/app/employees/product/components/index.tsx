@@ -1,20 +1,41 @@
 "use client";
 import { DataTable } from "@/components/data-table";
-import { ACTION, DEFAULT_PG, getEnumValues, getValuesUserProductStatus, ListDefault, ListType, Option, PG, RoleValue } from "@/lib/constants";
+import {
+  ACTION,
+  DEFAULT_PG,
+  getEnumValues,
+  getValuesUserProductStatus,
+  ListDefault,
+  ListType,
+  Option,
+  PG,
+  RoleValue,
+} from "@/lib/constants";
 import { useEffect, useMemo, useState } from "react";
 import { ROLE, UserProductStatus } from "@/lib/enum";
 import z from "zod";
 
 import { Api } from "@/utils/api";
 import { fetcher } from "@/hooks/fetcher";
-import { Branch, IUser, Product, User, UserProduct } from "@/models";
+import {
+  Branch,
+  IUser,
+  IUserProduct,
+  Product,
+  User,
+  UserProduct,
+} from "@/models";
 import { getColumns } from "./columns";
 import ContainerHeader from "@/components/containerHeader";
 import DynamicHeader from "@/components/dynamicHeader";
 import { create, updateOne } from "@/app/(api)";
 import { imageUploader } from "@/app/(api)/base";
 import { Input } from "@/components/ui/input";
-import { firstLetterUpper, objectCompact, usernameFormatter } from "@/lib/functions";
+import {
+  firstLetterUpper,
+  objectCompact,
+  usernameFormatter,
+} from "@/lib/functions";
 import { ComboBox } from "@/shared/components/combobox";
 import { DatePicker } from "@/shared/components/date.picker";
 import { FormItems } from "@/shared/components/form.field";
@@ -26,9 +47,10 @@ import { useForm, FormProvider } from "react-hook-form";
 import { Label } from "recharts";
 import { EmployeeProductModal } from "../../components/employee.product";
 import { FilterPopover } from "@/components/layout/popover";
-import { Checkbox } from "@radix-ui/react-checkbox";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { showToast } from "@/shared/components/showToast";
 
 type FilterType = {
   branch?: string;
@@ -36,43 +58,80 @@ type FilterType = {
   product?: string;
   status?: number;
 };
-export const EmployeeProductPage = ({ data, products, branches, users }: { data: ListType<UserProduct>; branches: ListType<Branch>; users: ListType<User>; products: ListType<Product> }) => {
+
+const formSchema = z.object({
+  user_id: z.string().min(1),
+  product_id: z.string().min(1),
+  product_name: z.string().nullable().optional(),
+  user_name: z.string().nullable().optional(),
+  quantity: z.preprocess(
+    (val) => (typeof val === "string" ? parseFloat(val) : val),
+    z.number()
+  ) as unknown as number,
+  user_product_status: z
+    .preprocess(
+      (val) => (typeof val === "string" ? parseInt(val, 10) : val),
+      z.nativeEnum(UserProductStatus).nullable()
+    )
+    .optional() as unknown as number,
+  edit: z.string().nullable().optional(),
+});
+const defaultValues: UserProductType = {
+  user_id: "",
+  product_id: "",
+  product_name: "",
+  user_name: "",
+  quantity: 0,
+  user_product_status: UserProductStatus.Active,
+  edit: undefined,
+};
+type UserProductType = z.infer<typeof formSchema>;
+export const EmployeeProductPage = ({
+  data,
+  products,
+  branches,
+  users,
+}: {
+  data: ListType<UserProduct>;
+  branches: ListType<Branch>;
+  users: ListType<User>;
+  products: ListType<Product>;
+}) => {
   const [action, setAction] = useState(ACTION.DEFAULT);
   const [open, setOpen] = useState<boolean | undefined>(false);
-
+  const form = useForm<UserProductType>({
+    resolver: zodResolver(formSchema),
+    defaultValues,
+  });
   const [userProduct, setUserProduct] = useState<ListType<UserProduct>>(data);
   const [editingUser, setEditingUser] = useState<IUser | null>(null);
-  // const onSubmit = async <T,>(e: T) => {
-  //   const { file, ...body } = form.getValues();
-  //   const formData = new FormData();
-  //   let payload = {};
-  //   if (file != null) {
-  //     formData.append("files", file);
-  //     const uploadResult = await imageUploader(formData);
-  //     payload = {
-  //       ...(body as IUser),
-  //       profile_img: uploadResult[0],
-  //     };
-  //   } else {
-  //     payload = {
-  //       ...(body as IUser),
-  //     };
-  //   }
-  //   const res = editingUser
-  //     ? await updateOne<IUser>(Api.user, editingUser?.id as string, payload)
-  //     : await create<IUser>(Api.user, payload);
-  //   if (res.success) {
-  //     refresh();
-  //     setOpen(false);
-  //     form.reset();
-  //   }
-  //   setAction(ACTION.DEFAULT);
-  // };
-  // const onInvalid = async <T,>(e: T) => {
-  //   console.log("error", e);
+  const onSubmit = async <T,>(e: T) => {
+    const { edit, ...body } = form.getValues();
+    let payload = body;
 
-  //   // setSuccess(false);
-  // };
+    const res = edit
+      ? await updateOne<UserProduct>(
+          Api.user_product,
+          edit as string,
+          payload as UserProduct
+        )
+      : await create(Api.user_product, { items: [payload as UserProduct] });
+    if (res.success) {
+      refresh();
+
+      showToast("success", edit ? "Мэдээлэл засагдсан." : "Амжилттай нэмлээ.");
+      setOpen(false);
+      form.reset(defaultValues);
+    } else {
+      showToast("error", res.error ?? "");
+    }
+    setAction(ACTION.DEFAULT);
+  };
+  const onInvalid = async <T,>(e: T) => {
+    console.log("error", e);
+
+    // setSuccess(false);
+  };
 
   const refresh = async (pg: PG = DEFAULT_PG) => {
     setAction(ACTION.RUNNING);
@@ -88,15 +147,25 @@ export const EmployeeProductPage = ({ data, products, branches, users }: { data:
     });
     setAction(ACTION.DEFAULT);
   };
-  const edit = (e: IUser) => {
+  const edit = (e: IUserProduct) => {
     setOpen(true);
-    setEditingUser(e);
-    // form.reset(e);
+    form.reset({
+      edit: e.id,
+      product_id: e.product_id,
+      product_name: e.product_name,
+      quantity: e.quantity,
+      user_id: e.user_id,
+      user_product_status: e.user_product_status,
+      user_name: e.user_name,
+    });
   };
   const setStatus = async (index: number, status: number) => {
-    const res = await updateOne(Api.user, users.items[index].id, {
-      user_status: status,
+    const res = await updateOne(Api.user_product, userProduct.items[index].id, {
+      user_product_status: status,
     });
+    res.success
+      ? showToast("success", "Амжилттай шинэчлэгдлээ.")
+      : showToast("error", res.error ?? "");
     refresh();
   };
 
@@ -117,37 +186,38 @@ export const EmployeeProductPage = ({ data, products, branches, users }: { data:
       })
     );
   }, [filter]);
-  const groups: { key: keyof FilterType; label: string; items: Option[] }[] = useMemo(
-    () => [
-      {
-        key: "branch",
-        label: "Салбар",
-        items: branches.items.map((b) => ({ value: b.id, label: b.name })),
-      },
-      {
-        key: "user",
-        label: "Артист",
-        items: users.items.map((b) => ({
-          value: b.id,
-          label: usernameFormatter(b),
-        })),
-      },
-      {
-        key: "product",
-        label: "Бүтээгдэхүүн",
-        items: products.items.map((b) => ({ value: b.id, label: b.name })),
-      },
-      {
-        key: "status",
-        label: "Статус",
-        items: getEnumValues(UserProductStatus).map((s) => ({
-          value: s,
-          label: getValuesUserProductStatus[s].name,
-        })),
-      },
-    ],
-    [branches.items]
-  );
+  const groups: { key: keyof FilterType; label: string; items: Option[] }[] =
+    useMemo(
+      () => [
+        {
+          key: "branch",
+          label: "Салбар",
+          items: branches.items.map((b) => ({ value: b.id, label: b.name })),
+        },
+        {
+          key: "user",
+          label: "Артист",
+          items: users.items.map((b) => ({
+            value: b.id,
+            label: usernameFormatter(b),
+          })),
+        },
+        {
+          key: "product",
+          label: "Бүтээгдэхүүн",
+          items: products.items.map((b) => ({ value: b.id, label: b.name })),
+        },
+        {
+          key: "status",
+          label: "Статус",
+          items: getEnumValues(UserProductStatus).map((s) => ({
+            value: s,
+            label: getValuesUserProductStatus[s].name,
+          })),
+        },
+      ],
+      [branches.items]
+    );
 
   return (
     <div className="relative w-full">
@@ -165,11 +235,20 @@ export const EmployeeProductPage = ({ data, products, branches, users }: { data:
                     key={i}
                     content={item.items.map((it, index) => (
                       <label key={index} className="checkbox-label">
-                        <Checkbox checked={filter?.[key] == it.value} onCheckedChange={() => changeFilter(key, it.value)} />
+                        <Checkbox
+                          checked={filter?.[key] == it.value}
+                          onCheckedChange={() => changeFilter(key, it.value)}
+                        />
                         <span className="">{it.label as string}</span>
                       </label>
                     ))}
-                    value={filter?.[key] ? item.items.filter((item) => item.value == filter[key])[0].label : undefined}
+                    value={
+                      filter?.[key]
+                        ? item.items.filter(
+                            (item) => item.value == filter[key]
+                          )[0].label
+                        : undefined
+                    }
                     label={item.label}
                   />
                 );
@@ -181,7 +260,89 @@ export const EmployeeProductPage = ({ data, products, branches, users }: { data:
           refresh={refresh}
           loading={action === ACTION.RUNNING}
           count={userProduct.count}
-          modalAdd={<></>}
+          modalAdd={
+            <Modal
+              maw="md"
+              name={"Олгосон бүтээгдэхүүн засах"}
+              submit={() => form.handleSubmit(onSubmit, onInvalid)()}
+              open={open == true}
+              setOpen={setOpen}
+              loading={action == ACTION.RUNNING}
+            >
+              <FormProvider {...form}>
+                <FormItems label="Нэр" control={form.control} name="user_id">
+                  {(field) => {
+                    return (
+                      <ComboBox
+                        props={{ ...field }}
+                        items={users.items.map((item) => {
+                          return {
+                            value: item.id,
+                            label: usernameFormatter(item),
+                          };
+                        })}
+                      />
+                    );
+                  }}
+                </FormItems>
+                <FormItems
+                  label="Бүтээгдэхүүн"
+                  control={form.control}
+                  name="product_id"
+                >
+                  {(field) => {
+                    return (
+                      <ComboBox
+                        props={{ ...field }}
+                        items={products.items.map((item) => {
+                          return {
+                            value: item.id,
+                            label: item.name,
+                          };
+                        })}
+                      />
+                    );
+                  }}
+                </FormItems>
+                <FormItems
+                  control={form.control}
+                  name={"quantity"}
+                  className={"col-span-2"}
+                >
+                  {(field) => {
+                    return (
+                      <TextField
+                        props={{ ...field }}
+                        type={"number"}
+                        label={"Тоо ширхэг"}
+                      />
+                    );
+                  }}
+                </FormItems>
+                <FormItems
+                  control={form.control}
+                  name={"user_product_status"}
+                  label="Төлөв"
+                  className={"col-span-2"}
+                >
+                  {(field) => {
+                    return (
+                      <ComboBox
+                        props={{ ...field }}
+                        items={getEnumValues(UserProductStatus).map((item) => {
+                          return {
+                            value: item.toString(),
+                            label: getValuesUserProductStatus[item].name,
+                          };
+                        })}
+                        
+                      />
+                    );
+                  }}
+                </FormItems>
+              </FormProvider>
+            </Modal>
+          }
         />
       </div>
     </div>

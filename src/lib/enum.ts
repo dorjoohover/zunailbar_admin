@@ -67,7 +67,6 @@ export enum ScheduleType {
 
 export enum ProductTransactionStatus {
   Used = 10,
-  Sold = 20,
   Damaged = 30,
 }
 

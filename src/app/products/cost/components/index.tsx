@@ -270,7 +270,7 @@ export const CostPage = ({ data, products, branches, categories }: { data: ListT
                             items={getEnumValues(CostStatus).map((item) => {
                               return {
                                 value: item.toString(),
-                                label: getValuesCostStatus[item],
+                                label: getValuesCostStatus[item].name,
                               };
                             })}
                           />

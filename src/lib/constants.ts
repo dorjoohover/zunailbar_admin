@@ -141,7 +141,6 @@ export const getValueDiscount = {
 
 export const getValuesProductTransactionStatus = {
   [ProductTransactionStatus.Used]: "Хэрэглэсэн",
-  [ProductTransactionStatus.Sold]: "Зарсан",
   [ProductTransactionStatus.Damaged]: "Эвдэрсэн",
 };
 export const getValuesProductLogStatus = {

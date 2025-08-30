@@ -21,34 +21,44 @@ import ContainerHeader from "@/components/containerHeader";
 import DynamicHeader from "@/components/dynamicHeader";
 
 const formSchema = z.object({
-  branch_id: z.string().min(1),
+  // branch_id: z.string().min(1),
+  user_id: z.string().min(1),
   name: z.string().min(1),
-  max_price: z
-    .preprocess((val) => (typeof val === "string" ? parseFloat(val) : val), z.number())
-    .nullable()
+  schedule_status: z
+    .preprocess(
+      (val) => (typeof val === "string" ? parseInt(val, 10) : val),
+      z.nativeEnum(ScheduleStatus).nullable()
+    )
     .optional() as unknown as number,
-  min_price: z.preprocess((val) => (typeof val === "string" ? parseFloat(val) : val), z.number()) as unknown as number,
-  duration: z.preprocess((val) => (typeof val === "string" ? parseFloat(val) : val), z.number()) as unknown as number,
+
   edit: z.string().nullable().optional(),
 });
 const defaultValues: PendingScheduleType = {
-  branch_id: "",
+  user_id: "",
   name: "",
-  max_price: null,
-  min_price: 0,
-  duration: 0,
+  schedule_status: ScheduleStatus.Absent,
   edit: undefined,
 };
 type PendingScheduleType = z.infer<typeof formSchema>;
-export const PendingSchedulePage = ({ data, users }: { data: ListType<Schedule>; users: ListType<User> }) => {
+export const PendingSchedulePage = ({
+  data,
+  users,
+}: {
+  data: ListType<Schedule>;
+  users: ListType<User>;
+}) => {
   const [action, setAction] = useState(ACTION.DEFAULT);
   const [open, setOpen] = useState<undefined | boolean>(false);
   const form = useForm<PendingScheduleType>({
     resolver: zodResolver(formSchema),
     defaultValues,
   });
-  const [pendingSchedules, PendingSchedules] = useState<ListType<Schedule>>(ListDefault);
-  const userMap = useMemo(() => new Map(users.items.map((b) => [b.id, b])), [users.items]);
+  const [pendingSchedules, PendingSchedules] =
+    useState<ListType<Schedule>>(ListDefault);
+  const userMap = useMemo(
+    () => new Map(users.items.map((b) => [b.id, b])),
+    [users.items]
+  );
 
   const pendingScheduleFormatter = (data: ListType<Schedule>) => {
     const items: Schedule[] = data.items.map((item) => {
@@ -100,7 +110,9 @@ export const PendingSchedulePage = ({ data, users }: { data: ListType<Schedule>;
     setAction(ACTION.RUNNING);
     const body = e as PendingScheduleType;
     const { edit, ...payload } = body;
-    const res = edit ? await updateOne<Schedule>(Api.schedule, edit ?? "", e as Schedule) : await create<Schedule>(Api.schedule, e as Schedule);
+    const res = edit
+      ? await updateOne<Schedule>(Api.schedule, edit ?? "", e as Schedule)
+      : await create<Schedule>(Api.schedule, e as Schedule);
     console.log(res);
     if (res.success) {
       refresh();
@@ -138,21 +150,6 @@ export const PendingSchedulePage = ({ data, users }: { data: ListType<Schedule>;
               loading={action == ACTION.RUNNING}
             >
               <FormProvider {...form}>
-                <FormItems label="Нэр" control={form.control} name="branch_id">
-                  {(field) => {
-                    return (
-                      <ComboBox
-                        props={{ ...field }}
-                        items={users.items.map((item) => {
-                          return {
-                            value: item.id,
-                            label: usernameFormatter(item),
-                          };
-                        })}
-                      />
-                    );
-                  }}
-                </FormItems>
                 {[
                   {
                     key: "min_price",
@@ -173,9 +170,20 @@ export const PendingSchedulePage = ({ data, users }: { data: ListType<Schedule>;
                   const name = item.key as keyof PendingScheduleType;
                   const label = item.label as keyof PendingScheduleType;
                   return (
-                    <FormItems control={form.control} name={name} key={i} className={item.key === "name" ? "col-span-2" : ""}>
+                    <FormItems
+                      control={form.control}
+                      name={name}
+                      key={i}
+                      className={item.key === "name" ? "col-span-2" : ""}
+                    >
                       {(field) => {
-                        return <TextField props={{ ...field }} type={item.type} label={label} />;
+                        return (
+                          <TextField
+                            props={{ ...field }}
+                            type={item.type}
+                            label={label}
+                          />
+                        );
                       }}
                     </FormItems>
                   );
