@@ -366,7 +366,7 @@ export const CostPage = ({
                             items={getEnumValues(CostStatus).map((item) => {
                               return {
                                 value: item.toString(),
-                                label: getValuesCostStatus[item].name,
+                                label: getValuesCostStatus[item],
                               };
                             })}
                           />
