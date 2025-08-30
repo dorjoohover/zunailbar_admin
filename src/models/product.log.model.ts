@@ -5,6 +5,7 @@ export interface ProductLog {
   quantity: number;
   price: number;
   total_amount: number;
+  paid_amount: number;
   product_log_status: number;
   date: Date;
   created_by: string;
@@ -17,6 +18,7 @@ export interface IProductLog {
   quantity: number;
   price: number;
   total_amount: number;
+  paid_amount: number;
   product_log_status: number;
   currency?: string;
   currency_value?: number;

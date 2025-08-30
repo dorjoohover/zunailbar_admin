@@ -59,11 +59,18 @@ export function getColumns(
       cell: ({ row }) => money(row.getValue("price"), "₮") ?? "-",
     },
     {
+      accessorKey: "paid_amount",
+      header: "Paid",
+      cell: ({ row }) => money(row.getValue("paid_amount") ?? 0, "₮") ?? "-",
+    },
+    {
       accessorKey: "cost_status",
       header: "Status",
       cell: ({ row }) => {
         const status =
-          getValuesCostStatus[row.getValue<number>("cost_status") as CostStatus];
+          getValuesCostStatus[
+            row.getValue<number>("cost_status") as CostStatus
+          ];
         return <span className={status}>{status}</span>;
       },
     },

@@ -1,26 +1,10 @@
 import { ColumnDef } from "@tanstack/react-table";
-import { IProduct } from "@/models/product.model";
-import { ArrowUpDown, Pencil, Trash2, UserRoundCog } from "lucide-react";
+import { ArrowUpDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { AppAlertDialog } from "@/components/AlertDialog";
-import { toast } from "sonner";
-import { money, parseDate } from "@/lib/functions";
-import { IProductTransaction, IUser } from "@/models";
-import { ProductTransactionStatus, UserStatus } from "@/lib/enum";
-import { IService } from "@/models/service.model";
+import { parseDate } from "@/lib/functions";
+import { IUser } from "@/models";
 import { TableActionButtons } from "@/components/tableActionButtons";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import TooltipWrapper from "@/components/tooltipWrapper";
-import { getEnumValues, UserStatusValue } from "@/lib/constants";
-import { cn } from "@/lib/utils";
 
 export function getColumns(
   onEdit: (product: IUser) => void,

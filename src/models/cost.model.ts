@@ -7,6 +7,7 @@ export interface ICost {
   product_name: string;
   date: Date;
   price: number;
+  paid_amount: number;
   status: number;
   cost_status: number;
   created_at?: Date;
@@ -20,6 +21,7 @@ export interface Cost {
   product_name: string;
   date: Date;
   price: number;
+  paid_amount: number;
   status: number;
   cost_status: number;
   created_at?: Date;
