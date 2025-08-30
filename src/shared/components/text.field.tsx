@@ -4,6 +4,7 @@ import { Label } from "@/components/ui/label";
 import { Eye, EyeOff } from "lucide-react";
 import { ControllerRenderProps, type FieldValues } from "react-hook-form";
 import { mobileFormatter, money } from "@/lib/functions";
+import { cn } from "@/lib/utils";
 
 export const TextField = <T extends FieldValues>({
   props,
@@ -11,7 +12,7 @@ export const TextField = <T extends FieldValues>({
   pl,
   type = "text",
   symbol = "₮",
-  className = "pr-10 bg-white h-10",
+  className = "bg-white h-10",
 }: {
   pl?: string;
   symbol?: string;
@@ -43,7 +44,7 @@ export const TextField = <T extends FieldValues>({
           type={type}
           id={id}
           placeholder={pl}
-          className={className}
+          className={cn("", className)}
         />
       </div>
     );

@@ -226,7 +226,7 @@ export const ProductHistoryPage = ({ data, products }: { data: ListType<ProductL
             <Modal
               // w="2xl"
               maw="xl"
-              name="Барааны түүх нэмэх"
+              name="Худалдан авалт нэмэх"
               submit={() => form.handleSubmit(onSubmit, onInvalid)()}
               open={open == true}
               reset={() => {
@@ -239,7 +239,7 @@ export const ProductHistoryPage = ({ data, products }: { data: ListType<ProductL
               <FormProvider {...form}>
                 <div className="">
                   <div className="double-col">
-                    <FormItems label="Бараа" control={form.control} name="product_id">
+                    <FormItems label="Бүтээгдэхүүн" control={form.control} name="product_id">
                       {(field) => {
                         return (
                           <ComboBox

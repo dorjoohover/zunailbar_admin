@@ -7,6 +7,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { Button } from "../ui/button";
 import { ChevronDown } from "lucide-react";
 import { ReactNode, useState } from "react";
+import { ScrollArea, ScrollBar } from "../ui/scroll-area";
 
 export const FilterPopover = ({
   content,
@@ -33,8 +34,13 @@ export const FilterPopover = ({
           </Button>
         </PopoverTrigger>
 
-        <PopoverContent className="w-auto min-w-[150px] z-10 p-2">
-          <div className="flex flex-col bg-white">{content}</div>
+        <PopoverContent className="w-auto min-w-[150px] z-10 p-2 relative overflow-hidden ">
+          <ScrollArea className="max-h-[50vh] overflow-y-auto truncate max-w-[300px]">
+            {/* <div className="flex flex-col bg-white truncate max-w-[300px]">{content}</div> */}
+            <>
+            {content}
+            </>
+          </ScrollArea>
         </PopoverContent>
       </Popover>
     </div>

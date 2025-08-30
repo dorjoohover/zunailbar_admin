@@ -166,7 +166,7 @@ export const EmployeeProductPage = ({ data, products, branches, users }: { data:
                     content={item.items.map((it, index) => (
                       <label key={index} className="checkbox-label">
                         <Checkbox checked={filter?.[key] == it.value} onCheckedChange={() => changeFilter(key, it.value)} />
-                        <span>{it.label as string}</span>
+                        <span className="">{it.label as string}</span>
                       </label>
                     ))}
                     value={filter?.[key] ? item.items.filter((item) => item.value == filter[key])[0].label : undefined}
