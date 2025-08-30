@@ -14,11 +14,15 @@ export enum ROLE {
   E_M = 35,
 }
 
-export enum UserStatus {
+export enum EmployeeStatus {
   ACTIVE = 10,
   DEKIRIT = 20,
   VACATION = 30,
   FIRED = 40,
+  BANNED = 50,
+}
+export enum UserStatus {
+  ACTIVE = 10,
   BANNED = 50,
 }
 

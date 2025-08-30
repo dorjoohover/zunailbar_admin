@@ -21,6 +21,9 @@ import { dateOnly, mnDate, objectCompact } from "@/lib/functions";
 import { FilterPopover } from "@/components/layout/popover";
 import { Checkbox } from "@radix-ui/react-checkbox";
 import { Calendar } from "@/components/ui/calendar";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const formSchema = z.object({
   product_id: z.string().min(1),
@@ -184,17 +187,38 @@ export const ProductHistoryPage = ({ data, products }: { data: ListType<ProductL
               {groups.map((item, i) => {
                 const { key } = item;
                 return (
-                  <FilterPopover
-                    key={i}
-                    content={item.items.map((it, index) => (
-                      <label key={index} className="checkbox-label">
-                        <Checkbox checked={filter?.[key] == it.value} onCheckedChange={() => changeFilter(key, it.value)} />
-                        <span>{it.label as string}</span>
-                      </label>
-                    ))}
-                    value={filter?.[key] ? item.items.filter((item) => item.value == filter[key])[0].label : undefined}
-                    label={item.label}
-                  />
+                  // <FilterPopover
+                  //   key={i}
+                  //   content={item.items.map((it, index) => (
+                  //     <label key={index} className="checkbox-label">
+                  //       <Checkbox checked={filter?.[key] == it.value} onCheckedChange={() => changeFilter(key, it.value)} />
+                  //       <span>{it.label as string}</span>
+                  //     </label>
+                  //   ))}
+                  //   value={filter?.[key] ? item.items.filter((item) => item.value == filter[key])[0].label : undefined}
+                  //   label={item.label}
+                  // />
+                      <label key={i}>
+                    <span className="filter-label">{item.label as string}</span>
+                    <ComboBox
+                      pl={item.label}
+                      name={item.label}
+                      className="max-w-36 text-xs!"
+                      search={true}
+                      value={filter?.[key] ? String(filter[key]) : ""} //
+                      items={item.items.map((it) => ({
+                        value: String(it.value),
+                        label: it.label as string,
+                      }))}
+                      props={{
+                        value: filter?.[key] ? String(filter[key]) : "",
+                        onChange: (val: string) => changeFilter(key, val),
+                        onBlur: () => {},
+                        name: key,
+                        ref: () => {},
+                      }}
+                    />
+                  </label>
                 );
               })}
               <FilterPopover
@@ -271,32 +295,70 @@ export const ProductHistoryPage = ({ data, products }: { data: ListType<ProductL
                     </FormItems>
                   </div>
                   <div className="divide-x-gray"></div>
+
                   <div className="double-col">
+                    <div className="relative">
+                      <FormItems label="Currency Value" control={form.control} name="currency_value">
+                        {(field) => {
+                          return (
+                            <div className="relative">
+                              <div className="relative h-10">
+                                <Input type="text" className="h-full pr-10" />
+                              </div>
+                            </div>
+                          );
+                        }}
+                      </FormItems>
+                      <FormItems control={form.control} name="currency_value" className="absolute bottom-0.5 right-0.5">
+                        {(field) => {
+                          return (
+                            <Select defaultValue="mnt">
+                              <SelectTrigger className="text-xs font-semibold border-0">
+                                <SelectValue placeholder="Currency" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectGroup>
+                                  <SelectItem value="mnt" defaultChecked={true}>
+                                    MNT
+                                  </SelectItem>
+                                  <SelectItem value="cny">CNY</SelectItem>
+                                  <SelectItem value="krw">KRW</SelectItem>
+                                  <SelectItem value="usd">USD</SelectItem>
+                                  <SelectItem value="eur">EUR</SelectItem>
+                                </SelectGroup>
+                              </SelectContent>
+                            </Select>
+                          );
+                        }}
+                      </FormItems>
+                    </div>
+
                     {[
-                      {
-                        key: "quantity",
-                        type: "number",
-                        label: "Тоо ширхэг",
-                      },
-                      {
-                        key: "currency",
-                        label: "Currency",
-                      },
-                      {
-                        key: "currency_value",
-                        label: "Currency value",
-                        type: "number",
-                      },
-                      {
-                        key: "price",
-                        type: "number",
-                        label: "Үнэ",
-                      },
                       {
                         key: "cargo",
                         type: "money",
                         label: "Kargo",
                       },
+                      {
+                        key: "quantity",
+                        type: "number",
+                        label: "Тоо ширхэг",
+                      },
+                      // {
+                      //   key: "currency",
+                      //   label: "Currency",
+                      // },
+                      // {
+                      //   key: "currency_value",
+                      //   label: "Currency value",
+                      //   type: "number",
+                      // },
+                      {
+                        key: "price",
+                        type: "number",
+                        label: "Үнэ",
+                      },
+
                       {
                         key: "total_amount",
                         type: "money",
@@ -318,9 +380,10 @@ export const ProductHistoryPage = ({ data, products }: { data: ListType<ProductL
                         </FormItems>
                       );
                     })}
-                    <FormItems control={form.control} name="date">
+
+                    <FormItems label="Огноо" control={form.control} name="date">
                       {(field) => {
-                        return <DatePicker name="Огноо" pl="Огноо сонгох" props={{ ...field }} />;
+                        return <DatePicker name="" pl="Огноо сонгох" props={{ ...field }} />;
                       }}
                     </FormItems>
                   </div>

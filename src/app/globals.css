@@ -51,6 +51,10 @@
   @apply flex items-center gap-2 p-1 rounded text-sm cursor-pointer hover:bg-gray-100
 }
 
+@utility filter-label {
+  @apply flex items-center gap-2 p-1 font-semibold rounded text-xs text-gray-500;
+}
+
 @utility transparent-input {
   @apply bg-white/30;
 }

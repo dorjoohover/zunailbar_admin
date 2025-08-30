@@ -25,7 +25,7 @@ export const FilterPopover = ({
       <h1 className="text-xs font-bold text-gray-500">{label}</h1>
       <Popover>
         <PopoverTrigger asChild>
-          <Button variant="outline" className="inline-flex items-center justify-start text-left gap-1 w-[160px] truncate px-2 rounded">
+          <Button variant="outline" className="inline-flex items-center justify-start text-left gap-1 w-[160px] truncate px-2 lg:h-10 rounded-md">
             <div className="flex items-center justify-between w-full font-normal">
               <span className="w-full truncate">{value ?? "Сонгох"}</span>
 

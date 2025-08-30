@@ -23,20 +23,11 @@ const formSchema = z.object({
   branch_id: z.string().min(1),
   name: z.string().min(1),
   max_price: z
-    .preprocess(
-      (val) => (typeof val === "string" ? parseFloat(val) : val),
-      z.number()
-    )
+    .preprocess((val) => (typeof val === "string" ? parseFloat(val) : val), z.number())
     .nullable()
     .optional() as unknown as number,
-  min_price: z.preprocess(
-    (val) => (typeof val === "string" ? parseFloat(val) : val),
-    z.number()
-  ) as unknown as number,
-  duration: z.preprocess(
-    (val) => (typeof val === "string" ? parseFloat(val) : val),
-    z.number()
-  ) as unknown as number,
+  min_price: z.preprocess((val) => (typeof val === "string" ? parseFloat(val) : val), z.number()) as unknown as number,
+  duration: z.preprocess((val) => (typeof val === "string" ? parseFloat(val) : val), z.number()) as unknown as number,
   edit: z.string().nullable().optional(),
 });
 const defaultValues: ServiceType = {
@@ -51,13 +42,7 @@ type FilterType = {
   branch?: string;
 };
 type ServiceType = z.infer<typeof formSchema>;
-export const ServicePage = ({
-  data,
-  branches,
-}: {
-  data: ListType<Service>;
-  branches: ListType<Branch>;
-}) => {
+export const ServicePage = ({ data, branches }: { data: ListType<Service>; branches: ListType<Branch> }) => {
   const [action, setAction] = useState(ACTION.DEFAULT);
   const [open, setOpen] = useState<undefined | boolean>(false);
   const form = useForm<ServiceType>({
@@ -65,10 +50,7 @@ export const ServicePage = ({
     defaultValues,
   });
   const [services, setServices] = useState<ListType<Service> | null>(null);
-  const branchMap = useMemo(
-    () => new Map(branches.items.map((b) => [b.id, b])),
-    [branches.items]
-  );
+  const branchMap = useMemo(() => new Map(branches.items.map((b) => [b.id, b])), [branches.items]);
 
   const serviceFormatter = (data: ListType<Service>) => {
     const items: Service[] = data.items.map((item) => {
@@ -119,9 +101,7 @@ export const ServicePage = ({
     setAction(ACTION.RUNNING);
     const body = e as ServiceType;
     const { edit, ...payload } = body;
-    const res = edit
-      ? await updateOne<Service>(Api.service, edit ?? "", payload as Service)
-      : await create<Service>(Api.service, e as Service);
+    const res = edit ? await updateOne<Service>(Api.service, edit ?? "", payload as Service) : await create<Service>(Api.service, e as Service);
     console.log(res);
     if (res.success) {
       refresh();
@@ -148,17 +128,16 @@ export const ServicePage = ({
       })
     );
   }, [filter]);
-  const groups: { key: keyof FilterType; label: string; items: Option[] }[] =
-    useMemo(
-      () => [
-        {
-          key: "branch",
-          label: "Салбар",
-          items: branches.items.map((b) => ({ value: b.id, label: b.name })),
-        },
-      ],
-      [branches.items]
-    );
+  const groups: { key: keyof FilterType; label: string; items: Option[] }[] = useMemo(
+    () => [
+      {
+        key: "branch",
+        label: "Салбар",
+        items: branches.items.map((b) => ({ value: b.id, label: b.name })),
+      },
+    ],
+    [branches.items]
+  );
   return (
     <div className="">
       <DynamicHeader />
@@ -171,29 +150,50 @@ export const ServicePage = ({
               {groups.map((item, i) => {
                 const { key } = item;
                 return (
-                  <FilterPopover
-                    key={i}
-                    content={item.items.map((it, index) => (
-                      <label
-                        key={index}
-                        className="checkbox-label"
-                      >
-                        <Checkbox
-                          checked={filter?.[key] == it.value}
-                          onCheckedChange={() => changeFilter(key, it.value)}
-                        />
-                        <span>{it.label as string}</span>
-                      </label>
-                    ))}
-                    value={
-                      filter?.[key]
-                        ? item.items.filter(
-                            (item) => item.value == filter[key]
-                          )[0].label
-                        : undefined
-                    }
-                    label={item.label}
-                  />
+                  // <FilterPopover
+                  //   key={i}
+                  //   content={item.items.map((it, index) => (
+                  //     <label
+                  //       key={index}
+                  //       className="checkbox-label"
+                  //     >
+                  //       <Checkbox
+                  //         checked={filter?.[key] == it.value}
+                  //         onCheckedChange={() => changeFilter(key, it.value)}
+                  //       />
+                  //       <span>{it.label as string}</span>
+                  //     </label>
+                  //   ))}
+                  //   value={
+                  //     filter?.[key]
+                  //       ? item.items.filter(
+                  //           (item) => item.value == filter[key]
+                  //         )[0].label
+                  //       : undefined
+                  //   }
+                  //   label={item.label}
+                  // />
+                  <label key={i}>
+                    <span className="filter-label">{item.label as string}</span>
+                    <ComboBox
+                      pl={item.label}
+                      name={item.label}
+                      className="max-w-36 text-xs!"
+                      search={true}
+                      value={filter?.[key] ? String(filter[key]) : ""} //
+                      items={item.items.map((it) => ({
+                        value: String(it.value),
+                        label: it.label as string,
+                      }))}
+                      props={{
+                        value: filter?.[key] ? String(filter[key]) : "",
+                        onChange: (val: string) => changeFilter(key, val),
+                        onBlur: () => {},
+                        name: key,
+                        ref: () => {},
+                      }}
+                    />
+                  </label>
                 );
               })}
             </>
@@ -219,11 +219,7 @@ export const ServicePage = ({
             >
               <FormProvider {...form}>
                 <div className="double-col">
-                  <FormItems
-                    label="Салбар"
-                    control={form.control}
-                    name="branch_id"
-                  >
+                  <FormItems label="Салбар" control={form.control} name="branch_id">
                     {(field) => {
                       return (
                         <ComboBox
@@ -241,7 +237,7 @@ export const ServicePage = ({
                   {[
                     {
                       key: "name",
-                      label: "Нэр",
+                      label: "Үйлчилгээний нэр",
                       type: "text",
                     },
 
@@ -265,17 +261,9 @@ export const ServicePage = ({
                     const name = item.key as keyof ServiceType;
                     const label = item.label as keyof ServiceType;
                     return (
-                      <FormItems
-                        label={label}
-                        control={form.control}
-                        name={name}
-                        key={i}
-                        className={item.key && "name"}
-                      >
+                      <FormItems label={label} control={form.control} name={name} key={i} className={item.key && "name"}>
                         {(field) => {
-                          return (
-                            <TextField props={{ ...field }} type={item.type} />
-                          );
+                          return <TextField props={{ ...field }} type={item.type} />;
                         }}
                       </FormItems>
                     );

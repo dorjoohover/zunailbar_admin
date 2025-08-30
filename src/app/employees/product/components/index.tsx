@@ -31,12 +31,7 @@ import DynamicHeader from "@/components/dynamicHeader";
 import { create, updateOne } from "@/app/(api)";
 import { imageUploader } from "@/app/(api)/base";
 import { Input } from "@/components/ui/input";
-import {
-  firstLetterUpper,
-  objectCompact,
-  usernameFormatter,
-} from "@/lib/functions";
-import { ComboBox } from "@/shared/components/combobox";
+import { firstLetterUpper, objectCompact, usernameFormatter } from "@/lib/functions";
 import { DatePicker } from "@/shared/components/date.picker";
 import { FormItems } from "@/shared/components/form.field";
 import { Modal } from "@/shared/components/modal";
@@ -49,7 +44,7 @@ import { EmployeeProductModal } from "../../components/employee.product";
 import { FilterPopover } from "@/components/layout/popover";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
-import { Checkbox } from "@/components/ui/checkbox";
+import { ComboBox } from "@/shared/components/combobox";
 import { showToast } from "@/shared/components/showToast";
 
 type FilterType = {
@@ -231,26 +226,38 @@ export const EmployeeProductPage = ({
               {groups.map((item, i) => {
                 const { key } = item;
                 return (
-                  <FilterPopover
-                    key={i}
-                    content={item.items.map((it, index) => (
-                      <label key={index} className="checkbox-label">
-                        <Checkbox
-                          checked={filter?.[key] == it.value}
-                          onCheckedChange={() => changeFilter(key, it.value)}
-                        />
-                        <span className="">{it.label as string}</span>
-                      </label>
-                    ))}
-                    value={
-                      filter?.[key]
-                        ? item.items.filter(
-                            (item) => item.value == filter[key]
-                          )[0].label
-                        : undefined
-                    }
-                    label={item.label}
-                  />
+                  // <FilterPopover
+                  //   key={i}
+                  //   content={item.items.map((it, index) => (
+                  //     <label key={index} className="checkbox-label">
+                  //       <Checkbox checked={filter?.[key] == it.value} onCheckedChange={() => changeFilter(key, it.value)} />
+                  //       <span className="">{it.label as string}</span>
+                  //     </label>
+                  //   ))}
+                  //   value={filter?.[key] ? item.items.filter((item) => item.value == filter[key])[0].label : undefined}
+                  //   label={item.label}
+                  // />
+                   <label key={i}>
+                    <span className="filter-label">{item.label as string}</span>
+                    <ComboBox
+                      pl={item.label}
+                      name={item.label}
+                      className="max-w-36 text-xs!"
+                      search={true}
+                      value={filter?.[key] ? String(filter[key]) : ""} //
+                      items={item.items.map((it) => ({
+                        value: String(it.value),
+                        label: it.label as string,
+                      }))}
+                      props={{
+                        value: filter?.[key] ? String(filter[key]) : "",
+                        onChange: (val: string) => changeFilter(key, val),
+                        onBlur: () => {},
+                        name: key,
+                        ref: () => {},
+                      }}
+                    />
+                  </label>
                 );
               })}
             </>

@@ -64,7 +64,7 @@ export function getColumns(
       cell: ({ row }) => {
         const status =
           getValuesCostStatus[row.getValue<number>("cost_status") as CostStatus];
-        return <span className={status.color}>{status.name}</span>;
+        return <span className={status}>{status}</span>;
       },
     },
     {

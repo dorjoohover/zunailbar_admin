@@ -44,7 +44,7 @@ export const TextField = <T extends FieldValues>({
           type={type}
           id={id}
           placeholder={pl}
-          className={cn("", className)}
+          className={cn("h-10", className)}
         />
       </div>
     );
