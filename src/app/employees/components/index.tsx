@@ -329,6 +329,7 @@ export const EmployeePage = ({ data, branches }: { data: ListType<User>; branche
                       {(field) => {
                         return (
                           <ComboBox
+                          search={true}
                             props={{ ...field }}
                             items={branches.items.map((branch) => {
                               return {

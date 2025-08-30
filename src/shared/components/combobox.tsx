@@ -32,14 +32,14 @@ type InputType = {
 
 export function ComboBox<T extends FieldValues>({
   items,
-  search,
+  search = false,
   name = "Choose",
   className,
   props,
 }: {
   items: InputType[];
   name?: string;
-  search?: string;
+  search?: boolean;
   className?: string;
   props: ControllerRenderProps<T>;
 }) {
@@ -62,9 +62,9 @@ export function ComboBox<T extends FieldValues>({
       </PopoverTrigger>
       <PopoverContent className="p-0 bg-white min-w-24 max-w-64">
         <Command>
-          {search && <CommandInput placeholder={search} className="h-9" />}
+          {search === true && <CommandInput placeholder={"Хайх"} className="h-9" />}
           <CommandList>
-            <CommandEmpty>No framework found.</CommandEmpty>
+            <CommandEmpty>Хайлт олдсонгүй</CommandEmpty>
             <CommandGroup>
               {items.map((framework) => (
                 <CommandItem
@@ -82,11 +82,11 @@ export function ComboBox<T extends FieldValues>({
                       : "",
                   }}
                 >
-                  <div className="size-4 rounded" style={{
+                  {/* <div className="size-4 rounded" style={{
                     backgroundColor: framework?.color
                       ? COLOR_HEX[framework.color as ColorName]
                       : "",
-                  }}></div>
+                  }}></div> */}
 
                   {framework.label}
                   <Check
