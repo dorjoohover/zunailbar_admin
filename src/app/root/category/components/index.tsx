@@ -110,7 +110,7 @@ export const CategoryPage = ({ data }: { data: ListType<Category> }) => {
           loading={action == ACTION.RUNNING}
           modalAdd={
             <Modal
-              maw="xl"
+              maw="md"
               name={"Ангилал нэмэх"}
               submit={() => form.handleSubmit(onSubmit, onInvalid)()}
               open={open == true}
@@ -123,17 +123,17 @@ export const CategoryPage = ({ data }: { data: ListType<Category> }) => {
             >
               <FormProvider {...form}>
                 <div className="divide-y">
-                  <div className="double-col">
+                  <div className="space-y-4">
                     <FormItems
                       control={form.control}
                       name={"name"}
                       className={"col-span-1"}
+                      label="Ангилал"
                     >
                       {(field) => {
                         return (
                           <TextField
                             props={{ ...field }}
-                            label={"Category name"}
                           />
                         );
                       }}

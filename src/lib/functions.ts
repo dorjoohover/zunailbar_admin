@@ -126,7 +126,7 @@ export const numberArray = (count: number) => {
 };
 
 export const checkEmpty = (value?: string) => {
-  return value && value != "" && value != null ? value : "Хоосон";
+  return value && value != "" && value != null ? value : "-";
 };
 const pad = (n: number) => String(n).padStart(2, "0");
 export const dateOnly = (d: Date) => {

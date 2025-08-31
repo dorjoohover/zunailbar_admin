@@ -50,18 +50,19 @@ export function getColumns(
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           className="font-bold"
         >
-          Name <ArrowUpDown className="w-4 h-4 ml-2" />
+          Бүтээгдэхүүн <ArrowUpDown className="w-4 h-4 ml-2" />
         </Button>
       ),
+       cell: ({ row }) => <div className="font-bold text-primary">{row.getValue("name")}</div>
     },
     {
       accessorKey: "brand_name",
-      header: "Brand",
-      cell: ({ row }) => checkEmpty(row.getValue("brand_name")),
+      header: "Бренд",
+      cell: ({ row }) => <>{checkEmpty(row.getValue("brand_name"))}</>,
     },
     {
       accessorKey: "category_name",
-      header: "Category",
+      header: "Англилал",
       cell: ({ row }) => checkEmpty(row.getValue("category_name")),
     },
 
@@ -73,14 +74,14 @@ export function getColumns(
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           className="font-bold"
         >
-          Quantity <ArrowUpDown className="w-4 h-4 ml-2" />
+          Тоо ширхэг <ArrowUpDown className="w-4 h-4 ml-2" />
         </Button>
       ),
     },
 
     {
       id: "actions",
-      header: "Actions",
+      header: "Үйлдэл",
       cell: ({ row }) => (
         // Bagasgasan
         <TableActionButtons

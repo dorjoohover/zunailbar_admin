@@ -112,7 +112,7 @@ export const CostPage = ({
           loading={action == ACTION.RUNNING}
           modalAdd={
             <Modal
-              name="Нэмэх"
+              name="Зардал нэмэх"
               submit={() => form.handleSubmit(onSubmit, onInvalid)()}
               open={open == true}
               setOpen={(v) => {
@@ -139,7 +139,7 @@ export const CostPage = ({
                                 label: item.name,
                               };
                             })}
-                            className="max-w-96! w-full"
+                            className="min-w-79!"
                           />
                         );
                       }}

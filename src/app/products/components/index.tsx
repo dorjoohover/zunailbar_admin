@@ -115,7 +115,7 @@ export const ProductPage = ({ data, categories, brands }: { data: ListType<Produ
     () => [
       {
         key: "brand",
-        label: "Брэнд",
+        label: "Бренд",
         items: brands.items.map((b) => ({ value: b.id, label: b.name })),
       },
       {
@@ -250,7 +250,7 @@ export const ProductPage = ({ data, categories, brands }: { data: ListType<Produ
                         );
                       }}
                     </FormItems>
-                    <FormItems control={form.control} name="brand_id" label="Брэнд">
+                    <FormItems control={form.control} name="brand_id" label="Бренд">
                       {(field) => {
                         return (
                           <ComboBox

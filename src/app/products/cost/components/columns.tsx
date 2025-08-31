@@ -44,28 +44,28 @@ export function getColumns(
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           className="font-bold"
         >
-          Name <ArrowUpDown className="w-4 h-4 ml-2" />
+          Бүтээгдэхүүн <ArrowUpDown className="w-4 h-4 ml-2" />
         </Button>
       ),
     },
     {
       accessorKey: "branch_name",
-      header: "Branch",
+      header: "Салбар",
     },
 
     {
       accessorKey: "price",
-      header: "Price",
+      header: "Үнэ",
       cell: ({ row }) => money(row.getValue("price"), "₮") ?? "-",
     },
     {
       accessorKey: "paid_amount",
-      header: "Paid",
+      header: "Төлсөн",
       cell: ({ row }) => money(row.getValue("paid_amount") ?? 0, "₮") ?? "-",
     },
     {
       accessorKey: "cost_status",
-      header: "Status",
+      header: "Статус",
       cell: ({ row }) => {
         const status =
           getValuesCostStatus[row.getValue<number>("cost_status") as CostStatus];
@@ -80,7 +80,7 @@ export function getColumns(
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           className="font-bold"
         >
-          date <ArrowUpDown className="w-4 h-4 ml-2" />
+          Огноо <ArrowUpDown className="w-4 h-4 ml-2" />
         </Button>
       ),
       cell: ({ row }) => {
@@ -95,7 +95,7 @@ export function getColumns(
     },
     {
       id: "actions",
-      header: "Actions",
+      header: "Үйлдэл",
       cell: ({ row }) => (
         // Bagasgasan
         <TableActionButtons

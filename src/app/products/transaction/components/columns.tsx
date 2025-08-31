@@ -24,23 +24,23 @@ export function getColumns(onEdit: (product: IProductTransaction) => void, remov
       accessorKey: "branch_name",
       header: ({ column }) => (
         <Button variant="table_header" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")} className="font-bold">
-          Branch <ArrowUpDown className="w-4 h-4 ml-2" />
+          Салбар <ArrowUpDown className="w-4 h-4 ml-2" />
         </Button>
       ),
     },
     {
       accessorKey: "user_name",
-      header: "Username",
+      header: "Ник нэр",
     },
     {
       accessorKey: "product_name",
-      header: "product",
+      header: "Бүтээгдэхүүн",
     },
     {
       accessorKey: "quantity",
       header: ({ column }) => (
         <Button variant="table_header" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")} className="font-bold">
-          Quantity <ArrowUpDown className="w-4 h-4 ml-2" />
+          Тоо ширхэг <ArrowUpDown className="w-4 h-4 ml-2" />
         </Button>
       ),
     },
@@ -69,7 +69,7 @@ export function getColumns(onEdit: (product: IProductTransaction) => void, remov
       accessorKey: "created_at",
       header: ({ column }) => (
         <Button variant="table_header" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")} className="font-bold">
-          Created <ArrowUpDown className="w-4 h-4 ml-2" />
+          Үүсгэсэн <ArrowUpDown className="w-4 h-4 ml-2" />
         </Button>
       ),
       cell: ({ row }) => {
@@ -84,7 +84,7 @@ export function getColumns(onEdit: (product: IProductTransaction) => void, remov
     },
     {
       id: "actions",
-      header: "Actions",
+      header: "Үйлдэл",
       cell: ({ row }) => (
         // Bagasgasan
         <TableActionButtons rowData={row.original} onEdit={(data) => onEdit(data)} onRemove={(data) => remove(row.index)}></TableActionButtons>

@@ -40,15 +40,16 @@ export function getColumns(onEdit: (product: IUserService) => void, remove: (ind
       accessorKey: "user_name",
       header: ({ column }) => (
         <Button variant="table_header" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")} className="font-bold">
-          Артист <ArrowUpDown className="w-4 h-4 ml-2" />
+          Ник нэр <ArrowUpDown className="w-4 h-4 ml-2" />
         </Button>
       ),
+      cell: ({ row }) => <div className="font-bold text-brand-blue">{row.getValue("user_name")}</div>,
     },
     {
       accessorKey: "service_name",
       header: ({ column }) => (
         <Button variant="table_header" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")} className="font-bold">
-          Үйлчилгээний нэр <ArrowUpDown className="w-4 h-4 ml-2" />
+          Үйлчилгээ <ArrowUpDown className="w-4 h-4 ml-2" />
         </Button>
       ),
 
@@ -57,17 +58,13 @@ export function getColumns(onEdit: (product: IUserService) => void, remove: (ind
         const service = row.getValue("service_name") as string;
         const color = stringToNiceColor(service);
 
-        return (
-          <span className="badge bg-brand-blue">
-            {service}
-          </span>
-        );
+        return <span className="badge bg-brand-blue">{service}</span>;
       },
     },
 
     {
       id: "actions",
-      header: "Actions",
+      header: "Үйлдэл",
       cell: ({ row }) => (
         // Bagasgasan
         <TableActionButtons rowData={row.original} onEdit={(data) => onEdit(data)} onRemove={(data) => remove(row.index)}></TableActionButtons>

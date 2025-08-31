@@ -1,12 +1,5 @@
 "use client";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 import { ColumnDef } from "@tanstack/react-table";
 import { ArrowUpDown, CircleSmall, Hammer, Pencil, UserRoundCog } from "lucide-react";
@@ -19,26 +12,11 @@ import TooltipWrapper from "@/components/tooltipWrapper";
 import { cn } from "@/lib/utils";
 import { formatTime, mnDate, mnDateFormat } from "@/lib/functions";
 
-export const getColumns = (
-  onEdit: (product: IUser) => void,
-  setStatus: (index: number, status: UserProductStatus) => void
-): ColumnDef<IUserProduct>[] => [
+export const getColumns = (onEdit: (product: IUser) => void, setStatus: (index: number, status: UserProductStatus) => void): ColumnDef<IUserProduct>[] => [
   {
     id: "select",
-    header: ({ table }) => (
-      <Checkbox
-        checked={table.getIsAllPageRowsSelected()}
-        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-        aria-label="Select all"
-      />
-    ),
-    cell: ({ row }) => (
-      <Checkbox
-        checked={row.getIsSelected()}
-        onCheckedChange={(value) => row.toggleSelected(!!value)}
-        aria-label="Select row"
-      />
-    ),
+    header: ({ table }) => <Checkbox checked={table.getIsAllPageRowsSelected()} onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)} aria-label="Select all" />,
+    cell: ({ row }) => <Checkbox checked={row.getIsSelected()} onCheckedChange={(value) => row.toggleSelected(!!value)} aria-label="Select row" />,
     enableSorting: false,
     enableHiding: false,
   },
@@ -51,10 +29,11 @@ export const getColumns = (
         variant="table_header"
         onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
       >
-        user name
+        Ник нэр
         <ArrowUpDown className="w-4 h-4 ml-2" />
       </Button>
     ),
+    cell: ({ row }) => <div className="font-bold text-brand-blue">{row.getValue("user_name")}</div>,
   },
   {
     accessorKey: "product_name",
@@ -64,14 +43,14 @@ export const getColumns = (
         variant="table_header"
         onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
       >
-        product name
+        Бүтээгдэхүүн
         <ArrowUpDown className="w-4 h-4 ml-2" />
       </Button>
     ),
   },
   {
     accessorKey: "quantity",
-    header: "quantity",
+    header: "Тоо ширхэг",
     // cell: ({ row }) => {
     //   return <p>{}</p>;
     // },
@@ -79,36 +58,28 @@ export const getColumns = (
 
   {
     accessorKey: "user_product_status",
-    header: "Status",
+    header: "Статус",
     cell: ({ row }) => {
-      const status =
-        getValuesUserProductStatus[
-          row.getValue<number>("user_product_status") as UserProductStatus
-        ];
-      return <span className={cn(`badge ${status?.color} inline-flex items-center`)}>
-        {status?.name}</span>;
+      const status = getValuesUserProductStatus[row.getValue<number>("user_product_status") as UserProductStatus];
+      return <span className={cn(`badge ${status?.color} inline-flex items-center`)}>{status?.name}</span>;
     },
   },
   {
     accessorKey: "created_at",
-    header: "Огноо",
+    header: "Үүсгэсэн",
     cell: ({ row }) => {
-      const date = mnDateFormat(new Date(row.getValue('created_at') as string)) 
-      return <span>{date}</span>
+      const date = mnDateFormat(new Date(row.getValue("created_at") as string));
+      return <span>{date}</span>;
     },
   },
   {
     id: "actions",
-    header: "Actions",
+    header: "Үйлдэл",
     cell: ({ row }) => {
       return (
         <div className="flex items-center gap-2">
           <TooltipWrapper tooltip="Засварлах">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => onEdit(row.original)}
-            >
+            <Button variant="ghost" size="icon" onClick={() => onEdit(row.original)}>
               <Pencil className="size-4" />
             </Button>
           </TooltipWrapper>
@@ -135,9 +106,7 @@ export const getColumns = (
                       key={i}
                       onClick={() => setStatus(row.index, item)}
                     >
-                      <span className={cn(status?.color)}>
-                      {status?.name}
-                      </span>
+                      <span className={cn(status?.color)}>{status?.name}</span>
                     </DropdownMenuItem>
                   );
                 })}

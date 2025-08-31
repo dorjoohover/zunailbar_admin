@@ -38,7 +38,7 @@ export function getColumns(
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           className="font-bold"
         >
-          Name <ArrowUpDown className="w-4 h-4 ml-2" />
+          Нэр <ArrowUpDown className="w-4 h-4 ml-2" />
         </Button>
       ),
     },
@@ -54,7 +54,7 @@ export function getColumns(
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           className="font-bold"
         >
-          Quantity <ArrowUpDown className="w-4 h-4 ml-2" />
+          Тоо ширхэг <ArrowUpDown className="w-4 h-4 ml-2" />
         </Button>
       ),
     },
@@ -77,7 +77,7 @@ export function getColumns(
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           className="font-bold"
         >
-          Created <ArrowUpDown className="w-4 h-4 ml-2" />
+          Үүсгэсэн <ArrowUpDown className="w-4 h-4 ml-2" />
         </Button>
       ),
       cell: ({ row }) => {
@@ -92,7 +92,7 @@ export function getColumns(
     },
     {
       id: "actions",
-      header: "Actions",
+      header: "Үйлдэл",
       cell: ({ row }) => (
         // Bagasgasan
         <TableActionButtons

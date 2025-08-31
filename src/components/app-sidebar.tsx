@@ -183,7 +183,7 @@ export const sidebar_items = [
             // icon: Milk,
           },
           {
-            title: "Бранд удирдлага",
+            title: "Бренд удирдлага",
             url: "/root/brand",
             // icon: Milk,
           },
@@ -285,7 +285,7 @@ export function AppSidebar() {
           <>
             {sidebar_items.map((group, gi) => (
               <SidebarGroup key={gi}>
-                {group.groupLabel && <SidebarGroupLabel>{group.groupLabel}</SidebarGroupLabel>}
+                {group.groupLabel && <SidebarGroupLabel className="opacity-60">{group.groupLabel}</SidebarGroupLabel>}
 
                 <SidebarMenu className="h-fit">
                   {group.item.map((item, mi) => {
@@ -297,7 +297,7 @@ export function AppSidebar() {
                         <SidebarMenuItem className="text-white">
                           {hasChildren ? (
                             <CollapsibleTrigger asChild>
-                              <SidebarMenuButton asChild size="lg" isActive={isActive} className="active:bg-white/20 hover:bg-white/20">
+                              <SidebarMenuButton asChild size="lg" isActive={isActive} className="active:bg-white/20 pl-4 hover:bg-white/20">
                                 <div>
                                   <item.icon />
                                   <span>{item.triggerLabel}</span>
@@ -306,7 +306,7 @@ export function AppSidebar() {
                               </SidebarMenuButton>
                             </CollapsibleTrigger>
                           ) : (
-                            <SidebarMenuButton asChild size="lg" isActive={isActive} className="hover:bg-white/20">
+                            <SidebarMenuButton asChild size="lg" isActive={isActive} className="hover:bg-white/20 pl-4">
                               <Link href={item.url} className={cn(isActive && "text-sky-600")}>
                                 <item.icon />
                                 <span>{item.triggerLabel}</span>

@@ -26,7 +26,7 @@ export const Modal = ({
   description,
   children,
   submit,
-  submitTxt = "Submit",
+  submitTxt = "Хадгалах",
   open,
   setOpen,
   loading,

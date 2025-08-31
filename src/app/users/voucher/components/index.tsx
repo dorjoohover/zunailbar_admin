@@ -135,49 +135,51 @@ export const VoucherPage = ({ data, services }: { data: ListType<Voucher>; servi
               loading={action == ACTION.RUNNING}
             >
               <FormProvider {...form}>
-                <FormItems control={form.control} name="branch_id">
-                  {(field) => {
-                    return (
-                      <ComboBox
-                        props={{ ...field }}
-                        items={services.items.map((item) => {
-                          return {
-                            value: item.id ?? "",
-                            label: item.name ?? "",
-                          };
-                        })}
-                      />
-                    );
-                  }}
-                </FormItems>
+                <div className="space-y-4">
+                  <FormItems control={form.control} name="branch_id">
+                    {(field) => {
+                      return (
+                        <ComboBox
+                          props={{ ...field }}
+                          items={services.items.map((item) => {
+                            return {
+                              value: item.id ?? "",
+                              label: item.name ?? "",
+                            };
+                          })}
+                        />
+                      );
+                    }}
+                  </FormItems>
 
-                {[
-                  {
-                    key: "min_price",
-                    type: "money",
-                    label: "Үнэ",
-                  },
-                  {
-                    key: "max_price",
-                    type: "money",
-                    label: "Их үнэ",
-                  },
-                  {
-                    key: "duration",
-                    type: "number",
-                    label: "Хугацаа",
-                  },
-                ].map((item, i) => {
-                  const name = item.key as keyof VoucherType;
-                  const label = item.label as keyof VoucherType;
-                  return (
-                    <FormItems control={form.control} name={name} key={i} className={item.key === "name" ? "col-span-2" : ""}>
-                      {(field) => {
-                        return <TextField props={{ ...field }} type={item.type} label={label} />;
-                      }}
-                    </FormItems>
-                  );
-                })}
+                  {[
+                    {
+                      key: "min_price",
+                      type: "money",
+                      label: "Үнэ",
+                    },
+                    {
+                      key: "max_price",
+                      type: "money",
+                      label: "Их үнэ",
+                    },
+                    {
+                      key: "duration",
+                      type: "number",
+                      label: "Хугацаа",
+                    },
+                  ].map((item, i) => {
+                    const name = item.key as keyof VoucherType;
+                    const label = item.label as keyof VoucherType;
+                    return (
+                      <FormItems control={form.control} name={name} key={i} className={item.key === "name" ? "col-span-2" : ""}>
+                        {(field) => {
+                          return <TextField props={{ ...field }} type={item.type} label={label} />;
+                        }}
+                      </FormItems>
+                    );
+                  })}
+                </div>
               </FormProvider>
             </Modal>
           }

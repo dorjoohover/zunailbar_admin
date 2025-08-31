@@ -238,7 +238,7 @@ export const EmployeeProductModal = ({
 
           <div className="bg-white border p-2 rounded-xl space-y-2">
             <div className="grid grid-cols-10 items-center justify-between w-full py-1 font-bold px-4 text-sm">
-              <span className="col-span-2">Брэнд</span>
+              <span className="col-span-2">Бренд</span>
               <span className="col-span-4">Төрөл</span>
               <span className="col-span-2">Бараа</span>
               <span className="col-span-2"></span>
