@@ -111,7 +111,7 @@ export const ScheduleTable = ({
                         includes
                           ? "bg-teal-500 text-white hover:bg-teal-500/80 hover:text-white"
                           : selected != -1
-                          ? "bg-red-500 text-white hover:bg-teal-500/80 hover:text-white"
+                          ? "bg-teal-300 text-white hover:bg-teal-200/80 hover:text-white"
                           : "bg-gray-100 text-black hover:bg-gray-200",
                         "w-full"
                       )}

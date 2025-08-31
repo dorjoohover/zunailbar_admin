@@ -13,22 +13,15 @@ import z from "zod";
 import { FormProvider, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Api } from "@/utils/api";
-import { create, deleteOne, updateOne } from "@/app/(api)";
+import { create, deleteOne } from "@/app/(api)";
 import { FormItems } from "@/shared/components/form.field";
 import { ComboBox } from "@/shared/components/combobox";
 import { fetcher } from "@/hooks/fetcher";
-import { mnDate, numberArray, usernameFormatter } from "@/lib/functions";
+import { numberArray, usernameFormatter } from "@/lib/functions";
 import {
   ScheduleForm,
   ScheduleTable,
 } from "@/components/layout/schedule.table";
-import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/components/ui/pagination";
 import DynamicHeader from "@/components/dynamicHeader";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -297,7 +290,7 @@ export const SchedulePage = ({
               </FormItems>
             </FormProvider>
           </Modal>
-          {editSchedule.length > 0 && <Button onClick={update}>Засах</Button>}
+          {editSchedule.length > 0 && <Button variant={"purple"} onClick={update}>Засах</Button>}
         </div>
         {schedules?.items && schedules?.items?.length > 0 ? (
           <ScheduleTable

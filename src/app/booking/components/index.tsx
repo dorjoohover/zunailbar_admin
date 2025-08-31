@@ -219,12 +219,10 @@ export const BookingPage = ({
       <DynamicHeader count={bookings?.count} />
       <div className="admin-container space-y-2">
         <div
-          className="flex  items-center justify-between"
-          style={{
-            maxWidth: 300,
-          }}
+          className="flex w-full items-center justify-between bg-white p-3 rounded-2xl border-light shadow-light"
         >
           <ComboBox
+          className="max-w-xs"
             items={branches.items.map((b, i) => {
               return {
                 label: b.name,
@@ -285,8 +283,8 @@ export const BookingPage = ({
           </Modal>
         </div>
 
-        <div className="flex justify-between items-center">
-          <div></div>
+     <div className="p-3 bg-white rounded-2xl space-y-4 border-light shadow-light">
+         <div className="flex justify-between items-center">
           <Pagination>
             <PaginationContent className="gap-4">
               {bookings && Math.ceil(+bookings.count / limit) - 1 > page && (
@@ -302,7 +300,7 @@ export const BookingPage = ({
             </PaginationContent>
           </Pagination>
 
-          {editSchedule.length > 0 && <Button onClick={update}>Засах</Button>}
+          {editSchedule.length > 0 && <Button variant={"purple"}  onClick={update}>Засах</Button>}
         </div>
 
         {bookings?.items && bookings?.items?.length > 0 ? (
@@ -314,6 +312,7 @@ export const BookingPage = ({
           />
         ) : null}
 
+     </div>
         {/* <DataTable
         columns={columns}
         count={bookings?.count}

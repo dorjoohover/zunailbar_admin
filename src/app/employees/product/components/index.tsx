@@ -271,7 +271,7 @@ export const EmployeeProductPage = ({
           modalAdd={
             <Modal
               maw="md"
-              name={"Олгосон бүтээгдэхүүн засах"}
+              name={"Бүтээгдэхүүн олгох"}
               submit={() => form.handleSubmit(onSubmit, onInvalid)()}
               open={open == true}
               setOpen={setOpen}
