@@ -17,7 +17,7 @@ import { create, deleteOne, updateOne } from "@/app/(api)";
 import { FormItems } from "@/shared/components/form.field";
 import { ComboBox } from "@/shared/components/combobox";
 import { fetcher } from "@/hooks/fetcher";
-import { mnDate, usernameFormatter } from "@/lib/functions";
+import { mnDate, numberArray, usernameFormatter } from "@/lib/functions";
 import {
   ScheduleForm,
   ScheduleTable,
@@ -31,6 +31,8 @@ import {
 } from "@/components/ui/pagination";
 import DynamicHeader from "@/components/dynamicHeader";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { showToast } from "@/shared/components/showToast";
 
 const hourLine = z.string();
 const limit = 7;
@@ -85,7 +87,6 @@ export const SchedulePage = ({
   }, [data]);
   const clear = () => {
     form.reset(defaultValues);
-    console.log(form.getValues());
   };
   const deleteSchedule = async (index: number) => {
     const id = schedules!.items[index].id;
@@ -122,7 +123,6 @@ export const SchedulePage = ({
     // if (lastSchedule)
     //   lastDate = new Date(lastDate.setDate(lastDate.getDate() + 7));
     const date = lastDate;
-    console.log(e, date);
     setAction(ACTION.RUNNING);
     const body = e as ScheduleType;
     const { edit, ...payload } = body;
@@ -150,6 +150,71 @@ export const SchedulePage = ({
     mounted.current ? refresh() : (mounted.current = true);
   }, [page, branch]);
   const [editSchedule, setEdit] = useState<ScheduleEdit[]>([]);
+  const update = async () => {
+    setAction(ACTION.RUNNING);
+    let date = schedules?.items[0].index;
+    if (date == null) return;
+    date++;
+    const dates = numberArray(7).map((date) => {
+      const index = editSchedule.findIndex((e) => e.day == date);
+      if (index != -1) {
+        const time = editSchedule[index].times.join("|");
+        return time;
+      } else {
+        return "";
+      }
+    });
+
+    const res = await create<Schedule>(Api.schedule, {
+      date: date,
+      times: dates,
+      branch_id: branch.branch_id,
+      user_id: branch.id,
+    } as any);
+    if (res.success) {
+      refresh();
+      showToast("success", "Амжилттай шинэчиллээ.");
+      setOpen(false);
+      clear();
+      setEdit([]);
+    } else {
+      showToast("error", res.error ?? "");
+    }
+    setAction(ACTION.DEFAULT);
+  };
+  const setUpdate = (time: number, day: number) => {
+    setEdit((prev0: ScheduleEdit[]) => {
+      const prev = Array.isArray(prev0) ? prev0 : [];
+      const newTime = time + 7;
+
+      // тухайн өдрийн индекс
+      const idx = prev.findIndex((d) => d.day == day);
+
+      // 1) Байхгүй бол шинээр нэмнэ
+      if (idx === -1) {
+        return [...prev, { day: day, times: [newTime] }];
+      }
+
+      // 2) Байсан бол times дээр toggle
+      const days = prev[idx];
+      const exists = days.times.includes(newTime);
+      const newTimes = exists
+        ? days.times.filter((t) => t !== newTime) // байсан бол устгана
+        : [...days.times, newTime].sort((a, b) => a - b); // байгаагүй бол нэмээд эрэмбэлнэ
+
+      // 3) Хэрэв times хоосон бол тухайн өдрийг массивээс устгана
+      if (newTimes.length === 0) {
+        return [...prev.slice(0, idx), ...prev.slice(idx + 1)];
+      }
+
+      // 4) Өдрийг шинэчилж буцаана
+      const updated: ScheduleEdit = {
+        ...days,
+        times: newTimes,
+      };
+      return [...prev.slice(0, idx), updated, ...prev.slice(idx + 1)];
+    });
+  };
   return (
     <div className="">
       <DynamicHeader />
@@ -175,6 +240,7 @@ export const SchedulePage = ({
               value: branch?.id,
             }}
           />
+
           <Modal
             maw="5xl"
             title="Арчистын хуваарь оруулах форм"
@@ -231,6 +297,7 @@ export const SchedulePage = ({
               </FormItems>
             </FormProvider>
           </Modal>
+          {editSchedule.length > 0 && <Button onClick={update}>Засах</Button>}
         </div>
         {schedules?.items && schedules?.items?.length > 0 ? (
           <ScheduleTable
@@ -238,7 +305,7 @@ export const SchedulePage = ({
             d={schedules.items?.[0]?.index ?? 0}
             value={schedules.items.map((item) => item.times).reverse()}
             edit={editSchedule}
-            setEdit={setEdit}
+            setEdit={setUpdate}
           />
         ) : null}
         {/* <DataTable

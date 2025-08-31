@@ -152,6 +152,11 @@ export const BookingPage = ({
         return "";
       }
     });
+    console.log({
+      date: date,
+      times: dates,
+      branch_id: branch.id,
+    });
     const res = await create<Booking>(Api.booking, {
       date: date,
       times: dates,
@@ -176,7 +181,39 @@ export const BookingPage = ({
     mounted.current ? refresh() : (mounted.current = true);
     setEdit([]);
   }, [page, branch]);
+  const setUpdate = (time: number, day: number) => {
+    setEdit((prev0: ScheduleEdit[]) => {
+      const prev = Array.isArray(prev0) ? prev0 : []; // анхны []-г баталгаажуулж байна
+      const newTime = time + 7;
 
+      // тухайн өдрийн индекс
+      const idx = prev.findIndex((d) => d.day == day);
+
+      // 1) Байхгүй бол шинээр нэмнэ
+      if (idx === -1) {
+        return [...prev, { day: day, times: [newTime] }];
+      }
+
+      // 2) Байсан бол times дээр toggle
+      const days = prev[idx];
+      const exists = days.times.includes(newTime);
+      const newTimes = exists
+        ? days.times.filter((t) => t !== newTime) // байсан бол устгана
+        : [...days.times, newTime].sort((a, b) => a - b); // байгаагүй бол нэмээд эрэмбэлнэ
+
+      // 3) Хэрэв times хоосон бол тухайн өдрийг массивээс устгана
+      if (newTimes.length === 0) {
+        return [...prev.slice(0, idx), ...prev.slice(idx + 1)];
+      }
+
+      // 4) Өдрийг шинэчилж буцаана
+      const updated: ScheduleEdit = {
+        ...days,
+        times: newTimes,
+      };
+      return [...prev.slice(0, idx), updated, ...prev.slice(idx + 1)];
+    });
+  };
   return (
     <div className="">
       <DynamicHeader count={bookings?.count} />
@@ -273,7 +310,7 @@ export const BookingPage = ({
             d={bookings.items?.[0]?.date}
             value={bookings.items.map((item) => item.times).reverse()}
             edit={editSchedule}
-            setEdit={setEdit}
+            setEdit={setUpdate}
           />
         ) : null}
 

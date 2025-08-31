@@ -11,6 +11,7 @@ export default async function Page() {
     Api.schedule,
     {
       limit: 7,
+      user_id: user.data?.items?.[0]?.id,
     },
     "employee"
   );

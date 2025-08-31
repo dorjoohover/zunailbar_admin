@@ -29,7 +29,7 @@ export const ScheduleTable = ({
   artist = false,
 }: {
   edit?: ScheduleEdit[];
-  setEdit?: Dispatch<SetStateAction<ScheduleEdit[]>>;
+  setEdit?: (time: number, day: number) => void;
   d: number | Date;
   artist?: boolean;
   value: string[];
@@ -122,56 +122,9 @@ export const ScheduleTable = ({
                       }
                       onClick={() => {
                         if (setEdit && !includes) {
-                          setEdit((prev0: ScheduleEdit[]) => {
-                            const prev = Array.isArray(prev0) ? prev0 : []; // анхны []-г баталгаажуулж байна
-                            const newTime = time + 7;
-
-                            // тухайн өдрийн индекс
-                            const idx = prev.findIndex((d) => d.day == day);
-
-                            // 1) Байхгүй бол шинээр нэмнэ
-                            if (idx === -1) {
-                              return [...prev, { day: day, times: [newTime] }];
-                            }
-
-                            // 2) Байсан бол times дээр toggle
-                            const days = prev[idx];
-                            const exists = days.times.includes(newTime);
-                            const newTimes = exists
-                              ? days.times.filter((t) => t !== newTime) // байсан бол устгана
-                              : [...days.times, newTime].sort((a, b) => a - b); // байгаагүй бол нэмээд эрэмбэлнэ
-
-                            // 3) Хэрэв times хоосон бол тухайн өдрийг массивээс устгана
-                            if (newTimes.length === 0) {
-                              return [
-                                ...prev.slice(0, idx),
-                                ...prev.slice(idx + 1),
-                              ];
-                            }
-
-                            // 4) Өдрийг шинэчилж буцаана
-                            const updated: ScheduleEdit = {
-                              ...days,
-                              times: newTimes,
-                            };
-                            return [
-                              ...prev.slice(0, idx),
-                              updated,
-                              ...prev.slice(idx + 1),
-                            ];
-                          });
+                          console.log(time, day)
+                          setEdit(time, day);
                         }
-                        // let nextTimes = includes
-                        //   ? times.filter((t) => t !== keyStr)
-                        //   : [...times, keyStr];
-
-                        // nextTimes = Array.from(new Set(nextTimes)).sort(
-                        //   (a, b) => Number(a) - Number(b)
-                        // );
-
-                        // const next = [...value];
-                        // next[idx] = nextTimes.join("|");
-                        // // setValue(next);
                       }}
                     >
                       {formatTime(hour)}
