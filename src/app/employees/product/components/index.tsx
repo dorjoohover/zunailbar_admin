@@ -101,6 +101,7 @@ export const EmployeeProductPage = ({
   const [userProduct, setUserProduct] = useState<ListType<UserProduct>>(data);
   const [editingUser, setEditingUser] = useState<IUser | null>(null);
   const onSubmit = async <T,>(e: T) => {
+    setAction(ACTION.RUNNING)
     const { edit, ...body } = form.getValues();
     let payload = body;
 

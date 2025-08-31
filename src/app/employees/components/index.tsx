@@ -45,8 +45,14 @@ const formSchema = z.object({
   lastname: z.string().min(1),
   branch_id: z.string().min(1),
   mobile: z.string().length(8, { message: "8 тэмдэгт байх ёстой" }),
-  birthday: z.preprocess((val) => (typeof val === "string" ? new Date(val) : val), z.date()) as unknown as Date,
-  experience: z.preprocess((val) => (typeof val === "string" ? parseFloat(val) : val), z.number()) as unknown as number,
+  birthday: z.preprocess(
+    (val) => (typeof val === "string" ? new Date(val) : val),
+    z.date()
+  ) as unknown as Date,
+  experience: z.preprocess(
+    (val) => (typeof val === "string" ? parseFloat(val) : val),
+    z.number()
+  ) as unknown as number,
   password: z.string().nullable().optional(),
   nickname: z.string().min(1),
   profile_img: z.string().nullable().optional(),
@@ -94,6 +100,7 @@ export const EmployeePage = ({
   const [editingUser, setEditingUser] = useState<IUser | null>(null);
   const [userProduct, setUserProduct] = useState<string | undefined>(undefined);
   const onSubmit = async <T,>(e: T) => {
+    setAction(ACTION.RUNNING);
     const { file, password, ...body } = form.getValues();
     if (editingUser == null && password == null) {
       toast("Нууц үг оруулна уу", {});
@@ -220,91 +227,107 @@ export const EmployeePage = ({
       <DynamicHeader />
 
       <div className="admin-container">
+        <EmployeeProductModal
+          id={userProduct}
+          clear={() => setUserProduct(undefined)}
+        />
+        {action}
+        <DataTable
+          clear={() => setFilter(undefined)}
+          filter={
+            <>
+              {groups.map((item, i) => {
+                const { key } = item;
+                return (
+                  <label key={i}>
+                    <span className="filter-label">{item.label as string}</span>
+                    <ComboBox
+                      pl={item.label}
+                      name={item.label}
+                      className="max-w-36 text-xs!"
+                      search={true}
+                      value={filter?.[key] ? String(filter[key]) : ""} //
+                      items={item.items.map((it) => ({
+                        value: String(it.value),
+                        label: it.label as string,
+                      }))}
+                      props={{
+                        value: filter?.[key] ? String(filter[key]) : "",
+                        onChange: (val: string) => changeFilter(key, val),
+                        onBlur: () => {},
+                        name: key,
+                        ref: () => {},
+                      }}
+                    />
+                  </label>
+                  // <FilterPopover
+                  //   key={i}
+                  //   label={item.label}
+                  //   content={item.items.map((it, index) => (
+                  //     <label key={index} className="checkbox-label">
+                  //       <Checkbox checked={filter?.[key] == it.value} onCheckedChange={() => changeFilter(key, it.value)} />
+                  //       <span>{it.label as string}</span>
+                  //     </label>
 
-            <EmployeeProductModal id={userProduct} clear={() => setUserProduct(undefined)} />
-            <DataTable
-              clear={() => setFilter(undefined)}
-              filter={
-                <>
-                  {groups.map((item, i) => {
-                    const { key } = item;
-                    return (
-                      <label key={i}>
-                        <span className="filter-label">{item.label as string}</span>
-                        <ComboBox
-                          pl={item.label}
-                          name={item.label}
-                          className="max-w-36 text-xs!"
-                          search={true}
-                          value={filter?.[key] ? String(filter[key]) : ""} //
-                          items={item.items.map((it) => ({
-                            value: String(it.value),
-                            label: it.label as string,
-                          }))}
-                          props={{
-                            value: filter?.[key] ? String(filter[key]) : "",
-                            onChange: (val: string) => changeFilter(key, val),
-                            onBlur: () => {},
-                            name: key,
-                            ref: () => {},
-                          }}
-                        />
-                      </label>
-                      // <FilterPopover
-                      //   key={i}
-                      //   label={item.label}
-                      //   content={item.items.map((it, index) => (
-                      //     <label key={index} className="checkbox-label">
-                      //       <Checkbox checked={filter?.[key] == it.value} onCheckedChange={() => changeFilter(key, it.value)} />
-                      //       <span>{it.label as string}</span>
-                      //     </label>
+                  //   ))}
+                  //   value={filter?.[key] ? item.items.filter((item) => item.value == filter[key])[0].label : undefined}
+                  // />
+                );
+              })}
+            </>
+          }
+          columns={columns}
+          data={users.items}
+          refresh={refresh}
+          loading={action === ACTION.RUNNING}
+          count={users.count}
+          modalAdd={
+            <Modal
+              maw="3xl"
+              submit={() => {
+                form.handleSubmit(onSubmit, onInvalid)();
+              }}
+              name="Ажилтан нэмэх"
+              submitTxt={editingUser ? "Засах" : "Нэмэх"}
+              open={!open ? false : open}
+              setOpen={(v) => {
+                setOpen(v);
+                setEditingUser(null);
+              }}
+              loading={action == ACTION.RUNNING}
+            >
+              <FormProvider {...form}>
+                {/* Profile Image */}
+                <div className="divide-y">
+                  <div className="grid grid-cols-2 pb-5">
+                    <FormItems
+                      control={form.control}
+                      name="file"
+                      label="Зураг өөрчлөх"
+                    >
+                      {(field) => {
+                        const fileUrl = field.value
+                          ? URL.createObjectURL(field.value as any)
+                          : null;
 
-                      //   ))}
-                      //   value={filter?.[key] ? item.items.filter((item) => item.value == filter[key])[0].label : undefined}
-                      // />
-                    );
-                  })}
-                </>
-              }
-              columns={columns}
-              data={users.items}
-              refresh={refresh}
-              loading={action === ACTION.RUNNING}
-              count={users.count}
-              modalAdd={
-                <Modal
-                  maw="3xl"
-                  submit={() => {
-                    form.handleSubmit(onSubmit, onInvalid)();
-                  }}
-                  name="Ажилтан нэмэх"
-                  submitTxt={editingUser ? "Засах" : "Нэмэх"}
-                  open={!open ? false : open}
-                  setOpen={(v) => {
-                    setOpen(v);
-                    setEditingUser(null);
-                  }}
-                  loading={action == ACTION.RUNNING}
-                >
-                  <FormProvider {...form}>
-                    {/* Profile Image */}
-                    <div className="divide-y">
-                      <div className="grid grid-cols-2 pb-5">
-                        <FormItems control={form.control} name="file" label="Зураг өөрчлөх">
-                          {(field) => {
-                            const fileUrl = field.value ? URL.createObjectURL(field.value as any) : null;
+                        return (
+                          <div className="relative w-32 h-32">
+                            {fileUrl ? (
+                              <>
+                                {/* Preview */}
+                                <img
+                                  src={fileUrl}
+                                  alt="preview"
+                                  className="object-cover w-full h-full overflow-hidden bg-white border rounded-md"
+                                />
 
-                            return (
-                              <div className="relative w-32 h-32">
-                                {fileUrl ? (
-                                  <>
-                                    {/* Preview */}
-                                    <img src={fileUrl} alt="preview" className="object-cover w-full h-full overflow-hidden bg-white border rounded-md" />
-
-                                    {/* Change */}
-                                    <label htmlFor="file-upload" className="absolute p-1 rounded cursor-pointer top-1 right-7 bg-primary hover:bg-slate-600">
-                                      <Pencil className="text-white size-3" />
-                                    </label>
+                                {/* Change */}
+                                <label
+                                  htmlFor="file-upload"
+                                  className="absolute p-1 rounded cursor-pointer top-1 right-7 bg-primary hover:bg-slate-600"
+                                >
+                                  <Pencil className="text-white size-3" />
+                                </label>
 
                                 {/* Remove */}
                                 <button
@@ -426,9 +449,20 @@ export const EmployeePage = ({
                   </div>
                   <div className="pt-5 double-col">
                     {!editingUser && (
-                      <FormItems  label='Нууц үг' control={form.control} name="password" className="col-span-1">
+                      <FormItems
+                        label="Нууц үг"
+                        control={form.control}
+                        name="password"
+                        className="col-span-1"
+                      >
                         {(field) => {
-                          return <PasswordField label="" props={{ ...field }} view={true} />;
+                          return (
+                            <PasswordField
+                              label=""
+                              props={{ ...field }}
+                              view={true}
+                            />
+                          );
                         }}
                       </FormItems>
                     )}

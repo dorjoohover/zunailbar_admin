@@ -72,7 +72,10 @@ export const Modal = ({
     <Dialog open={open} onOpenChange={(v) => setOpen(v)}>
       {name && name !== "" && (
         <DialogTrigger asChild>
-          <Button variant="purple" className="cursor-pointer uppercase text-xs font-bold ml-1">
+          <Button
+            variant="purple"
+            className="cursor-pointer uppercase text-xs font-bold ml-1"
+          >
             <Plus strokeWidth={2.5} />
             <span className="hidden md:block">{name}</span>
           </Button>
@@ -92,7 +95,11 @@ export const Modal = ({
             </Button>
           </DialogClose>
           {submit && (
-            <Button variant={"purple"} onClick={(e) => handleSubmit(e)}>
+            <Button
+              variant={"purple"}
+              loading={loading}
+              onClick={(e) => handleSubmit(e)}
+            >
               {loading && btn}
               {loading ? "Please wait..." : submitTxt}
             </Button>
