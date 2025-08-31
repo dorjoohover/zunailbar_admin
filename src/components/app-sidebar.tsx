@@ -265,7 +265,7 @@ export function AppSidebar() {
   // const [openIndex, setOpenIndex] = useState(null)
   if (pathname == "/login") return;
   return (
-    <Sidebar variant="inset" collapsible="icon" className="fixed top-0 backdrop-blur-3xl">
+    <Sidebar variant="inset" collapsible="icon" className="fixed top-0 backdrop-blur-3xl bg-primary">
       {/* Header */}
       <SidebarHeader className="border-b border-slate-600">
         <SidebarMenu>
