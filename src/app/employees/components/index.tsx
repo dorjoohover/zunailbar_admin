@@ -231,7 +231,6 @@ export const EmployeePage = ({
           id={userProduct}
           clear={() => setUserProduct(undefined)}
         />
-        {action}
         <DataTable
           clear={() => setFilter(undefined)}
           filter={
