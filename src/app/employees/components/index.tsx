@@ -33,12 +33,12 @@ import { imageUploader } from "@/app/(api)/base";
 import { Pencil, UploadCloud, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import DynamicHeader from "@/components/dynamicHeader";
-import { COLORS } from "@/lib/colors";
 import { FilterPopover } from "@/components/layout/popover";
 import { Checkbox } from "@radix-ui/react-checkbox";
 import { toast } from "sonner";
 import { showToast } from "@/shared/components/showToast";
 import { ACCEPT_ATTR, validateImageFile } from "@/lib/image.validator";
+import { COLOR_HEX } from "@/lib/colors";
 
 const formSchema = z.object({
   firstname: z.string().min(1),
@@ -528,13 +528,15 @@ export const EmployeePage = ({
                         return (
                           <ComboBox
                             props={{ ...field }}
-                            items={COLORS.map((color, index) => {
-                              return {
-                                color: color,
-                                value: index.toString(),
-                                label: color,
-                              };
-                            })}
+                            items={Object.entries(COLOR_HEX).map(
+                              ([key, value], index) => {
+                                return {
+                                  color: key,
+                                  value: index.toString(),
+                                  label: key,
+                                };
+                              }
+                            )}
                           />
                         );
                       }}

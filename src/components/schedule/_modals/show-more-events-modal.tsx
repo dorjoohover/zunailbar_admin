@@ -1,15 +1,15 @@
 import EventStyled from "@/components/schedule/_components/view/event-component/event-styled";
 import { useModal } from "@/providers/modal-context";
-import { Event } from "@/types";
 import React, { useEffect, useState } from "react";
 import { CalendarIcon } from "lucide-react";
+import { IOrder } from "@/models";
 
 export default function ShowMoreEventsModal() {
   const { data } = useModal();
   console.log(data);
   const dayEvents = data?.default?.dayEvents || [];
 
-  const [events, setEvents] = useState<Event[]>(dayEvents);
+  const [events, setEvents] = useState<IOrder[]>(dayEvents);
 
   useEffect(() => {
     setEvents(dayEvents);
@@ -17,8 +17,8 @@ export default function ShowMoreEventsModal() {
 
   return (
     <div className="flex flex-col gap-2">
-      {events.length > 0 ? (
-        events.map((event: Event) => (
+      {/* {events.length > 0 ? (
+        events.map((event: IOrder) => (
           <EventStyled
             onDelete={(id) => {
               setEvents(events.filter((event) => event.id !== id));
@@ -33,9 +33,11 @@ export default function ShowMoreEventsModal() {
         <div className="flex flex-col items-center justify-center py-6 text-center">
           <CalendarIcon className="h-12 w-12 text-primary mb-2" />
           <p className="text-lg font-medium text-primary">No events found</p>
-          <p className="text-sm text-muted-foreground">There are no events scheduled for this day.</p>
+          <p className="text-sm text-muted-foreground">
+            There are no events scheduled for this day.
+          </p>
         </div>
-      )}
+      )} */}
     </div>
   );
 }
