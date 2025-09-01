@@ -3,7 +3,8 @@ import { User } from "@/models";
 import { Api, API } from "@/utils/api";
 import { Dispatch, SetStateAction } from "react";
 
-const formatDate = (value: string, limit = 10) => {
+export const formatDate = (value: string, limit = 10) => {
+  if (!value || value == "") return "";
   return parseInt(value) < limit ? `0${value}` : `${value}`;
 };
 export const parseDate = (date = new Date(), isHour = true) => {
@@ -74,8 +75,25 @@ export function sameYMD(a: Date, b: Date) {
   );
 }
 export function stripTime(d: Date) {
-    return new Date(d.getFullYear(), d.getMonth(), d.getDate());
-  }
+  return new Date(d.getFullYear(), d.getMonth(), d.getDate());
+}
+
+export function mnDateFormatDay(d: Date) {
+  const month = d.getMonth() + 1;
+  const day = d.getDate();
+  const year = d.getFullYear();
+  return `${month} сарын ${day}, ${year}`;
+}
+export function mnDateFormatTitle(d: Date | string | number = new Date()) {
+  const date = mnDate(new Date(d));
+  const weekday = getDayName(date.getDay());
+
+  // Монгол хэлээр өдөр + сар + өдөр
+
+  const yearMonthDay = mnDateFormatDay(date);
+  // Жишээ: "даваа, 2025 оны 9 сарын 1"
+  return `${weekday}, ${yearMonthDay}`;
+}
 export function mnDateFormat(d: Date | string | number = new Date()) {
   return new Intl.DateTimeFormat("en-CA", {
     timeZone: "Asia/Ulaanbaatar",
@@ -126,7 +144,7 @@ export const numberArray = (count: number) => {
 };
 
 export const checkEmpty = (value?: string) => {
-  return value && value != "" && value != null ? value : "Хоосон";
+  return value && value != "" && value != null ? value : "-";
 };
 const pad = (n: number) => String(n).padStart(2, "0");
 export const dateOnly = (d: Date) => {
@@ -152,12 +170,17 @@ export const mobileFormatter = (mobile: string) => {
 };
 
 export const usernameFormatter = (user: User) => {
-  return (
-    user.nickname ??
-    `${user.lastname && `${firstLetterUpper(user.lastname)}.`}${
-      user.firstname ?? ""
-    }`
-  );
+  if (user.nickname) {
+    return user.nickname;
+  }
+
+  if (user.lastname || user.firstname) {
+    const last = user.lastname ? `${firstLetterUpper(user.lastname)}.` : "";
+    const first = user.firstname ?? "";
+    return `${last}${first}`;
+  }
+
+  return mobileFormatter(user.mobile ?? "");
 };
 export const money = (value: string, currency = "", round = 1) => {
   let v = Math.round(+value / round) * round;

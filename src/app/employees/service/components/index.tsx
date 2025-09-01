@@ -19,6 +19,7 @@ import DynamicHeader from "@/components/dynamicHeader";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { FilterPopover } from "@/components/layout/popover";
+import { showToast } from "@/shared/components/showToast";
 
 const formSchema = z.object({
   user_id: z.string().min(1),
@@ -36,16 +37,31 @@ type FilterType = {
   service?: string;
   user?: string;
 };
-export const EmployeeUserServicePage = ({ data, services, users }: { data: ListType<UserService>; services: ListType<Service>; users: ListType<User> }) => {
+export const EmployeeUserServicePage = ({
+  data,
+  services,
+  users,
+}: {
+  data: ListType<UserService>;
+  services: ListType<Service>;
+  users: ListType<User>;
+}) => {
   const [action, setAction] = useState(ACTION.DEFAULT);
   const [open, setOpen] = useState<undefined | boolean>(false);
   const form = useForm<UserServiceType>({
     resolver: zodResolver(formSchema),
     defaultValues,
   });
-  const [UserServices, setUserServices] = useState<ListType<UserService> | null>(null);
-  const serviceMap = useMemo(() => new Map(services.items.map((b) => [b.id, b])), [services.items]);
-  const userMap = useMemo(() => new Map(users.items.map((b) => [b.id, b])), [users.items]);
+  const [userServices, setUserServices] =
+    useState<ListType<UserService> | null>(null);
+  const serviceMap = useMemo(
+    () => new Map(services.items.map((b) => [b.id, b])),
+    [services.items]
+  );
+  const userMap = useMemo(
+    () => new Map(users.items.map((b) => [b.id, b])),
+    [users.items]
+  );
 
   const UserServiceFormatter = (data: ListType<UserService>) => {
     const items: UserService[] = data.items.map((item) => {
@@ -53,7 +69,11 @@ export const EmployeeUserServicePage = ({ data, services, users }: { data: ListT
       const service = serviceMap.get(item.service_id);
       return {
         ...item,
-        user_name: item.user_name ? item.user_name : user ? usernameFormatter(user) : "",
+        user_name: item.user_name
+          ? item.user_name
+          : user
+          ? usernameFormatter(user)
+          : "",
         service_name: service?.name ?? item.service_name ?? "",
       };
     });
@@ -68,14 +88,14 @@ export const EmployeeUserServicePage = ({ data, services, users }: { data: ListT
     console.log(form.getValues());
   };
   const deleteUserService = async (index: number) => {
-    const id = UserServices!.items[index].id;
+    const id = userServices!.items[index].id;
     const res = await deleteOne(Api.user_service, id);
     refresh();
     return res.success;
   };
   const edit = async (e: IUserService) => {
+    form.reset({ edit: e.user_id, user_id: e.user_id });
     setOpen(true);
-    form.reset({ ...e, edit: e.id });
   };
   const columns = getColumns(edit, deleteUserService);
 
@@ -98,11 +118,17 @@ export const EmployeeUserServicePage = ({ data, services, users }: { data: ListT
     setAction(ACTION.RUNNING);
     const body = e as UserServiceType;
     const { edit, ...payload } = body;
-    const res = edit ? await updateOne<IUserService>(Api.user_service, edit ?? "", payload as unknown as IUserService) : await create<IUserService>(Api.user_service, e as IUserService);
+    const res = await create<IUserService>(Api.user_service, e as IUserService);
     if (res.success) {
       refresh();
       setOpen(false);
       clear();
+      showToast(
+        "success",
+        edit ? "Мэдээлэл шинэчлэлээ." : "Амжилттай хадгаллаа."
+      );
+    } else {
+      showToast("error", res.error ?? "Алдаа гарлаа");
     }
     setAction(ACTION.DEFAULT);
   };
@@ -123,27 +149,58 @@ export const EmployeeUserServicePage = ({ data, services, users }: { data: ListT
       })
     );
   }, [filter]);
-  const groups: { key: keyof FilterType; label: string; items: Option[] }[] = useMemo(
-    () => [
-      {
-        key: "user",
-        label: "Артист",
-        items: users.items.map((b) => ({
-          value: b.id,
-          label: usernameFormatter(b),
-        })),
-      },
-      {
-        key: "service",
-        label: "Үйлчилгээ",
-        items: services.items.map((b) => ({ value: b.id, label: b.name })),
-      },
-    ],
-    [services.items, users.items]
-  );
+  const groups: { key: keyof FilterType; label: string; items: Option[] }[] =
+    useMemo(
+      () => [
+        {
+          key: "user",
+          label: "Артист",
+          items: users.items.map((b) => ({
+            value: b.id,
+            label: usernameFormatter(b),
+          })),
+        },
+        {
+          key: "service",
+          label: "Үйлчилгээ",
+          items: services.items.map((b) => ({ value: b.id, label: b.name })),
+        },
+      ],
+      [services.items, users.items]
+    );
+
+  useEffect(() => {
+    if (open) {
+      const editUser = form.watch("edit");
+      console.log(editUser);
+      if (editUser) {
+        const services =
+          userServices?.items
+            .filter((se) => se.user_id == editUser)
+            ?.map((s) => s.service_id) ?? [];
+        console.log(services);
+        form.reset({
+          services,
+          user_id: editUser,
+          edit: editUser,
+        });
+      } else {
+        const user_id = form.watch("user_id");
+        const services =
+          userServices?.items
+            .filter((se) => se.user_id == user_id)
+            ?.map((s) => s.service_id) ?? [];
+        form.reset({
+          user_id,
+          services,
+        });
+      }
+    }
+  }, [open, form.watch("user_id")]);
+
   return (
     <div className="">
-      <DynamicHeader count={UserServices?.count} />
+      <DynamicHeader count={userServices?.count} />
 
       <div className="admin-container">
         <DataTable
@@ -191,8 +248,8 @@ export const EmployeeUserServicePage = ({ data, services, users }: { data: ListT
           search={false}
           clear={() => setFilter(undefined)}
           columns={columns}
-          count={UserServices?.count}
-          data={UserServices?.items ?? []}
+          count={userServices?.count}
+          data={userServices?.items ?? []}
           refresh={refresh}
           loading={action == ACTION.RUNNING}
           modalAdd={
@@ -210,7 +267,11 @@ export const EmployeeUserServicePage = ({ data, services, users }: { data: ListT
             >
               <FormProvider {...form}>
                 <div className="grid grid-cols-1 gap-3 space-y-4">
-                  <FormItems control={form.control} name="user_id" label="Ажилчин">
+                  <FormItems
+                    control={form.control}
+                    name="user_id"
+                    label="Ажилчин"
+                  >
                     {(field) => {
                       return (
                         <ComboBox
@@ -225,35 +286,52 @@ export const EmployeeUserServicePage = ({ data, services, users }: { data: ListT
                       );
                     }}
                   </FormItems>
+                  {form.watch("user_id") && (
+                    <FormItems
+                      control={form.control}
+                      name="services"
+                      label="Үйлчилгээ"
+                    >
+                      {(field) => (
+                        <div className="p-2 mt-2 bg-white border rounded-md">
+                          {services.items.map((service) => {
+                            const selected = field.value ?? ([] as string[]);
+                            const isChecked = selected.includes(service.id);
 
-                  <FormItems control={form.control} name="services" label="Үйлчилгээ">
-                    {(field) => (
-                      <div className="p-2 mt-2 bg-white border rounded-md">
-                        {services.items.map((service) => {
-                          const selected = field.value ?? ([] as string[]);
-                          const isChecked = selected.includes(service.id);
-
-                          return (
-                            <div key={service.id} className="flex items-center gap-2 hover:bg-[#e9ebfa] p-2 border-b last:border-none">
-                              <Checkbox
-                                id={service.id}
-                                checked={isChecked}
-                                onCheckedChange={(val) => {
-                                  const checked = val === true;
-                                  const prev = field.value ?? [];
-                                  const next = checked ? Array.from(new Set([...prev, service.id])) : (prev as string[]).filter((id: string) => id !== service.id);
-                                  field.onChange(next);
-                                }}
-                              />
-                              <Label htmlFor={service.id} className="py-2 size-full">
-                                {service.name}
-                              </Label>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    )}
-                  </FormItems>
+                            return (
+                              <div
+                                key={service.id}
+                                className="flex items-center gap-2 hover:bg-[#e9ebfa] p-2 border-b last:border-none"
+                              >
+                                <Checkbox
+                                  id={service.id}
+                                  checked={isChecked}
+                                  onCheckedChange={(val) => {
+                                    const checked = val === true;
+                                    const prev = field.value ?? [];
+                                    const next = checked
+                                      ? Array.from(
+                                          new Set([...prev, service.id])
+                                        )
+                                      : (prev as string[]).filter(
+                                          (id: string) => id !== service.id
+                                        );
+                                    field.onChange(next);
+                                  }}
+                                />
+                                <Label
+                                  htmlFor={service.id}
+                                  className="py-2 size-full"
+                                >
+                                  {service.name}
+                                </Label>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </FormItems>
+                  )}
                 </div>
               </FormProvider>
             </Modal>

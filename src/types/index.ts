@@ -1,4 +1,5 @@
 import { OrderStatus } from "@/lib/enum";
+import { IOrder, Order } from "@/models";
 import { Dispatch, SVGProps } from "react";
 import { z } from "zod";
 
@@ -9,33 +10,24 @@ export type IconSvgProps = SVGProps<SVGSVGElement> & {
 // SchedulerTypes.ts
 
 // Define event type
-export interface Event {
-  id: string;
-  title: string;
-  description?: string;
-  startDate: Date;
-  endDate: Date;
-  color?: number;
-  status?: OrderStatus;
-}
 
 // Define the state interface for the scheduler
 export interface SchedulerState {
-  events: Event[];
+  events: Order[];
 }
 
 // Define actions for reducer
 export type Action =
-  | { type: "ADD_EVENT"; payload: Event }
+  | { type: "ADD_EVENT"; payload: IOrder }
   | { type: "REMOVE_EVENT"; payload: { id: string } }
-  | { type: "UPDATE_EVENT"; payload: Event }
-  | { type: "SET_EVENTS"; payload: Event[] };
+  | { type: "UPDATE_EVENT"; payload: IOrder }
+  | { type: "SET_EVENTS"; payload: IOrder[] };
 
 // Define handlers interface
 export interface Handlers {
   handleEventStyling: (
-    event: Event,
-    dayEvents: Event[],
+    event: IOrder,
+    dayEvents: IOrder[],
     periodOptions?: {
       eventsInSamePeriod?: number;
       periodIndex?: number;
@@ -49,8 +41,8 @@ export interface Handlers {
     top: string;
     zIndex: number;
   };
-  handleAddEvent: (event: Event) => void;
-  handleUpdateEvent: (event: Event, id: string) => void;
+  handleAddEvent: (event: IOrder) => void;
+  handleUpdateEvent: (event: IOrder, id: string) => void;
   handleDeleteEvent: (id: string) => void;
 }
 
@@ -59,8 +51,8 @@ export interface Getters {
   getDaysInMonth: (
     month: number,
     year: number
-  ) => { day: number; events: Event[] }[];
-  getEventsForDay: (day: number, currentDate: Date) => Event[];
+  ) => { day: number; events: IOrder[] }[];
+  getEventsForDay: (day: number, currentDate: Date) => IOrder[];
   getDaysInWeek: (week: number, year: number) => Date[];
   getWeekNumber: (date: Date) => number;
   getDayName: (day: number) => string;
@@ -87,12 +79,38 @@ export const variants = [
 export type Variant = (typeof variants)[number];
 
 // Define Zod schema for form validation
+// branch_id: selected.branch_id,
+// details: selected.details,
+// order_date: selected.order_date,
+// start_time: selected.start_time,
+// customer_desc: selected.customer_desc,
+// user_id: selected.user_id,
+const detail = z.object({
+  service_id: z.string(),
+  service_name: z.string(),
+  duration: z.number().nullable(),
+});
+
 export const eventSchema = z.object({
-  title: z.string().nonempty("Event name is required"),
-  description: z.string().optional(),
-  startDate: z.date(),
-  endDate: z.date(),
-  color: z.number(),
+  branch_id: z.string().optional(),
+  user_id: z.string().optional(),
+  customer_id: z.string().optional(),
+  details: z.array(detail),
+  customer_desc: z.string().optional(),
+  order_date: z.date(),
+  start_time: z.number(),
+  end_time: z.number().nullable().optional(),
+  order_status: z
+    .preprocess(
+      (val) => (typeof val === "string" ? parseInt(val, 10) : val),
+      z.nativeEnum(OrderStatus).nullable()
+    )
+    .optional() as unknown as number,
+  user_desc: z.string().nullable().optional(),
+  total_amount: z.preprocess(
+    (val) => (typeof val === "string" ? parseFloat(val) : val),
+    z.number()
+  ) as unknown as number,
 });
 
 export type EventFormData = z.infer<typeof eventSchema>;
@@ -123,7 +141,7 @@ export interface CustomComponents {
     CustomWeekTab?: React.ReactNode;
     CustomMonthTab?: React.ReactNode;
   };
-  CustomEventComponent?: React.FC<Event>; // Using custom event type
+  CustomEventComponent?: React.FC<IOrder>; // Using custom event type
   CustomEventModal?: CustomEventModal;
 }
 

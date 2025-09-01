@@ -9,11 +9,17 @@ import { useScheduler } from "@/providers/schedular-provider";
 import { useModal } from "@/providers/modal-context";
 import AddEventModal from "@/components/schedule/_modals/add-event-modal";
 import EventStyled from "../event-component/event-styled";
-import { CustomEventModal, Event } from "@/types";
+import { CustomEventModal } from "@/types";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import CustomModal from "@/components/ui/custom-modal";
-import { mnDate, totalHours } from "@/lib/functions";
+import {
+  mnDate,
+  mnDateFormat,
+  mnDateFormatTitle,
+  totalHours,
+} from "@/lib/functions";
+import { Branch, IOrder, Service, User } from "@/models";
 
 // Generate hours in 12-hour format
 const hours = Array.from({ length: totalHours }, (_, i) => {
@@ -54,42 +60,50 @@ const pageTransitionVariants = {
 };
 
 // Precise time-based event grouping function
-const groupEventsByTimePeriod = (events: Event[] | undefined) => {
+const groupEventsByTimePeriod = (events: IOrder[] | undefined) => {
   if (!events || events.length === 0) return [];
 
   // Sort events by start time
-  const sortedEvents = [...events].sort(
-    (a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime()
-  );
+  const sortedEvents = [...events].sort((a, b) => {
+    const start_date = new Date(a.order_date ?? new Date());
+    start_date.setHours(a.start_time ?? 5);
+    const end_date = new Date(b.order_date ?? new Date());
+    start_date.setHours(b.start_time ?? 5);
 
-  // Precise time overlap checking function
-  const eventsOverlap = (event1: Event, event2: Event) => {
-    const start1 = new Date(event1.startDate).getTime();
-    const end1 = new Date(event1.endDate).getTime();
-    const start2 = new Date(event2.startDate).getTime();
-    const end2 = new Date(event2.endDate).getTime();
+    return start_date.getTime() - end_date.getTime();
+  });
+  // const sortedEvents = [...events].sort(
+  //   (a, b) => new Date(a.order).getTime() - new Date(b.startDate).getTime()
+  // );
 
-    // Strict time overlap - one event starts before the other ends
-    return start1 < end2 && start2 < end1;
-  };
+  // // Precise time overlap checking function
+  // const eventsOverlap = (event1: Event, event2: Event) => {
+  //   const start1 = new Date(event1.startDate).getTime();
+  //   const end1 = new Date(event1.endDate).getTime();
+  //   const start2 = new Date(event2.startDate).getTime();
+  //   const end2 = new Date(event2.endDate).getTime();
+
+  //   // Strict time overlap - one event starts before the other ends
+  //   return start1 < end2 && start2 < end1;
+  // };
 
   // Use a graph-based approach to find connected components (overlapping event groups)
-  const buildOverlapGraph = (events: Event[]) => {
+  const buildOverlapGraph = (events: IOrder[]) => {
     // Create adjacency list
     const graph: Record<string, string[]> = {};
 
     // Initialize graph
     events.forEach((event) => {
-      graph[event.id] = [];
+      if (event.id) graph[event.id] = [];
     });
 
     // Build connections
     for (let i = 0; i < events.length; i++) {
       for (let j = i + 1; j < events.length; j++) {
-        if (eventsOverlap(events[i], events[j])) {
-          graph[events[i].id].push(events[j].id);
-          graph[events[j].id].push(events[i].id);
-        }
+        // if (eventsOverlap(events[i], events[j])) {
+        //   graph[events[i].id].push(events[j].id);
+        //   graph[events[j].id].push(events[i].id);
+        // }
       }
     }
 
@@ -99,10 +113,10 @@ const groupEventsByTimePeriod = (events: Event[] | undefined) => {
   // Find connected components using DFS
   const findConnectedComponents = (
     graph: Record<string, string[]>,
-    events: Event[]
+    events: IOrder[]
   ) => {
     const visited: Record<string, boolean> = {};
-    const components: Event[][] = [];
+    const components: IOrder[][] = [];
 
     // DFS function to traverse the graph
     const dfs = (nodeId: string, component: string[]) => {
@@ -118,7 +132,7 @@ const groupEventsByTimePeriod = (events: Event[] | undefined) => {
 
     // Find all connected components
     for (const event of events) {
-      if (!visited[event.id]) {
+      if (event.id && !visited[event.id]) {
         const component: string[] = [];
         dfs(event.id, component);
 
@@ -142,10 +156,14 @@ const groupEventsByTimePeriod = (events: Event[] | undefined) => {
 
   // Sort events within each group by start time
   return timeGroups.map((group) =>
-    group.sort(
-      (a, b) =>
-        new Date(a.startDate).getTime() - new Date(b.startDate).getTime()
-    )
+    group.sort((a, b) => {
+      const start_date = new Date(a.order_date ?? new Date());
+      start_date.setHours(a.start_time ?? 5);
+      const end_date = new Date(b.order_date ?? new Date());
+      start_date.setHours(b.start_time ?? 5);
+
+      return start_date.getTime() - end_date.getTime();
+    })
   );
 };
 
@@ -157,6 +175,10 @@ export default function DailyView({
   stopDayEventSummary,
   events,
   classNames,
+  users,
+  customers,
+  branches,
+  services,
   refresh,
 }: {
   prevButton?: React.ReactNode;
@@ -172,8 +194,12 @@ export default function DailyView({
     filter?: T;
   }) => void;
   nextButton?: React.ReactNode;
-  CustomEventComponent?: React.FC<Event>;
-  events: Event[];
+  CustomEventComponent?: React.FC<IOrder>;
+  events: IOrder[];
+  users: User[];
+  customers: User[];
+  branches: Branch[];
+  services: Service[];
   CustomEventModal?: CustomEventModal;
   stopDayEventSummary?: boolean;
   classNames?: { prev?: string; next?: string; addEvent?: string };
@@ -203,7 +229,7 @@ export default function DailyView({
   );
 
   const getFormattedDayTitle = useCallback(
-    () => currentDate.toDateString(),
+    () => mnDateFormatTitle(mnDateFormat(currentDate)),
     [currentDate]
   );
 
@@ -215,16 +241,19 @@ export default function DailyView({
   // Calculate time groups once for all events
   const timeGroups = groupEventsByTimePeriod(dayEvents);
 
-  function handleAddEvent(event?: Event) {
+  function handleAddEvent(event?: IOrder) {
     // Create the modal content with the provided event data or defaults
-    const startDate = event?.startDate || new Date();
-    const endDate = event?.endDate || new Date();
+    const orderDate = event?.order_date || new Date();
 
     // Open the modal with the content
 
     setOpen(
-      <CustomModal title="Add Event">
+      <CustomModal title="Захиалга нэмэх">
         <AddEventModal
+          branches={branches}
+          customers={customers}
+          services={services}
+          users={users}
           CustomAddEventModal={
             CustomEventModal?.CustomAddEventModal?.CustomForm
           }
@@ -233,8 +262,7 @@ export default function DailyView({
       async () => {
         return {
           ...event,
-          startDate,
-          endDate,
+          orderDate,
         };
       }
     );
@@ -276,11 +304,11 @@ export default function DailyView({
     );
 
     handleAddEvent({
-      startDate: date,
-      endDate: new Date(date.getTime() + 60 * 60 * 1000), // 1-hour duration
-      title: "",
-      id: "",
-      color: 0,
+      order_date: date,
+      start_time: hours,
+      end_time: hours + 1, // 1-hour duration
+      branch_id: "",
+      user_id: "",
     });
   }
 
@@ -420,7 +448,7 @@ export default function DailyView({
                     className="cursor-pointer w-full relative border-b  hover:bg-default-200/50  transition duration-300  p-4 h-[64px] text-left text-sm text-muted-foreground border-default-200"
                   >
                     <div className="absolute bg-accent flex items-center justify-center text-xs opacity-0 transition left-0 top-0 duration-250 hover:opacity-100 w-full h-full">
-                      Add Event
+                      Захиалга нэмэх
                     </div>
                   </div>
                 ))}

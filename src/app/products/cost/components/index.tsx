@@ -30,25 +30,30 @@ import { FilterPopover } from "@/components/layout/popover";
 import { Checkbox } from "@radix-ui/react-checkbox";
 import { Calendar } from "@/components/ui/calendar";
 
-const formSchema = z.object({
-  category_id: z.string().nullable().optional(),
-  branch_id: z.string().min(1),
-  product_id: z.string().min(1),
-  date: z.preprocess(
-    (val) => (typeof val === "string" ? new Date(val) : val),
-    z.date()
-  ) as unknown as Date,
-  price: z.preprocess(
-    (val) => (typeof val === "string" ? parseFloat(val) : val),
-    z.number()
-  ) as unknown as number,
-  paid_amount: z.preprocess(
-    (val) => (typeof val === "string" ? parseFloat(val) : val),
-    z.number()
-  ) as unknown as number,
+const formSchema = z
+  .object({
+    category_id: z.string().nullable().optional(),
+    branch_id: z.string().min(1),
+    product_id: z.string().min(1),
+    date: z.preprocess(
+      (val) => (typeof val === "string" ? new Date(val) : val),
+      z.date()
+    ) as unknown as Date,
+    price: z.preprocess(
+      (val) => (typeof val === "string" ? parseFloat(val) : val),
+      z.number()
+    ) as unknown as number,
+    paid_amount: z.preprocess(
+      (val) => (typeof val === "string" ? parseFloat(val) : val),
+      z.number()
+    ) as unknown as number,
 
-  edit: z.string().nullable().optional(),
-});
+    edit: z.string().nullable().optional(),
+  })
+  .refine((data) => (data?.paid_amount ?? 0) <= (data?.price ?? 0), {
+    message: "Төлсөн дүн нийт дүнгээс хэтэрч болохгүй",
+    path: ["paid_amount"], // алдаа paid_amount дээр харагдана
+  });
 const defaultValues = {
   category_id: undefined,
   branch_id: "",

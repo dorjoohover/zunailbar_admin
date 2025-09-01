@@ -167,7 +167,7 @@ export default function WeeklyView({
 
     // Open the modal with the content
     setOpen(
-      <CustomModal title="Add Event">
+      <CustomModal title="Захиалга нэмэх">
         <AddEventModal
           CustomAddEventModal={
             CustomEventModal?.CustomAddEventModal?.CustomForm
@@ -592,7 +592,7 @@ export default function WeeklyView({
                                         );
                                       }}
                                     >
-                                      Add Event
+                                      Захиалга нэмэх
                                     </Button>
                                   </div>
                                 )}
@@ -803,7 +803,7 @@ export default function WeeklyView({
                         className="col-span-1 border-default-200 h-[64px] relative transition duration-300 cursor-pointer border-r border-b text-center text-sm text-muted-foreground"
                       >
                         <div className="absolute bg-accent z-40 flex items-center justify-center text-xs opacity-0 transition duration-250 hover:opacity-100 w-full h-full">
-                          Add Event
+                          Захиалга нэмэх
                         </div>
                       </div>
                     ))}

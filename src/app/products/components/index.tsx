@@ -25,8 +25,7 @@ const formSchema = z.object({
   brand_id: z.string().nullable().optional(),
   category_id: z.string().min(1),
   name: z.string().min(1),
-  color: z.string().nullable().optional(),
-  size: z.string().nullable().optional(),
+
   edit: z.string().nullable().optional(),
 });
 
@@ -40,10 +39,16 @@ const defaultValues = {
   branch_id: undefined,
   category_id: undefined,
   name: "",
-  size: undefined,
-  color: undefined,
 };
-export const ProductPage = ({ data, categories, brands }: { data: ListType<Product>; categories: ListType<Category>; brands: ListType<Brand> }) => {
+export const ProductPage = ({
+  data,
+  categories,
+  brands,
+}: {
+  data: ListType<Product>;
+  categories: ListType<Category>;
+  brands: ListType<Brand>;
+}) => {
   const [action, setAction] = useState(ACTION.DEFAULT);
   const [open, setOpen] = useState<undefined | boolean>(false);
   const form = useForm<ProductType>({
@@ -54,7 +59,13 @@ export const ProductPage = ({ data, categories, brands }: { data: ListType<Produ
   const deleteProduct = async (index: number) => {
     const id = products.items[index].id;
     const res = await deleteOne(Api.product, id);
-    refresh();
+    refresh(
+      objectCompact({
+        brand_id: filter?.brand,
+        category_id: filter?.category,
+        page: 0,
+      })
+    );
     return res.success;
   };
   const edit = async (e: IProduct) => {
@@ -83,10 +94,17 @@ export const ProductPage = ({ data, categories, brands }: { data: ListType<Produ
     setAction(ACTION.RUNNING);
     const body = e as ProductType;
     const { edit, ...payload } = body;
-    const res = edit ? await updateOne<IProduct>(Api.product, edit ?? "", payload as IProduct) : await create<IProduct>(Api.product, e as IProduct);
-    console.log(res);
+    const res = edit
+      ? await updateOne<IProduct>(Api.product, edit ?? "", payload as IProduct)
+      : await create<IProduct>(Api.product, e as IProduct);
     if (res.success) {
-      refresh();
+      refresh(
+        objectCompact({
+          brand_id: filter?.brand,
+          category_id: filter?.category,
+          page: 0,
+        })
+      );
       setOpen(false);
       clear();
     }
@@ -111,27 +129,27 @@ export const ProductPage = ({ data, categories, brands }: { data: ListType<Produ
       })
     );
   }, [filter]);
-  const groups: { key: keyof FilterType; label: string; items: Option[] }[] = useMemo(
-    () => [
-      {
-        key: "brand",
-        label: "Брэнд",
-        items: brands.items.map((b) => ({ value: b.id, label: b.name })),
-      },
-      {
-        key: "category",
-        label: "Ангилал",
-        items: categories.items.map((b) => ({
-          value: b.id,
-          label: b.name,
-        })),
-      },
-    ],
-    [brands.items, categories.items]
-  );
+  const groups: { key: keyof FilterType; label: string; items: Option[] }[] =
+    useMemo(
+      () => [
+        {
+          key: "brand",
+          label: "Брэнд",
+          items: brands.items.map((b) => ({ value: b.id, label: b.name })),
+        },
+        {
+          key: "category",
+          label: "Ангилал",
+          items: categories.items.map((b) => ({
+            value: b.id,
+            label: b.name,
+          })),
+        },
+      ],
+      [brands.items, categories.items]
+    );
   const clear = () => {
     form.reset(defaultValues);
-    console.log(form.getValues());
   };
 
   const downloadExcel = async (pg: PG = DEFAULT_PG) => {
@@ -235,7 +253,11 @@ export const ProductPage = ({ data, categories, brands }: { data: ListType<Produ
               <FormProvider {...form}>
                 <div className="divide-y">
                   <div className="grid grid-cols-1 gap-3 pb-5 sm:grid-cols-2">
-                    <FormItems control={form.control} name="category_id" label="Ангилал">
+                    <FormItems
+                      control={form.control}
+                      name="category_id"
+                      label="Ангилал"
+                    >
                       {(field) => {
                         return (
                           <ComboBox
@@ -250,7 +272,11 @@ export const ProductPage = ({ data, categories, brands }: { data: ListType<Produ
                         );
                       }}
                     </FormItems>
-                    <FormItems control={form.control} name="brand_id" label="Брэнд">
+                    <FormItems
+                      control={form.control}
+                      name="brand_id"
+                      label="Брэнд"
+                    >
                       {(field) => {
                         return (
                           <ComboBox
@@ -272,19 +298,17 @@ export const ProductPage = ({ data, categories, brands }: { data: ListType<Produ
                         key: "name",
                         label: "Нэр",
                       },
-                      {
-                        key: "color",
-                        label: "Өнгө",
-                      },
-                      {
-                        key: "size",
-                        label: "Хэмжээ  ",
-                      },
                     ].map((item, i) => {
                       const name = item.key as keyof ProductType;
                       const label = item.label as keyof ProductType;
                       return (
-                        <FormItems control={form.control} name={name} label={label} key={i} className={item.key === "name" ? "col-span-2" : ""}>
+                        <FormItems
+                          control={form.control}
+                          name={name}
+                          label={label}
+                          key={i}
+                          className={item.key === "name" ? "col-span-2" : ""}
+                        >
                           {(field) => {
                             return <TextField props={{ ...field }} />;
                           }}

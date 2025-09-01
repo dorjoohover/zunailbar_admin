@@ -19,7 +19,7 @@ import { ClassNames, CustomComponents, Views } from "@/types/index";
 import { cn } from "@/lib/utils";
 import CustomModal from "@/components/ui/custom-modal";
 import { ListType } from "@/lib/constants";
-import { IOrder, Order } from "@/models";
+import { Branch, IOrder, Order, Service, User } from "@/models";
 
 // Animation settings for Framer Motion
 const animationConfig = {
@@ -39,13 +39,23 @@ export default function SchedulerViewFilteration({
   classNames,
   orders,
   excel,
+  customers,
+  users,
+  branches,
+  services,
   refresh,
+  send,
 }: {
   orders: ListType<Order>;
+  users: ListType<User>;
+  customers: ListType<User>;
+  branches: ListType<Branch>;
+  services: ListType<Service>;
   views?: Views;
   stopDayEventSummary?: boolean;
   CustomComponents?: CustomComponents;
   classNames?: ClassNames;
+  send: (order: IOrder) => void;
   refresh: <T>({
     page,
     limit,
@@ -123,7 +133,7 @@ export default function SchedulerViewFilteration({
     const ModalWrapper = () => {
       const title =
         CustomComponents?.CustomEventModal?.CustomAddEventModal?.title ||
-        "Add Event";
+        "Захиалга нэмэн";
 
       return (
         <div>
@@ -134,11 +144,16 @@ export default function SchedulerViewFilteration({
 
     // Open the modal with the content
     setOpen(
-      <CustomModal title="Add Event">
+      <CustomModal title="Захиалга нэмэх">
         <AddEventModal
-          CustomAddEventModal={
-            CustomComponents?.CustomEventModal?.CustomAddEventModal?.CustomForm
-          }
+          branches={branches.items}
+          customers={customers.items}
+          services={services.items}
+          users={users.items}
+          send={send}
+          // CustomAddEventModal={
+          //   CustomComponents?.CustomEventModal?.CustomAddEventModal?.CustomForm
+          // }
         />{" "}
       </CustomModal>
     );
@@ -234,6 +249,10 @@ export default function SchedulerViewFilteration({
                 <AnimatePresence mode="wait">
                   <motion.div {...(animationConfig as any)}>
                     <DailyView
+                      branches={branches.items}
+                      customers={customers.items}
+                      users={users.items}
+                      services={services.items}
                       refresh={refresh}
                       events={orders.items.map((item) => {
                         const {

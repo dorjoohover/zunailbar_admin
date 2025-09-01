@@ -40,40 +40,45 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-const formSchema = z.object({
-  product_id: z.string().min(1),
+const formSchema = z
+  .object({
+    product_id: z.string().min(1),
 
-  quantity: z.preprocess(
-    (val) => (typeof val === "string" ? parseFloat(val) : val),
-    z.number()
-  ) as unknown as number,
-  price: z.preprocess(
-    (val) => (typeof val === "string" ? parseFloat(val) : val),
-    z.number()
-  ) as unknown as number,
-  currency: z.string().min(1),
-  total_amount: z.preprocess(
-    (val) => (typeof val === "string" ? parseFloat(val) : val),
-    z.number()
-  ) as unknown as number,
-  paid_amount: z.preprocess(
-    (val) => (typeof val === "string" ? parseFloat(val) : val),
-    z.number()
-  ) as unknown as number,
-  cargo: z.preprocess(
-    (val) => (typeof val === "string" ? parseFloat(val) : val),
-    z.number()
-  ) as unknown as number,
-  currency_value: z.preprocess(
-    (val) => (typeof val === "string" ? parseFloat(val) : val),
-    z.number()
-  ) as unknown as number,
-  edit: z.string().nullable().optional(),
-  date: z.preprocess(
-    (val) => (typeof val === "string" ? new Date(val) : val),
-    z.date()
-  ) as unknown as Date,
-});
+    quantity: z.preprocess(
+      (val) => (typeof val === "string" ? parseFloat(val) : val),
+      z.number()
+    ) as unknown as number,
+    price: z.preprocess(
+      (val) => (typeof val === "string" ? parseFloat(val) : val),
+      z.number()
+    ) as unknown as number,
+    currency: z.string().min(1),
+    total_amount: z.preprocess(
+      (val) => (typeof val === "string" ? parseFloat(val) : val),
+      z.number()
+    ) as unknown as number,
+    paid_amount: z.preprocess(
+      (val) => (typeof val === "string" ? parseFloat(val) : val),
+      z.number()
+    ) as unknown as number,
+    cargo: z.preprocess(
+      (val) => (typeof val === "string" ? parseFloat(val) : val),
+      z.number()
+    ) as unknown as number,
+    currency_value: z.preprocess(
+      (val) => (typeof val === "string" ? parseFloat(val) : val),
+      z.number()
+    ) as unknown as number,
+    edit: z.string().nullable().optional(),
+    date: z.preprocess(
+      (val) => (typeof val === "string" ? new Date(val) : val),
+      z.date()
+    ) as unknown as Date,
+  })
+  .refine((data) => (data?.paid_amount ?? 0) <= (data?.total_amount ?? 0), {
+    message: "Төлсөн дүн нийт дүнгээс хэтэрч болохгүй",
+    path: ["paid_amount"], // алдаа paid_amount дээр харагдана
+  });
 const defaultValues = {
   currency: "cny",
   currency_value: 500,
@@ -384,7 +389,11 @@ export const ProductHistoryPage = ({
                           );
                         }}
                       </FormItems>
-                      <FormItems control={form.control} name="currency" className="absolute bottom-0.5 right-0.5">
+                      <FormItems
+                        control={form.control}
+                        name="currency"
+                        className="absolute bottom-0.5 right-0.5"
+                      >
                         {(field) => {
                           return (
                             <Select

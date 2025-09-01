@@ -15,7 +15,12 @@ interface TableActionButtonsProps<T> {
   children?: ReactNode; // Дунд хэсэгт нэмэлт JSX оруулах боломж
 }
 
-export function TableActionButtons<T>({ rowData, onEdit, onRemove, children }: TableActionButtonsProps<T>) {
+export function TableActionButtons<T>({
+  rowData,
+  onEdit,
+  onRemove,
+  children,
+}: TableActionButtonsProps<T>) {
   return (
     <div className="flex items-center gap-2">
       <TooltipWrapper tooltip="Засварлах">
@@ -34,7 +39,7 @@ export function TableActionButtons<T>({ rowData, onEdit, onRemove, children }: T
           onConfirm={async () => {
             try {
               const res = await onRemove(rowData);
-              showToast("success", `Амжилттай устгалаа! ${res}`);
+              showToast("success", `Амжилттай устгалаа!`);
             } catch (error) {
               showToast("error", "Устгах явцад алдаа гарлаа");
             }

@@ -97,7 +97,7 @@ export default function MonthView({
     );
 
     setOpen(
-      <CustomModal title="Add Event">
+      <CustomModal title="Захиалга нэмэх">
         <AddEventModal
           CustomAddEventModal={
             CustomEventModal?.CustomAddEventModal?.CustomForm
@@ -322,7 +322,7 @@ export default function MonthView({
                   {dayEvents.length === 0 && (
                     <div className="absolute inset-0 bg-primary/20 bg-opacity-50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                       <span className="text-black tracking-tighter text-lg font-semibold">
-                        Add Event
+                        Захиалга нэмэх
                       </span>
                     </div>
                   )}

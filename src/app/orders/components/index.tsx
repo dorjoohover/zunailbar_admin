@@ -1,5 +1,5 @@
 "use client";
-import { Branch, IOrder, Order, User } from "@/models";
+import { Branch, IOrder, Order, Service, User } from "@/models";
 import { useEffect, useMemo, useState } from "react";
 import { ListType, ACTION, PG, DEFAULT_PG, ListDefault } from "@/lib/constants";
 import z from "zod";
@@ -46,9 +46,13 @@ type OrderType = z.infer<typeof formSchema>;
 export const OrderPage = ({
   branches,
   users,
+  customers,
+  services,
 }: {
   branches: ListType<Branch>;
+  services: ListType<Service>;
   users: ListType<User>;
+  customers: ListType<User>;
 }) => {
   const [action, setAction] = useState(ACTION.DEFAULT);
   const [open, setOpen] = useState<undefined | boolean>(false);
@@ -165,15 +169,19 @@ export const OrderPage = ({
     console.log(res);
     setAction(ACTION.DEFAULT);
   };
-
   return (
     <div className="relative">
       <DynamicHeader count={orders?.count} />
       <div className="admin-container relative">
         <SchedulerProvider weekStartsOn="monday">
           <SchedulerViewFilteration
+            send={onSubmit}
             excel={downloadExcel}
             orders={orders}
+            branches={branches}
+            users={users}
+            customers={customers}
+            services={services}
             refresh={refresh}
           />
         </SchedulerProvider>

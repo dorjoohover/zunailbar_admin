@@ -9,7 +9,14 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 import { ColumnDef } from "@tanstack/react-table";
-import { ArrowUpDown, CircleSmall, Hammer, Pencil, UserRoundCog } from "lucide-react";
+import {
+  ArrowUpDown,
+  CircleSmall,
+  Hammer,
+  Pencil,
+  Trash2,
+  UserRoundCog,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { IUser, IUserProduct } from "@/models";
@@ -18,29 +25,18 @@ import { getEnumValues, getValuesUserProductStatus } from "@/lib/constants";
 import TooltipWrapper from "@/components/tooltipWrapper";
 import { cn } from "@/lib/utils";
 import { formatTime, mnDate, mnDateFormat } from "@/lib/functions";
+import { AppAlertDialog } from "@/components/AlertDialog";
+import { toast } from "sonner";
 
 export const getColumns = (
   onEdit: (product: IUser) => void,
-  setStatus: (index: number, status: UserProductStatus) => void
+  setStatus: (index: number, status: UserProductStatus) => void,
+  remove: (index: number) => Promise<boolean>
 ): ColumnDef<IUserProduct>[] => [
   {
     id: "select",
-    header: ({ table }) => (
-      <Checkbox
-        checked={table.getIsAllPageRowsSelected()}
-        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-        aria-label="Select all"
-      />
-    ),
-    cell: ({ row }) => (
-      <Checkbox
-        checked={row.getIsSelected()}
-        onCheckedChange={(value) => row.toggleSelected(!!value)}
-        aria-label="Select row"
-      />
-    ),
-    enableSorting: false,
-    enableHiding: false,
+    header: ({ table }) => <span>№</span>,
+    cell: ({ row }) => <span className="">{row.index + 1}</span>,
   },
 
   {
@@ -68,13 +64,17 @@ export const getColumns = (
         <ArrowUpDown className="w-4 h-4 ml-2" />
       </Button>
     ),
+    cell: ({ row }) => {
+      return <p>{row.getValue("product_name")}</p>;
+    },
+  },
+  {
+    accessorKey: "brand_name",
+    header: "Brand",
   },
   {
     accessorKey: "quantity",
-    header: "quantity",
-    // cell: ({ row }) => {
-    //   return <p>{}</p>;
-    // },
+    header: "Quantity",
   },
 
   {
@@ -85,16 +85,19 @@ export const getColumns = (
         getValuesUserProductStatus[
           row.getValue<number>("user_product_status") as UserProductStatus
         ];
-      return <span className={cn(`badge ${status?.color} inline-flex items-center`)}>
-        {status?.name}</span>;
+      return (
+        <span className={cn(`badge ${status?.color} inline-flex items-center`)}>
+          {status?.name}
+        </span>
+      );
     },
   },
   {
     accessorKey: "created_at",
     header: "Огноо",
     cell: ({ row }) => {
-      const date = mnDateFormat(new Date(row.getValue('created_at') as string)) 
-      return <span>{date}</span>
+      const date = mnDateFormat(new Date(row.getValue("created_at") as string));
+      return <span>{date}</span>;
     },
   },
   {
@@ -135,14 +138,28 @@ export const getColumns = (
                       key={i}
                       onClick={() => setStatus(row.index, item)}
                     >
-                      <span className={cn(status?.color)}>
-                      {status?.name}
-                      </span>
+                      <span className={cn(status?.color)}>{status?.name}</span>
                     </DropdownMenuItem>
                   );
                 })}
             </DropdownMenuContent>
           </DropdownMenu>
+          <TooltipWrapper tooltip="Утстгах">
+            <AppAlertDialog
+              title="Итгэлтэй байна уу?"
+              description="Бүр устгана шүү."
+              onConfirm={async () => {
+                const res = await remove(row.index);
+                console.log(res);
+                toast("Амжилттай устгалаа!", {});
+              }}
+              trigger={
+                <Button variant="ghost" size="icon">
+                  <Trash2 className="w-4 h-4 text-red-500" />
+                </Button>
+              }
+            />
+          </TooltipWrapper>
         </div>
       );
     },

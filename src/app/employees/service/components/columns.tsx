@@ -27,19 +27,24 @@ function stringToNiceColor(str: string) {
   return `hsl(${hue}, 70%, 60%)`;
 }
 
-export function getColumns(onEdit: (product: IUserService) => void, remove: (index: number) => Promise<boolean>): ColumnDef<IUserService>[] {
+export function getColumns(
+  onEdit: (product: IUserService) => void,
+  remove: (index: number) => Promise<boolean>
+): ColumnDef<IUserService>[] {
   return [
     {
       id: "select",
-      header: ({ table }) => <Checkbox checked={table.getIsAllPageRowsSelected()} onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)} aria-label="Select all" />,
-      cell: ({ row }) => <Checkbox checked={row.getIsSelected()} onCheckedChange={(value) => row.toggleSelected(!!value)} aria-label="Select row" />,
-      enableSorting: false,
-      enableHiding: false,
+      header: ({ table }) => <span>№</span>,
+      cell: ({ row }) => <span className="">{row.index + 1}</span>,
     },
     {
       accessorKey: "user_name",
       header: ({ column }) => (
-        <Button variant="table_header" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")} className="font-bold">
+        <Button
+          variant="table_header"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          className="font-bold"
+        >
           Артист <ArrowUpDown className="w-4 h-4 ml-2" />
         </Button>
       ),
@@ -47,7 +52,11 @@ export function getColumns(onEdit: (product: IUserService) => void, remove: (ind
     {
       accessorKey: "service_name",
       header: ({ column }) => (
-        <Button variant="table_header" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")} className="font-bold">
+        <Button
+          variant="table_header"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          className="font-bold"
+        >
           Үйлчилгээний нэр <ArrowUpDown className="w-4 h-4 ml-2" />
         </Button>
       ),
@@ -57,11 +66,7 @@ export function getColumns(onEdit: (product: IUserService) => void, remove: (ind
         const service = row.getValue("service_name") as string;
         const color = stringToNiceColor(service);
 
-        return (
-          <span className="badge bg-brand-blue">
-            {service}
-          </span>
-        );
+        return <span className="badge bg-brand-blue">{service}</span>;
       },
     },
 
@@ -70,7 +75,11 @@ export function getColumns(onEdit: (product: IUserService) => void, remove: (ind
       header: "Actions",
       cell: ({ row }) => (
         // Bagasgasan
-        <TableActionButtons rowData={row.original} onEdit={(data) => onEdit(data)} onRemove={(data) => remove(row.index)}></TableActionButtons>
+        <TableActionButtons
+          rowData={row.original}
+          onEdit={(data) => onEdit(data)}
+          onRemove={(data) => remove(row.index)}
+        ></TableActionButtons>
         //
       ),
     },

@@ -1,16 +1,56 @@
 "use client";
 
-import { ChevronUp, LayoutDashboard, ClipboardCheck, Wallet, SquareUserRound, Milk, ShieldUserIcon, ChevronRight, UsersRound, UserRound, HandCoins, CalendarRange, Globe, SquareMenu, Users, UserSquare } from "lucide-react";
+import {
+  ChevronUp,
+  LayoutDashboard,
+  ClipboardCheck,
+  Wallet,
+  SquareUserRound,
+  Milk,
+  ShieldUserIcon,
+  ChevronRight,
+  UsersRound,
+  UserRound,
+  HandCoins,
+  CalendarRange,
+  Globe,
+  SquareMenu,
+  Users,
+  UserSquare,
+} from "lucide-react";
 
-import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarMenuSub, SidebarMenuSubButton, SidebarMenuSubItem } from "@/components/ui/sidebar";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "./ui/dropdown-menu";
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarGroupLabel,
+  SidebarHeader,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarMenuSub,
+  SidebarMenuSubButton,
+  SidebarMenuSubItem,
+} from "@/components/ui/sidebar";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "./ui/dropdown-menu";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 
 import { useSidebarStore } from "@/stores/sidebar.store";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "./ui/collapsible";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "./ui/collapsible";
 import { ScrollArea, ScrollBar } from "./ui/scroll-area";
 
 // Menu items.
@@ -49,11 +89,11 @@ export const sidebar_items = [
             icon: SquareUserRound,
             url: "/employees/service",
           },
-          {
-            title: "Ажилтны чөлөө авах хүсэлт",
-            icon: SquareUserRound,
-            url: "/employees/free",
-          },
+          // {
+          //   title: "Ажилтны чөлөө авах хүсэлт",
+          //   icon: SquareUserRound,
+          //   url: "/employees/free",
+          // },
         ],
       },
       {
@@ -243,17 +283,16 @@ export const sidebar_items = [
             url: "/employee/salary",
             // icon: Milk,
           },
-          {
-            title: "Чөлөөний хүсэлт",
-            url: "/employee/leave-request",
-            // icon: Milk,
-          },
+          // {
+          //   title: "Чөлөөний хүсэлт",
+          //   url: "/employee/leave-request",
+          //   // icon: Milk,
+          // },
         ],
       },
     ],
   },
 ];
-
 
 export function AppSidebar() {
   const pathname = usePathname();
@@ -265,15 +304,30 @@ export function AppSidebar() {
   // const [openIndex, setOpenIndex] = useState(null)
   if (pathname == "/login") return;
   return (
-    <Sidebar variant="inset" collapsible="icon" className="fixed top-0 backdrop-blur-3xl">
+    <Sidebar
+      variant="inset"
+      collapsible="icon"
+      className="fixed top-0 backdrop-blur-3xl"
+    >
       {/* Header */}
       <SidebarHeader className="border-b border-slate-600">
         <SidebarMenu>
           <SidebarMenuItem className="flex items-center gap-2">
-            <SidebarMenuButton size={"logo"} className="pointer-events-none px-0 py-2 text-white">
-              <Image src={"/logo/zu-white.png"} alt="logo" width={60} height={60} className="rounded-lg object-cover" />
+            <SidebarMenuButton
+              size={"logo"}
+              className="pointer-events-none px-0 py-2 text-white"
+            >
+              <Image
+                src={"/logo/zu-white.png"}
+                alt="logo"
+                width={60}
+                height={60}
+                className="rounded-lg object-cover"
+              />
               <div className="w-[1px] h-2/3 bg-white/20" />
-              <span className="font-bold uppercase">Zu Nailbar Admin panel</span>
+              <span className="font-bold uppercase">
+                Zu Nailbar Admin panel
+              </span>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
@@ -285,7 +339,9 @@ export function AppSidebar() {
           <>
             {sidebar_items.map((group, gi) => (
               <SidebarGroup key={gi}>
-                {group.groupLabel && <SidebarGroupLabel>{group.groupLabel}</SidebarGroupLabel>}
+                {group.groupLabel && (
+                  <SidebarGroupLabel>{group.groupLabel}</SidebarGroupLabel>
+                )}
 
                 <SidebarMenu className="h-fit">
                   {group.item.map((item, mi) => {
@@ -297,7 +353,12 @@ export function AppSidebar() {
                         <SidebarMenuItem className="text-white">
                           {hasChildren ? (
                             <CollapsibleTrigger asChild>
-                              <SidebarMenuButton asChild size="lg" isActive={isActive} className="active:bg-white/20 hover:bg-white/20">
+                              <SidebarMenuButton
+                                asChild
+                                size="lg"
+                                isActive={isActive}
+                                className="active:bg-white/20 hover:bg-white/20"
+                              >
                                 <div>
                                   <item.icon />
                                   <span>{item.triggerLabel}</span>
@@ -306,8 +367,16 @@ export function AppSidebar() {
                               </SidebarMenuButton>
                             </CollapsibleTrigger>
                           ) : (
-                            <SidebarMenuButton asChild size="lg" isActive={isActive} className="hover:bg-white/20">
-                              <Link href={item.url} className={cn(isActive && "text-sky-600")}>
+                            <SidebarMenuButton
+                              asChild
+                              size="lg"
+                              isActive={isActive}
+                              className="hover:bg-white/20"
+                            >
+                              <Link
+                                href={item.url}
+                                className={cn(isActive && "text-sky-600")}
+                              >
                                 <item.icon />
                                 <span>{item.triggerLabel}</span>
                               </Link>
@@ -321,8 +390,18 @@ export function AppSidebar() {
                                 return (
                                   <SidebarMenuSub key={ci} className="w-full">
                                     <SidebarMenuSubItem className="w-full">
-                                      <SidebarMenuSubButton asChild isActive={isChildActive} className="active:bg-white/20 text-white">
-                                        <Link href={child.url} className={cn(isChildActive && "text-sky-600", "w-full justify-between px-0")}>
+                                      <SidebarMenuSubButton
+                                        asChild
+                                        isActive={isChildActive}
+                                        className="active:bg-white/20 text-white"
+                                      >
+                                        <Link
+                                          href={child.url}
+                                          className={cn(
+                                            isChildActive && "text-sky-600",
+                                            "w-full justify-between px-0"
+                                          )}
+                                        >
                                           {child.title}
                                         </Link>
                                       </SidebarMenuSubButton>
@@ -349,12 +428,18 @@ export function AppSidebar() {
           <SidebarMenuItem>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <SidebarMenuButton size={"lg"} className="text-white hover:bg-white/20">
+                <SidebarMenuButton
+                  size={"lg"}
+                  className="text-white hover:bg-white/20"
+                >
                   <ShieldUserIcon /> Админ
                   <ChevronUp className="ml-auto" />
                 </SidebarMenuButton>
               </DropdownMenuTrigger>
-              <DropdownMenuContent side="top" className="w-[--radix-popper-anchor-width]">
+              <DropdownMenuContent
+                side="top"
+                className="w-[--radix-popper-anchor-width]"
+              >
                 <DropdownMenuItem>
                   <span>Profile</span>
                 </DropdownMenuItem>

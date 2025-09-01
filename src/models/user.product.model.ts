@@ -9,6 +9,7 @@ export interface IUserProduct {
   updated_at?: Date;
   quantity?: number;
   user_product_status?: number;
+  brand_name?: string;
 }
 export interface UserProduct {
   id: string;
@@ -19,6 +20,7 @@ export interface UserProduct {
   user_name?: string;
   quantity: number;
   user_product_status: number;
+  brand_name?: string;
   created_at?: Date;
   updated_at?: Date;
 }

@@ -19,6 +19,7 @@ import { Api } from "@/utils/api";
 import { fetcher } from "@/hooks/fetcher";
 import {
   Branch,
+  Brand,
   IUser,
   IUserProduct,
   Product,
@@ -28,10 +29,14 @@ import {
 import { getColumns } from "./columns";
 import ContainerHeader from "@/components/containerHeader";
 import DynamicHeader from "@/components/dynamicHeader";
-import { create, updateOne } from "@/app/(api)";
+import { create, deleteOne, updateOne } from "@/app/(api)";
 import { imageUploader } from "@/app/(api)/base";
 import { Input } from "@/components/ui/input";
-import { firstLetterUpper, objectCompact, usernameFormatter } from "@/lib/functions";
+import {
+  firstLetterUpper,
+  objectCompact,
+  usernameFormatter,
+} from "@/lib/functions";
 import { DatePicker } from "@/shared/components/date.picker";
 import { FormItems } from "@/shared/components/form.field";
 import { Modal } from "@/shared/components/modal";
@@ -86,8 +91,10 @@ export const EmployeeProductPage = ({
   products,
   branches,
   users,
+  brands,
 }: {
   data: ListType<UserProduct>;
+  brands: ListType<Brand>;
   branches: ListType<Branch>;
   users: ListType<User>;
   products: ListType<Product>;
@@ -99,9 +106,24 @@ export const EmployeeProductPage = ({
     defaultValues,
   });
   const [userProduct, setUserProduct] = useState<ListType<UserProduct>>(data);
-  const [editingUser, setEditingUser] = useState<IUser | null>(null);
+
+  const productMap = useMemo(
+    () => new Map(products.items.map((p) => [p.id, p])),
+    [products.items]
+  );
+
+  const userProductFormatter = (data: ListType<UserProduct>) => {
+    const items: UserProduct[] = data.items.map((item) => {
+      const product = productMap.get(item.product_id);
+      return {
+        ...item,
+        brand_name: product?.brand_name ?? "-",
+      };
+    });
+    setUserProduct({ items, count: data.count });
+  };
   const onSubmit = async <T,>(e: T) => {
-    setAction(ACTION.RUNNING)
+    setAction(ACTION.RUNNING);
     const { edit, ...body } = form.getValues();
     let payload = body;
 
@@ -138,7 +160,7 @@ export const EmployeeProductPage = ({
       sort: sort ?? DEFAULT_PG.sort,
       ...pg,
     }).then((d) => {
-      setUserProduct(d);
+      userProductFormatter(d);
       // form.reset(undefined);
     });
     setAction(ACTION.DEFAULT);
@@ -164,8 +186,13 @@ export const EmployeeProductPage = ({
       : showToast("error", res.error ?? "");
     refresh();
   };
-
-  const columns = getColumns(edit, setStatus);
+  const deleteUserProduct = async (index: number) => {
+    const id = userProduct!.items[index].id;
+    const res = await deleteOne(Api.user_product, id);
+    refresh();
+    return res.success;
+  };
+  const columns = getColumns(edit, setStatus, deleteUserProduct);
   const [filter, setFilter] = useState<FilterType>();
   const changeFilter = (key: string, value: number | string) => {
     setFilter((prev) => ({ ...prev, [key]: value }));
@@ -238,7 +265,7 @@ export const EmployeeProductPage = ({
                   //   value={filter?.[key] ? item.items.filter((item) => item.value == filter[key])[0].label : undefined}
                   //   label={item.label}
                   // />
-                   <label key={i}>
+                  <label key={i}>
                     <span className="filter-label">{item.label as string}</span>
                     <ComboBox
                       pl={item.label}
@@ -343,7 +370,6 @@ export const EmployeeProductPage = ({
                             label: getValuesUserProductStatus[item].name,
                           };
                         })}
-                        
                       />
                     );
                   }}
