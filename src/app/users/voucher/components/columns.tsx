@@ -24,7 +24,7 @@ export function getColumns(onEdit: (product: IVoucher) => void, remove: (index: 
       accessorKey: "branch_name",
       header: ({ column }) => (
         <Button variant="table_header" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")} className="font-bold">
-          Branch <ArrowUpDown className="w-4 h-4 ml-2" />
+          Салбар <ArrowUpDown className="w-4 h-4 ml-2" />
         </Button>
       ),
     },
@@ -32,7 +32,7 @@ export function getColumns(onEdit: (product: IVoucher) => void, remove: (index: 
       accessorKey: "name",
       header: ({ column }) => (
         <Button variant="table_header" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")} className="font-bold">
-          Name <ArrowUpDown className="w-4 h-4 ml-2" />
+          Нэр <ArrowUpDown className="w-4 h-4 ml-2" />
         </Button>
       ),
     },
@@ -41,7 +41,7 @@ export function getColumns(onEdit: (product: IVoucher) => void, remove: (index: 
       accessorKey: "duration",
       header: ({ column }) => (
         <Button variant="table_header" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")} className="font-bold">
-          Duration <ArrowUpDown className="w-4 h-4 ml-2" />
+          Хугацаа <ArrowUpDown className="w-4 h-4 ml-2" />
         </Button>
       ),
       cell: ({ row }) => `${row.getValue("duration")}мин`,
@@ -50,7 +50,7 @@ export function getColumns(onEdit: (product: IVoucher) => void, remove: (index: 
       accessorKey: "min_price",
       header: ({ column }) => (
         <Button variant="table_header" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")} className="font-bold">
-          Price <ArrowUpDown className="w-4 h-4 ml-2" />
+          Үнэ <ArrowUpDown className="w-4 h-4 ml-2" />
         </Button>
       ),
       cell: ({ row }) => money(row.getValue("min_price"), "₮"),
@@ -59,7 +59,7 @@ export function getColumns(onEdit: (product: IVoucher) => void, remove: (index: 
       accessorKey: "max_price",
       header: ({ column }) => (
         <Button variant="table_header" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")} className="font-bold">
-          Max Price <ArrowUpDown className="w-4 h-4 ml-2" />
+          Дээд үнэ <ArrowUpDown className="w-4 h-4 ml-2" />
         </Button>
       ),
       cell: ({ row }) => money(row.getValue("max_price"), "₮"),
@@ -68,7 +68,7 @@ export function getColumns(onEdit: (product: IVoucher) => void, remove: (index: 
       accessorKey: "created_at",
       header: ({ column }) => (
         <Button variant="table_header" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")} className="font-bold">
-          Created <ArrowUpDown className="w-4 h-4 ml-2" />
+          Үүсгэсэн <ArrowUpDown className="w-4 h-4 ml-2" />
         </Button>
       ),
       cell: ({ row }) => {
@@ -83,7 +83,7 @@ export function getColumns(onEdit: (product: IVoucher) => void, remove: (index: 
     },
     {
       id: "actions",
-      header: "Actions",
+      header: "Үйлдэл",
       cell: ({ row }) => (
         // Bagasgasan
         <TableActionButtons rowData={row.original} onEdit={(data) => onEdit(data)} onRemove={(data) => remove(row.index)}></TableActionButtons>

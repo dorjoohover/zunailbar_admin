@@ -31,21 +31,16 @@ import {
   SelectValue,
 } from "./ui/select";
 import {
-  ChevronDown,
   ChevronLeft,
   ChevronRight,
   CircleX,
-  FileInput,
-  Funnel,
+  FileText,
   LoaderCircle,
-  RotateCcw,
-  RotateCw,
   Search,
-  SlidersHorizontal,
+  X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ScrollArea, ScrollBar } from "./ui/scroll-area";
-import { excel } from "@/app/(api)";
 import { useSidebar } from "./ui/sidebar";
 import { ScrollAreaViewport } from "@radix-ui/react-scroll-area";
 
@@ -158,9 +153,6 @@ export function DataTable<TData, TValue>({
     }
     return pages;
   }
-  const [showFilter, setShowFilter] = useState(true);
-
-  const roles = ["Ажилчин", "Менежер", "asd"];
 
   const [selectedRoles, setSelectedRoles] = useState<string[]>([]);
   const toggleRole = (role: string) => {
@@ -230,7 +222,7 @@ export function DataTable<TData, TValue>({
           : "lg:w-[calc(100vw-8rem)] w-[calc(100vw-2rem)]"
       )}
     >
-      {/* Table action */}
+      {/* Table filter */}
       {filter && (
         <div className="flex flex-wrap bg-white p-3 rounded-2xl shadow-light items-end gap-1 border-light">
           <>
@@ -238,51 +230,48 @@ export function DataTable<TData, TValue>({
             <Button
               variant="ghost"
               onClick={clear}
-              className="text-xs text-red-500 hover:text-red-500  lg:h-10"
+              className="text-xs text-red-500 hover:text-red-500 bg-red-50 hover:bg-red-100  lg:h-10"
             >
-              {/* <RotateCcw className="size-3.5" /> */}
-              Цэвэрлэх
+              <CircleX />
             </Button>
           </>
-
-          {/* <Button variant="ghost" onClick={clear} className="text-xs text-red-500  lg:min-h-10 hover:text-red-500">
-          Цэвэрлэх
-          </Button> */}
-          {/* <Button variant={"outline"} onClick={() => setShowFilter(!showFilter)} className={cn(showFilter ? "bg-primary text-white border-primary" : "hover:bg-gray-100", "border cursor-pointer")}>
-          <SlidersHorizontal />
-          Шүүлтүүр
-          <ChevronDown className={cn(showFilter ? "-rotate-180" : "", "duration-150")} />
-          </Button> */}
         </div>
       )}
 
+      {/* Filterees dooshig */}
       <div className="bg-white rounded-xl shadow-light border-light p-5 pt-0">
-        <div className="w-full flex justify-end gap-4 lg:gap-20 py-5">
-          {/* <div className="w-full flex justify-between gap-4 lg:gap-20 py-3"> */}
-          {search && (
-            <div className="relative w-full space-y-2">
-              <Search
-                className="size-5 absolute top-[50%] -translate-y-[50%] left-2 text-slate-600"
-                strokeWidth={2.5}
-              />
+        {/* Table action */}
+        <div className="w-full flex justify-between gap-4 lg:gap-20 py-5">
+          {/* Search */}
+          <div className="relative w-full max-w-xl space-y-2">
+            {search && (
+              <>
+                <Search
+                  className="size-5 absolute top-[50%] -translate-y-[50%] left-2 text-slate-600"
+                  strokeWidth={2.5}
+                />
 
-              <Input
-                placeholder="Хайх..."
-                value={globalFilter}
-                onChange={(e) => setGlobalFilter(e.target.value)}
-                className="w-full pl-10 text-sm! bg-white"
-              />
-            </div>
-          )}
+                <Input
+                  placeholder="Хайх..."
+                  value={globalFilter}
+                  onChange={(e) => setGlobalFilter(e.target.value)}
+                  className="w-full pl-10 text-sm! bg-white"
+                />
+              </>
+            )}
+          </div>
+
+          {/* Excel || Add button  */}
           <div className="flex items-center justify-end space-x-2">
             {/* Add modal button */}
             {excel && (
               <Button
-                variant={"outline"}
+                variant={"ghost"}
                 onClick={downloadExcel}
                 className="bg-green-500 text-white hover:bg-green-500/80 gap-1 hover:text-white"
               >
-                Export
+                <FileText />
+                Excel
               </Button>
             )}
             {modalAdd && <div> {modalAdd}</div>}
@@ -295,22 +284,20 @@ export function DataTable<TData, TValue>({
             <div className="overflow-hidden border-slate-200">
               <Table>
                 <TableHeader>
-                  {table.getHeaderGroups().map((headerGroup) => {
-                    return (
-                      <TableRow key={headerGroup.id}>
-                        {headerGroup.headers.map((header) => (
-                          <TableHead key={header.id}>
-                            {header.isPlaceholder
-                              ? null
-                              : flexRender(
-                                  header.column.columnDef.header,
-                                  header.getContext()
-                                )}
-                          </TableHead>
-                        ))}
-                      </TableRow>
-                    );
-                  })}
+                  {table.getHeaderGroups().map((headerGroup) => (
+                    <TableRow key={headerGroup.id}>
+                      {headerGroup.headers.map((header) => (
+                        <TableHead key={header.id}>
+                          {header.isPlaceholder
+                            ? null
+                            : flexRender(
+                                header.column.columnDef.header,
+                                header.getContext()
+                              )}
+                        </TableHead>
+                      ))}
+                    </TableRow>
+                  ))}
                 </TableHeader>
                 <TableBody>
                   {loading ? (
@@ -358,13 +345,15 @@ export function DataTable<TData, TValue>({
           <ScrollBar orientation="horizontal" className="" />
         </ScrollArea>
 
-        {/* Table pagination */}
-        <div className="flex items-center mt-10 justify-end">
-          {/* <p className="text-sm font-medium">{table.getSelectedRowModel().rows.length} мөр сонгогдсон.</p> */}
+        {/* Table bottom action */}
+        <div className="flex items-center mt-10 justify-between">
+          {/* Hervee table row check hiivel heregtei */}
+          <div>
+            {/* <p className="text-sm font-medium">{table.getSelectedRowModel().rows.length} мөр сонгогдсон.</p> */}
+          </div>
 
+          {/* Table pagination */}
           <div className="flex items-center space-x-2">
-            {/* <div className="flex items-center">{pagination.pageIndex + 1} / {Math.ceil(count / limit)} </div> */}
-
             <div className="flex items-center space-x-3 h-11">
               <div className="flex items-center h-full px-3 pl-1 bg-white rounded-lg gap-x-2 border-gray-200">
                 <Select
@@ -428,8 +417,6 @@ export function DataTable<TData, TValue>({
           </div>
         </div>
       </div>
-      {/* 
-      {!atEnd && <div className="absolute top-0 right-0 w-12 h-full pointer-events-none bg-gradient-to-l from-red-500/60 to-transparent" />} */}
     </div>
   );
 }

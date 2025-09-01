@@ -1,6 +1,14 @@
 "use client";
 
-import React, { useRef, useState, useCallback, useEffect } from "react";
+import React, {
+  useRef,
+  useState,
+  useCallback,
+  useEffect,
+  useMemo,
+  Dispatch,
+  SetStateAction,
+} from "react";
 import { AnimatePresence, motion } from "framer-motion";
 
 import { ArrowLeft, ArrowRight } from "lucide-react";
@@ -18,8 +26,9 @@ import {
   mnDateFormat,
   mnDateFormatTitle,
   totalHours,
+  toTimeString,
 } from "@/lib/functions";
-import { Branch, IOrder, Service, User } from "@/models";
+import { Branch, IOrder, Order, Service, User } from "@/models";
 
 // Generate hours in 12-hour format
 const hours = Array.from({ length: totalHours }, (_, i) => {
@@ -60,15 +69,15 @@ const pageTransitionVariants = {
 };
 
 // Precise time-based event grouping function
-const groupEventsByTimePeriod = (events: IOrder[] | undefined) => {
+const groupEventsByTimePeriod = (events: Order[] | undefined) => {
   if (!events || events.length === 0) return [];
 
   // Sort events by start time
   const sortedEvents = [...events].sort((a, b) => {
     const start_date = new Date(a.order_date ?? new Date());
-    start_date.setHours(a.start_time ?? 5);
+    start_date.setHours(+a.start_time?.slice(0, 2));
     const end_date = new Date(b.order_date ?? new Date());
-    start_date.setHours(b.start_time ?? 5);
+    start_date.setHours(+b.start_time?.slice(0, 2));
 
     return start_date.getTime() - end_date.getTime();
   });
@@ -149,18 +158,18 @@ const groupEventsByTimePeriod = (events: IOrder[] | undefined) => {
   };
 
   // Build the overlap graph
-  const graph = buildOverlapGraph(sortedEvents);
+  const graph = buildOverlapGraph(sortedEvents as any);
 
   // Find connected components (groups of overlapping events)
-  const timeGroups = findConnectedComponents(graph, sortedEvents);
+  const timeGroups = findConnectedComponents(graph, sortedEvents as any);
 
   // Sort events within each group by start time
   return timeGroups.map((group) =>
     group.sort((a, b) => {
       const start_date = new Date(a.order_date ?? new Date());
-      start_date.setHours(a.start_time ?? 5);
+      start_date.setHours(a.start_time ? +a.start_time?.slice(0, 2) : 5);
       const end_date = new Date(b.order_date ?? new Date());
-      start_date.setHours(b.start_time ?? 5);
+      start_date.setHours(b.start_time ? +b.start_time?.slice(0, 2) : 5);
 
       return start_date.getTime() - end_date.getTime();
     })
@@ -173,15 +182,21 @@ export default function DailyView({
   CustomEventComponent,
   CustomEventModal,
   stopDayEventSummary,
+  loading,
   events,
+  deleteOrder,
   classNames,
   users,
   customers,
   branches,
   services,
+  send,
   refresh,
+  currentDate,
+  setCurrentDate,
 }: {
   prevButton?: React.ReactNode;
+  deleteOrder: (id: string) => void;
   refresh: <T>({
     page,
     limit,
@@ -193,10 +208,14 @@ export default function DailyView({
     sort?: boolean;
     filter?: T;
   }) => void;
+  currentDate: Date;
+  setCurrentDate: Dispatch<SetStateAction<Date>>;
   nextButton?: React.ReactNode;
   CustomEventComponent?: React.FC<IOrder>;
-  events: IOrder[];
+  events: Order[];
   users: User[];
+  loading: boolean;
+  send: (order: IOrder) => void;
   customers: User[];
   branches: Branch[];
   services: Service[];
@@ -207,11 +226,19 @@ export default function DailyView({
   const hoursColumnRef = useRef<HTMLDivElement>(null);
   const [detailedHour, setDetailedHour] = useState<string | null>(null);
   const [timelinePosition, setTimelinePosition] = useState<number>(0);
-  const [currentDate, setCurrentDate] = useState<Date>(new Date());
+
   const [direction, setDirection] = useState<number>(0);
   const { setOpen } = useModal();
   const { getters, handlers } = useScheduler();
-
+  const orderMap = useMemo(() => {
+    const map = new Map<string, Order[]>();
+    events.forEach((ev) => {
+      const arr = map.get(ev.start_time) ?? [];
+      arr.push(ev);
+      map.set(ev.start_time, arr);
+    });
+    return map;
+  }, [events]);
   const handleMouseMove = useCallback(
     (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
       if (!hoursColumnRef.current) return;
@@ -254,9 +281,11 @@ export default function DailyView({
           customers={customers}
           services={services}
           users={users}
-          CustomAddEventModal={
-            CustomEventModal?.CustomAddEventModal?.CustomForm
-          }
+          send={send}
+          loading={loading}
+          // CustomAddEventModal={
+          //   CustomEventModal?.CustomAddEventModal?.CustomForm
+          // }
         />
       </CustomModal>,
       async () => {
@@ -304,9 +333,9 @@ export default function DailyView({
     );
 
     handleAddEvent({
-      order_date: date,
-      start_time: hours,
-      end_time: hours + 1, // 1-hour duration
+      order_date: mnDateFormat(date),
+      start_time: toTimeString(hours),
+      end_time: toTimeString(hours + 1),
       branch_id: "",
       user_id: "",
     });
@@ -356,7 +385,7 @@ export default function DailyView({
               onClick={handlePrevDay}
             >
               <ArrowLeft />
-              Prev
+              Өмнөх
             </Button>
           )}
           {nextButton ? (
@@ -367,7 +396,7 @@ export default function DailyView({
               className={classNames?.next}
               onClick={handleNextDay}
             >
-              Next
+              Дараах
               <ArrowRight />
             </Button>
           )}
@@ -402,9 +431,14 @@ export default function DailyView({
                           className="mb-2"
                         >
                           <EventStyled
+                            onDelete={deleteOrder}
+                            branches={branches}
+                            users={users}
+                            customers={customers}
+                            services={services}
+                            send={send}
                             event={{
                               ...event,
-                              CustomEventComponent,
                               minmized: false,
                             }}
                             CustomEventModal={CustomEventModal}
@@ -452,23 +486,16 @@ export default function DailyView({
                     </div>
                   </div>
                 ))}
+
                 <AnimatePresence initial={false}>
                   {events && events?.length
                     ? events.map((event, eventIndex) => {
-                        // Find which time group this event belongs to
-                        let eventsInSamePeriod = 10;
-                        let periodIndex = 0;
+                        const group = orderMap.get(event.start_time) ?? []; // эсвэл orderMap[event.start_time]
+                        const eventsInSamePeriod = group.length;
+                        const periodIndex = group.findIndex(
+                          (e) => e.id === event.id
+                        );
 
-                        for (let i = 0; i < timeGroups.length; i++) {
-                          const groupIndex = timeGroups[i].findIndex(
-                            (e) => e.id === event.id
-                          );
-                          if (groupIndex !== -1) {
-                            eventsInSamePeriod = timeGroups[i].length;
-                            periodIndex = groupIndex;
-                            break;
-                          }
-                        }
                         const {
                           height,
                           left,
@@ -501,9 +528,14 @@ export default function DailyView({
                             transition={{ duration: 0.2 }}
                           >
                             <EventStyled
+                              onDelete={deleteOrder}
+                              branches={branches}
+                              users={users}
+                              customers={customers}
+                              send={send}
+                              services={services}
                               event={{
                                 ...event,
-                                CustomEventComponent,
                                 minmized: true,
                               }}
                               CustomEventModal={CustomEventModal}

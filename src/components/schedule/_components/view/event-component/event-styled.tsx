@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useModal } from "@/providers/modal-context";
 import AddEventModal from "@/components/schedule/_modals/add-event-modal";
-import { Event, CustomEventModal } from "@/types";
+import { CustomEventModal } from "@/types";
 import { TrashIcon, CalendarIcon, ClockIcon } from "lucide-react";
 import { useScheduler } from "@/providers/schedular-provider";
 import { motion } from "framer-motion";
@@ -14,6 +14,7 @@ import CustomModal from "@/components/ui/custom-modal";
 import { getUserColor } from "@/lib/colors";
 import { OrderStatusValues } from "@/lib/constants";
 import { OrderStatus } from "@/lib/enum";
+import { Branch, IOrder, Order, Service, User } from "@/models";
 
 // Function to format date
 const formatDate = (date: Date) => {
@@ -77,19 +78,29 @@ export const PALETTE = FAMILIES.flatMap((c) =>
   }))
 );
 
-interface EventStyledProps extends Event {
+interface EventStyledProps extends Order {
   minmized?: boolean;
-  CustomEventComponent?: React.FC<Event>;
+  CustomEventComponent?: React.FC<Order>;
 }
 
 export default function EventStyled({
   event,
   onDelete,
   CustomEventModal,
+  branches,
+  users,
+  customers,
+  send,
+  services,
 }: {
+  branches: Branch[];
+  users: User[];
+  customers: User[];
+  services: Service[];
+  send: (order: IOrder) => void;
   event: EventStyledProps;
   CustomEventModal?: CustomEventModal;
-  onDelete?: (id: string) => void;
+  onDelete: (id: string) => void;
 }) {
   const { setOpen } = useModal();
   const { handlers } = useScheduler();
@@ -99,14 +110,18 @@ export default function EventStyled({
   const shouldShowDeleteButton = !event?.minmized;
 
   // Handler function
-  function handleEditEvent(event: Event) {
+  function handleEditEvent(event: IOrder) {
     // Open the modal with the content
+    console.log(event.details);
     setOpen(
       <CustomModal title="Edit Event">
         <AddEventModal
-          CustomAddEventModal={
-            CustomEventModal?.CustomAddEventModal?.CustomForm
-          }
+          branches={branches}
+          customers={customers}
+          send={send}
+          services={services}
+          users={users}
+          values={{ ...event, edit: event.id }}
         />
       </CustomModal>,
       async () => {
@@ -135,8 +150,8 @@ export default function EventStyled({
       <Button
         onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
           e.stopPropagation();
-          handlers.handleDeleteEvent(event?.id);
-          onDelete?.(event?.id);
+          // handlers.handleDeleteEvent(event?.id);
+          onDelete(event?.id);
         }}
         variant="destructive"
         size="icon"
@@ -147,19 +162,18 @@ export default function EventStyled({
       >
         <TrashIcon size={14} className="text-destructive-foreground" />
       </Button>
-
       {event.CustomEventComponent ? (
         <div
           onClick={(e: React.MouseEvent<HTMLDivElement>) => {
             e.stopPropagation();
-            handleEditEvent({
-              id: event?.id,
-              title: event?.title,
-              startDate: event?.startDate,
-              endDate: event?.endDate,
-              description: event?.description,
-              color: event?.color,
-            });
+            // handleEditEvent({
+            //   id: event?.id,
+            //   title: event?.title,
+            //   startDate: event?.startDate,
+            //   endDate: event?.endDate,
+            //   description: event?.description,
+            //   color: event?.color,
+            // });
           }}
         >
           <event.CustomEventComponent {...event} />
@@ -170,11 +184,17 @@ export default function EventStyled({
             e.stopPropagation();
             handleEditEvent({
               id: event?.id,
-              title: event?.title,
-              startDate: event?.startDate,
-              endDate: event?.endDate,
-              description: event?.description,
-              color: event?.color,
+              branch_id: event.branch_id,
+              customer_id: event.customer_id,
+              user_id: event.user_id,
+              user_desc: event.user_desc,
+              customer_desc: event.customer_desc,
+              order_status: event.order_status,
+              total_amount: event.total_amount ?? 0,
+              order_date: event.order_date,
+              start_time: event.start_time,
+              end_time: event.end_time,
+              details: event.details,
             });
           }}
           className={cn(
@@ -186,33 +206,33 @@ export default function EventStyled({
         >
           <div className="flex flex-col h-full">
             <div className="font-semibold text-xs truncate mb-1">
-              {event?.title || "Untitled Event"}
+              {event?.details?.map((e) => e.service_name).join(",") ||
+                "Untitled Order"}
             </div>
-
-            {/* Show time in minimized mode */}
             {event?.minmized && (
               <div className="text-[10px] opacity-80 flex justify-between ">
-                <span> {formatTime(event?.startDate)} </span>
+                <span> {event.start_time} </span>
                 <span>
                   {event?.status &&
                     OrderStatusValues[event?.status as OrderStatus]}
                 </span>
               </div>
             )}
-
-            {!event?.minmized && event?.description && (
-              <div className="my-2 text-sm">{event?.description} </div>
+            {!event?.minmized && event?.user_desc && (
+              <div className="my-2 text-sm">{event?.user_desc} </div>
             )}
-
+            {!event?.minmized && event?.customer_desc && (
+              <div className="my-2 text-sm">{event?.customer_desc} </div>
+            )}
             {!event?.minmized && (
               <div className="text-xs space-y-1 mt-2">
                 <div className="flex items-center">
                   <CalendarIcon className="mr-1 h-3 w-3" />
-                  {formatDate(event?.startDate)}
+                  {event.start_time}
                 </div>
                 <div className="flex items-center">
                   <ClockIcon className="mr-1 h-3 w-3" />
-                  {formatDate(event?.endDate)}
+                  {event?.end_time}
                 </div>
               </div>
             )}

@@ -26,8 +26,8 @@ export type Action =
 // Define handlers interface
 export interface Handlers {
   handleEventStyling: (
-    event: IOrder,
-    dayEvents: IOrder[],
+    event: Order,
+    dayEvents: Order[],
     periodOptions?: {
       eventsInSamePeriod?: number;
       periodIndex?: number;
@@ -52,7 +52,7 @@ export interface Getters {
     month: number,
     year: number
   ) => { day: number; events: IOrder[] }[];
-  getEventsForDay: (day: number, currentDate: Date) => IOrder[];
+  getEventsForDay: (day: number, currentDate: Date) => Order[];
   getDaysInWeek: (week: number, year: number) => Date[];
   getWeekNumber: (date: Date) => number;
   getDayName: (day: number) => string;
@@ -88,7 +88,13 @@ export type Variant = (typeof variants)[number];
 const detail = z.object({
   service_id: z.string(),
   service_name: z.string(),
-  duration: z.number().nullable(),
+  duration: z
+    .preprocess(
+      (val) => (typeof val === "string" ? parseFloat(val) : val),
+      z.number()
+    )
+    .nullable()
+    .optional() as unknown as number,
 });
 
 export const eventSchema = z.object({
@@ -96,10 +102,10 @@ export const eventSchema = z.object({
   user_id: z.string().optional(),
   customer_id: z.string().optional(),
   details: z.array(detail),
-  customer_desc: z.string().optional(),
-  order_date: z.date(),
-  start_time: z.number(),
-  end_time: z.number().nullable().optional(),
+  customer_desc: z.string().nullable().optional(),
+  order_date: z.string(),
+  start_time: z.string(),
+  end_time: z.string().nullable().optional(),
   order_status: z
     .preprocess(
       (val) => (typeof val === "string" ? parseInt(val, 10) : val),
@@ -111,6 +117,7 @@ export const eventSchema = z.object({
     (val) => (typeof val === "string" ? parseFloat(val) : val),
     z.number()
   ) as unknown as number,
+  edit: z.string().nullable().optional(),
 });
 
 export type EventFormData = z.infer<typeof eventSchema>;

@@ -41,14 +41,14 @@ export function getColumns(
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           className="font-bold"
         >
-          Name <ArrowUpDown className="w-4 h-4 ml-2" />
+          Ангилал <ArrowUpDown className="w-4 h-4 ml-2" />
         </Button>
       ),
     },
 
     {
       accessorKey: "type",
-      header: "Status",
+      header: "Статус",
       cell: ({ row }) => {
         const status =
           CategoryTypeValues[row.getValue<number>("type") as CategoryType];
@@ -63,7 +63,7 @@ export function getColumns(
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           className="font-bold"
         >
-          Created <ArrowUpDown className="w-4 h-4 ml-2" />
+          Үүсгэсэн <ArrowUpDown className="w-4 h-4 ml-2" />
         </Button>
       ),
       cell: ({ row }) => {
@@ -78,7 +78,7 @@ export function getColumns(
     },
     {
       id: "actions",
-      header: "Actions",
+      header: "Үйлдэл",
       cell: ({ row }) => (
         <TableActionButtons
           rowData={row.original}

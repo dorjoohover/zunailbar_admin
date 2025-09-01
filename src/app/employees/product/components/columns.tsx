@@ -47,9 +47,14 @@ export const getColumns = (
         variant="table_header"
         onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
       >
-        user name
+        Ник нэр
         <ArrowUpDown className="w-4 h-4 ml-2" />
       </Button>
+    ),
+    cell: ({ row }) => (
+      <div className="font-bold text-brand-blue">
+        {row.getValue("user_name")}
+      </div>
     ),
   },
   {
@@ -60,7 +65,7 @@ export const getColumns = (
         variant="table_header"
         onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
       >
-        product name
+        Бүтээгдэхүүн
         <ArrowUpDown className="w-4 h-4 ml-2" />
       </Button>
     ),
@@ -74,12 +79,15 @@ export const getColumns = (
   },
   {
     accessorKey: "quantity",
-    header: "Quantity",
+    header: "Тоо ширхэг",
+    // cell: ({ row }) => {
+    //   return <p>{}</p>;
+    // },
   },
 
   {
     accessorKey: "user_product_status",
-    header: "Status",
+    header: "Статус",
     cell: ({ row }) => {
       const status =
         getValuesUserProductStatus[
@@ -94,7 +102,7 @@ export const getColumns = (
   },
   {
     accessorKey: "created_at",
-    header: "Огноо",
+    header: "Үүсгэсэн",
     cell: ({ row }) => {
       const date = mnDateFormat(new Date(row.getValue("created_at") as string));
       return <span>{date}</span>;
@@ -102,7 +110,7 @@ export const getColumns = (
   },
   {
     id: "actions",
-    header: "Actions",
+    header: "Үйлдэл",
     cell: ({ row }) => {
       return (
         <div className="flex items-center gap-2">

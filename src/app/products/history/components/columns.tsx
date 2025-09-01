@@ -54,7 +54,7 @@ export function getColumns(
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           className="font-bold"
         >
-          Name <ArrowUpDown className="w-4 h-4 ml-2" />
+          Бүтээгдэхүүн <ArrowUpDown className="w-4 h-4 ml-2" />
         </Button>
       ),
     },
@@ -71,19 +71,18 @@ export function getColumns(
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           className="font-bold"
         >
-          Quantity <ArrowUpDown className="w-4 h-4 ml-2" />
+          Тоо ширхэг <ArrowUpDown className="w-4 h-4 ml-2" />
         </Button>
       ),
     },
     {
       accessorKey: "total_amount",
-
       cell: ({ row }) => money(row.getValue("total_amount"), "₮"),
     },
 
     {
       accessorKey: "product_log_status",
-      header: "Status",
+      header: "Статус",
       cell: ({ row }) => {
         const status =
           getValuesProductLogStatus[
@@ -95,7 +94,7 @@ export function getColumns(
 
     {
       accessorKey: "date",
-      header: "date",
+      header: "Огноо",
       cell: ({ row }) => {
         const date = parseDate(new Date(row.getValue("date")), false);
         return date;
@@ -109,7 +108,7 @@ export function getColumns(
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           className="font-bold"
         >
-          Created <ArrowUpDown className="w-4 h-4 ml-2" />
+          Үүсгэсэн <ArrowUpDown className="w-4 h-4 ml-2" />
         </Button>
       ),
       cell: ({ row }) => {
@@ -124,7 +123,7 @@ export function getColumns(
     },
     {
       id: "actions",
-      header: "Actions",
+      header: "Үйлдэл",
       cell: ({ row }) => (
         <TableActionButtons
           rowData={row.original}

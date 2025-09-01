@@ -223,7 +223,7 @@ export const sidebar_items = [
             // icon: Milk,
           },
           {
-            title: "Бранд удирдлага",
+            title: "Бренд удирдлага",
             url: "/root/brand",
             // icon: Milk,
           },
@@ -307,7 +307,7 @@ export function AppSidebar() {
     <Sidebar
       variant="inset"
       collapsible="icon"
-      className="fixed top-0 backdrop-blur-3xl"
+      className="fixed top-0 backdrop-blur-3xl bg-primary"
     >
       {/* Header */}
       <SidebarHeader className="border-b border-slate-600">
@@ -340,7 +340,9 @@ export function AppSidebar() {
             {sidebar_items.map((group, gi) => (
               <SidebarGroup key={gi}>
                 {group.groupLabel && (
-                  <SidebarGroupLabel>{group.groupLabel}</SidebarGroupLabel>
+                  <SidebarGroupLabel className="opacity-60">
+                    {group.groupLabel}
+                  </SidebarGroupLabel>
                 )}
 
                 <SidebarMenu className="h-fit">
@@ -357,7 +359,7 @@ export function AppSidebar() {
                                 asChild
                                 size="lg"
                                 isActive={isActive}
-                                className="active:bg-white/20 hover:bg-white/20"
+                                className="active:bg-white/20 pl-4 hover:bg-white/20"
                               >
                                 <div>
                                   <item.icon />
@@ -371,7 +373,7 @@ export function AppSidebar() {
                               asChild
                               size="lg"
                               isActive={isActive}
-                              className="hover:bg-white/20"
+                              className="hover:bg-white/20 pl-4"
                             >
                               <Link
                                 href={item.url}

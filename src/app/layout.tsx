@@ -45,7 +45,7 @@ export default async function RootLayout({
           className={`${geistSans.variable} ${geistMono.variable} antialiased custom-bg`}
         >
           <AppSidebar />
-          <div className={cn("relative size-full p-2 pl-0 min-h-screen overflow-x-auto flex-1")}>
+          <div className={cn("relative size-full p-2 pl-0 min-h-screen overflow-x-auto flex-1 bg-primary")}>
             <Template token={token}>
               <ScrollArea
                 className={cn(

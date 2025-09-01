@@ -92,7 +92,7 @@ export const ProductWarehousePage = ({ data }: { data: ListType<Warehouse> }) =>
           loading={action == ACTION.RUNNING}
           modalAdd={
             <Modal
-              name={"Нэмэх"}
+              name={"Агуулах нэмэх"}
               submit={() => form.handleSubmit(onSubmit, onInvalid)()}
               open={open == true}
               reset={() => {

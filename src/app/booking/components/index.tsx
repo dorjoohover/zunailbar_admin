@@ -1,13 +1,7 @@
 "use client";
 import { Branch, IBooking, Booking } from "@/models";
 import { useEffect, useMemo, useRef, useState } from "react";
-import {
-  ListType,
-  ACTION,
-  PG,
-  DEFAULT_PG,
-  ScheduleEdit,
-} from "@/lib/constants";
+import { ListType, ACTION, PG, DEFAULT_PG, ScheduleEdit } from "@/lib/constants";
 import { Modal } from "@/shared/components/modal";
 import z from "zod";
 import { FormProvider, useForm } from "react-hook-form";
@@ -18,17 +12,8 @@ import { FormItems } from "@/shared/components/form.field";
 import { ComboBox } from "@/shared/components/combobox";
 import { fetcher } from "@/hooks/fetcher";
 import { getColumns } from "./columns";
-import {
-  ScheduleForm,
-  ScheduleTable,
-} from "@/components/layout/schedule.table";
-import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/components/ui/pagination";
+import { ScheduleForm, ScheduleTable } from "@/components/layout/schedule.table";
+import { Pagination, PaginationContent, PaginationItem, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
 import DynamicHeader from "@/components/dynamicHeader";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -47,13 +32,7 @@ const defaultValues: BookingType = {
 };
 type BookingType = z.infer<typeof formSchema>;
 
-export const BookingPage = ({
-  data,
-  branches,
-}: {
-  data: ListType<Booking>;
-  branches: ListType<Branch>;
-}) => {
+export const BookingPage = ({ data, branches }: { data: ListType<Booking>; branches: ListType<Branch> }) => {
   const [action, setAction] = useState(ACTION.DEFAULT);
   const [open, setOpen] = useState<undefined | boolean>(false);
   const form = useForm<BookingType>({
@@ -64,10 +43,7 @@ export const BookingPage = ({
   const [lastBooking, setLastBooking] = useState<Booking | null>(null);
   const [page, setPage] = useState(0);
   const [branch, setBranch] = useState(branches.items[0]);
-  const branchMap = useMemo(
-    () => new Map(branches.items.map((b) => [b.id, b])),
-    [branches.items]
-  );
+  const branchMap = useMemo(() => new Map(branches.items.map((b) => [b.id, b])), [branches.items]);
 
   const bookingFormatter = (data: ListType<Booking>) => {
     const items: Booking[] = data.items.map((item) => {
@@ -121,8 +97,7 @@ export const BookingPage = ({
   };
   const onSubmit = async <T,>(e: T) => {
     let lastDate = lastBooking ? new Date(lastBooking?.date) : new Date();
-    if (lastBooking)
-      lastDate = new Date(lastDate.setDate(lastDate.getDate() + 7));
+    if (lastBooking) lastDate = new Date(lastDate.setDate(lastDate.getDate() + 7));
     const date = lastDate;
     setAction(ACTION.RUNNING);
     const body = e as BookingType;
@@ -218,13 +193,9 @@ export const BookingPage = ({
     <div className="">
       <DynamicHeader count={bookings?.count} />
       <div className="admin-container space-y-2">
-        <div
-          className="flex  items-center justify-between"
-          style={{
-            maxWidth: 300,
-          }}
-        >
+        <div className="flex w-full items-center justify-between bg-white p-3 rounded-2xl border-light shadow-light">
           <ComboBox
+            className="max-w-xs"
             items={branches.items.map((b, i) => {
               return {
                 label: b.name,
@@ -285,35 +256,32 @@ export const BookingPage = ({
           </Modal>
         </div>
 
-        <div className="flex justify-between items-center">
-          <div></div>
-          <Pagination>
-            <PaginationContent className="gap-4">
-              {bookings && Math.ceil(+bookings.count / limit) - 1 > page && (
-                <PaginationItem>
-                  <PaginationPrevious onClick={() => setPage(page + 1)} />
-                </PaginationItem>
-              )}
-              {page > 0 && (
-                <PaginationItem>
-                  <PaginationNext onClick={() => setPage(page - 1)} />
-                </PaginationItem>
-              )}
-            </PaginationContent>
-          </Pagination>
+        <div className="p-3 bg-white rounded-2xl space-y-4 border-light shadow-light">
+          <div className="flex justify-between items-center">
+            <Pagination>
+              <PaginationContent className="gap-4">
+                {bookings && Math.ceil(+bookings.count / limit) - 1 > page && (
+                  <PaginationItem>
+                    <PaginationPrevious onClick={() => setPage(page + 1)} />
+                  </PaginationItem>
+                )}
+                {page > 0 && (
+                  <PaginationItem>
+                    <PaginationNext onClick={() => setPage(page - 1)} />
+                  </PaginationItem>
+                )}
+              </PaginationContent>
+            </Pagination>
 
-          {editSchedule.length > 0 && <Button onClick={update}>Засах</Button>}
+            {editSchedule.length > 0 && (
+              <Button variant={"purple"} onClick={update}>
+                Засах
+              </Button>
+            )}
+          </div>
+
+          {bookings?.items && bookings?.items?.length > 0 ? <ScheduleTable d={bookings.items?.[0]?.date} value={bookings.items.map((item) => item.times).reverse()} edit={editSchedule} setEdit={setUpdate} /> : null}
         </div>
-
-        {bookings?.items && bookings?.items?.length > 0 ? (
-          <ScheduleTable
-            d={bookings.items?.[0]?.date}
-            value={bookings.items.map((item) => item.times).reverse()}
-            edit={editSchedule}
-            setEdit={setUpdate}
-          />
-        ) : null}
-
         {/* <DataTable
         columns={columns}
         count={bookings?.count}

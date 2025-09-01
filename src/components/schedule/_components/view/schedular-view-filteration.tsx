@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -12,8 +12,6 @@ import {
 
 import AddEventModal from "../../_modals/add-event-modal";
 import DailyView from "./day/daily-view";
-import MonthView from "./month/month-view";
-import WeeklyView from "./week/week-view";
 import { useModal } from "@/providers/modal-context";
 import { ClassNames, CustomComponents, Views } from "@/types/index";
 import { cn } from "@/lib/utils";
@@ -34,6 +32,7 @@ export default function SchedulerViewFilteration({
     views: ["day", "week", "month"],
     mobileViews: ["day"],
   },
+  loading,
   stopDayEventSummary = false,
   CustomComponents,
   classNames,
@@ -45,13 +44,20 @@ export default function SchedulerViewFilteration({
   services,
   refresh,
   send,
+  currentDate,
+  setCurrentDate,
+  deleteOrder,
 }: {
+  loading: boolean;
+  deleteOrder: (id: string) => void;
   orders: ListType<Order>;
   users: ListType<User>;
   customers: ListType<User>;
   branches: ListType<Branch>;
   services: ListType<Service>;
   views?: Views;
+  currentDate: Date;
+  setCurrentDate: Dispatch<SetStateAction<Date>>;
   stopDayEventSummary?: boolean;
   CustomComponents?: CustomComponents;
   classNames?: ClassNames;
@@ -133,7 +139,7 @@ export default function SchedulerViewFilteration({
     const ModalWrapper = () => {
       const title =
         CustomComponents?.CustomEventModal?.CustomAddEventModal?.title ||
-        "Захиалга нэмэн";
+        "Захиалга нэмэх";
 
       return (
         <div>
@@ -151,6 +157,7 @@ export default function SchedulerViewFilteration({
           services={services.items}
           users={users.items}
           send={send}
+          loading={loading}
           // CustomAddEventModal={
           //   CustomComponents?.CustomEventModal?.CustomAddEventModal?.CustomForm
           // }
@@ -249,53 +256,17 @@ export default function SchedulerViewFilteration({
                 <AnimatePresence mode="wait">
                   <motion.div {...(animationConfig as any)}>
                     <DailyView
+                      deleteOrder={deleteOrder}
+                      loading={loading}
+                      currentDate={currentDate}
+                      setCurrentDate={setCurrentDate}
                       branches={branches.items}
                       customers={customers.items}
                       users={users.items}
                       services={services.items}
                       refresh={refresh}
-                      events={orders.items.map((item) => {
-                        const {
-                          order_date,
-                          start_time,
-                          end_time,
-                          customer_desc,
-                          order_status,
-                          duration,
-                          id,
-                        } = item;
-                        const date = new Date(order_date);
-
-                        // Үндсэн өдөр/сар/жил
-                        const year = date.getFullYear();
-                        const month = date.getMonth(); // getMonth() нь 0-ээс эхэлдэг тул -1 хэрэггүй
-                        const day = date.getDate();
-                        const createDateTime = (
-                          value: string,
-                          duration?: number
-                        ) => {
-                          let hour = +value.split(":")[0] - 5;
-                          if (duration)
-                            hour = Math.ceil((hour * 60 + duration) / 60);
-                          return new Date(year, month, day, Number(hour) || 0);
-                        };
-                        return {
-                          id,
-                          title:
-                            item.details
-                              ?.map((d) => d?.service_name)
-                              .filter(Boolean)
-                              .join(", ") || "",
-                          startDate: createDateTime(start_time),
-                          endDate: createDateTime(
-                            end_time ?? start_time,
-                            !end_time ? duration : undefined
-                          ),
-                          description: customer_desc,
-                          color: item.color,
-                          status: order_status,
-                        };
-                      })}
+                      events={orders.items}
+                      send={send}
                       stopDayEventSummary={stopDayEventSummary}
                       classNames={classNames?.buttons}
                       prevButton={

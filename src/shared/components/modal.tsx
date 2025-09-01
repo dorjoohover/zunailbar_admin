@@ -17,13 +17,16 @@ import { Loader2Icon, Plus } from "lucide-react";
 import { ReactNode } from "react";
 
 export const Modal = ({
+  // Button text
   name = "Нэмэх",
-  title = "Title",
+
+  // Modal text
+  title = name,
   btn = <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />,
   description,
   children,
   submit,
-  submitTxt = "Submit",
+  submitTxt = "Хадгалах",
   open,
   setOpen,
   loading,

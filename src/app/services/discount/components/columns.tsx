@@ -43,7 +43,7 @@ export function getColumns(
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           className="font-bold"
         >
-          Branch <ArrowUpDown className="w-4 h-4 ml-2" />
+          Салбар <ArrowUpDown className="w-4 h-4 ml-2" />
         </Button>
       ),
     },
@@ -55,14 +55,14 @@ export function getColumns(
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           className="font-bold"
         >
-          Name <ArrowUpDown className="w-4 h-4 ml-2" />
+          Нэр <ArrowUpDown className="w-4 h-4 ml-2" />
         </Button>
       ),
     },
 
     {
       accessorKey: "type",
-      header: "Type",
+      header: "Төрөл",
       cell: ({ row }) => {
         const status =
           getValueDiscount[row.getValue<number>("type") as DISCOUNT];
@@ -96,7 +96,7 @@ export function getColumns(
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           className="font-bold"
         >
-          Start date <ArrowUpDown className="w-4 h-4 ml-2" />
+          Эхлэх <ArrowUpDown className="w-4 h-4 ml-2" />
         </Button>
       ),
       cell: ({ row }) => {
@@ -117,7 +117,7 @@ export function getColumns(
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           className="font-bold"
         >
-          End date <ArrowUpDown className="w-4 h-4 ml-2" />
+          Дуусах <ArrowUpDown className="w-4 h-4 ml-2" />
         </Button>
       ),
       cell: ({ row }) => {
@@ -132,7 +132,7 @@ export function getColumns(
     },
     {
       id: "actions",
-      header: "Actions",
+      header: "Үйлдэл",
       cell: ({ row }) => (
         // Bagasgasan
         <TableActionButtons

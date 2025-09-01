@@ -94,6 +94,10 @@ export function mnDateFormatTitle(d: Date | string | number = new Date()) {
   // Жишээ: "даваа, 2025 оны 9 сарын 1"
   return `${weekday}, ${yearMonthDay}`;
 }
+export function toTimeString(hour: number | string): string {
+  const h = String(hour).padStart(2, "0");
+  return `${h}:00:00`;
+}
 export function mnDateFormat(d: Date | string | number = new Date()) {
   return new Intl.DateTimeFormat("en-CA", {
     timeZone: "Asia/Ulaanbaatar",

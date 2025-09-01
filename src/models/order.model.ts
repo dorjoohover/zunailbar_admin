@@ -5,9 +5,9 @@ export interface IOrder {
   user_id?: string;
   customer_id?: string;
   duration?: number;
-  order_date?: Date;
-  start_time?: number;
-  end_time?: number;
+  order_date?: string;
+  start_time?: string;
+  end_time?: string;
   order_status?: OrderStatus;
   pre_amount?: number;
   is_pre_amount_paid?: boolean;
@@ -18,14 +18,16 @@ export interface IOrder {
   user_desc?: string;
   created_at?: Date;
   updated_at?: Date;
+  edit?: string;
   details?: IOrderDetail[];
 }
 export interface Order {
   id: string;
+  branch_id?: string;
   user_id: string;
   customer_id: string;
   duration: number;
-  order_date: Date;
+  order_date: string;
   start_time: string;
   end_time: string;
   order_status: number;

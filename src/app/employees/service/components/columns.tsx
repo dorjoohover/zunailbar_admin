@@ -45,8 +45,13 @@ export function getColumns(
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           className="font-bold"
         >
-          Артист <ArrowUpDown className="w-4 h-4 ml-2" />
+          Ник нэр <ArrowUpDown className="w-4 h-4 ml-2" />
         </Button>
+      ),
+      cell: ({ row }) => (
+        <div className="font-bold text-brand-blue">
+          {row.getValue("user_name")}
+        </div>
       ),
     },
     {
@@ -57,7 +62,7 @@ export function getColumns(
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           className="font-bold"
         >
-          Үйлчилгээний нэр <ArrowUpDown className="w-4 h-4 ml-2" />
+          Үйлчилгээ <ArrowUpDown className="w-4 h-4 ml-2" />
         </Button>
       ),
 
@@ -72,7 +77,7 @@ export function getColumns(
 
     {
       id: "actions",
-      header: "Actions",
+      header: "Үйлдэл",
       cell: ({ row }) => (
         // Bagasgasan
         <TableActionButtons

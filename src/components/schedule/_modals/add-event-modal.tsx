@@ -12,15 +12,28 @@ import { OrderStatus } from "@/lib/enum";
 import { FormItems } from "@/shared/components/form.field";
 import { ComboBox } from "@/shared/components/combobox";
 import { getEnumValues, ListType, OrderStatusValues } from "@/lib/constants";
-import { mnDateFormat, numberArray, usernameFormatter } from "@/lib/functions";
+import {
+  formatTime,
+  mnDateFormat,
+  money,
+  numberArray,
+  totalHours,
+  toTimeString,
+  usernameFormatter,
+} from "@/lib/functions";
 import { TextField } from "@/shared/components/text.field";
+import { Select, SelectItem } from "@/components/ui/select";
+import { fi } from "zod/v4/locales";
+import { MultiSelect } from "@/shared/components/multiple.select";
+import { showToast } from "@/shared/components/showToast";
 const defaultValues = {
   branch_id: "",
   user_id: "",
   customer_desc: "",
   details: [],
-  order_date: new Date(),
-  start_time: 5,
+  order_date: mnDateFormat(new Date()),
+  start_time: "",
+  edit: undefined,
 };
 export default function AddEventModal({
   // CustomAddEventModal,
@@ -29,12 +42,16 @@ export default function AddEventModal({
   users,
   services,
   send,
+  values,
+  loading = false,
 }: {
   branches: Branch[];
+  loading?: boolean;
   customers: User[];
   send: (order: IOrder) => void;
   users: User[];
   services: Service[];
+  values?: IOrder;
   // CustomAddEventModal?: React.FC<{ register: any; errors: any }>;
 }) {
   const { setClose, data } = useModal();
@@ -45,7 +62,7 @@ export default function AddEventModal({
 
   const form = useForm<EventFormData>({
     resolver: zodResolver(eventSchema),
-    defaultValues,
+    defaultValues: defaultValues,
   });
 
   // Reset the form on initialization
@@ -55,35 +72,42 @@ export default function AddEventModal({
       console.log("eventData", eventData);
       form.reset(defaultValues);
     }
-  }, [data, form.reset]);
+    if (values) {
+      form.reset({
+        ...values,
+        edit: values.id,
+      });
+    }
+  }, [data, form.reset, values]);
 
   const onSubmit: SubmitHandler<EventFormData> = (formData) => {
     const newEvent: IOrder = {
-      customer_desc: formData.customer_desc,
+      customer_desc: formData.customer_desc ?? undefined,
       customer_id: formData.customer_id,
       user_id: formData.user_id,
       user_desc: formData.user_desc ?? undefined,
       order_status: formData.order_status as OrderStatus | undefined,
       total_amount: formData.total_amount as number | undefined,
-      branch_id: formData.branch_id,
       order_date: formData.order_date,
-      start_time: formData.start_time,
-      end_time: formData.end_time ?? undefined,
+      start_time: `${formData.start_time}`,
       details: formData.details,
+      edit: formData.edit ?? undefined,
     };
+
     send(newEvent);
 
-    setClose(); // Close the modal after submission
+    setClose();
   };
+  const onInvalid = async <T,>(e: T) => {
+    console.log(e);
 
+    showToast("error", "Алдаа");
+  };
   return (
     <form
       className="flex flex-col gap-4 p-4"
-      onSubmit={form.handleSubmit(onSubmit)}
+      onSubmit={form.handleSubmit(onSubmit, onInvalid)}
     >
-      {/* {CustomAddEventModal ? (
-        <CustomAddEventModal register={register} errors={errors} />
-      ) : ( */}
       <FormProvider {...form}>
         <FormItems control={form.control} name="branch_id" label="Салбар">
           {(field) => {
@@ -107,7 +131,6 @@ export default function AddEventModal({
               <ComboBox
                 props={{ ...field }}
                 items={customers.map((item) => {
-                  console.log(usernameFormatter(item));
                   return {
                     value: item.id,
                     label: usernameFormatter(item),
@@ -123,12 +146,17 @@ export default function AddEventModal({
             return (
               <ComboBox
                 props={{ ...field }}
-                items={users.map((item) => {
-                  return {
-                    value: item.id,
-                    label: usernameFormatter(item),
-                  };
-                })}
+                items={users
+                  .filter((user) => {
+                    const branch = form.watch("branch_id");
+                    return branch ? user.branch_id == branch : user;
+                  })
+                  .map((item) => {
+                    return {
+                      value: item.id,
+                      label: usernameFormatter(item),
+                    };
+                  })}
                 className="max-w-96! w-full"
               />
             );
@@ -178,21 +206,60 @@ export default function AddEventModal({
         </FormItems>
         <FormItems control={form.control} name="order_date" label="Огноо">
           {(field) => {
+            field.value = mnDateFormat((field.value as Date) ?? new Date());
             return <TextField type="date" props={{ ...field }} />;
           }}
         </FormItems>
         <FormItems control={form.control} name="start_time" label="Эхлэх цаг">
           {(field) => {
+            field.value = field.value
+              ? +field.value?.toString().slice(0, 2)
+              : field.value;
             return (
               <ComboBox
                 props={{ ...field }}
-                items={numberArray(15).map((item) => {
-                  const value = item + 5;
+                items={numberArray(totalHours).map((item) => {
+                  const value = item + 4;
+
                   return {
                     value: value.toString(),
-                    label: mnDateFormat(value),
+                    label: toTimeString(value),
                   };
                 })}
+              />
+            );
+          }}
+        </FormItems>
+        <FormItems control={form.control} name="details" label="Үйлчилгээ">
+          {(field) => {
+            // field.value нь [{service_id,...}] байдаг → MultiSelect-д массив id болгож дамжуулна
+            const selectedIds: string[] = Array.isArray(field.value)
+              ? field.value.map((d: any) => d?.service_id).filter(Boolean)
+              : [];
+
+            return (
+              <MultiSelect
+                // RHF field-ийг “id массив” болгосон wrapper-оор өгнө
+                props={
+                  {
+                    name: field.name,
+                    value: selectedIds,
+                    onChange: (ids: string[]) => {
+                      const nextDetails = ids.map((id) => {
+                        const svc = services.find((s) => s.id === id);
+                        return {
+                          service_id: id,
+                          service_name: svc?.name ?? "",
+                          duration: svc?.duration ?? null,
+                        };
+                      });
+                      field.onChange(nextDetails);
+                    },
+                    onBlur: field.onBlur,
+                    ref: field.ref,
+                  } as any
+                }
+                items={services.map((s) => ({ label: s.name, value: s.id }))}
               />
             );
           }}
@@ -200,9 +267,11 @@ export default function AddEventModal({
 
         <div className="flex justify-end space-x-2 mt-4 pt-2 border-t">
           <Button variant="outline" type="button" onClick={() => setClose()}>
-            Cancel
+            Буцах
           </Button>
-          <Button type="submit">Save Event</Button>
+          <Button type="submit" loading={loading}>
+            Хадгалах
+          </Button>
         </div>
       </FormProvider>
       {/* )} */}

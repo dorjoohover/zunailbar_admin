@@ -245,7 +245,7 @@ export const UserPage = ({ data }: { data: ListType<User> }) => {
           loading={action == ACTION.RUNNING}
           modalAdd={
             <Modal
-              w="2xl"
+              maw="sm"
               name={"Хэрэглэгч нэмэх"}
               submit={() => form.handleSubmit(onSubmit, onInvalid)()}
               open={open == true}
@@ -257,7 +257,7 @@ export const UserPage = ({ data }: { data: ListType<User> }) => {
               loading={action == ACTION.RUNNING}
             >
               <FormProvider {...form}>
-                <div className="gap-5 double-col">
+                <div className="space-y-4">
                   {[
                     {
                       key: "nickname",

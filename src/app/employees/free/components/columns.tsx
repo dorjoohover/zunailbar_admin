@@ -45,7 +45,7 @@ export function getColumns(
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           className="font-bold"
         >
-          branch <ArrowUpDown className="w-4 h-4 ml-2" />
+          Салбар <ArrowUpDown className="w-4 h-4 ml-2" />
         </Button>
       ),
     },
@@ -57,14 +57,14 @@ export function getColumns(
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           className="font-bold"
         >
-          Name <ArrowUpDown className="w-4 h-4 ml-2" />
+          Ник нэр <ArrowUpDown className="w-4 h-4 ml-2" />
         </Button>
       ),
     },
 
     {
       accessorKey: "date",
-      header: "date",
+      header: "Огноо",
       cell: ({ row }) => {
         const date = parseDate(new Date(row.getValue("date")), false);
         return date;
@@ -72,7 +72,7 @@ export function getColumns(
     },
     {
       accessorKey: "start_time",
-      header: "start_time",
+      header: "Эхлэх",
       cell: ({ row }) => {
         const date = parseDate(new Date(row.getValue("start_time")), false);
         return date;
@@ -80,7 +80,7 @@ export function getColumns(
     },
     {
       accessorKey: "end_time",
-      header: "end_time",
+      header: "Дуусах",
       cell: ({ row }) => {
         const date = parseDate(new Date(row.getValue("end_time")), false);
         return date;
@@ -88,7 +88,7 @@ export function getColumns(
     },
     {
       accessorKey: "times",
-      header: "times",
+      header: "Цаг",
       cell: ({ row }) => {
         const times = row.getValue("times") as string;
         return times;
@@ -96,7 +96,7 @@ export function getColumns(
     },
     {
       accessorKey: "schedule_status",
-      header: "Status",
+      header: "Статус",
       cell: ({ row }) => {
         const status =
           ScheduleStatusValue[
@@ -113,7 +113,7 @@ export function getColumns(
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           className="font-bold"
         >
-          Created <ArrowUpDown className="w-4 h-4 ml-2" />
+          Үүсгэсэн <ArrowUpDown className="w-4 h-4 ml-2" />
         </Button>
       ),
       cell: ({ row }) => {
@@ -134,7 +134,7 @@ export function getColumns(
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           className="font-bold"
         >
-          Created <ArrowUpDown className="w-4 h-4 ml-2" />
+          Шинэчилсэн <ArrowUpDown className="w-4 h-4 ml-2" />
         </Button>
       ),
       cell: ({ row }) => {
@@ -149,7 +149,7 @@ export function getColumns(
     },
     {
       id: "actions",
-      header: "Actions",
+      header: "Үйлдэл",
       cell: ({ row }) => (
         <TableActionButtons
           rowData={row.original}

@@ -55,12 +55,7 @@ export const OrderPage = ({
   customers: ListType<User>;
 }) => {
   const [action, setAction] = useState(ACTION.DEFAULT);
-  const [open, setOpen] = useState<undefined | boolean>(false);
-  const form = useForm<OrderType>({
-    resolver: zodResolver(formSchema),
-    defaultValues,
-  });
-  const [selectedBranch, setSelectedBranch] = useState(branches.items[0]);
+  const [currentDate, setCurrentDate] = useState<Date>(new Date());
   const [orders, setOrders] = useState<ListType<Order>>(ListDefault);
   const userMap = useMemo(
     () => new Map(users.items.map((b) => [b.id, b])),
@@ -70,10 +65,10 @@ export const OrderPage = ({
   const orderFormatter = (data: ListType<Order>) => {
     const items: Order[] = data.items.map((item) => {
       const user = userMap.get(item.user_id);
-
       return {
         ...item,
         user_name: user ? usernameFormatter(user) : "",
+        branch_id: user?.branch_id,
         color: user?.color,
         // branch_name: user?.name ?? "",
       };
@@ -82,40 +77,29 @@ export const OrderPage = ({
     setOrders({ items, count: data.count });
   };
 
-  const clear = () => {
-    form.reset(defaultValues);
-    console.log(form.getValues());
-  };
-  const deleteOrder = async (index: number) => {
-    const id = orders!.items[index].id;
+  const deleteOrder = async (id: string) => {
     const res = await deleteOne(Api.order, id);
     refresh();
     return res.success;
-  };
-  const edit = async (e: IOrder) => {
-    setOpen(true);
-    form.reset({ ...e, edit: e.id });
   };
 
   const refresh = async (pg: PG = DEFAULT_PG) => {
     setAction(ACTION.RUNNING);
     const { page, limit, sort } = pg;
-    console.log({
-      page: page ?? DEFAULT_PG.page,
-      limit: limit ?? DEFAULT_PG.limit,
-      sort: sort ?? DEFAULT_PG.sort,
-      date: pg.filter?.date,
-      //   name: pg.filter,
-    });
+    const d = mnDate(currentDate);
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    const date = `${y}-${m}-${day}`;
+
     await fetcher<Order>(Api.order, {
       page: page ?? DEFAULT_PG.page,
       limit: limit ?? DEFAULT_PG.limit,
       sort: sort ?? DEFAULT_PG.sort,
-      date: pg.filter?.date,
+      date: pg.filter?.date ?? date,
       //   name: pg.filter,
     }).then((d) => {
       orderFormatter(d);
-      console.log(d);
     });
     setAction(ACTION.DEFAULT);
   };
@@ -127,14 +111,15 @@ export const OrderPage = ({
       ? await updateOne<Order>(
           Api.order,
           edit ?? "",
-          payload as unknown as Order
+          payload as unknown as Order,
+          "update"
         )
       : await create<Order>(Api.order, e as Order);
-    console.log(res);
     if (res.success) {
       refresh();
-      setOpen(false);
-      clear();
+      showToast("success", edit ? "Мэдээлэл шинэчиллээ." : "Амжилттай нэмлээ.");
+    } else {
+      showToast("error", res.error ?? "Алдаа гарлаа.");
     }
     setAction(ACTION.DEFAULT);
   };
@@ -169,17 +154,22 @@ export const OrderPage = ({
     console.log(res);
     setAction(ACTION.DEFAULT);
   };
+
   return (
     <div className="relative">
       <DynamicHeader count={orders?.count} />
       <div className="admin-container relative">
         <SchedulerProvider weekStartsOn="monday">
           <SchedulerViewFilteration
+            currentDate={currentDate}
+            setCurrentDate={setCurrentDate}
+            loading={action == ACTION.RUNNING}
             send={onSubmit}
             excel={downloadExcel}
             orders={orders}
             branches={branches}
             users={users}
+            deleteOrder={deleteOrder}
             customers={customers}
             services={services}
             refresh={refresh}

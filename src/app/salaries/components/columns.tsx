@@ -41,14 +41,14 @@ export function getColumns(
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           className="font-bold"
         >
-          User <ArrowUpDown className="w-4 h-4 ml-2" />
+          Ник нэр <ArrowUpDown className="w-4 h-4 ml-2" />
         </Button>
       ),
     },
 
     {
       accessorKey: "salary_log_status",
-      header: "Status",
+      header: "Статус",
       cell: ({ row }) => {
         const status =
           SalaryLogValues[
@@ -59,7 +59,7 @@ export function getColumns(
     },
     {
       accessorKey: "order_count",
-      header: "Order count",
+      header: "Захиалгын тоо",
       cell: ({ row }) => {
         const res = row.getValue<string>("order_count");
         return <span>{res}</span>;
@@ -67,7 +67,7 @@ export function getColumns(
     },
     {
       accessorKey: "date",
-      header: "Date",
+      header: "Огноо",
       cell: ({ row }) => {
         const date = parseDate(new Date(row.getValue("date")), false);
         return date;
@@ -75,7 +75,7 @@ export function getColumns(
     },
     {
       id: "actions",
-      header: "Actions",
+      header: "Үйлдэл",
       cell: ({ row }) => (
         <TableActionButtons
           rowData={row.original}

@@ -21,7 +21,6 @@ const branches: IBranch[] = [
   { id: "3", name: "Airport Branch", address: "Buyant Ukhaa", user_id: "102" },
 ];
 
-
 export const getColumns = (onEdit: (product: IUser) => void, setStatus: (index: number, status: EmployeeStatus) => void, giveProduct: (index: number) => void): ColumnDef<IUser>[] => [
   // {
   //   id: "select",
@@ -61,6 +60,7 @@ export const getColumns = (onEdit: (product: IUser) => void, setStatus: (index: 
         Нэр <ArrowUpDown className="w-4 h-4 ml-2" />
       </Button>
     ),
+    cell: ({ row }) => <div className="font-bold text-brand-blue">{row.getValue("firstname")}</div>,
   },
   {
     accessorKey: "nickname",
@@ -180,7 +180,7 @@ export const getColumns = (onEdit: (product: IUser) => void, setStatus: (index: 
                   const status = EmployeeStatusValue[item];
                   return (
                     <DropdownMenuItem key={i} onClick={() => setStatus(row.index, item)}>
-                      <span className={cn(status.color, 'w-full text-center')}>{status.name}</span>
+                      <span className={cn(status.color, "w-full text-center")}>{status.name}</span>
                     </DropdownMenuItem>
                   );
                 })}

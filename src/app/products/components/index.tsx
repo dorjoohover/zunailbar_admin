@@ -134,7 +134,7 @@ export const ProductPage = ({
       () => [
         {
           key: "brand",
-          label: "Брэнд",
+          label: "Бренд",
           items: brands.items.map((b) => ({ value: b.id, label: b.name })),
         },
         {
@@ -275,7 +275,7 @@ export const ProductPage = ({
                     <FormItems
                       control={form.control}
                       name="brand_id"
-                      label="Брэнд"
+                      label="Бренд"
                     >
                       {(field) => {
                         return (

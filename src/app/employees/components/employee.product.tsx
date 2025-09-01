@@ -7,10 +7,8 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Switch } from "@/components/ui/switch";
-import { AppAlertDialog } from "@/components/AlertDialog";
-import { Hammer, Minus, Plus } from "lucide-react";
+import { Minus, Plus } from "lucide-react";
 
-import { searchProduct } from "@/app/(api)/product";
 import { fetcher } from "@/hooks/fetcher";
 import {
   ACTION,
@@ -21,21 +19,10 @@ import {
   DEFAULT_LIMIT,
 } from "@/lib/constants";
 import { UserProductStatus } from "@/lib/enum";
-import { IUserProduct, Product, UserProduct } from "@/models";
-import { API, Api } from "@/utils/api";
+import { IUserProduct, UserProduct } from "@/models";
+import { Api } from "@/utils/api";
 import { create, search } from "@/app/(api)";
-import { toast } from "sonner";
 import { Modal } from "@/shared/components/modal";
-import {
-  Pagination,
-  PaginationContent,
-  PaginationEllipsis,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/components/ui/pagination";
-import { getPaginationRange } from "@/lib/functions";
 import { showToast } from "@/shared/components/showToast";
 
 const productItemSchema = z.object({
@@ -251,7 +238,7 @@ export const EmployeeProductModal = ({
 
           <div className="bg-white border p-2 rounded-xl space-y-2">
             <div className="grid grid-cols-10 items-center justify-between w-full py-1 font-bold px-4 text-sm">
-              <span className="col-span-2">Брэнд</span>
+              <span className="col-span-2">Бренд</span>
               <span className="col-span-4">Төрөл</span>
               <span className="col-span-2">Бараа</span>
               <span className="col-span-2"></span>
