@@ -19,6 +19,7 @@ import { ILoginUser } from "@/models";
 import { login } from "@/app/(api)/auth";
 import { useRouter } from "next/navigation";
 import { PasswordField } from "@/shared/components/password.field";
+import { useState } from "react";
 
 const formSchema = z.object({
   mobile: z.string().min(2, {
@@ -35,6 +36,7 @@ export function LoginPage() {
   // }: {
   // save: (token: string, branch: string, merchant: string) => void;
   // }
+  const [loading, setLoading] = useState(false);
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -60,9 +62,11 @@ export function LoginPage() {
     router.refresh();
   };
   const onSubmit = async (value: ILoginUser) => {
+    setLoading(true);
     const { data, error } = await login(value);
     console.log(data, error);
     save(data.accessToken, data.branch_id, data.merchant_id);
+    setLoading(false);
   };
   return (
     <Form {...form}>
@@ -99,7 +103,7 @@ export function LoginPage() {
             </FormItem>
           )}
         />
-        <Button type="submit" className="w-full h-10">
+        <Button type="submit" className="w-full h-10" loading={loading}>
           Нэвтрэх
         </Button>
       </form>
