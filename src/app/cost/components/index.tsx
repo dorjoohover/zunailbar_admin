@@ -1,5 +1,4 @@
-"use client";
-
+"use client";;
 import ContainerHeader from "@/components/containerHeader";
 import { IProduct, Product } from "@/models";
 import { getColumns } from "./columns";
@@ -7,7 +6,6 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { ProductDialog } from "./dialog";
 import { ListType } from "@/lib/constants";
-import DynamicHeader from "@/components/dynamicHeader";
 
 // Ustgah
 // const initialProduct: IProduct = {

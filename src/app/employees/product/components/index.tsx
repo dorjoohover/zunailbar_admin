@@ -5,14 +5,12 @@ import {
   DEFAULT_PG,
   getEnumValues,
   getValuesUserProductStatus,
-  ListDefault,
   ListType,
   Option,
   PG,
-  RoleValue,
 } from "@/lib/constants";
 import { useEffect, useMemo, useState } from "react";
-import { ROLE, UserProductStatus } from "@/lib/enum";
+import { UserProductStatus } from "@/lib/enum";
 import z from "zod";
 
 import { Api } from "@/utils/api";
@@ -20,35 +18,20 @@ import { fetcher } from "@/hooks/fetcher";
 import {
   Branch,
   Brand,
-  IUser,
   IUserProduct,
   Product,
   User,
   UserProduct,
 } from "@/models";
 import { getColumns } from "./columns";
-import ContainerHeader from "@/components/containerHeader";
 import DynamicHeader from "@/components/dynamicHeader";
 import { create, deleteOne, updateOne } from "@/app/(api)";
-import { imageUploader } from "@/app/(api)/base";
-import { Input } from "@/components/ui/input";
-import {
-  firstLetterUpper,
-  objectCompact,
-  usernameFormatter,
-} from "@/lib/functions";
-import { DatePicker } from "@/shared/components/date.picker";
+import { objectCompact, usernameFormatter } from "@/lib/functions";
 import { FormItems } from "@/shared/components/form.field";
 import { Modal } from "@/shared/components/modal";
-import { PasswordField } from "@/shared/components/password.field";
 import { TextField } from "@/shared/components/text.field";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, FormProvider } from "react-hook-form";
-import { Label } from "recharts";
-import { EmployeeProductModal } from "../../components/employee.product";
-import { FilterPopover } from "@/components/layout/popover";
-import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
 import { ComboBox } from "@/shared/components/combobox";
 import { showToast } from "@/shared/components/showToast";
 
@@ -301,7 +284,10 @@ export const EmployeeProductPage = ({
               name={"Бүтээгдэхүүн олгох"}
               submit={() => form.handleSubmit(onSubmit, onInvalid)()}
               open={open == true}
-              setOpen={setOpen}
+              setOpen={(v) => {
+                setOpen(v);
+                form.reset(defaultValues);
+              }}
               loading={action == ACTION.RUNNING}
             >
               <FormProvider {...form}>
@@ -309,6 +295,7 @@ export const EmployeeProductPage = ({
                   {(field) => {
                     return (
                       <ComboBox
+                        search={true}
                         props={{ ...field }}
                         items={users.items.map((item) => {
                           return {
@@ -328,6 +315,7 @@ export const EmployeeProductPage = ({
                   {(field) => {
                     return (
                       <ComboBox
+                        search={true}
                         props={{ ...field }}
                         items={products.items.map((item) => {
                           return {

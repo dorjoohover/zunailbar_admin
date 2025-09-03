@@ -1,23 +1,19 @@
 "use client";
-
 import { DataTable } from "@/components/data-table";
-import { ListType, ACTION, PG, DEFAULT_PG, getEnumValues } from "@/lib/constants";
+import { ListType, ACTION, PG, DEFAULT_PG } from "@/lib/constants";
 import { Modal } from "@/shared/components/modal";
 import z from "zod";
-import { FormProvider, useFieldArray, useForm } from "react-hook-form";
+import { FormProvider, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Api } from "@/utils/api";
-import { create, deleteOne, search, updateOne } from "@/app/(api)";
+import { create, deleteOne, updateOne } from "@/app/(api)";
 import { FormItems } from "@/shared/components/form.field";
-import { ComboBox } from "@/shared/components/combobox";
 import { TextField } from "@/shared/components/text.field";
 import { fetcher } from "@/hooks/fetcher";
 import { getColumns } from "./columns";
 import { useState } from "react";
 import { Warehouse, IWarehouse } from "@/models";
-import ContainerHeader from "@/components/containerHeader";
 import DynamicHeader from "@/components/dynamicHeader";
-import { Button } from "@/components/ui/button";
 
 const formSchema = z.object({
   name: z.string().min(1),
@@ -28,7 +24,11 @@ const defaultValues = {
   edit: undefined,
 };
 type WarehouseType = z.infer<typeof formSchema>;
-export const ProductWarehousePage = ({ data }: { data: ListType<Warehouse> }) => {
+export const ProductWarehousePage = ({
+  data,
+}: {
+  data: ListType<Warehouse>;
+}) => {
   const [action, setAction] = useState(ACTION.DEFAULT);
   const [open, setOpen] = useState<undefined | boolean>(false);
   const form = useForm<WarehouseType>({
@@ -67,11 +67,17 @@ export const ProductWarehousePage = ({ data }: { data: ListType<Warehouse> }) =>
     const body = e as WarehouseType;
     const { edit, ...payload } = body;
 
-    const res = edit ? await updateOne<Warehouse>(Api.warehouse, edit ?? "", payload as unknown as Warehouse) : await create<Warehouse>(Api.warehouse, e as Warehouse);
+    const res = edit
+      ? await updateOne<Warehouse>(
+          Api.warehouse,
+          edit ?? "",
+          payload as unknown as Warehouse
+        )
+      : await create<Warehouse>(Api.warehouse, e as Warehouse);
     if (res.success) {
       refresh();
       setOpen(false);
-      form.reset({});
+      form.reset(defaultValues);
     }
     setAction(ACTION.DEFAULT);
   };
@@ -95,17 +101,21 @@ export const ProductWarehousePage = ({ data }: { data: ListType<Warehouse> }) =>
               name={"Агуулах нэмэх"}
               submit={() => form.handleSubmit(onSubmit, onInvalid)()}
               open={open == true}
-              reset={() => {
-                setOpen(false);
-                form.reset({});
+              setOpen={(v) => {
+                setOpen(v);
+                form.reset(defaultValues);
               }}
-              setOpen={(v) => setOpen(v)}
               loading={action == ACTION.RUNNING}
             >
               <FormProvider {...form}>
                 <div className="divide-y">
                   <div className="">
-                    <FormItems label={"Агуулахын нэр"} control={form.control} name={"name"} className={"col-span-1"}>
+                    <FormItems
+                      label={"Агуулахын нэр"}
+                      control={form.control}
+                      name={"name"}
+                      className={"col-span-1"}
+                    >
                       {(field) => {
                         return <TextField props={{ ...field }} />;
                       }}

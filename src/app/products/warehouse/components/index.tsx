@@ -1,5 +1,4 @@
 "use client";
-
 import { DataTable } from "@/components/data-table";
 import {
   Product,
@@ -14,36 +13,26 @@ import {
   ACTION,
   PG,
   DEFAULT_PG,
-  getEnumValues,
   SearchType,
   Option,
 } from "@/lib/constants";
 import { Modal } from "@/shared/components/modal";
 import z from "zod";
-import {
-  FormProvider,
-  useFieldArray,
-  useForm,
-  useWatch,
-} from "react-hook-form";
+import { FormProvider, useFieldArray, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Api } from "@/utils/api";
 import { create, deleteOne, excel, search, updateOne } from "@/app/(api)";
 import { FormItems } from "@/shared/components/form.field";
 import { ComboBox } from "@/shared/components/combobox";
-import { TextField } from "@/shared/components/text.field";
 import { fetcher } from "@/hooks/fetcher";
 import { getColumns } from "./columns";
-import { DatePicker } from "@/shared/components/date.picker";
 import { Input } from "@/components/ui/input";
 
 import { Button } from "@/components/ui/button";
 import { checkEmpty, dateOnly, mnDate, objectCompact } from "@/lib/functions";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import ContainerHeader from "@/components/containerHeader";
 import DynamicHeader from "@/components/dynamicHeader";
 import { FilterPopover } from "@/components/layout/popover";
-import { Checkbox } from "@radix-ui/react-checkbox";
 import { Calendar } from "@/components/ui/calendar";
 import { showToast } from "@/shared/components/showToast";
 import { Label } from "@/components/ui/label";
@@ -447,12 +436,11 @@ export const ProductWarehousePage = ({
                 title="Агуулахад бараа нэмэх"
                 submit={() => form.handleSubmit(onSubmit, onInvalid)()}
                 open={open == true}
-                reset={() => {
-                  setOpen(false);
-                  form.reset({});
-                }}
                 maw="5xl"
-                setOpen={setOpen}
+                setOpen={(v) => {
+                  setOpen(v);
+                  form.reset(defaultValues);
+                }}
                 loading={action == ACTION.RUNNING}
               >
                 <FormProvider {...form}>
@@ -590,6 +578,7 @@ export const ProductWarehousePage = ({
                           return (
                             <ComboBox
                               props={{ ...field }}
+                              search={true}
                               items={warehouses.items.map((item) => {
                                 return {
                                   value: item.id,

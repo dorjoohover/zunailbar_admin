@@ -8,7 +8,7 @@ import z from "zod";
 import { FormProvider, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Api } from "@/utils/api";
-import { create, deleteOne, updateOne } from "@/app/(api)";
+import { create, deleteOne } from "@/app/(api)";
 import { FormItems } from "@/shared/components/form.field";
 import { ComboBox } from "@/shared/components/combobox";
 import { fetcher } from "@/hooks/fetcher";
@@ -18,7 +18,6 @@ import { Service } from "@/models/service.model";
 import DynamicHeader from "@/components/dynamicHeader";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
-import { FilterPopover } from "@/components/layout/popover";
 import { showToast } from "@/shared/components/showToast";
 
 const formSchema = z.object({
@@ -258,11 +257,10 @@ export const EmployeeUserServicePage = ({
               name={"Үйлчилгээ нэмэх"}
               submit={() => form.handleSubmit(onSubmit, onInvalid)()}
               open={open == true}
-              reset={() => {
-                setOpen(false);
+              setOpen={(v) => {
+                setOpen(v);
                 clear();
               }}
-              setOpen={setOpen}
               loading={action == ACTION.RUNNING}
             >
               <FormProvider {...form}>
@@ -275,6 +273,7 @@ export const EmployeeUserServicePage = ({
                     {(field) => {
                       return (
                         <ComboBox
+                          search={true}
                           props={{ ...field }}
                           items={users.items.map((item) => {
                             return {

@@ -27,7 +27,6 @@ import { CostStatus } from "@/lib/enum";
 import { dateOnly, mnDate, objectCompact } from "@/lib/functions";
 import DynamicHeader from "@/components/dynamicHeader";
 import { FilterPopover } from "@/components/layout/popover";
-import { Checkbox } from "@radix-ui/react-checkbox";
 import { Calendar } from "@/components/ui/calendar";
 
 const formSchema = z
@@ -55,7 +54,7 @@ const formSchema = z
     path: ["paid_amount"], // алдаа paid_amount дээр харагдана
   });
 const defaultValues = {
-  category_id: undefined,
+  category_id: "",
   branch_id: "",
   product_id: "",
   date: mnDate(),
@@ -124,7 +123,8 @@ export const CostPage = ({
   };
   const edit = async (e: ICost) => {
     setOpen(true);
-    form.reset({ ...e, edit: e.id });
+    console.log(e);
+    form.reset({ ...e, date: e.date?.toString().slice(0, 10), edit: e.id });
   };
   const columns = getColumns(edit, deleteProduct);
 
@@ -152,7 +152,7 @@ export const CostPage = ({
     if (res.success) {
       refresh();
       setOpen(false);
-      form.reset({});
+      form.reset(defaultValues);
     }
     setAction(ACTION.DEFAULT);
   };
@@ -308,11 +308,10 @@ export const CostPage = ({
               name="Зардал нэмэх"
               submit={() => form.handleSubmit(onSubmit, onInvalid)()}
               open={open == true}
-              reset={() => {
-                setOpen(false);
-                form.reset({});
+              setOpen={(v) => {
+                setOpen(v);
+                form.reset(defaultValues);
               }}
-              setOpen={(v) => setOpen(v)}
               loading={action == ACTION.RUNNING}
             >
               <FormProvider {...form}>
@@ -326,6 +325,7 @@ export const CostPage = ({
                       {(field) => {
                         return (
                           <ComboBox
+                            search={true}
                             props={{ ...field }}
                             items={products.items.map((item) => {
                               return {

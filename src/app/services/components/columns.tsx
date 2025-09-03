@@ -9,19 +9,24 @@ import { money, parseDate } from "@/lib/functions";
 import { IService } from "@/models";
 import { TableActionButtons } from "@/components/tableActionButtons";
 
-export function getColumns(onEdit: (product: IService) => void, remove: (index: number) => Promise<boolean>): ColumnDef<IService>[] {
+export function getColumns(
+  onEdit: (product: IService) => void,
+  remove: (index: number) => Promise<boolean>
+): ColumnDef<IService>[] {
   return [
     {
       id: "select",
-      header: ({ table }) => <Checkbox checked={table.getIsAllPageRowsSelected()} onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)} aria-label="Select all" />,
-      cell: ({ row }) => <Checkbox checked={row.getIsSelected()} onCheckedChange={(value) => row.toggleSelected(!!value)} aria-label="Select row" />,
-      enableSorting: false,
-      enableHiding: false,
+      header: ({ table }) => <span>№</span>,
+      cell: ({ row }) => <span className="">{row.index + 1}</span>,
     },
     {
       accessorKey: "branch_name",
       header: ({ column }) => (
-        <Button variant="table_header" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")} className="font-bold">
+        <Button
+          variant="table_header"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          className="font-bold"
+        >
           Салбар <ArrowUpDown className="w-4 h-4 ml-2" />
         </Button>
       ),
@@ -29,7 +34,11 @@ export function getColumns(onEdit: (product: IService) => void, remove: (index: 
     {
       accessorKey: "name",
       header: ({ column }) => (
-        <Button variant="table_header" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")} className="font-bold">
+        <Button
+          variant="table_header"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          className="font-bold"
+        >
           Үйлчилгээ <ArrowUpDown className="w-4 h-4 ml-2" />
         </Button>
       ),
@@ -38,7 +47,11 @@ export function getColumns(onEdit: (product: IService) => void, remove: (index: 
     {
       accessorKey: "duration",
       header: ({ column }) => (
-        <Button variant="table_header" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")} className="font-bold">
+        <Button
+          variant="table_header"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          className="font-bold"
+        >
           Хугацаа <ArrowUpDown className="w-4 h-4 ml-2" />
         </Button>
       ),
@@ -47,7 +60,11 @@ export function getColumns(onEdit: (product: IService) => void, remove: (index: 
     {
       accessorKey: "min_price",
       header: ({ column }) => (
-        <Button variant="table_header" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")} className="font-bold">
+        <Button
+          variant="table_header"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          className="font-bold"
+        >
           Үнэ <ArrowUpDown className="w-4 h-4 ml-2" />
         </Button>
       ),
@@ -56,7 +73,11 @@ export function getColumns(onEdit: (product: IService) => void, remove: (index: 
     {
       accessorKey: "max_price",
       header: ({ column }) => (
-        <Button variant="table_header" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")} className="font-bold">
+        <Button
+          variant="table_header"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          className="font-bold"
+        >
           Дээд үнэ <ArrowUpDown className="w-4 h-4 ml-2" />
         </Button>
       ),
@@ -65,7 +86,11 @@ export function getColumns(onEdit: (product: IService) => void, remove: (index: 
     {
       accessorKey: "created_at",
       header: ({ column }) => (
-        <Button variant="table_header" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")} className="font-bold">
+        <Button
+          variant="table_header"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          className="font-bold"
+        >
           Үүсгэсэн <ArrowUpDown className="w-4 h-4 ml-2" />
         </Button>
       ),
@@ -84,7 +109,11 @@ export function getColumns(onEdit: (product: IService) => void, remove: (index: 
       header: "Үйлдэл",
       cell: ({ row }) => (
         // Bagasgasan
-        <TableActionButtons rowData={row.original} onEdit={(data) => onEdit(data)} onRemove={(data) => remove(row.index)}></TableActionButtons>
+        <TableActionButtons
+          rowData={row.original}
+          onEdit={(data) => onEdit(data)}
+          onRemove={(data) => remove(row.index)}
+        ></TableActionButtons>
         // <div className="flex items-center gap-2">
         //   <Button
         //     variant="ghost"

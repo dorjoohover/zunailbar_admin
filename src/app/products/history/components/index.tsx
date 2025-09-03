@@ -25,12 +25,10 @@ import { getColumns } from "./columns";
 import { ProductLogStatus } from "@/lib/enum";
 import { DatePicker } from "@/shared/components/date.picker";
 import DynamicHeader from "@/components/dynamicHeader";
-import { dateOnly, mnDate, objectCompact } from "@/lib/functions";
+import { dateOnly, objectCompact } from "@/lib/functions";
 import { FilterPopover } from "@/components/layout/popover";
-import { Checkbox } from "@radix-ui/react-checkbox";
 import { Calendar } from "@/components/ui/calendar";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -82,6 +80,12 @@ const formSchema = z
 const defaultValues = {
   currency: "cny",
   currency_value: 500,
+  product_id: "",
+  cargo: "",
+  quantity: "",
+  total_amount: 0,
+  paid_amount: "",
+  date: "",
   product_log_status: ProductLogStatus.Bought,
 };
 type FilterType = {
@@ -335,11 +339,10 @@ export const ProductHistoryPage = ({
               name="Худалдан авалт нэмэх"
               submit={() => form.handleSubmit(onSubmit, onInvalid)()}
               open={open == true}
-              reset={() => {
-                setOpen(false);
+              setOpen={(v) => {
+                setOpen(v);
                 form.reset(defaultValues);
               }}
-              setOpen={setOpen}
               loading={action == ACTION.RUNNING}
             >
               <FormProvider {...form}>
@@ -353,6 +356,7 @@ export const ProductHistoryPage = ({
                       {(field) => {
                         return (
                           <ComboBox
+                            search={true}
                             props={{ ...field }}
                             items={products.items.map((item) => {
                               return {

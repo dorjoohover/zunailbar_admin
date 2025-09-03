@@ -18,8 +18,6 @@ import { CategoryType } from "@/lib/enum";
 import { showToast } from "@/shared/components/showToast";
 import DynamicHeader from "@/components/dynamicHeader";
 import { mnDate, objectCompact } from "@/lib/functions";
-import { FilterPopover } from "@/components/layout/popover";
-import { Checkbox } from "@radix-ui/react-checkbox";
 
 const formSchema = z.object({
   brand_id: z.string().nullable().optional(),
@@ -36,8 +34,8 @@ type FilterType = {
 type ProductType = z.infer<typeof formSchema>;
 const defaultValues = {
   edit: undefined,
-  branch_id: undefined,
-  category_id: undefined,
+  branch_id: "",
+  category_id: "",
   name: "",
 };
 export const ProductPage = ({
@@ -243,11 +241,10 @@ export const ProductPage = ({
               name="Бүтээгдэхүүн нэмэх"
               submit={() => form.handleSubmit(onSubmit, onInvalid)()}
               open={open == true}
-              reset={() => {
-                clear();
-                setOpen(false);
+              setOpen={(v) => {
+                form.reset(defaultValues);
+                setOpen(v);
               }}
-              setOpen={(v) => setOpen(v)}
               loading={action == ACTION.RUNNING}
             >
               <FormProvider {...form}>
@@ -261,6 +258,7 @@ export const ProductPage = ({
                       {(field) => {
                         return (
                           <ComboBox
+                            search={true}
                             props={{ ...field }}
                             items={categories.items.map((item) => {
                               return {
@@ -280,6 +278,7 @@ export const ProductPage = ({
                       {(field) => {
                         return (
                           <ComboBox
+                            search={true}
                             props={{ ...field }}
                             items={brands.items.map((item) => {
                               return {

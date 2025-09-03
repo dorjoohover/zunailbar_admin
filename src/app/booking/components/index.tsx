@@ -1,7 +1,13 @@
 "use client";
 import { Branch, IBooking, Booking } from "@/models";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ListType, ACTION, PG, DEFAULT_PG, ScheduleEdit } from "@/lib/constants";
+import {
+  ListType,
+  ACTION,
+  PG,
+  DEFAULT_PG,
+  ScheduleEdit,
+} from "@/lib/constants";
 import { Modal } from "@/shared/components/modal";
 import z from "zod";
 import { FormProvider, useForm } from "react-hook-form";
@@ -12,8 +18,17 @@ import { FormItems } from "@/shared/components/form.field";
 import { ComboBox } from "@/shared/components/combobox";
 import { fetcher } from "@/hooks/fetcher";
 import { getColumns } from "./columns";
-import { ScheduleForm, ScheduleTable } from "@/components/layout/schedule.table";
-import { Pagination, PaginationContent, PaginationItem, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
+import {
+  ScheduleForm,
+  ScheduleTable,
+} from "@/components/layout/schedule.table";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 import DynamicHeader from "@/components/dynamicHeader";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -32,7 +47,13 @@ const defaultValues: BookingType = {
 };
 type BookingType = z.infer<typeof formSchema>;
 
-export const BookingPage = ({ data, branches }: { data: ListType<Booking>; branches: ListType<Branch> }) => {
+export const BookingPage = ({
+  data,
+  branches,
+}: {
+  data: ListType<Booking>;
+  branches: ListType<Branch>;
+}) => {
   const [action, setAction] = useState(ACTION.DEFAULT);
   const [open, setOpen] = useState<undefined | boolean>(false);
   const form = useForm<BookingType>({
@@ -43,7 +64,10 @@ export const BookingPage = ({ data, branches }: { data: ListType<Booking>; branc
   const [lastBooking, setLastBooking] = useState<Booking | null>(null);
   const [page, setPage] = useState(0);
   const [branch, setBranch] = useState(branches.items[0]);
-  const branchMap = useMemo(() => new Map(branches.items.map((b) => [b.id, b])), [branches.items]);
+  const branchMap = useMemo(
+    () => new Map(branches.items.map((b) => [b.id, b])),
+    [branches.items]
+  );
 
   const bookingFormatter = (data: ListType<Booking>) => {
     const items: Booking[] = data.items.map((item) => {
@@ -97,7 +121,8 @@ export const BookingPage = ({ data, branches }: { data: ListType<Booking>; branc
   };
   const onSubmit = async <T,>(e: T) => {
     let lastDate = lastBooking ? new Date(lastBooking?.date) : new Date();
-    if (lastBooking) lastDate = new Date(lastDate.setDate(lastDate.getDate() + 7));
+    if (lastBooking)
+      lastDate = new Date(lastDate.setDate(lastDate.getDate() + 7));
     const date = lastDate;
     setAction(ACTION.RUNNING);
     const body = e as BookingType;
@@ -220,11 +245,10 @@ export const BookingPage = ({ data, branches }: { data: ListType<Booking>; branc
             name={"Цагийн хуваарь нэмэх"}
             submit={() => form.handleSubmit(onSubmit, onInvalid)()}
             open={open == true}
-            reset={() => {
-              setOpen(false);
+            setOpen={(v) => {
+              setOpen(v);
               clear();
             }}
-            setOpen={setOpen}
             loading={action == ACTION.RUNNING}
           >
             <FormProvider {...form}>
@@ -280,7 +304,14 @@ export const BookingPage = ({ data, branches }: { data: ListType<Booking>; branc
             )}
           </div>
 
-          {bookings?.items && bookings?.items?.length > 0 ? <ScheduleTable d={bookings.items?.[0]?.date} value={bookings.items.map((item) => item.times).reverse()} edit={editSchedule} setEdit={setUpdate} /> : null}
+          {bookings?.items && bookings?.items?.length > 0 ? (
+            <ScheduleTable
+              d={bookings.items?.[0]?.date}
+              value={bookings.items.map((item) => item.times).reverse()}
+              edit={editSchedule}
+              setEdit={setUpdate}
+            />
+          ) : null}
         </div>
         {/* <DataTable
         columns={columns}

@@ -1,5 +1,4 @@
 "use client";
-
 import { DataTable } from "@/components/data-table";
 import { Branch, IDiscount, Discount, Service } from "@/models";
 import { useEffect, useMemo, useState } from "react";
@@ -23,9 +22,8 @@ import { ComboBox } from "@/shared/components/combobox";
 import { TextField } from "@/shared/components/text.field";
 import { fetcher } from "@/hooks/fetcher";
 import { getColumns } from "./columns";
-import { mnDate, usernameFormatter } from "@/lib/functions";
+import { mnDate } from "@/lib/functions";
 import { DISCOUNT } from "@/lib/enum";
-import ContainerHeader from "@/components/containerHeader";
 import DynamicHeader from "@/components/dynamicHeader";
 
 const formSchema = z.object({
@@ -107,7 +105,6 @@ export const DiscountPage = ({
   }, [data]);
   const clear = () => {
     form.reset(defaultValues);
-    console.log(form.getValues());
   };
   const deleteDiscount = async (index: number) => {
     const id = discounts!.items[index].id;
@@ -117,7 +114,12 @@ export const DiscountPage = ({
   };
   const edit = async (e: IDiscount) => {
     setOpen(true);
-    form.reset({ ...e, edit: e.id });
+    form.reset({
+      ...e,
+      start_date: e.start_date?.toString()?.slice(0, 10),
+      end_date: e.end_date?.toString()?.slice(0, 10),
+      edit: e.id,
+    });
   };
   const columns = getColumns(edit, deleteDiscount);
 
@@ -172,11 +174,10 @@ export const DiscountPage = ({
               name="Урамшуулал нэмэх"
               submit={() => form.handleSubmit(onSubmit, onInvalid)()}
               open={open == true}
-              reset={() => {
-                setOpen(false);
+              setOpen={(v) => {
+                setOpen(v);
                 clear();
               }}
-              setOpen={setOpen}
               loading={action == ACTION.RUNNING}
             >
               <FormProvider {...form}>
@@ -189,6 +190,7 @@ export const DiscountPage = ({
                     {(field) => {
                       return (
                         <ComboBox
+                          search={true}
                           props={{ ...field }}
                           items={services.items.map((item) => {
                             return {
@@ -208,6 +210,7 @@ export const DiscountPage = ({
                     {(field) => {
                       return (
                         <ComboBox
+                          search={true}
                           props={{ ...field }}
                           items={branches.items.map((item) => {
                             return {

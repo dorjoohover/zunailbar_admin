@@ -147,7 +147,7 @@ export const SalaryPage = ({
     const { page, limit, sort } = pg;
     const res = await excel(Api.salary_log, {
       page: page ?? DEFAULT_PG.page,
-      limit:  -1,
+      limit: -1,
       sort: sort ?? DEFAULT_PG.sort,
       ...pg,
     });
@@ -231,6 +231,7 @@ export const SalaryPage = ({
                       {(field) => {
                         return (
                           <ComboBox
+                            search={true}
                             props={{ ...field }}
                             items={users.items.map((item) => {
                               return {
@@ -242,7 +243,7 @@ export const SalaryPage = ({
                         );
                       }}
                     </FormItems>
-                        <FormItems control={form.control} name="date">
+                    <FormItems control={form.control} name="date">
                       {(field) => {
                         return (
                           <DatePicker
@@ -253,10 +254,27 @@ export const SalaryPage = ({
                         );
                       }}
                     </FormItems>
-                    <div>
-                      <h1>Нийт хийсэн үйлчилгээ</h1>
-                      <p>{form.getValues("order_count") as string}</p>
-                    </div>
+                    <FormItems
+                      control={form.control}
+                      name="order_count"
+                      label="Нийт хийсэн үйлчилгээ"
+                    >
+                      {(field) => {
+                        return (
+                          <TextField
+                            props={{
+                              name: "order_count",
+                              onBlur: () => {},
+                              onChange: () => {},
+                              disabled: true,
+                              ref: () => {},
+                              value: form.getValues("order_count"),
+                            }}
+                            type={"number"}
+                          />
+                        );
+                      }}
+                    </FormItems>
                   </div>
                 </div>
               </FormProvider>

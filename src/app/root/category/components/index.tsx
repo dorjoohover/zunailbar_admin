@@ -89,7 +89,7 @@ export const CategoryPage = ({ data }: { data: ListType<Category> }) => {
     if (res.success) {
       refresh();
       setOpen(false);
-      form.reset({});
+      form.reset(defaultValues);
     }
     setAction(ACTION.DEFAULT);
   };
@@ -114,11 +114,10 @@ export const CategoryPage = ({ data }: { data: ListType<Category> }) => {
               name={"Ангилал нэмэх"}
               submit={() => form.handleSubmit(onSubmit, onInvalid)()}
               open={open == true}
-              reset={() => {
-                setOpen(false);
-                form.reset({});
+              setOpen={(v) => {
+                setOpen(v);
+                form.reset(defaultValues);
               }}
-              setOpen={(v) => setOpen(v)}
               loading={action == ACTION.RUNNING}
             >
               <FormProvider {...form}>
@@ -131,11 +130,7 @@ export const CategoryPage = ({ data }: { data: ListType<Category> }) => {
                       label="Ангилал"
                     >
                       {(field) => {
-                        return (
-                          <TextField
-                            props={{ ...field }}
-                          />
-                        );
+                        return <TextField props={{ ...field }} />;
                       }}
                     </FormItems>
                     <FormItems

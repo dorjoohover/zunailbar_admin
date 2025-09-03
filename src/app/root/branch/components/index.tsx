@@ -1,15 +1,13 @@
 "use client";
-
 import { DataTable } from "@/components/data-table";
-import { ListType, ACTION, PG, DEFAULT_PG, getEnumValues } from "@/lib/constants";
+import { ListType, ACTION, PG, DEFAULT_PG } from "@/lib/constants";
 import { Modal } from "@/shared/components/modal";
 import z from "zod";
-import { FormProvider, useFieldArray, useForm } from "react-hook-form";
+import { FormProvider, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Api } from "@/utils/api";
-import { create, deleteOne, search, updateOne } from "@/app/(api)";
+import { create, deleteOne, updateOne } from "@/app/(api)";
 import { FormItems } from "@/shared/components/form.field";
-import { ComboBox } from "@/shared/components/combobox";
 import { TextField } from "@/shared/components/text.field";
 import { fetcher } from "@/hooks/fetcher";
 import { getColumns } from "./columns";
@@ -65,11 +63,17 @@ export const BranchPage = ({ data }: { data: ListType<Branch> }) => {
     const body = e as BranchType;
     const { edit, ...payload } = body;
 
-    const res = edit ? await updateOne<Branch>(Api.branch, edit ?? "", payload as unknown as Branch) : await create<Branch>(Api.branch, e as Branch);
+    const res = edit
+      ? await updateOne<Branch>(
+          Api.branch,
+          edit ?? "",
+          payload as unknown as Branch
+        )
+      : await create<Branch>(Api.branch, e as Branch);
     if (res.success) {
       refresh();
       setOpen(false);
-      form.reset({});
+      form.reset(defaultValues);
     }
     setAction(ACTION.DEFAULT);
   };
@@ -93,19 +97,23 @@ export const BranchPage = ({ data }: { data: ListType<Branch> }) => {
               name={"Салбар нэмэх"}
               submit={() => form.handleSubmit(onSubmit, onInvalid)()}
               open={open == true}
-              reset={() => {
-                setOpen(false);
+              setOpen={(v) => {
+                setOpen(v);
                 form.reset(defaultValues);
               }}
-              setOpen={(v) => setOpen(v)}
               loading={action == ACTION.RUNNING}
             >
               <FormProvider {...form}>
                 <div className="divide-y">
                   <div className="">
-                    <FormItems label={"Салбарын нэр"} control={form.control} name={"name"} className={"col-span-1"}>
+                    <FormItems
+                      label={"Салбарын нэр"}
+                      control={form.control}
+                      name={"name"}
+                      className={"col-span-1"}
+                    >
                       {(field) => {
-                        return <TextField props={{ ...field }}  />;
+                        return <TextField props={{ ...field }} />;
                       }}
                     </FormItems>
                   </div>

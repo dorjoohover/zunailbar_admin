@@ -142,11 +142,10 @@ export const PendingSchedulePage = ({
               name={"Чөлөө нэмэх"}
               submit={() => form.handleSubmit(onSubmit, onInvalid)()}
               open={open == true}
-              reset={() => {
-                setOpen(false);
+              setOpen={(v) => {
+                setOpen(v);
                 clear();
               }}
-              setOpen={setOpen}
               loading={action == ACTION.RUNNING}
             >
               <FormProvider {...form}>

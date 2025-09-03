@@ -160,7 +160,7 @@ export const EmployeePage = ({
       ...pg,
     }).then((d) => {
       setUsers(d);
-      form.reset(undefined);
+      form.reset(defaultValues);
     });
     setAction(ACTION.DEFAULT);
   };
