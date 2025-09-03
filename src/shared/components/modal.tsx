@@ -80,7 +80,7 @@ export const Modal = ({
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
-        <div className="max-h-[70vh] overflow-y-auto">{children}</div>
+        <div className="max-h-[70vh] min-h-[8vh] px-1">{children}</div>
         <DialogFooter className="mt-3">
           <DialogClose asChild>
             <Button variant="outline" className="bg-white">

@@ -245,7 +245,7 @@ export const UserPage = ({ data }: { data: ListType<User> }) => {
           loading={action == ACTION.RUNNING}
           modalAdd={
             <Modal
-              maw="sm"
+              maw="md"
               name={"Хэрэглэгч нэмэх"}
               submit={() => form.handleSubmit(onSubmit, onInvalid)()}
               open={open == true}
