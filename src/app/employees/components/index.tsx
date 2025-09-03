@@ -132,7 +132,7 @@ export const EmployeePage = ({
       setOpen(false);
       showToast(
         "success",
-        editingUser?.id != undefined ? "Мэдээлэл засагдсан." : "Ажилтан нэмэгдлээ."
+        editingUser?.id != undefined ? "Мэдээлэл засагдсан!" : "Ажилтан нэмэгдлээ!"
       );
       form.reset(defaultValues);
     } else {

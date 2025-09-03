@@ -1,7 +1,6 @@
 "use client";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import { Loader2Icon, Plus } from "lucide-react";
 
@@ -89,8 +88,10 @@ export const Modal = ({
           </DialogClose>
           {submit && (
             <Button variant={"purple"} loading={loading} onClick={(e) => handleSubmit(e)}>
-              {loading && btn}
-              {loading ? "Please wait..." : submitTxt}
+              {/* Button dotroo loading ni ajillaad end bicsen ni hereggumshig bn  */}
+              {/* {loading && btn} */}
+              {/* {loading ? "Please wait..." : submitTxt} */}
+              {submitTxt}
             </Button>
           )}
           {/* {reset && (
