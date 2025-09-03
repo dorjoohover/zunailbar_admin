@@ -132,7 +132,7 @@ export const EmployeePage = ({
       setOpen(false);
       showToast(
         "success",
-        editingUser?.id != undefined ? "Мэдээлэл засагдсан." : "Нэмэгдсэн."
+        editingUser?.id != undefined ? "Мэдээлэл засагдсан." : "Ажилтан нэмэгдлээ."
       );
       form.reset(defaultValues);
     } else {
@@ -282,7 +282,7 @@ export const EmployeePage = ({
           count={users.count}
           modalAdd={
             <Modal
-              maw="3xl"
+              maw="2xl"
               submit={() => {
                 form.handleSubmit(onSubmit, onInvalid)();
               }}

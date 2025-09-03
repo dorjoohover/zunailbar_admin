@@ -295,7 +295,7 @@ export const ProductPage = ({
                     {[
                       {
                         key: "name",
-                        label: "Нэр",
+                        label: "Бүтээгдэхүүний нэр",
                       },
                     ].map((item, i) => {
                       const name = item.key as keyof ProductType;

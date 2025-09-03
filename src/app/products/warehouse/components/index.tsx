@@ -155,7 +155,7 @@ export const ProductWarehousePage = ({
       form.reset(defaultValues);
       showToast(
         "success",
-        edit ? "Мэдээлэл шинэчлэгдлээ." : "Амжилттай нэмлээ."
+        edit ? "Мэдээлэл шинэчлэгдлээ!" : "Амжилттай нэмлээ!"
       );
     } else {
       showToast("error", res.error ?? "");
@@ -215,7 +215,7 @@ export const ProductWarehousePage = ({
               ...updated[index],
               quantity: newQty,
             })
-          : showToast("info", "Тоо ширхэг хангалтгүй байна.");
+          : showToast("info", "Тоо ширхэг хангалтгүй байна!");
       }
 
       form.setValue("products", updated);
@@ -226,7 +226,7 @@ export const ProductWarehousePage = ({
           quantity: change,
         });
       } else {
-        showToast("info", "Тоо ширхэг хангалтгүй байна.");
+        showToast("info", "Тоо ширхэг хангалтгүй байна!");
       }
     }
   };
@@ -320,7 +320,7 @@ export const ProductWarehousePage = ({
     setAction(ACTION.DEFAULT);
   };
 
-  const [tab, setTab] = useState("2");
+  const [tab, setTab] = useState("1");
 
   return (
     <div className="">

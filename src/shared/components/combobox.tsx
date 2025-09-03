@@ -11,18 +11,15 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
-import { Drawer, DrawerContent, DrawerTrigger } from "@/components/ui/drawer";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { useIsMobile } from "@/hooks/use-mobile";
 import { Check, ChevronsUpDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ControllerRenderProps, FieldValues } from "react-hook-form";
 import { COLOR_HEX, ColorName } from "@/lib/colors";
-import { keyof } from "zod";
 
 type InputType = {
   value: string;
@@ -34,7 +31,7 @@ export function ComboBox<T extends FieldValues>({
   items,
   search = false,
   name = "Сонгох",
-  className,
+  className = 'w-full',
   pl,
   props,
 }: {
@@ -51,7 +48,7 @@ export function ComboBox<T extends FieldValues>({
   const [open, setOpen] = React.useState(false);
   const { value, onChange } = props;
   return (
-    <Popover open={open} onOpenChange={setOpen}>
+    <Popover modal={true} open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <Button
           variant="outline"
@@ -68,12 +65,12 @@ export function ComboBox<T extends FieldValues>({
           <ChevronsUpDown className="opacity-50" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="p-0 bg-white min-w-24 max-w-64">
+      <PopoverContent className={cn(className, "p-0 bg-white min-w-48")}>
         <Command>
           {search === true && <CommandInput placeholder={pl} className="h-9" />}
-          <CommandList>
+          <CommandList className="max-h-60 overflow-y-auto">
             <CommandEmpty>Хайлт олдсонгүй</CommandEmpty>
-            <CommandGroup>
+            <CommandGroup className="overflow-y-scroll">
               {items.map((framework) => (
                 <CommandItem
                   key={framework.value}

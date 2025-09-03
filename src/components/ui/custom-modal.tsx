@@ -25,7 +25,7 @@ export default function CustomModal({ title, subheading, children, defaultOpen =
   const [localOpen, setLocalOpen] = useState(defaultOpen);
   const contentRef = useRef<HTMLDivElement>(null);
 
-  const contentClassName = clsx("overflow-auto rounded-md bg-card", contentClass);
+  const contentClassName = clsx("max-w-xl overflow-auto rounded-md bg-card", contentClass);
 
   // Narrow dependency: only react to isOpen for this specific modal.
   useEffect(() => {
@@ -120,7 +120,7 @@ export default function CustomModal({ title, subheading, children, defaultOpen =
         </AnimatePresence>
       ) : (
         <Dialog open={localOpen} onOpenChange={handleOpenChange}>
-          <DialogContent className={cn(contentClassName, "max-w-xl")}>
+          <DialogContent className={cn(contentClassName)}>
             <DialogHeader className="py-2 text-left">
               <DialogTitle className="text-2xl font-bold">{title}</DialogTitle>
               {subheading && <DialogDescription>{subheading}</DialogDescription>}

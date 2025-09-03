@@ -2,15 +2,7 @@
 import { DataTable } from "@/components/data-table";
 import { IProductLog, Product, ProductLog } from "@/models";
 import { useEffect, useMemo, useState } from "react";
-import {
-  ListType,
-  ACTION,
-  PG,
-  DEFAULT_PG,
-  getEnumValues,
-  getValuesProductLogStatus,
-  Option,
-} from "@/lib/constants";
+import { ListType, ACTION, PG, DEFAULT_PG, getEnumValues, getValuesProductLogStatus, Option } from "@/lib/constants";
 import { Modal } from "@/shared/components/modal";
 import z from "zod";
 import { FormProvider, useForm } from "react-hook-form";
@@ -29,49 +21,21 @@ import { dateOnly, objectCompact } from "@/lib/functions";
 import { FilterPopover } from "@/components/layout/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const formSchema = z
   .object({
     product_id: z.string().min(1),
 
-    quantity: z.preprocess(
-      (val) => (typeof val === "string" ? parseFloat(val) : val),
-      z.number()
-    ) as unknown as number,
-    price: z.preprocess(
-      (val) => (typeof val === "string" ? parseFloat(val) : val),
-      z.number()
-    ) as unknown as number,
+    quantity: z.preprocess((val) => (typeof val === "string" ? parseFloat(val) : val), z.number()) as unknown as number,
+    price: z.preprocess((val) => (typeof val === "string" ? parseFloat(val) : val), z.number()) as unknown as number,
     currency: z.string().min(1),
-    total_amount: z.preprocess(
-      (val) => (typeof val === "string" ? parseFloat(val) : val),
-      z.number()
-    ) as unknown as number,
-    paid_amount: z.preprocess(
-      (val) => (typeof val === "string" ? parseFloat(val) : val),
-      z.number()
-    ) as unknown as number,
-    cargo: z.preprocess(
-      (val) => (typeof val === "string" ? parseFloat(val) : val),
-      z.number()
-    ) as unknown as number,
-    currency_value: z.preprocess(
-      (val) => (typeof val === "string" ? parseFloat(val) : val),
-      z.number()
-    ) as unknown as number,
+    total_amount: z.preprocess((val) => (typeof val === "string" ? parseFloat(val) : val), z.number()) as unknown as number,
+    paid_amount: z.preprocess((val) => (typeof val === "string" ? parseFloat(val) : val), z.number()) as unknown as number,
+    cargo: z.preprocess((val) => (typeof val === "string" ? parseFloat(val) : val), z.number()) as unknown as number,
+    currency_value: z.preprocess((val) => (typeof val === "string" ? parseFloat(val) : val), z.number()) as unknown as number,
     edit: z.string().nullable().optional(),
-    date: z.preprocess(
-      (val) => (typeof val === "string" ? new Date(val) : val),
-      z.date()
-    ) as unknown as Date,
+    date: z.preprocess((val) => (typeof val === "string" ? new Date(val) : val), z.date()) as unknown as Date,
   })
   .refine((data) => (data?.paid_amount ?? 0) <= (data?.total_amount ?? 0), {
     message: "Төлсөн дүн нийт дүнгээс хэтэрч болохгүй",
@@ -96,26 +60,16 @@ type FilterType = {
 };
 
 type LogType = z.infer<typeof formSchema>;
-export const ProductHistoryPage = ({
-  data,
-  products,
-}: {
-  data: ListType<ProductLog>;
-  products: ListType<Product>;
-}) => {
+export const ProductHistoryPage = ({ data, products }: { data: ListType<ProductLog>; products: ListType<Product> }) => {
   const [action, setAction] = useState(ACTION.DEFAULT);
   const [open, setOpen] = useState<undefined | boolean>(false);
   const form = useForm<LogType>({
     resolver: zodResolver(formSchema),
     defaultValues,
   });
-  const [transactions, setTransactions] =
-    useState<ListType<IProductLog> | null>(null);
+  const [transactions, setTransactions] = useState<ListType<IProductLog> | null>(null);
 
-  const productMap = useMemo(
-    () => new Map(products.items.map((p) => [p.id, p])),
-    [products.items]
-  );
+  const productMap = useMemo(() => new Map(products.items.map((p) => [p.id, p])), [products.items]);
 
   const logFormatter = (data: ListType<ProductLog>) => {
     const items: IProductLog[] = data.items.map((item) => {
@@ -173,19 +127,11 @@ export const ProductHistoryPage = ({
     let { edit, cargo, ...payload } = body;
     payload = {
       ...payload,
-      price: Math.round(
-        +(payload.total_amount ?? 0) / +(payload.quantity ?? 1)
-      ),
+      price: Math.round(+(payload.total_amount ?? 0) / +(payload.quantity ?? 1)),
       total_amount: Math.round(+(payload.total_amount ?? 0)),
     };
 
-    const res = edit
-      ? await updateOne<IProductLog>(
-          Api.product_log,
-          edit ?? "",
-          payload as unknown as IProductLog
-        )
-      : await create<IProductLog>(Api.product_log, payload as IProductLog);
+    const res = edit ? await updateOne<IProductLog>(Api.product_log, edit ?? "", payload as unknown as IProductLog) : await create<IProductLog>(Api.product_log, payload as IProductLog);
     if (res.success) {
       refresh();
       setOpen(false);
@@ -202,9 +148,7 @@ export const ProductHistoryPage = ({
   const cargo = form.watch("cargo") ?? 0;
 
   useEffect(() => {
-    const total =
-      (Number(qty) || 0) * (Number(price) || 0) * +(currency ?? 500) +
-      +(cargo ?? 0);
+    const total = (Number(qty) || 0) * (Number(price) || 0) * +(currency ?? 500) + +(cargo ?? 0);
     form.setValue("total_amount", total, {
       shouldValidate: true,
       shouldDirty: true,
@@ -228,26 +172,25 @@ export const ProductHistoryPage = ({
       })
     );
   }, [filter]);
-  const groups: { key: keyof FilterType; label: string; items: Option[] }[] =
-    useMemo(
-      () => [
-        {
-          key: "product",
-          label: "Бүтээгдэхүүн",
-          items: products.items.map((b) => ({ value: b.id, label: b.name })),
-        },
+  const groups: { key: keyof FilterType; label: string; items: Option[] }[] = useMemo(
+    () => [
+      {
+        key: "product",
+        label: "Бүтээгдэхүүн",
+        items: products.items.map((b) => ({ value: b.id, label: b.name })),
+      },
 
-        {
-          key: "status",
-          label: "Статус",
-          items: getEnumValues(ProductLogStatus).map((s) => ({
-            value: s,
-            label: getValuesProductLogStatus[s].name,
-          })),
-        },
-      ],
-      [products.items]
-    );
+      {
+        key: "status",
+        label: "Статус",
+        items: getEnumValues(ProductLogStatus).map((s) => ({
+          value: s,
+          label: getValuesProductLogStatus[s].name,
+        })),
+      },
+    ],
+    [products.items]
+  );
 
   return (
     <div className="">
@@ -298,13 +241,7 @@ export const ProductHistoryPage = ({
               <FilterPopover
                 content={
                   <div className="flex flex-col gap-2">
-                    <Calendar
-                      mode="single"
-                      selected={filter?.start}
-                      onSelect={(e) =>
-                        setFilter((prev) => ({ ...prev, start: e }))
-                      }
-                    />
+                    <Calendar mode="single" selected={filter?.start} onSelect={(e) => setFilter((prev) => ({ ...prev, start: e }))} />
                   </div>
                 }
                 value={filter?.start?.toString()}
@@ -313,13 +250,7 @@ export const ProductHistoryPage = ({
               <FilterPopover
                 content={
                   <div className="flex flex-col gap-2">
-                    <Calendar
-                      mode="single"
-                      selected={filter?.end}
-                      onSelect={(e) =>
-                        setFilter((prev) => ({ ...prev, end: e }))
-                      }
-                    />
+                    <Calendar mode="single" selected={filter?.end} onSelect={(e) => setFilter((prev) => ({ ...prev, end: e }))} />
                   </div>
                 }
                 value={filter?.end?.toString()}
@@ -347,63 +278,41 @@ export const ProductHistoryPage = ({
             >
               <FormProvider {...form}>
                 <div className="">
-                  <div className="double-col">
-                    <FormItems
-                      label="Бүтээгдэхүүн"
-                      control={form.control}
-                      name="product_id"
-                    >
-                      {(field) => {
-                        return (
-                          <ComboBox
-                            search={true}
-                            props={{ ...field }}
-                            items={products.items.map((item) => {
-                              return {
-                                value: item.id,
-                                label: item.name,
-                              };
-                            })}
-                          />
-                        );
-                      }}
-                    </FormItems>
-                  </div>
+                  <FormItems label="Бүтээгдэхүүн" control={form.control} name="product_id">
+                    {(field) => {
+                      return (
+                        <ComboBox
+                          search={true}
+                          props={{ ...field }}
+                          items={products.items.map((item) => {
+                            return {
+                              value: item.id,
+                              label: item.name,
+                            };
+                          })}
+                        />
+                      );
+                    }}
+                  </FormItems>
                   <div className="divide-x-gray"></div>
 
                   <div className="double-col">
                     <div className="relative">
-                      <FormItems
-                        label="Currency Value"
-                        control={form.control}
-                        name="currency_value"
-                      >
+                      <FormItems label="Currency Value" control={form.control} name="currency_value">
                         {(field) => {
                           return (
                             <div className="relative">
                               <div className="relative h-10">
-                                <Input
-                                  onChange={(e) => field.onChange(e)}
-                                  value={field.value as string | undefined}
-                                  type="text"
-                                  className="h-full pr-10"
-                                />
+                                <Input onChange={(e) => field.onChange(e)} value={field.value as string | undefined} type="text" className="h-full pr-10" />
                               </div>
                             </div>
                           );
                         }}
                       </FormItems>
-                      <FormItems
-                        control={form.control}
-                        name="currency"
-                        className="absolute bottom-0.5 right-0.5"
-                      >
+                      <FormItems control={form.control} name="currency" className="absolute bottom-0.5 right-0.5">
                         {(field) => {
                           return (
-                            <Select
-                              value={field.value as string | undefined}
-                              onValueChange={(e) => field.onChange(e)}
-                            >
+                            <Select value={field.value as string | undefined} onValueChange={(e) => field.onChange(e)}>
                               <SelectTrigger className="text-xs font-semibold border-0">
                                 <SelectValue placeholder="Currency" />
                               </SelectTrigger>
@@ -469,34 +378,20 @@ export const ProductHistoryPage = ({
                       const name = item.key as keyof LogType;
                       const label = item.label as keyof LogType;
                       return (
-                        <FormItems
-                          control={form.control}
-                          name={name}
-                          key={i}
-                          label={label}
-                          className={item.key === "name" ? "col-span-2" : ""}
-                        >
+                        <FormItems control={form.control} name={name} key={i} label={label} className={item.key === "name" ? "col-span-2" : ""}>
                           {(field) => {
-                            return (
-                              <TextField
-                                props={{ ...field }}
-                                type={item.type}
-                              />
-                            );
+                            return <TextField props={{ ...field }} type={item.type} />;
                           }}
                         </FormItems>
                       );
                     })}
+                  </div>
+                  <div className="divide-x-gray"></div>
 
+                  <div className="double-col ">
                     <FormItems label="Огноо" control={form.control} name="date">
                       {(field) => {
-                        return (
-                          <DatePicker
-                            name=""
-                            pl="Огноо сонгох"
-                            props={{ ...field }}
-                          />
-                        );
+                        return <DatePicker name="" pl="Огноо сонгох" props={{ ...field }} />;
                       }}
                     </FormItems>
                   </div>

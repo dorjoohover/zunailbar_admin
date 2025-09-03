@@ -1,20 +1,11 @@
 "use client";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import { Loader2Icon, Plus } from "lucide-react";
 
-import { ReactNode } from "react";
+import { ReactNode, useRef } from "react";
 
 export const Modal = ({
   // Button text
@@ -71,26 +62,25 @@ export const Modal = ({
     "7xl": "max-w-[calc(theme(maxWidth.7xl)-1rem)]",
   };
 
+  const dialogContentRef = useRef<HTMLDivElement>(null);
+
   return (
-    <Dialog open={open} onOpenChange={(v) => setOpen(v)}>
+    <Dialog open={open} onOpenChange={(v) => setOpen(v)} modal={true}>
       {name && name !== "" && (
         <DialogTrigger asChild>
-          <Button
-            variant="purple"
-            className="cursor-pointer uppercase text-xs font-bold ml-1"
-          >
+          <Button variant="purple" className="cursor-pointer uppercase text-xs font-bold ml-1">
             <Plus strokeWidth={2.5} />
             <span className="hidden md:block">{name}</span>
           </Button>
         </DialogTrigger>
       )}
       {/* <DialogContent className={`max-w-${maw} lg:max-w-${w}`}> */}
-      <DialogContent className={cn(mawClasses[maw], "")}>
+      <DialogContent ref={dialogContentRef} className={cn(mawClasses[maw], "")}>
         <DialogHeader className="mb-3">
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
-        <div>{children}</div>
+        <div className="max-h-[70vh] overflow-y-auto">{children}</div>
         <DialogFooter className="mt-3">
           <DialogClose asChild>
             <Button variant="outline" className="bg-white">
@@ -98,11 +88,7 @@ export const Modal = ({
             </Button>
           </DialogClose>
           {submit && (
-            <Button
-              variant={"purple"}
-              loading={loading}
-              onClick={(e) => handleSubmit(e)}
-            >
+            <Button variant={"purple"} loading={loading} onClick={(e) => handleSubmit(e)}>
               {loading && btn}
               {loading ? "Please wait..." : submitTxt}
             </Button>

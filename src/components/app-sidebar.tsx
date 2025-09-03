@@ -354,7 +354,7 @@ export function AppSidebar() {
                       <Collapsible key={mi} className="group/collapsible">
                         <SidebarMenuItem className="text-white">
                           {hasChildren ? (
-                            <CollapsibleTrigger asChild>
+                            <CollapsibleTrigger asChild className="group-data-[state=open]/collapsible:bg-white/20">
                               <SidebarMenuButton
                                 asChild
                                 size="lg"

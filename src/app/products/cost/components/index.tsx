@@ -304,7 +304,7 @@ export const CostPage = ({
           loading={action == ACTION.RUNNING}
           modalAdd={
             <Modal
-              maw="xl"
+              maw="md"
               name="Зардал нэмэх"
               submit={() => form.handleSubmit(onSubmit, onInvalid)()}
               open={open == true}
@@ -316,7 +316,7 @@ export const CostPage = ({
             >
               <FormProvider {...form}>
                 <div className="divide-y">
-                  <div className="grid gap-3 pb-5">
+                  <div className="pb-5 space-y-4">
                     <FormItems
                       control={form.control}
                       name="product_id"
@@ -337,8 +337,6 @@ export const CostPage = ({
                         );
                       }}
                     </FormItems>
-                  </div>
-                  <div className="grid gap-3 py-5 double-col">
                     <FormItems
                       control={form.control}
                       name="branch_id"
@@ -360,7 +358,7 @@ export const CostPage = ({
                     </FormItems>
                   </div>
 
-                  <div className="grid gap-3 pt-5 double-col">
+                  <div className="pt-5 space-y-4">
                     {[
                       {
                         key: "price",

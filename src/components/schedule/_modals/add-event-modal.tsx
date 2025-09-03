@@ -12,15 +12,7 @@ import { OrderStatus } from "@/lib/enum";
 import { FormItems } from "@/shared/components/form.field";
 import { ComboBox } from "@/shared/components/combobox";
 import { getEnumValues, ListType, OrderStatusValues } from "@/lib/constants";
-import {
-  formatTime,
-  mnDateFormat,
-  money,
-  numberArray,
-  totalHours,
-  toTimeString,
-  usernameFormatter,
-} from "@/lib/functions";
+import { formatTime, mnDateFormat, money, numberArray, totalHours, toTimeString, usernameFormatter } from "@/lib/functions";
 import { TextField } from "@/shared/components/text.field";
 import { Select, SelectItem } from "@/components/ui/select";
 import { fi } from "zod/v4/locales";
@@ -101,171 +93,155 @@ export default function AddEventModal({
   const onInvalid = async <T,>(e: T) => {
     console.log(e);
 
-    showToast("error", "Алдаа");
+    showToast("error", "Мэдээлэл дутуу байна");
   };
   return (
-    <form
-      className="flex flex-col gap-4 p-4"
-      onSubmit={form.handleSubmit(onSubmit, onInvalid)}
-    >
+    <form className="space-y-4" onSubmit={form.handleSubmit(onSubmit, onInvalid)}>
       <FormProvider {...form}>
-        <FormItems control={form.control} name="branch_id" label="Салбар">
-          {(field) => {
-            return (
-              <ComboBox
-                props={{ ...field }}
-                items={branches.map((item) => {
-                  return {
-                    value: item.id,
-                    label: item.name,
-                  };
-                })}
-                className="max-w-96! w-full"
-              />
-            );
-          }}
-        </FormItems>
-        <FormItems control={form.control} name="customer_id" label="Хэрэглэгч">
-          {(field) => {
-            return (
-              <ComboBox
-                props={{ ...field }}
-                items={customers.map((item) => {
-                  return {
-                    value: item.id,
-                    label: usernameFormatter(item),
-                  };
-                })}
-                className="max-w-96! w-full"
-              />
-            );
-          }}
-        </FormItems>
-        <FormItems control={form.control} name="user_id" label="Артист">
-          {(field) => {
-            return (
-              <ComboBox
-                props={{ ...field }}
-                items={users
-                  .filter((user) => {
-                    const branch = form.watch("branch_id");
-                    return branch ? user.branch_id == branch : user;
-                  })
-                  .map((item) => {
+        <div className="double-col">
+          <FormItems control={form.control} name="branch_id" label="Салбар">
+            {(field) => {
+              return (
+                <ComboBox
+                  props={{ ...field }}
+                  items={branches.map((item) => {
+                    return {
+                      value: item.id,
+                      label: item.name,
+                    };
+                  })}
+                />
+              );
+            }}
+          </FormItems>
+          <FormItems control={form.control} name="details" label="Үйлчилгээ">
+            {(field) => {
+              // field.value нь [{service_id,...}] байдаг → MultiSelect-д массив id болгож дамжуулна
+              const selectedIds: string[] = Array.isArray(field.value) ? field.value.map((d: any) => d?.service_id).filter(Boolean) : [];
+
+              return (
+                <MultiSelect
+                  // RHF field-ийг “id массив” болгосон wrapper-оор өгнө
+                  props={
+                    {
+                      name: field.name,
+                      value: selectedIds,
+                      onChange: (ids: string[]) => {
+                        const nextDetails = ids.map((id) => {
+                          const svc = services.find((s) => s.id === id);
+                          return {
+                            service_id: id,
+                            service_name: svc?.name ?? "",
+                            duration: svc?.duration ?? null,
+                          };
+                        });
+                        field.onChange(nextDetails);
+                      },
+                      onBlur: field.onBlur,
+                      ref: field.ref,
+                    } as any
+                  }
+                  items={services.map((s) => ({ label: s.name, value: s.id }))}
+                />
+              );
+            }}
+          </FormItems>
+          <FormItems control={form.control} name="customer_id" label="Хэрэглэгч">
+            {(field) => {
+              return (
+                <ComboBox
+                  props={{ ...field }}
+                  items={customers.map((item) => {
                     return {
                       value: item.id,
                       label: usernameFormatter(item),
                     };
                   })}
-                className="max-w-96! w-full"
-              />
-            );
-          }}
-        </FormItems>
-        <FormItems
-          control={form.control}
-          name="user_desc"
-          label="Артистын тайлбар"
-        >
+                />
+              );
+            }}
+          </FormItems>
+
+          <FormItems control={form.control} name="user_id" label="Артист">
+            {(field) => {
+              return (
+                <ComboBox
+                  props={{ ...field }}
+                  items={users
+                    .filter((user) => {
+                      const branch = form.watch("branch_id");
+                      return branch ? user.branch_id == branch : user;
+                    })
+                    .map((item) => {
+                      return {
+                        value: item.id,
+                        label: usernameFormatter(item),
+                      };
+                    })}
+                />
+              );
+            }}
+          </FormItems>
+        </div>
+
+        <FormItems control={form.control} name="user_desc" label="Артистын тайлбар">
           {(field) => {
             return <TextField props={{ ...field }} />;
           }}
         </FormItems>
-        <FormItems
-          control={form.control}
-          name="customer_desc"
-          label="Хэрэглэгчийн тайлбар"
-        >
+        <FormItems control={form.control} name="customer_desc" label="Хэрэглэгчийн тайлбар">
           {(field) => {
             return <TextField props={{ ...field }} />;
           }}
         </FormItems>
-        <FormItems control={form.control} name="order_status" label="Статус">
-          {(field) => {
-            return (
-              <ComboBox
-                props={{ ...field }}
-                items={getEnumValues(OrderStatus).map((item) => {
-                  return {
-                    value: item.toString(),
-                    label: OrderStatusValues[item],
-                  };
-                })}
-              />
-            );
-          }}
-        </FormItems>
-        <FormItems
-          control={form.control}
-          name="total_amount"
-          label="Нийт төлбөр"
-        >
-          {(field) => {
-            return <TextField type="money" props={{ ...field }} />;
-          }}
-        </FormItems>
-        <FormItems control={form.control} name="order_date" label="Огноо">
-          {(field) => {
-            field.value = mnDateFormat((field.value as Date) ?? new Date());
-            return <TextField type="date" props={{ ...field }} />;
-          }}
-        </FormItems>
-        <FormItems control={form.control} name="start_time" label="Эхлэх цаг">
-          {(field) => {
-            field.value = field.value
-              ? +field.value?.toString().slice(0, 2)
-              : field.value;
-            return (
-              <ComboBox
-                props={{ ...field }}
-                items={numberArray(totalHours).map((item) => {
-                  const value = item + 4;
+        <div className="double-col">
+          <FormItems control={form.control} name="order_status" label="Статус">
+            {(field) => {
+              return (
+                <ComboBox
+                  props={{ ...field }}
+                  items={getEnumValues(OrderStatus).map((item) => {
+                    return {
+                      value: item.toString(),
+                      label: OrderStatusValues[item],
+                    };
+                  })}
+                />
+              );
+            }}
+          </FormItems>
+          <FormItems control={form.control} name="total_amount" label="Нийт төлбөр">
+            {(field) => {
+              return <TextField type="money" props={{ ...field }} />;
+            }}
+          </FormItems>
+          <FormItems control={form.control} name="order_date" label="Огноо">
+            {(field) => {
+              field.value = mnDateFormat((field.value as Date) ?? new Date());
+              return <TextField type="date" props={{ ...field }} />;
+            }}
+          </FormItems>
+          <FormItems control={form.control} name="start_time" label="Эхлэх цаг">
+            {(field) => {
+              field.value = field.value ? +field.value?.toString().slice(0, 2) : field.value;
+              return (
+                <ComboBox
+                  props={{ ...field }}
+                  items={numberArray(totalHours).map((item) => {
+                    const value = item + 4;
 
-                  return {
-                    value: value.toString(),
-                    label: toTimeString(value),
-                  };
-                })}
-              />
-            );
-          }}
-        </FormItems>
-        <FormItems control={form.control} name="details" label="Үйлчилгээ">
-          {(field) => {
-            // field.value нь [{service_id,...}] байдаг → MultiSelect-д массив id болгож дамжуулна
-            const selectedIds: string[] = Array.isArray(field.value)
-              ? field.value.map((d: any) => d?.service_id).filter(Boolean)
-              : [];
+                    return {
+                      value: value.toString(),
+                      label: toTimeString(value),
+                    };
+                  })}
+                />
+              );
+            }}
+          </FormItems>
+        </div>
 
-            return (
-              <MultiSelect
-                // RHF field-ийг “id массив” болгосон wrapper-оор өгнө
-                props={
-                  {
-                    name: field.name,
-                    value: selectedIds,
-                    onChange: (ids: string[]) => {
-                      const nextDetails = ids.map((id) => {
-                        const svc = services.find((s) => s.id === id);
-                        return {
-                          service_id: id,
-                          service_name: svc?.name ?? "",
-                          duration: svc?.duration ?? null,
-                        };
-                      });
-                      field.onChange(nextDetails);
-                    },
-                    onBlur: field.onBlur,
-                    ref: field.ref,
-                  } as any
-                }
-                items={services.map((s) => ({ label: s.name, value: s.id }))}
-              />
-            );
-          }}
-        </FormItems>
-
-        <div className="flex justify-end space-x-2 mt-4 pt-2 border-t">
+        <div className="flex justify-end space-x-2 mt-4 pt-2">
           <Button variant="outline" type="button" onClick={() => setClose()}>
             Буцах
           </Button>

@@ -161,7 +161,7 @@ export default function SchedulerViewFilteration({
           // CustomAddEventModal={
           //   CustomComponents?.CustomEventModal?.CustomAddEventModal?.CustomForm
           // }
-        />{" "}
+        />
       </CustomModal>
     );
   }
@@ -243,7 +243,7 @@ export default function SchedulerViewFilteration({
                 <Button
                   onClick={() => handleAddEvent()}
                   className={classNames?.buttons?.addEvent}
-                  variant="default"
+                  variant="purple"
                 >
                   <CalendarIcon className="mr-2 h-4 w-4" />
                   Хуваарь нэмэх

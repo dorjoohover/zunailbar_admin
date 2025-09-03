@@ -275,7 +275,7 @@ export default function DailyView({
     // Open the modal with the content
 
     setOpen(
-      <CustomModal title="Захиалга нэмэх">
+      <CustomModal title="Захиалга нэмэх" contentClass="max-w-3xl">
         <AddEventModal
           branches={branches}
           customers={customers}
