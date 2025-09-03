@@ -24,7 +24,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { TextField } from "@/shared/components/text.field";
 import { firstLetterUpper, numberArray, objectCompact } from "@/lib/functions";
 import { DatePicker } from "@/shared/components/date.picker";
-import { create, updateOne } from "@/app/(api)";
+import { create, deleteOne, updateOne } from "@/app/(api)";
 import { Api } from "@/utils/api";
 import { FormItems } from "@/shared/components/form.field";
 import { fetcher } from "@/hooks/fetcher";
@@ -132,7 +132,9 @@ export const EmployeePage = ({
       setOpen(false);
       showToast(
         "success",
-        editingUser?.id != undefined ? "Мэдээлэл засагдсан!" : "Ажилтан нэмэгдлээ!"
+        editingUser?.id != undefined
+          ? "Мэдээлэл засагдсан!"
+          : "Ажилтан нэмэгдлээ!"
       );
       form.reset(defaultValues);
     } else {
@@ -178,7 +180,13 @@ export const EmployeePage = ({
   const giveProduct = (index: number) => {
     setUserProduct(users.items[index].id);
   };
-  const columns = getColumns(edit, setStatus, giveProduct);
+  const deleteEmployee = async (index: number) => {
+    const id = users!.items[index].id;
+    const res = await deleteOne(Api.user, id);
+    refresh();
+    return res.success;
+  };
+  const columns = getColumns(edit, setStatus, giveProduct, deleteEmployee);
 
   const [filter, setFilter] = useState<FilterType>();
   const changeFilter = (key: string, value: number | string) => {

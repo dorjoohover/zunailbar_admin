@@ -9,9 +9,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { ColumnDef } from "@tanstack/react-table";
 import { IUser } from "@/models/user.model";
-import { ArrowUpDown, Hammer, UserRoundCog } from "lucide-react";
+import { ArrowUpDown, Hammer, Trash2, UserRoundCog } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import { IBranch } from "@/models";
 import { mobileFormatter, parseDate } from "@/lib/functions";
 import { EmployeeStatus, ROLE, UserStatus } from "@/lib/enum";
@@ -20,13 +19,14 @@ import {
   getEnumValues,
   roleIconMap,
   RoleValue,
-  UserStatusValue,
 } from "@/lib/constants";
 import Image from "next/image";
 import TooltipWrapper from "@/components/tooltipWrapper";
 import { TableActionButtons } from "@/components/tableActionButtons";
 import { cn } from "@/lib/utils";
 import { getUserColor } from "@/lib/colors";
+import { AppAlertDialog } from "@/components/AlertDialog";
+import { toast } from "sonner";
 
 const branches: IBranch[] = [
   { id: "1", name: "Head Office", address: "UB Center", user_id: "100" },
@@ -37,7 +37,8 @@ const branches: IBranch[] = [
 export const getColumns = (
   onEdit: (product: IUser) => void,
   setStatus: (index: number, status: EmployeeStatus) => void,
-  giveProduct: (index: number) => void
+  giveProduct: (index: number) => void,
+  remove: (index: number) => Promise<boolean>
 ): ColumnDef<IUser>[] => [
   // {
   //   id: "select",
@@ -233,6 +234,22 @@ export const getColumns = (
             >
               <Hammer className="size-4" />
             </Button>
+          </TooltipWrapper>
+          <TooltipWrapper tooltip="Устгах">
+            <AppAlertDialog
+              title="Итгэлтэй байна уу?"
+              description="Бүр устгана шүү."
+              onConfirm={async () => {
+                const res = await remove(row.index);
+                console.log(res);
+                toast("Амжилттай устгалаа!", {});
+              }}
+              trigger={
+                <Button variant="ghost" size="icon">
+                  <Trash2 className="w-4 h-4 text-red-500" />
+                </Button>
+              }
+            />
           </TooltipWrapper>
         </TableActionButtons>
       );
