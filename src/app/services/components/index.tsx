@@ -16,6 +16,7 @@ import { fetcher } from "@/hooks/fetcher";
 import { getColumns } from "./columns";
 import DynamicHeader from "@/components/dynamicHeader";
 import { objectCompact } from "@/lib/functions";
+import { showToast } from "@/shared/components/showToast";
 
 const formSchema = z.object({
   branch_id: z.string().min(1),
@@ -107,6 +108,7 @@ export const ServicePage = ({ data, branches }: { data: ListType<Service>; branc
       clear();
     }
     setAction(ACTION.DEFAULT);
+    showToast("success")
   };
   const onInvalid = async <T,>(e: T) => {
     alert(e);

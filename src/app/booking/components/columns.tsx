@@ -106,7 +106,7 @@ export function getColumns(onEdit: (product: IBooking) => void, remove: (index: 
             </Button>
           </TooltipWrapper>
 
-          <TooltipWrapper tooltip="Утстгах">
+          <TooltipWrapper tooltip="Устгах">
             <AppAlertDialog
               title="Итгэлтэй байна уу?"
               description="Бүр устгана шүү."

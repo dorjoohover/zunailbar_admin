@@ -117,9 +117,9 @@ export const OrderPage = ({
       : await create<Order>(Api.order, e as Order);
     if (res.success) {
       refresh();
-      showToast("success", edit ? "Мэдээлэл шинэчиллээ." : "Амжилттай нэмлээ.");
+      showToast("success", edit ? "Мэдээлэл шинэчиллээ!" : "Амжилттай нэмэгдлээ!");
     } else {
-      showToast("error", res.error ?? "Алдаа гарлаа.");
+      showToast("error", res.error ?? "Алдаа гарлаа!");
     }
     setAction(ACTION.DEFAULT);
   };

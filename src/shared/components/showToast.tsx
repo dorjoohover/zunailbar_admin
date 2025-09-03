@@ -10,6 +10,7 @@ interface ShowToastOptions {
   style?: React.CSSProperties;
   icon?: React.ReactNode;
   title?: string;
+  description?: string;
 }
 
 const toastConfig = {
@@ -18,29 +19,35 @@ const toastConfig = {
     defaultTitle: "Амжилттай",
     defaultIcon: <Check className="size-4" strokeWidth={3} />,
     color: "#4ad460",
+    defaultDescription: "Амжилттай гүйцэтгэлээ",
   },
   deleted: {
     method: toast.success,
     defaultTitle: "Устгалаа",
     defaultIcon: <Trash className="size-4" strokeWidth={3} />,
     color: "#fb4a24",
+    defaultDescription: "Амжилттай устгагдлаа",
   },
   error: {
     method: toast.error,
     defaultTitle: "Алдаа гарлаа",
     defaultIcon: <X className="size-4" strokeWidth={3} />,
     color: "#fb4a24",
+    defaultDescription: "Мэдээлэл дутуу байна!",
   },
   info: {
     method: toast.info,
     defaultTitle: "Анхааруулга",
     defaultIcon: <Info className="size-4" strokeWidth={3} />,
     color: "#fbbc28",
+    defaultDescription: "",
   },
 };
 
-export const showToast = (type: ToastType, message: string, options?: ShowToastOptions) => {
+export const showToast = (type: ToastType, message?: string, options?: ShowToastOptions) => {
   const config = toastConfig[type] || toastConfig.info;
+const title = options?.title ?? config.defaultTitle;
+  const description = message ?? options?.description ?? config.defaultDescription;
 
   config.method(
     <div className={cn("flex gap-4")}>
@@ -53,9 +60,9 @@ export const showToast = (type: ToastType, message: string, options?: ShowToastO
 
       {/* Message + Icon */}
       <div className={cn("space-y-1")}>
-        <div className="font-semibold">{options?.title ?? config.defaultTitle}</div>
+        <div className="font-semibold">{title}</div>
 
-        <span className="text-slate-600">{message}</span>
+        <span className="text-slate-600">{description}</span>
       </div>
     </div>,
     {

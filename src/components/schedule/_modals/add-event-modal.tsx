@@ -120,7 +120,8 @@ export default function AddEventModal({
               const selectedIds: string[] = Array.isArray(field.value) ? field.value.map((d: any) => d?.service_id).filter(Boolean) : [];
 
               return (
-                <MultiSelect
+           <div>
+                 <MultiSelect
                   // RHF field-ийг “id массив” болгосон wrapper-оор өгнө
                   props={
                     {
@@ -143,6 +144,7 @@ export default function AddEventModal({
                   }
                   items={services.map((s) => ({ label: s.name, value: s.id }))}
                 />
+           </div>
               );
             }}
           </FormItems>

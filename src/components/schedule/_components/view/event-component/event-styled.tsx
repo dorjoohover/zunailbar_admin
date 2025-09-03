@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { useModal } from "@/providers/modal-context";
 import AddEventModal from "@/components/schedule/_modals/add-event-modal";
 import { CustomEventModal } from "@/types";
-import { TrashIcon, CalendarIcon, ClockIcon } from "lucide-react";
+import { TrashIcon, CalendarIcon, ClockIcon, Trash2 } from "lucide-react";
 import { useScheduler } from "@/providers/schedular-provider";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
@@ -15,6 +15,7 @@ import { getUserColor } from "@/lib/colors";
 import { OrderStatusValues } from "@/lib/constants";
 import { OrderStatus } from "@/lib/enum";
 import { Branch, IOrder, Order, Service, User } from "@/models";
+import { showToast } from "@/shared/components/showToast";
 
 // Function to format date
 const formatDate = (date: Date) => {
@@ -152,6 +153,7 @@ export default function EventStyled({
           e.stopPropagation();
           // handlers.handleDeleteEvent(event?.id);
           onDelete(event?.id);
+          showToast("success", "Амжилттай устгагдлаа!")
         }}
         variant="destructive"
         size="icon"
@@ -160,7 +162,7 @@ export default function EventStyled({
           event?.minmized ? "opacity-0 group-hover:opacity-100" : "opacity-100"
         )}
       >
-        <TrashIcon size={14} className="text-destructive-foreground" />
+        <Trash2 size={14} className="text-destructive-foreground" />
       </Button>
       {event.CustomEventComponent ? (
         <div
