@@ -190,7 +190,19 @@ export const SalaryLogValues = {
 export const OrderStatusValues = {
   [OrderStatus.Active]: "Active",
   [OrderStatus.Started]: "Started",
-  [OrderStatus.Cancelled]: ".Cancelled",
-  [OrderStatus.Finished]: ".Finished",
+  [OrderStatus.Cancelled]: "Cancelled",
+  [OrderStatus.Finished]: "Finished",
   [OrderStatus.Pending]: "Pending",
+  [OrderStatus.ABSENT]: "ABSENT",
 };
+
+export const VALUES = {
+  firstname: "овог",
+  lastname: "нэр",
+  branch_id: "салбар",
+  mobile: "утасны дугаар",
+  birthday: "төрсөн өдөр",
+  experience: "туршлага",
+  nickname: "хоч",
+  color: "өнгө",
+} as const as any;

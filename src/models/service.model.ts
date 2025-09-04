@@ -13,6 +13,7 @@ export interface IService {
   min_price?: number;
   duration?: number;
   created_by?: string;
+  pre_amount?: number;
   created_at?: Date;
   min: Discounted;
   max?: Discounted;
@@ -24,6 +25,7 @@ export interface Service {
   max_price: number;
   min_price: number;
   duration: number;
+  pre_amount: number;
   created_by: string;
   created_at?: Date;
   min: Discounted;

@@ -9,6 +9,7 @@ import {
   PG,
   RoleValue,
   UserStatusValue,
+  VALUES,
 } from "@/lib/constants";
 import { Branch, IUser, User } from "@/models";
 import { getColumns } from "./columns";
@@ -143,8 +144,13 @@ export const EmployeePage = ({
     setAction(ACTION.DEFAULT);
   };
   const onInvalid = async <T,>(e: T) => {
-    console.log("error", e);
-    alert(e);
+    const error = Object.keys(e as any)
+      .map((er, i) => {
+        const value = VALUES[er];
+        return i == 0 ? firstLetterUpper(value) : value;
+      })
+      .join(", ") + 'оруулна уу!';
+    showToast("info", error);
     // setSuccess(false);
   };
 

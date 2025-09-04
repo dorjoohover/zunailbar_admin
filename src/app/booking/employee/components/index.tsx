@@ -208,6 +208,18 @@ export const SchedulePage = ({
       return [...prev.slice(0, idx), updated, ...prev.slice(idx + 1)];
     });
   };
+  const times = useMemo(() => {
+    const days = 7;
+
+    if (!schedules?.items) return [];
+
+    // үргэлж 7 урттай times массив буцаана
+    return Array.from({ length: days }, (_, i) => {
+      const dayIndex = 6 - i; // 6,5,4,3,2,1,0
+      const found = schedules.items.find((item) => item.index === dayIndex);
+      return found ? found.times : "";
+    }).reverse();
+  }, [schedules?.items]);
   return (
     <div className="">
       <DynamicHeader />
@@ -299,7 +311,7 @@ export const SchedulePage = ({
           <ScheduleTable
             artist={true}
             d={schedules.items?.[0]?.index ?? 0}
-            value={schedules.items.map((item) => item.times).reverse()}
+            value={times}
             edit={editSchedule}
             setEdit={setUpdate}
           />

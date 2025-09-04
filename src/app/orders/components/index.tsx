@@ -13,6 +13,7 @@ import { SchedulerProvider } from "@/providers/schedular-provider";
 import DynamicHeader from "@/components/dynamicHeader";
 import { mnDate, usernameFormatter } from "@/lib/functions";
 import { showToast } from "@/shared/components/showToast";
+import { OrderStatus } from "@/lib/enum";
 
 const formSchema = z.object({
   branch_id: z.string().min(1),
@@ -111,13 +112,22 @@ export const OrderPage = ({
       ? await updateOne<Order>(
           Api.order,
           edit ?? "",
-          payload as unknown as Order,
+          {
+            ...payload,
+            order_status: OrderStatus.Finished,
+          } as unknown as Order,
           "update"
         )
-      : await create<Order>(Api.order, e as Order);
+      : await create<Order>(Api.order, {
+          ...e,
+          order_status: OrderStatus.Finished,
+        } as unknown as Order);
     if (res.success) {
       refresh();
-      showToast("success", edit ? "Мэдээлэл шинэчиллээ!" : "Амжилттай нэмэгдлээ!");
+      showToast(
+        "success",
+        edit ? "Мэдээлэл шинэчиллээ!" : "Амжилттай нэмэгдлээ!"
+      );
     } else {
       showToast("error", res.error ?? "Алдаа гарлаа!");
     }

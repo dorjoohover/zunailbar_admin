@@ -87,7 +87,7 @@ export default function AddEventModal({
       customer_id: formData.customer_id,
       user_id: formData.user_id,
       user_desc: formData.user_desc ?? undefined,
-      order_status: formData.order_status as OrderStatus | undefined,
+      // order_status: formData.order_status as OrderStatus | undefined,
       total_amount: formData.total_amount as number | undefined,
       order_date: formData.order_date,
       start_time: `${formData.start_time}`,
@@ -115,6 +115,7 @@ export default function AddEventModal({
             {(field) => {
               return (
                 <ComboBox
+                  search={true}
                   props={{ ...field }}
                   items={branches.map((item) => {
                     return {
@@ -134,31 +135,34 @@ export default function AddEventModal({
                 : [];
 
               return (
-           <div>
-                 <MultiSelect
-                  // RHF field-ийг “id массив” болгосон wrapper-оор өгнө
-                  props={
-                    {
-                      name: field.name,
-                      value: selectedIds,
-                      onChange: (ids: string[]) => {
-                        const nextDetails = ids.map((id) => {
-                          const svc = services.find((s) => s.id === id);
-                          return {
-                            service_id: id,
-                            service_name: svc?.name ?? "",
-                            duration: svc?.duration ?? null,
-                          };
-                        });
-                        field.onChange(nextDetails);
-                      },
-                      onBlur: field.onBlur,
-                      ref: field.ref,
-                    } as any
-                  }
-                  items={services.map((s) => ({ label: s.name, value: s.id }))}
-                />
-           </div>
+                <div>
+                  <MultiSelect
+                    // RHF field-ийг “id массив” болгосон wrapper-оор өгнө
+                    props={
+                      {
+                        name: field.name,
+                        value: selectedIds,
+                        onChange: (ids: string[]) => {
+                          const nextDetails = ids.map((id) => {
+                            const svc = services.find((s) => s.id === id);
+                            return {
+                              service_id: id,
+                              service_name: svc?.name ?? "",
+                              duration: svc?.duration ?? null,
+                            };
+                          });
+                          field.onChange(nextDetails);
+                        },
+                        onBlur: field.onBlur,
+                        ref: field.ref,
+                      } as any
+                    }
+                    items={services.map((s) => ({
+                      label: s.name,
+                      value: s.id,
+                    }))}
+                  />
+                </div>
               );
             }}
           </FormItems>
@@ -170,6 +174,7 @@ export default function AddEventModal({
             {(field) => {
               return (
                 <ComboBox
+                  search={true}
                   props={{ ...field }}
                   items={customers.map((item) => {
                     return {
@@ -188,6 +193,7 @@ export default function AddEventModal({
             {(field) => {
               return (
                 <ComboBox
+                  search={true}
                   props={{ ...field }}
                   items={users
                     .filter((user) => {
@@ -225,7 +231,7 @@ export default function AddEventModal({
           }}
         </FormItems>
         <div className="double-col">
-          <FormItems control={form.control} name="order_status" label="Статус">
+          {/* <FormItems control={form.control} name="order_status" label="Статус">
             {(field) => {
               return (
                 <ComboBox
@@ -239,11 +245,29 @@ export default function AddEventModal({
                 />
               );
             }}
-          </FormItems>
+          </FormItems> */}
           <FormItems
             control={form.control}
             name="total_amount"
             label="Нийт төлбөр"
+          >
+            {(field) => {
+              return <TextField type="money" props={{ ...field }} />;
+            }}
+          </FormItems>
+          <FormItems
+            control={form.control}
+            name="pre_amount"
+            label="Урьдчилгаа төлбөр"
+          >
+            {(field) => {
+              return <TextField type="money" props={{ ...field }} />;
+            }}
+          </FormItems>
+          <FormItems
+            control={form.control}
+            name="paid_amount"
+            label="Гүйцээж төлсөн төлбөр"
           >
             {(field) => {
               return <TextField type="money" props={{ ...field }} />;

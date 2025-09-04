@@ -100,20 +100,29 @@ const detail = z.object({
 export const eventSchema = z.object({
   branch_id: z.string().optional(),
   user_id: z.string().optional(),
+
   customer_id: z.string().optional(),
   details: z.array(detail),
   customer_desc: z.string().nullable().optional(),
   order_date: z.string(),
   start_time: z.string(),
   end_time: z.string().nullable().optional(),
-  order_status: z
-    .preprocess(
-      (val) => (typeof val === "string" ? parseInt(val, 10) : val),
-      z.nativeEnum(OrderStatus).nullable()
-    )
-    .optional() as unknown as number,
+  // order_status: z
+  //   .preprocess(
+  //     (val) => (typeof val === "string" ? parseInt(val, 10) : val),
+  //     z.nativeEnum(OrderStatus).nullable()
+  //   )
+  //   .optional() as unknown as number,
   user_desc: z.string().nullable().optional(),
   total_amount: z.preprocess(
+    (val) => (typeof val === "string" ? parseFloat(val) : val),
+    z.number()
+  ) as unknown as number,
+  pre_amount: z.preprocess(
+    (val) => (typeof val === "string" ? parseFloat(val) : val),
+    z.number()
+  ) as unknown as number,
+  paid_amount: z.preprocess(
     (val) => (typeof val === "string" ? parseFloat(val) : val),
     z.number()
   ) as unknown as number,

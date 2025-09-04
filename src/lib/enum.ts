@@ -41,6 +41,8 @@ export enum OrderStatus {
   Finished = 40,
   // tsutsalsan
   Cancelled = 50,
+  // ireegui
+  ABSENT = 60,
 }
 // export enum EmployeeStatus {
 //   ACTIVE = 10,

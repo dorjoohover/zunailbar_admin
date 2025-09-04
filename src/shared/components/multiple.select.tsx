@@ -62,7 +62,7 @@ export function MultiSelect<T extends FieldValues>({
           type="button"
           variant="outline"
           role="combobox"
-          className={cn("max-w-[260px] justify-between overflow-hidden", className)}
+          className={cn("max-w-[260px] w-full justify-between overflow-hidden", className)}
         >
           <span className={cn(!value.length && "text-muted-foreground")}>
             {display}
