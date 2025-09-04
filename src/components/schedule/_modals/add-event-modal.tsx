@@ -134,7 +134,8 @@ export default function AddEventModal({
                 : [];
 
               return (
-                <MultiSelect
+           <div>
+                 <MultiSelect
                   // RHF field-ийг “id массив” болгосон wrapper-оор өгнө
                   props={
                     {
@@ -157,6 +158,7 @@ export default function AddEventModal({
                   }
                   items={services.map((s) => ({ label: s.name, value: s.id }))}
                 />
+           </div>
               );
             }}
           </FormItems>
