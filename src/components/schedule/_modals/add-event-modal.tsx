@@ -12,7 +12,16 @@ import { OrderStatus } from "@/lib/enum";
 import { FormItems } from "@/shared/components/form.field";
 import { ComboBox } from "@/shared/components/combobox";
 import { getEnumValues, ListType, OrderStatusValues } from "@/lib/constants";
-import { formatTime, mnDateFormat, money, numberArray, totalHours, toTimeString, usernameFormatter } from "@/lib/functions";
+import {
+  formatTime,
+  mnDateFormat,
+  mobileFormatter,
+  money,
+  numberArray,
+  totalHours,
+  toTimeString,
+  usernameFormatter,
+} from "@/lib/functions";
 import { TextField } from "@/shared/components/text.field";
 import { Select, SelectItem } from "@/components/ui/select";
 import { fi } from "zod/v4/locales";
@@ -96,7 +105,10 @@ export default function AddEventModal({
     showToast("error", "Мэдээлэл дутуу байна");
   };
   return (
-    <form className="space-y-4" onSubmit={form.handleSubmit(onSubmit, onInvalid)}>
+    <form
+      className="space-y-4"
+      onSubmit={form.handleSubmit(onSubmit, onInvalid)}
+    >
       <FormProvider {...form}>
         <div className="double-col">
           <FormItems control={form.control} name="branch_id" label="Салбар">
@@ -117,7 +129,9 @@ export default function AddEventModal({
           <FormItems control={form.control} name="details" label="Үйлчилгээ">
             {(field) => {
               // field.value нь [{service_id,...}] байдаг → MultiSelect-д массив id болгож дамжуулна
-              const selectedIds: string[] = Array.isArray(field.value) ? field.value.map((d: any) => d?.service_id).filter(Boolean) : [];
+              const selectedIds: string[] = Array.isArray(field.value)
+                ? field.value.map((d: any) => d?.service_id).filter(Boolean)
+                : [];
 
               return (
                 <MultiSelect
@@ -146,7 +160,11 @@ export default function AddEventModal({
               );
             }}
           </FormItems>
-          <FormItems control={form.control} name="customer_id" label="Хэрэглэгч">
+          <FormItems
+            control={form.control}
+            name="customer_id"
+            label="Хэрэглэгч"
+          >
             {(field) => {
               return (
                 <ComboBox
@@ -154,7 +172,9 @@ export default function AddEventModal({
                   items={customers.map((item) => {
                     return {
                       value: item.id,
-                      label: usernameFormatter(item),
+                      label: `${mobileFormatter(
+                        item.mobile ?? ""
+                      )} ${usernameFormatter(item)}`,
                     };
                   })}
                 />
@@ -184,12 +204,20 @@ export default function AddEventModal({
           </FormItems>
         </div>
 
-        <FormItems control={form.control} name="user_desc" label="Артистын тайлбар">
+        <FormItems
+          control={form.control}
+          name="user_desc"
+          label="Артистын тайлбар"
+        >
           {(field) => {
             return <TextField props={{ ...field }} />;
           }}
         </FormItems>
-        <FormItems control={form.control} name="customer_desc" label="Хэрэглэгчийн тайлбар">
+        <FormItems
+          control={form.control}
+          name="customer_desc"
+          label="Хэрэглэгчийн тайлбар"
+        >
           {(field) => {
             return <TextField props={{ ...field }} />;
           }}
@@ -210,7 +238,11 @@ export default function AddEventModal({
               );
             }}
           </FormItems>
-          <FormItems control={form.control} name="total_amount" label="Нийт төлбөр">
+          <FormItems
+            control={form.control}
+            name="total_amount"
+            label="Нийт төлбөр"
+          >
             {(field) => {
               return <TextField type="money" props={{ ...field }} />;
             }}
@@ -223,7 +255,9 @@ export default function AddEventModal({
           </FormItems>
           <FormItems control={form.control} name="start_time" label="Эхлэх цаг">
             {(field) => {
-              field.value = field.value ? +field.value?.toString().slice(0, 2) : field.value;
+              field.value = field.value
+                ? +field.value?.toString().slice(0, 2)
+                : field.value;
               return (
                 <ComboBox
                   props={{ ...field }}

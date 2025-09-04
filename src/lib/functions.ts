@@ -184,7 +184,7 @@ export const usernameFormatter = (user: User) => {
     return `${last}${first}`;
   }
 
-  return mobileFormatter(user.mobile ?? "");
+  return ''
 };
 export const money = (value: string, currency = "", round = 1) => {
   let v = Math.round(+value / round) * round;
