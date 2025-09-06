@@ -421,7 +421,6 @@ export const EmployeePage = ({
                       {(field) => {
                         return (
                           <ComboBox
-                            search={true}
                             props={{ ...field }}
                             items={branches.items.map((branch) => {
                               return {

@@ -10,7 +10,6 @@ import { ReactNode, useRef } from "react";
 export const Modal = ({
   // Button text
   name = "Нэмэх",
-
   // Modal text
   title = name,
   btn = <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />,
@@ -80,7 +79,7 @@ export const Modal = ({
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
-        <ScrollArea className="max-h-[70vh] min-h-[8vh] px-1">{children}</ScrollArea>
+        <ScrollArea className="sm:max-h-[70vh] min-h-[8vh] px-1">{children}</ScrollArea>
         <DialogFooter className="mt-3">
           <DialogClose asChild>
             <Button variant="outline" className="bg-white">

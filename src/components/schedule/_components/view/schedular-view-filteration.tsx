@@ -4,11 +4,7 @@ import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  Calendar as CalendarIcon,
-  CalendarDaysIcon,
-  Calendar,
-} from "lucide-react";
+import { Calendar as CalendarIcon, CalendarDaysIcon, Calendar, FileText } from "lucide-react";
 
 import AddEventModal from "../../_modals/add-event-modal";
 import DailyView from "./day/daily-view";
@@ -62,28 +58,8 @@ export default function SchedulerViewFilteration({
   CustomComponents?: CustomComponents;
   classNames?: ClassNames;
   send: (order: IOrder) => void;
-  refresh: <T>({
-    page,
-    limit,
-    sort,
-    filter,
-  }: {
-    page?: number;
-    limit?: number;
-    sort?: boolean;
-    filter?: T;
-  }) => void;
-  excel?: <T>({
-    page,
-    limit,
-    sort,
-    filter,
-  }: {
-    page?: number;
-    limit?: number;
-    sort?: boolean;
-    filter?: T;
-  }) => void;
+  refresh: <T>({ page, limit, sort, filter }: { page?: number; limit?: number; sort?: boolean; filter?: T }) => void;
+  excel?: <T>({ page, limit, sort, filter }: { page?: number; limit?: number; sort?: boolean; filter?: T }) => void;
 }) {
   const { setOpen } = useModal();
   const [activeView, setActiveView] = useState<string>("day");
@@ -93,9 +69,7 @@ export default function SchedulerViewFilteration({
     setClientSide(true);
   }, []);
 
-  const [isMobile, setIsMobile] = useState(
-    clientSide ? window.innerWidth <= 768 : false
-  );
+  const [isMobile, setIsMobile] = useState(clientSide ? window.innerWidth <= 768 : false);
 
   useEffect(() => {
     if (!clientSide) return;
@@ -115,31 +89,13 @@ export default function SchedulerViewFilteration({
 
   function handleAddEvent(selectedDay?: number) {
     // Create the modal content with proper data
-    const startDate = new Date(
-      new Date().getFullYear(),
-      new Date().getMonth(),
-      selectedDay ?? new Date().getDate(),
-      0,
-      0,
-      0,
-      0
-    );
+    const startDate = new Date(new Date().getFullYear(), new Date().getMonth(), selectedDay ?? new Date().getDate(), 0, 0, 0, 0);
 
-    const endDate = new Date(
-      new Date().getFullYear(),
-      new Date().getMonth(),
-      selectedDay ?? new Date().getDate(),
-      23,
-      59,
-      59,
-      999
-    );
+    const endDate = new Date(new Date().getFullYear(), new Date().getMonth(), selectedDay ?? new Date().getDate(), 23, 59, 59, 999);
 
     // Create a wrapper component to handle data passing
     const ModalWrapper = () => {
-      const title =
-        CustomComponents?.CustomEventModal?.CustomAddEventModal?.title ||
-        "Захиалга нэмэх";
+      const title = CustomComponents?.CustomEventModal?.CustomAddEventModal?.title || "Захиалга нэмэх";
 
       return (
         <div>
@@ -178,15 +134,10 @@ export default function SchedulerViewFilteration({
   };
   return (
     <div className="flex w-full flex-col">
-      <div className="flex w-full">
-        <div className="daily-weekly-monthly-selection relative w-full">
-          <Tabs
-            value={activeView}
-            onValueChange={setActiveView}
-            className={cn("w-full", classNames?.tabs)}
-          >
-            <div className="flex justify-between items-center mb-4">
-              {/* <TabsList className="grid grid-cols-3 rounded-full overflow-hidden">
+      <div className="daily-weekly-monthly-selection relative w-full">
+        <Tabs value={activeView} onValueChange={setActiveView} className={cn("w-full gap-0", classNames?.tabs)}>
+          <div className="flex items-center justify-end space-x-2 mb-0">
+            {/* <TabsList className="grid grid-cols-3 rounded-full overflow-hidden">
                 {viewsSelector?.includes("day") && (
                   <TabsTrigger value="day">
                     {CustomComponents?.customTabs?.CustomDayTab ? (
@@ -226,60 +177,35 @@ export default function SchedulerViewFilteration({
                   </TabsTrigger>
                 )}
               </TabsList> */}
-              {excel && (
-                <Button variant={"outline"} onClick={downloadExcel}>
-                  Export
-                </Button>
-              )}
-              {/* Add Event Button */}
-              {CustomComponents?.customButtons?.CustomAddEventButton ? (
-                <div onClick={() => handleAddEvent()}>
-                  {CustomComponents?.customButtons.CustomAddEventButton}
-                </div>
-              ) : (
-                <Button
-                  onClick={() => handleAddEvent()}
-                  className={classNames?.buttons?.addEvent}
-                  variant="purple"
-                >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  Хуваарь нэмэх
-                </Button>
-              )}
-            </div>
-
-            {viewsSelector?.includes("day") && (
-              <TabsContent value="day">
-                <AnimatePresence mode="wait">
-                  <motion.div {...(animationConfig as any)}>
-                    <DailyView
-                      deleteOrder={deleteOrder}
-                      loading={loading}
-                      currentDate={currentDate}
-                      setCurrentDate={setCurrentDate}
-                      values={values}
-                      refresh={refresh}
-                      events={orders.items}
-                      send={send}
-                      stopDayEventSummary={stopDayEventSummary}
-                      classNames={classNames?.buttons}
-                      prevButton={
-                        CustomComponents?.customButtons?.CustomPrevButton
-                      }
-                      nextButton={
-                        CustomComponents?.customButtons?.CustomNextButton
-                      }
-                      CustomEventComponent={
-                        CustomComponents?.CustomEventComponent
-                      }
-                      CustomEventModal={CustomComponents?.CustomEventModal}
-                    />
-                  </motion.div>
-                </AnimatePresence>
-              </TabsContent>
+            {excel && (
+              <Button variant={"ghost"} onClick={downloadExcel} className="bg-green-500 text-white hover:bg-green-500/80 gap-1 hover:text-white">
+                <FileText />
+                Excel
+              </Button>
             )}
+            {/* Add Event Button */}
+            {CustomComponents?.customButtons?.CustomAddEventButton ? (
+              <div onClick={() => handleAddEvent()}>{CustomComponents?.customButtons.CustomAddEventButton}</div>
+            ) : (
+              <Button onClick={() => handleAddEvent()} className={classNames?.buttons?.addEvent} variant="purple">
+                <CalendarIcon className="mr-2 h-4 w-4" />
+                Хуваарь нэмэх
+              </Button>
+            )}
+          </div>
+          <div className="divide-x-gray"></div>
 
-            {/* {viewsSelector?.includes("week") && (
+          {viewsSelector?.includes("day") && (
+            <TabsContent value="day">
+              <AnimatePresence mode="wait">
+                <motion.div {...(animationConfig as any)}>
+                  <DailyView deleteOrder={deleteOrder} loading={loading} currentDate={currentDate} setCurrentDate={setCurrentDate} values={values} refresh={refresh} events={orders.items} send={send} stopDayEventSummary={stopDayEventSummary} classNames={classNames?.buttons} prevButton={CustomComponents?.customButtons?.CustomPrevButton} nextButton={CustomComponents?.customButtons?.CustomNextButton} CustomEventComponent={CustomComponents?.CustomEventComponent} CustomEventModal={CustomComponents?.CustomEventModal} />
+                </motion.div>
+              </AnimatePresence>
+            </TabsContent>
+          )}
+
+          {/* {viewsSelector?.includes("week") && (
               <TabsContent value="week">
                 <AnimatePresence mode="wait">
                   <motion.div {...(animationConfig as any)}>
@@ -322,8 +248,7 @@ export default function SchedulerViewFilteration({
                 </AnimatePresence>
               </TabsContent>
             )} */}
-          </Tabs>
-        </div>
+        </Tabs>
       </div>
     </div>
   );

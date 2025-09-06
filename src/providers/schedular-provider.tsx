@@ -286,10 +286,12 @@ export const SchedulerProvider = ({
 
     // Improved width and position calculation
     // Use a smaller width if we have multiple overlapping events
-    const widthPercentage = Math.min(95 / Math.max(numEventsOnHour, 1), 95);
+    const widthPercentage = Math.min(100 / Math.max(numEventsOnHour, 1), 100);
 
     // Calculate left position with a small gap between events
-    const leftPosition = indexOnHour * (widthPercentage + 1);
+    // const leftPosition = indexOnHour * (widthPercentage + 1);
+    // const leftPosition = indexOnHour * 20;
+    const leftPosition = indexOnHour * widthPercentage;
 
     // Ensure left position doesn't go beyond container
     const safeLeftPosition = Math.min(leftPosition, 100 - widthPercentage);

@@ -30,7 +30,7 @@ import { Input } from "@/components/ui/input";
 
 import { Button } from "@/components/ui/button";
 import { checkEmpty, dateOnly, mnDate, objectCompact } from "@/lib/functions";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import DynamicHeader from "@/components/dynamicHeader";
 import { FilterPopover } from "@/components/layout/popover";
 import { Calendar } from "@/components/ui/calendar";
@@ -553,7 +553,7 @@ export const ProductWarehousePage = ({
                     {visibleProducts.length})
                   </label>
                 </div> */}
-                  <div className="flex flex-col gap-3">
+                  <div className="space-y-3">
                     <div className="double-col">
                       <div className="space-y-1">
                         <Label htmlFor="" className="text-sm font-semibold">
@@ -590,7 +590,7 @@ export const ProductWarehousePage = ({
                         }}
                       </FormItems>
                     </div>
-                    <div className="p-3 space-y-2 bg-white border rounded-xl">
+                    <div className="p-3 space-y-2 bg-white border rounded-xl overflow-hidden">
                       <div className="grid items-center justify-between w-full px-4 py-1 text-sm font-bold grid-cols-20">
                         <span className="col-span-1">№</span>
                         <span className="col-span-4">Бренд</span>
@@ -599,30 +599,31 @@ export const ProductWarehousePage = ({
                         <span className="col-span-1">Тоо</span>
                         <span className="col-span-5 text-center">Үйлдэл</span>
                       </div>
-                      <ScrollArea className="h-[50vh] w-full divide-y pt-0 bg-white border border-b-0 rounded">
-                        {products.map((product, index) => {
+                      <ScrollArea className="h-[50vh] w-full divide-y pt-0 bg-white border border-b-0 rounded overflow-hidden max-w-[calc(100vw-7rem)]">
+                      <div className="overflow-hidden border-slate-200 w-full">
+                         {products.map((product, index) => {
                           const [brand, category, name, quantity] =
                             product.value.split("__");
                           if (+quantity > 0)
                             return (
                               <div
                                 key={product.id}
-                                className="flex items-center justify-between p-3 pr-6 border-b last:border-none"
+                                className="flex items-center justify-between p-3 pr-6 border-b last:border-none flex-nowrap overflow-hidden"
                               >
-                                <div className="grid items-center justify-between w-full gap-4 grid-cols-20">
-                                  <span className="col-span-1 text-sm font-medium text-gray-700 truncate text-start">
+                                <div className="grid items-center justify-between w-full gap-4 grid-cols-20 min-w-[600px]">
+                                  <span className="col-span-1 text-xs font-medium text-gray-700 truncate text-start">
                                     {index + 1}
                                   </span>
-                                  <span className="col-span-4 text-sm font-medium text-gray-700 truncate text-start">
+                                  <span className="col-span-4 text-xs font-medium text-gray-700 truncate text-start">
                                     {checkEmpty(brand)}
                                   </span>
-                                  <span className="col-span-4 text-sm font-medium text-gray-700 truncate">
+                                  <span className="col-span-4 text-xs font-medium text-gray-700 truncate">
                                     {checkEmpty(category)}
                                   </span>
-                                  <span className="col-span-5 text-sm font-medium text-gray-700">
+                                  <span className="col-span-5 text-xs font-medium text-gray-700">
                                     {checkEmpty(name)}
                                   </span>
-                                  <span className="col-span-1 text-sm font-medium text-gray-700">
+                                  <span className="col-span-1 text-xs font-medium text-gray-700">
                                     {quantity}
                                   </span>
                                   <div className="flex items-center justify-center col-span-5 gap-1">
@@ -704,6 +705,8 @@ export const ProductWarehousePage = ({
                               </div>
                             );
                         })}
+                     </div>
+                         <ScrollBar orientation="horizontal" />
                       </ScrollArea>
                     </div>
                   </div>

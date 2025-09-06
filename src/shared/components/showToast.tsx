@@ -2,7 +2,7 @@ import { cn } from "@/lib/utils";
 import { Check, Info, Trash, X } from "lucide-react";
 import { toast } from "sonner";
 
-type ToastType = "success" | "error" | "info";
+type ToastType = "success" | "deleted" | "error" | "info";
 
 interface ShowToastOptions {
   duration?: number;
@@ -19,14 +19,14 @@ const toastConfig = {
     defaultTitle: "Амжилттай",
     defaultIcon: <Check className="size-4" strokeWidth={3} />,
     color: "#4ad460",
-    defaultDescription: "Амжилттай гүйцэтгэлээ",
+    defaultDescription: "Амжилттай гүйцэтгэлээ!",
   },
   deleted: {
     method: toast.success,
-    defaultTitle: "Устгалаа",
-    defaultIcon: <Trash className="size-4" strokeWidth={3} />,
-    color: "#fb4a24",
-    defaultDescription: "Амжилттай устгагдлаа",
+    defaultTitle: "Амжилттай",
+    defaultIcon: <Check className="size-4" strokeWidth={3} />,
+    color: "#4ad460",
+    defaultDescription: "Амжилттай устгагдлаа!",
   },
   error: {
     method: toast.error,
@@ -60,7 +60,7 @@ const title = options?.title ?? config.defaultTitle;
 
       {/* Message + Icon */}
       <div className={cn("space-y-1")}>
-        <div className="font-semibold">{title}</div>
+        <div className="font-bold">{title}</div>
 
         <span className="text-slate-600">{description}</span>
       </div>
@@ -72,3 +72,9 @@ const title = options?.title ?? config.defaultTitle;
     }
   );
 };
+
+// Custom дуудах
+// showToast("info", undefined, {
+//   title: "Анхааруулга",
+//   description: "Та энэ үйлдлийг баталгаажуулах хэрэгтэй."
+// });

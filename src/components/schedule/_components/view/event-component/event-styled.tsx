@@ -17,6 +17,7 @@ import { OrderStatus } from "@/lib/enum";
 import { Branch, IOrder, Order, Service, User } from "@/models";
 import { showToast } from "@/shared/components/showToast";
 import { Api } from "@/utils/api";
+import AppDialog from "@/shared/components/appDialog";
 
 // Function to format date
 const formatDate = (date: Date) => {
@@ -40,30 +41,7 @@ const formatTime = (date: Date) => {
 };
 
 // Color variants based on event type
-const FAMILIES = [
-  "blue",
-  "red",
-  "green",
-  "yellow",
-  "purple",
-  "pink",
-  "indigo",
-  "teal",
-  "cyan",
-  "sky",
-  "rose",
-  "orange",
-  "amber",
-  "lime",
-  "emerald",
-  "violet",
-  "fuchsia",
-  "slate",
-  "gray",
-  "zinc",
-  "neutral",
-  "stone",
-];
+const FAMILIES = ["blue", "red", "green", "yellow", "purple", "pink", "indigo", "teal", "cyan", "sky", "rose", "orange", "amber", "lime", "emerald", "violet", "fuchsia", "slate", "gray", "zinc", "neutral", "stone"];
 
 // Нэмэлт сүүдэр сетүүд (1 өнгөнд 3 хувилбар = 60+ item)
 const SHADE_SETS = [
@@ -118,11 +96,7 @@ export default function EventStyled({
 
     setOpen(
       <CustomModal title="Edit Event">
-        <AddEventModal
-          send={send}
-          items={values}
-          values={{ ...event, edit: event.id }}
-        />
+        <AddEventModal send={send} items={values} values={{ ...event, edit: event.id }} />
       </CustomModal>,
       async () => {
         return {
@@ -139,32 +113,45 @@ export default function EventStyled({
   };
 
   return (
-    <div
-      key={event?.id}
-      className={cn(
-        `w-full z-${
-          50 * index
-        } relative cursor-pointer border group rounded-lg flex flex-col flex-grow shadow-sm hover:shadow-md transition-shadow duration-200`,
-        event?.minmized ? "border-transparent" : "border-default-400/60"
-      )}
-    >
+    <div key={event?.id} className={cn(`w-full z-${50 * index} relative cursor-pointer border group rounded-lg flex flex-col flex-grow hover:shadow-md transition-shadow duration-200 bg-white`, event?.minmized ? "border-white" : "border-default-400/60")}>
       {/* Delete button - shown by default for non-minimized, or on hover for minimized */}
-      <Button
-        onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
-          e.stopPropagation();
+
+      <AppDialog
+        trigger={
+          <Button variant="destructive" size="icon" className={cn("absolute z-[100] right-1 top-[-8px] h-6 w-6 p-0 shadow-md hover:bg-destructive/90 transition-all duration-200", event?.minmized ? "opacity-0 group-hover:opacity-100" : "opacity-100")}>
+            <Trash2 size={14} className="text-destructive-foreground" />
+          </Button>
+        }
+        title="Захиалгыг устгах уу?"
+        description="Энэ үйлдлийг хийсний дараа захиалга бүрмөсөн устах бөгөөд буцаах боломжгүй гэдгийг анхаарна уу!"
+        onConfirm={() => {
           // handlers.handleDeleteEvent(event?.id);
           onDelete(event?.id);
-          showToast("success", "Амжилттай устгагдлаа!");
+          showToast("deleted", "Захиалга устгагдлаа!");
         }}
-        variant="destructive"
-        size="icon"
-        className={cn(
-          "absolute z-[100] right-1 top-[-8px] h-6 w-6 p-0 shadow-md hover:bg-destructive/90 transition-all duration-200",
-          event?.minmized ? "opacity-0 group-hover:opacity-100" : "opacity-100"
-        )}
-      >
-        <Trash2 size={14} className="text-destructive-foreground" />
-      </Button>
+      />
+
+      {/* <AppDialog
+        trigger={
+          <Button variant="destructive" size="icon" className={cn("absolute z-[100] right-1 top-[-8px] h-6 w-6 p-0 shadow-md hover:bg-destructive/90 transition-all duration-200", event?.minmized ? "opacity-0 group-hover:opacity-100" : "opacity-100")}>
+            <Trash2 size={14} className="text-destructive-foreground" />
+          </Button>
+        }
+        title="Захиалгыг устгах уу?"
+        description="Энэ үйлдлийг хийсний дараа захиалга бүрмөсөн устах бөгөөд буцаах боломжгүй гэдгийг анхаарна уу!"
+        confirmTrigger={
+          <Button
+            onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
+              e.stopPropagation();
+              handlers.handleDeleteEvent(event?.id);
+              onDelete(event?.id);
+              showToast("success", "Амжилттай устгагдлаа!");
+            }}
+          >
+            Тийм
+          </Button>
+        }
+      /> */}
       {event.CustomEventComponent ? (
         <div
           onClick={(e: React.MouseEvent<HTMLDivElement>) => {
@@ -201,35 +188,25 @@ export default function EventStyled({
             });
           }}
           className={cn(
-            "w-full p-2 rounded text-white",
+            "w-full p-2 text-white rounded-lg",
 
             event?.minmized ? "flex-grow overflow-hidden" : "min-h-fit"
           )}
           style={{ backgroundColor: getBackgroundColor(event?.color) }}
         >
           <div className="flex flex-col h-full">
-            <div className="font-semibold text-xs truncate mb-1">
-              {event?.details?.map((e) => e.service_name).join(",") ||
-                "Untitled Order"}
-            </div>
+            <div className="font-semibold text-xs truncate mb-1">{event?.details?.map((e) => e.service_name).join(",") || "Untitled Order"}</div>
             {event?.minmized && (
-              <div className="text-[10px] opacity-80 flex justify-between ">
+              <div className="text-[10px] flex justify-between">
                 <div>
                   <span> {event.start_time.slice(0, 5)} - </span>
                   <span> {event.end_time.slice(0, 5)} </span>
                 </div>
-                <span>
-                  {event?.status &&
-                    OrderStatusValues[event?.status as OrderStatus]}
-                </span>
+                <span className="opacity-80">{event?.status && OrderStatusValues[event?.status as OrderStatus]}</span>
               </div>
             )}
-            {!event?.minmized && event?.user_desc && (
-              <div className="my-2 text-sm">{event?.user_desc} </div>
-            )}
-            {!event?.minmized && event?.customer_desc && (
-              <div className="my-2 text-sm">{event?.customer_desc} </div>
-            )}
+            {!event?.minmized && event?.user_desc && <div className="my-2 text-sm">{event?.user_desc} </div>}
+            {!event?.minmized && event?.customer_desc && <div className="my-2 text-sm">{event?.customer_desc} </div>}
             {!event?.minmized && (
               <div className="text-xs space-y-1 mt-2">
                 <div className="flex items-center">
