@@ -1,13 +1,24 @@
 "use server";
 import { defaultPagination, Pagination } from "@/base/query";
-import { ListType, PPDT, SearchType } from "@/lib/constants";
+import {
+  DEFAULT_LIMIT,
+  DEFAULT_PAGE,
+  DEFAULT_SORT,
+  ListType,
+  PPDT,
+  SearchType,
+} from "@/lib/constants";
 import { paginationToQuery } from "@/lib/functions";
 import { API, METHOD } from "@/utils/api";
 import { cookies } from "next/headers";
 
 export const find = async <T,>(
   uri: keyof typeof API,
-  p: Pagination = {},
+  p: Pagination = {
+    limit: DEFAULT_LIMIT,
+    page: DEFAULT_PAGE,
+    sort: DEFAULT_SORT,
+  },
   route?: string
 ): Promise<{ data: ListType<T>; error?: string }> => {
   try {
@@ -235,9 +246,13 @@ export const create = async <T,>(
 
 export const search = async <T,>(
   uri: keyof typeof API,
-  p = {},
+  p: Pagination = {
+    limit: 5,
+    page: DEFAULT_PAGE,
+    sort: DEFAULT_SORT,
+  },
   route?: string
-): Promise<{ data: SearchType<T>[]; error?: string }> => {
+): Promise<{ data: SearchType<T>[] ; error?: string }> => {
   try {
     const store = await cookies();
     const token = store.get("token")?.value;
@@ -248,7 +263,8 @@ export const search = async <T,>(
       ...p,
     };
 
-    const url = paginationToQuery(uri, merged, `search/{id}${route ?? ""}`);
+    const url = paginationToQuery(uri, merged, `search`);
+    console.log(url)
     const res = await fetch(url, {
       cache: "no-store",
       headers: {

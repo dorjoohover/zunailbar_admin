@@ -29,6 +29,8 @@ import {
   toTimeString,
 } from "@/lib/functions";
 import { Branch, IOrder, Order, Service, User } from "@/models";
+import { SearchType } from "@/lib/constants";
+import { Api } from "@/utils/api";
 
 // Generate hours in 12-hour format
 const hours = Array.from({ length: totalHours }, (_, i) => {
@@ -186,10 +188,7 @@ export default function DailyView({
   events,
   deleteOrder,
   classNames,
-  users,
-  customers,
-  branches,
-  services,
+  values,
   send,
   refresh,
   currentDate,
@@ -213,12 +212,14 @@ export default function DailyView({
   nextButton?: React.ReactNode;
   CustomEventComponent?: React.FC<IOrder>;
   events: Order[];
-  users: User[];
   loading: boolean;
   send: (order: IOrder) => void;
-  customers: User[];
-  branches: Branch[];
-  services: Service[];
+  values: {
+    branch: SearchType<Branch>[];
+    customer: SearchType<User>[];
+    user: SearchType<User>[];
+    service: SearchType<Service>[];
+  };
   CustomEventModal?: CustomEventModal;
   stopDayEventSummary?: boolean;
   classNames?: { prev?: string; next?: string; addEvent?: string };
@@ -277,10 +278,7 @@ export default function DailyView({
     setOpen(
       <CustomModal title="Захиалга нэмэх" contentClass="max-w-3xl">
         <AddEventModal
-          branches={branches}
-          customers={customers}
-          services={services}
-          users={users}
+          items={values}
           send={send}
           loading={loading}
           // CustomAddEventModal={
@@ -366,7 +364,7 @@ export default function DailyView({
       },
     });
   }, [currentDate]);
-
+  console.log(events);
   return (
     <div className="">
       <div className="flex justify-between gap-3 flex-wrap mb-5">
@@ -432,10 +430,7 @@ export default function DailyView({
                         >
                           <EventStyled
                             onDelete={deleteOrder}
-                            branches={branches}
-                            users={users}
-                            customers={customers}
-                            services={services}
+                            values={values}
                             send={send}
                             event={{
                               ...event,
@@ -508,7 +503,7 @@ export default function DailyView({
                           periodIndex,
                           adjustForPeriod: true,
                         });
-
+                        console.log(zIndex, top, left, minWidth, maxWidth);
                         return (
                           <motion.div
                             key={event.id}
@@ -529,11 +524,9 @@ export default function DailyView({
                           >
                             <EventStyled
                               onDelete={deleteOrder}
-                              branches={branches}
-                              users={users}
-                              customers={customers}
                               send={send}
-                              services={services}
+                              values={values}
+                              index={zIndex}
                               event={{
                                 ...event,
                                 minmized: true,

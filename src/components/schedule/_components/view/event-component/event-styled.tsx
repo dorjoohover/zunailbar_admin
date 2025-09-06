@@ -12,10 +12,11 @@ import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import CustomModal from "@/components/ui/custom-modal";
 import { getUserColor } from "@/lib/colors";
-import { OrderStatusValues } from "@/lib/constants";
+import { OrderStatusValues, SearchType } from "@/lib/constants";
 import { OrderStatus } from "@/lib/enum";
 import { Branch, IOrder, Order, Service, User } from "@/models";
 import { showToast } from "@/shared/components/showToast";
+import { Api } from "@/utils/api";
 
 // Function to format date
 const formatDate = (date: Date) => {
@@ -88,16 +89,17 @@ export default function EventStyled({
   event,
   onDelete,
   CustomEventModal,
-  branches,
-  users,
-  customers,
+  values,
   send,
-  services,
+  index = 1,
 }: {
-  branches: Branch[];
-  users: User[];
-  customers: User[];
-  services: Service[];
+  values: {
+    branch: SearchType<Branch>[];
+    customer: SearchType<User>[];
+    user: SearchType<User>[];
+    service: SearchType<Service>[];
+  };
+  index?: number;
   send: (order: IOrder) => void;
   event: EventStyledProps;
   CustomEventModal?: CustomEventModal;
@@ -113,15 +115,12 @@ export default function EventStyled({
   // Handler function
   function handleEditEvent(event: IOrder) {
     // Open the modal with the content
-    console.log(event.details);
+
     setOpen(
       <CustomModal title="Edit Event">
         <AddEventModal
-          branches={branches}
-          customers={customers}
           send={send}
-          services={services}
-          users={users}
+          items={values}
           values={{ ...event, edit: event.id }}
         />
       </CustomModal>,
@@ -143,7 +142,9 @@ export default function EventStyled({
     <div
       key={event?.id}
       className={cn(
-        "w-full z-50 relative cursor-pointer border group rounded-lg flex flex-col flex-grow shadow-sm hover:shadow-md transition-shadow duration-200",
+        `w-full z-${
+          50 * index
+        } relative cursor-pointer border group rounded-lg flex flex-col flex-grow shadow-sm hover:shadow-md transition-shadow duration-200`,
         event?.minmized ? "border-transparent" : "border-default-400/60"
       )}
     >
@@ -153,7 +154,7 @@ export default function EventStyled({
           e.stopPropagation();
           // handlers.handleDeleteEvent(event?.id);
           onDelete(event?.id);
-          showToast("success", "Амжилттай устгагдлаа!")
+          showToast("success", "Амжилттай устгагдлаа!");
         }}
         variant="destructive"
         size="icon"

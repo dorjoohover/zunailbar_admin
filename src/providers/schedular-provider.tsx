@@ -296,16 +296,16 @@ export const SchedulerProvider = ({
     return {
       height: `${
         eventHeight < minimumHeight
-          ? minimumHeight
+          ? Math.round(minimumHeight)
           : eventHeight > maxHeight
-          ? maxHeight
-          : eventHeight
+          ? Math.round(maxHeight)
+          : Math.round(eventHeight)
       }px`,
-      top: `${eventTop}px`,
+      top: `${Math.round(eventTop)}px`,
       zIndex: indexOnHour + 1,
-      left: `${safeLeftPosition}%`,
-      maxWidth: `${widthPercentage}%`,
-      minWidth: `${widthPercentage}%`,
+      left: `${Math.round(safeLeftPosition)}%`,
+      maxWidth: `${Math.round(widthPercentage)}%`,
+      minWidth: `${Math.round(widthPercentage)}%`,
     };
   }
 

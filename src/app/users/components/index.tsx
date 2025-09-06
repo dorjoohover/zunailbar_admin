@@ -16,7 +16,7 @@ import z from "zod";
 import { FormProvider, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Api } from "@/utils/api";
-import { create, deleteOne, updateOne } from "@/app/(api)";
+import { create, deleteOne, search, updateOne } from "@/app/(api)";
 import { FormItems } from "@/shared/components/form.field";
 import { ComboBox } from "@/shared/components/combobox";
 import { TextField } from "@/shared/components/text.field";
@@ -86,7 +86,6 @@ export const UserPage = ({ data }: { data: ListType<User> }) => {
   }, [data]);
   const clear = () => {
     form.reset(defaultValues);
-    console.log(form.getValues());
   };
   const deleteUser = async (index: number) => {
     const id = Users!.items[index].id;
@@ -100,20 +99,21 @@ export const UserPage = ({ data }: { data: ListType<User> }) => {
   };
   const columns = getColumns(edit, deleteUser);
 
-  const refresh = async (pg: PG = DEFAULT_PG) => {
+  const refresh = async (pg: PG = DEFAULT_PG, searchValue?: string) => {
     setAction(ACTION.RUNNING);
-    const { page, limit, sort } = pg;
+    const { page, limit, sort, filter } = pg;
+    console.log(pg);
     await fetcher<User>(Api.user, {
       page: page ?? DEFAULT_PG.page,
       limit: limit ?? DEFAULT_PG.limit,
       sort: sort ?? DEFAULT_PG.sort,
       role: ROLE.CLIENT,
+      mobile: filter,
       ...pg,
-      //   name: pg.filter,
     }).then((d) => {
       UserFormatter(d);
-      console.log(d);
     });
+
     setAction(ACTION.DEFAULT);
   };
   const onSubmit = async <T,>(e: T) => {
@@ -178,6 +178,7 @@ export const UserPage = ({ data }: { data: ListType<User> }) => {
       ],
       []
     );
+
   return (
     <div className="">
       <DynamicHeader />

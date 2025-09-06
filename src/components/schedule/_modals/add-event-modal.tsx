@@ -8,10 +8,15 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { EventFormData, eventSchema, Variant } from "@/types/index";
 import { useScheduler } from "@/providers/schedular-provider";
 import { Branch, IOrder, Service, User } from "@/models";
-import { OrderStatus } from "@/lib/enum";
+import { OrderStatus, ROLE } from "@/lib/enum";
 import { FormItems } from "@/shared/components/form.field";
 import { ComboBox } from "@/shared/components/combobox";
-import { getEnumValues, ListType, OrderStatusValues } from "@/lib/constants";
+import {
+  getEnumValues,
+  ListType,
+  OrderStatusValues,
+  SearchType,
+} from "@/lib/constants";
 import {
   formatTime,
   mnDateFormat,
@@ -27,6 +32,8 @@ import { Select, SelectItem } from "@/components/ui/select";
 import { fi } from "zod/v4/locales";
 import { MultiSelect } from "@/shared/components/multiple.select";
 import { showToast } from "@/shared/components/showToast";
+import { Api } from "@/utils/api";
+import { search } from "@/app/(api)";
 const defaultValues = {
   branch_id: "",
   user_id: "",
@@ -38,20 +45,19 @@ const defaultValues = {
 };
 export default function AddEventModal({
   // CustomAddEventModal,
-  branches,
-  customers,
-  users,
-  services,
+  items,
   send,
   values,
   loading = false,
 }: {
-  branches: Branch[];
+  items: {
+    branch: SearchType<Branch>[];
+    customer: SearchType<User>[];
+    user: SearchType<User>[];
+    service: SearchType<Service>[];
+  };
   loading?: boolean;
-  customers: User[];
   send: (order: IOrder) => void;
-  users: User[];
-  services: Service[];
   values?: IOrder;
   // CustomAddEventModal?: React.FC<{ register: any; errors: any }>;
 }) {
@@ -60,12 +66,45 @@ export default function AddEventModal({
   const typedData = data as { default: IOrder };
 
   const { handlers } = useScheduler();
+  const [allItems, setValues] = useState(items);
 
+  const searchField = async (v: string, key: Api) => {
+    let value = "";
+    if (v.length > 1) value = v;
+    if (v.length == 1) return;
+    const artist = form.watch("user_id");
+    const details = form.watch("details");
+    const payload =
+      key === Api.branch
+        ? { name: value }
+        : key === Api.service
+        ? { name: value, user_id: artist }
+        : {
+            id: value,
+            role: key == Api.customer ? ROLE.CLIENT : ROLE.E_M,
+            services: details.map((d) => d.service_id).join(","),
+          }; // 👈 role нэмлээ
+
+    await search(key == Api.customer ? Api.user : key, {
+      ...payload,
+      limit: 20,
+      page: 0,
+    }).then((d) => {
+      setValues((prev) => ({
+        ...prev,
+        [key]: d.data,
+      }));
+    });
+  };
   const form = useForm<EventFormData>({
     resolver: zodResolver(eventSchema),
     defaultValues: defaultValues,
   });
-
+  useEffect(() => {
+    if (form.watch("details")?.length > 0) searchField("", Api.user);
+    if (form.watch("user_id") && form.watch("user_id") != "")
+      searchField("", Api.service);
+  }, [form.watch("details"), form.watch("user_id")]);
   // Reset the form on initialization
   useEffect(() => {
     if (data?.default) {
@@ -115,12 +154,15 @@ export default function AddEventModal({
             {(field) => {
               return (
                 <ComboBox
-                  search={true}
+                  search={(e) => {
+                    searchField(e, Api.branch);
+                  }}
                   props={{ ...field }}
-                  items={branches.map((item) => {
+                  items={allItems.branch.map((item) => {
+                    const [name] = item.value?.split("__") ?? [""];
                     return {
                       value: item.id,
-                      label: item.name,
+                      label: name,
                     };
                   })}
                 />
@@ -138,17 +180,23 @@ export default function AddEventModal({
                 <div>
                   <MultiSelect
                     // RHF field-ийг “id массив” болгосон wrapper-оор өгнө
+                    search={(e) => searchField(e, Api.service)}
                     props={
                       {
                         name: field.name,
                         value: selectedIds,
                         onChange: (ids: string[]) => {
                           const nextDetails = ids.map((id) => {
-                            const svc = services.find((s) => s.id === id);
+                            const svc = allItems.service.find(
+                              (s) => s.id === id
+                            );
+                            const [name, duration] = svc?.value?.split(
+                              "__"
+                            ) ?? ["", null];
                             return {
                               service_id: id,
-                              service_name: svc?.name ?? "",
-                              duration: svc?.duration ?? null,
+                              service_name: name ?? "",
+                              duration: duration ?? null,
                             };
                           });
                           field.onChange(nextDetails);
@@ -157,10 +205,13 @@ export default function AddEventModal({
                         ref: field.ref,
                       } as any
                     }
-                    items={services.map((s) => ({
-                      label: s.name,
-                      value: s.id,
-                    }))}
+                    items={allItems.service.map((s) => {
+                      const [name] = s.value?.split("__") ?? [""];
+                      return {
+                        label: name,
+                        value: s.id,
+                      };
+                    })}
                   />
                 </div>
               );
@@ -174,14 +225,18 @@ export default function AddEventModal({
             {(field) => {
               return (
                 <ComboBox
-                  search={true}
+                  search={(v) => searchField(v, Api.customer)}
                   props={{ ...field }}
-                  items={customers.map((item) => {
+                  items={allItems.customer.map((item) => {
+                    const [mobile, nickname] = item?.value?.split("__") ?? [
+                      "",
+                      "",
+                      "",
+                      "",
+                    ];
                     return {
                       value: item.id,
-                      label: `${mobileFormatter(
-                        item.mobile ?? ""
-                      )} ${usernameFormatter(item)}`,
+                      label: `${mobileFormatter(mobile)} ${nickname}`,
                     };
                   })}
                 />
@@ -193,17 +248,24 @@ export default function AddEventModal({
             {(field) => {
               return (
                 <ComboBox
-                  search={true}
+                  search={(e) => searchField(e, Api.user)}
                   props={{ ...field }}
-                  items={users
+                  items={allItems.user
                     .filter((user) => {
                       const branch = form.watch("branch_id");
-                      return branch ? user.branch_id == branch : user;
+                      return branch ? user.value.includes(branch) : user;
                     })
                     .map((item) => {
+                      const [mobile, nickname] = item?.value?.split("__") ?? [
+                        "",
+                        "",
+                        "",
+                        "",
+                      ];
+
                       return {
                         value: item.id,
-                        label: usernameFormatter(item),
+                        label: `${mobileFormatter(mobile)} ${nickname}`,
                       };
                     })}
                 />

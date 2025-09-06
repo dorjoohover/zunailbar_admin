@@ -29,15 +29,15 @@ type InputType = {
 
 export function ComboBox<T extends FieldValues>({
   items,
-  search = false,
+  search = undefined,
   name = "Сонгох",
-  className = 'w-full',
+  className = "w-full",
   pl,
   props,
 }: {
   items: InputType[];
   name?: string;
-  search?: boolean;
+  search?: (v: string) => void;
   className?: string;
   pl?: string;
   value?: string;
@@ -46,9 +46,20 @@ export function ComboBox<T extends FieldValues>({
   props: ControllerRenderProps<T>;
 }) {
   const [open, setOpen] = React.useState(false);
+  const [localItems, setLocalItems] = React.useState(items);
+  React.useEffect(() => {
+    setLocalItems(items);
+  }, [items]);
   const { value, onChange } = props;
   return (
-    <Popover modal={true} open={open} onOpenChange={setOpen}>
+    <Popover
+      modal={true}
+      open={open}
+      onOpenChange={(v) => {
+        setOpen(v);
+        if (!v && search) search("");
+      }}
+    >
       <PopoverTrigger asChild>
         <Button
           variant="outline"
@@ -66,18 +77,29 @@ export function ComboBox<T extends FieldValues>({
         </Button>
       </PopoverTrigger>
       <PopoverContent className={cn(className, "p-0 bg-white min-w-48")}>
-        <Command>
-          {search === true && <CommandInput placeholder={pl} className="h-9" />}
-          <CommandList className="max-h-60 overflow-y-auto">
+        <Command filter={() => 1}>
+          {search && (
+            <CommandInput
+              placeholder={pl}
+              onValueChange={(e) => {
+                search(e);
+              }}
+              // onchange
+              className="h-9"
+            />
+          )}
+          <CommandList
+            className="max-h-60 overflow-y-auto"
+            key={localItems.map((i) => i.value).join(",")}
+          >
             <CommandEmpty>Хайлт олдсонгүй</CommandEmpty>
             <CommandGroup className="overflow-y-scroll">
-              {items.map((framework) => (
+              {localItems.map((framework) => (
                 <CommandItem
                   key={framework.value}
                   value={`${framework.label}__${framework.value}`}
                   onSelect={(currentValue) => {
                     const val = currentValue?.split("__")?.[1];
-                    console.log(val)
                     const vl =
                       currentValue === value ? "" : val ? val : currentValue;
                     onChange(vl);

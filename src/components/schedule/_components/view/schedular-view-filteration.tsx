@@ -16,8 +16,9 @@ import { useModal } from "@/providers/modal-context";
 import { ClassNames, CustomComponents, Views } from "@/types/index";
 import { cn } from "@/lib/utils";
 import CustomModal from "@/components/ui/custom-modal";
-import { ListType } from "@/lib/constants";
+import { ListType, SearchType } from "@/lib/constants";
 import { Branch, IOrder, Order, Service, User } from "@/models";
+import { Api } from "@/utils/api";
 
 // Animation settings for Framer Motion
 const animationConfig = {
@@ -38,11 +39,8 @@ export default function SchedulerViewFilteration({
   classNames,
   orders,
   excel,
-  customers,
-  users,
-  branches,
-  services,
   refresh,
+  values,
   send,
   currentDate,
   setCurrentDate,
@@ -51,10 +49,12 @@ export default function SchedulerViewFilteration({
   loading: boolean;
   deleteOrder: (id: string) => void;
   orders: ListType<Order>;
-  users: ListType<User>;
-  customers: ListType<User>;
-  branches: ListType<Branch>;
-  services: ListType<Service>;
+  values: {
+    branch: SearchType<Branch>[];
+    customer: SearchType<User>[];
+    user: SearchType<User>[];
+    service: SearchType<Service>[];
+  };
   views?: Views;
   currentDate: Date;
   setCurrentDate: Dispatch<SetStateAction<Date>>;
@@ -152,10 +152,7 @@ export default function SchedulerViewFilteration({
     setOpen(
       <CustomModal title="Захиалга нэмэх">
         <AddEventModal
-          branches={branches.items}
-          customers={customers.items}
-          services={services.items}
-          users={users.items}
+          items={values}
           send={send}
           loading={loading}
           // CustomAddEventModal={
@@ -260,10 +257,7 @@ export default function SchedulerViewFilteration({
                       loading={loading}
                       currentDate={currentDate}
                       setCurrentDate={setCurrentDate}
-                      branches={branches.items}
-                      customers={customers.items}
-                      users={users.items}
-                      services={services.items}
+                      values={values}
                       refresh={refresh}
                       events={orders.items}
                       send={send}

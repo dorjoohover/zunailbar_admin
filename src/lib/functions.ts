@@ -54,6 +54,7 @@ export function getDayName(dayNumber: number): string {
     4: "Пүрэв",
     5: "Баасан",
     6: "Бямба",
+    0: "Ням",
     7: "Ням",
   };
 

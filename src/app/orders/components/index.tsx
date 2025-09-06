@@ -1,19 +1,26 @@
 "use client";
 import { Branch, IOrder, Order, Service, User } from "@/models";
 import { useEffect, useMemo, useState } from "react";
-import { ListType, ACTION, PG, DEFAULT_PG, ListDefault } from "@/lib/constants";
+import {
+  ListType,
+  ACTION,
+  PG,
+  DEFAULT_PG,
+  ListDefault,
+  SearchType,
+} from "@/lib/constants";
 import z from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Api } from "@/utils/api";
-import { create, deleteOne, excel, updateOne } from "@/app/(api)";
+import { create, deleteOne, excel, search, updateOne } from "@/app/(api)";
 import { fetcher } from "@/hooks/fetcher";
 import SchedulerViewFilteration from "@/components/schedule/_components/view/schedular-view-filteration";
 import { SchedulerProvider } from "@/providers/schedular-provider";
 import DynamicHeader from "@/components/dynamicHeader";
 import { mnDate, usernameFormatter } from "@/lib/functions";
 import { showToast } from "@/shared/components/showToast";
-import { OrderStatus } from "@/lib/enum";
+import { OrderStatus, ROLE } from "@/lib/enum";
 
 const formSchema = z.object({
   branch_id: z.string().min(1),
@@ -35,14 +42,7 @@ const formSchema = z.object({
   ) as unknown as number,
   edit: z.string().nullable().optional(),
 });
-const defaultValues: OrderType = {
-  branch_id: "",
-  name: "",
-  max_price: null,
-  min_price: 0,
-  duration: 0,
-  edit: undefined,
-};
+
 type OrderType = z.infer<typeof formSchema>;
 export const OrderPage = ({
   branches,
@@ -50,27 +50,33 @@ export const OrderPage = ({
   customers,
   services,
 }: {
-  branches: ListType<Branch>;
-  services: ListType<Service>;
-  users: ListType<User>;
-  customers: ListType<User>;
+  branches: SearchType<Branch>[];
+  services: SearchType<Service>[];
+  users: SearchType<User>[];
+  customers: SearchType<User>[];
 }) => {
   const [action, setAction] = useState(ACTION.DEFAULT);
   const [currentDate, setCurrentDate] = useState<Date>(new Date());
   const [orders, setOrders] = useState<ListType<Order>>(ListDefault);
   const userMap = useMemo(
-    () => new Map(users.items.map((b) => [b.id, b])),
-    [users.items]
+    () => new Map(users.map((b) => [b.id, b.value])),
+    [users]
   );
 
   const orderFormatter = (data: ListType<Order>) => {
     const items: Order[] = data.items.map((item) => {
       const user = userMap.get(item.user_id);
+      const [mobile, nickname, branch_id, color] = user?.split("__") ?? [
+        "",
+        "",
+        "",
+        "",
+      ];
       return {
         ...item,
-        user_name: user ? usernameFormatter(user) : "",
-        branch_id: user?.branch_id,
-        color: user?.color,
+        user_name: user ? `${nickname} ${mobile}` : "",
+        branch_id: branch_id,
+        color: +color,
         // branch_name: user?.name ?? "",
       };
     });
@@ -176,12 +182,14 @@ export const OrderPage = ({
             loading={action == ACTION.RUNNING}
             send={onSubmit}
             excel={downloadExcel}
-            orders={orders}
-            branches={branches}
-            users={users}
             deleteOrder={deleteOrder}
-            customers={customers}
-            services={services}
+            orders={orders}
+            values={{
+              branch: branches,
+              customer: customers,
+              service: services,
+              user: users,
+            }}
             refresh={refresh}
           />
         </SchedulerProvider>

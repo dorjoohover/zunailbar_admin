@@ -25,9 +25,11 @@ export function MultiSelect<T extends FieldValues>({
   items,
   props,
   placeholder = "Сонгох...",
+  search,
   className,
 }: {
   props: ControllerRenderProps<T, any>; // RHF field (value, onChange, name...)
+  search?: (e: string) => void;
   items: Item[];
   placeholder?: string;
   className?: string;
@@ -62,7 +64,7 @@ export function MultiSelect<T extends FieldValues>({
           type="button"
           variant="outline"
           role="combobox"
-          className={cn("max-w-[260px] w-full justify-between overflow-hidden", className)}
+          className={cn(" w-full justify-between overflow-hidden", className)}
         >
           <span className={cn(!value.length && "text-muted-foreground")}>
             {display}
@@ -80,7 +82,12 @@ export function MultiSelect<T extends FieldValues>({
       </PopoverTrigger>
       <PopoverContent className="w-[260px] p-0" align="start">
         <Command>
-          <CommandInput placeholder="Хайх..." />
+          {search && (
+            <CommandInput
+              placeholder="Хайх..."
+              onValueChange={(e) => search(e)}
+            />
+          )}
           <CommandList>
             <CommandEmpty>Юу ч олдсонгүй</CommandEmpty>
             <CommandGroup>
