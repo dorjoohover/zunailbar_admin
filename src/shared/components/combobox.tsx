@@ -70,7 +70,7 @@ export function ComboBox<T extends FieldValues>({
           {search === true && <CommandInput placeholder={pl} className="h-9" />}
           <CommandList className="max-h-60 overflow-y-auto">
             <CommandEmpty>Хайлт олдсонгүй</CommandEmpty>
-            <CommandGroup className="overflow-y-scroll">
+            <CommandGroup>
               {items.map((framework) => (
                 <CommandItem
                   key={framework.value}
