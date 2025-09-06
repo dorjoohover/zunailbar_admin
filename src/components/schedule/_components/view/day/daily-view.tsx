@@ -503,7 +503,6 @@ export default function DailyView({
                           periodIndex,
                           adjustForPeriod: true,
                         });
-                        console.log(zIndex, top, left, minWidth, maxWidth);
                         return (
                           <motion.div
                             key={event.id}
@@ -513,6 +512,7 @@ export default function DailyView({
                               left: left,
                               maxWidth: maxWidth,
                               minWidth: minWidth,
+                              zIndex: zIndex,
                               padding: "0 2px",
                               boxSizing: "border-box",
                             }}

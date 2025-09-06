@@ -93,8 +93,8 @@ export function ComboBox<T extends FieldValues>({
             key={localItems.map((i) => i.value).join(",")}
           >
             <CommandEmpty>Хайлт олдсонгүй</CommandEmpty>
-            <CommandGroup className="overflow-y-scroll">
-              {localItems.map((framework) => (
+            <CommandGroup>
+              {items.map((framework) => (
                 <CommandItem
                   key={framework.value}
                   value={`${framework.label}__${framework.value}`}

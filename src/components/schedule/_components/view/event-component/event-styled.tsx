@@ -214,7 +214,10 @@ export default function EventStyled({
             </div>
             {event?.minmized && (
               <div className="text-[10px] opacity-80 flex justify-between ">
-                <span> {event.start_time} </span>
+                <div>
+                  <span> {event.start_time.slice(0, 5)} - </span>
+                  <span> {event.end_time.slice(0, 5)} </span>
+                </div>
                 <span>
                   {event?.status &&
                     OrderStatusValues[event?.status as OrderStatus]}
