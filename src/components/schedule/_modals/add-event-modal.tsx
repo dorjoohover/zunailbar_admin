@@ -177,7 +177,6 @@ export default function AddEventModal({
                 : [];
 
               return (
-                <div>
                   <MultiSelect
                     // RHF field-ийг “id массив” болгосон wrapper-оор өгнө
                     search={(e) => searchField(e, Api.service)}
@@ -213,7 +212,6 @@ export default function AddEventModal({
                       };
                     })}
                   />
-                </div>
               );
             }}
           </FormItems>

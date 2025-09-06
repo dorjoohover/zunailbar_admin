@@ -187,7 +187,7 @@ export const CostPage = ({
         },
         {
           key: "category",
-          label: "Category",
+          label: "Ангилал",
           items: categories.items.map((b) => ({ value: b.id, label: b.name })),
         },
 
