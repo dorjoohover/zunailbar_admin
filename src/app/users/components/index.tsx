@@ -220,7 +220,6 @@ export const UserPage = ({ data }: { data: ListType<User> }) => {
                       pl={item.label}
                       name={item.label}
                       className="max-w-36 text-xs!"
-                      search={true}
                       value={filter?.[key] ? String(filter[key]) : ""} //
                       items={item.items.map((it) => ({
                         value: String(it.value),

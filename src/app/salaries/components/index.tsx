@@ -1,7 +1,15 @@
 "use client";
 import { DataTable } from "@/components/data-table";
 import { useEffect, useMemo, useState } from "react";
-import { ListType, ACTION, PG, DEFAULT_PG, getEnumValues, ListDefault, SalaryLogValues } from "@/lib/constants";
+import {
+  ListType,
+  ACTION,
+  PG,
+  DEFAULT_PG,
+  getEnumValues,
+  ListDefault,
+  SalaryLogValues,
+} from "@/lib/constants";
 import { Modal } from "@/shared/components/modal";
 import z from "zod";
 import { FormProvider, useForm } from "react-hook-form";
@@ -21,10 +29,24 @@ import { DatePicker } from "@/shared/components/date.picker";
 import { showToast } from "@/shared/components/showToast";
 
 const formSchema = z.object({
-  date: z.preprocess((val) => (typeof val === "string" ? new Date(val) : val), z.date()) as unknown as Date,
-  salary_log_status: z.preprocess((val) => (typeof val === "string" ? parseInt(val, 10) : val), z.nativeEnum(SalaryLogStatus).nullable()).optional() as unknown as number,
-  amount: z.preprocess((val) => (typeof val === "string" ? parseFloat(val) : val), z.number()) as unknown as number,
-  order_count: z.preprocess((val) => (typeof val === "string" ? parseFloat(val) : val), z.number()) as unknown as number,
+  date: z.preprocess(
+    (val) => (typeof val === "string" ? new Date(val) : val),
+    z.date()
+  ) as unknown as Date,
+  salary_log_status: z
+    .preprocess(
+      (val) => (typeof val === "string" ? parseInt(val, 10) : val),
+      z.nativeEnum(SalaryLogStatus).nullable()
+    )
+    .optional() as unknown as number,
+  amount: z.preprocess(
+    (val) => (typeof val === "string" ? parseFloat(val) : val),
+    z.number()
+  ) as unknown as number,
+  order_count: z.preprocess(
+    (val) => (typeof val === "string" ? parseFloat(val) : val),
+    z.number()
+  ) as unknown as number,
   user_id: z.string(),
   user_name: z.string(),
   edit: z.string().nullable().optional(),
@@ -39,7 +61,13 @@ const defaultValues = {
   edit: undefined,
 };
 type SalaryType = z.infer<typeof formSchema>;
-export const SalaryPage = ({ data, users }: { data: ListType<SalaryLog>; users: ListType<User> }) => {
+export const SalaryPage = ({
+  data,
+  users,
+}: {
+  data: ListType<SalaryLog>;
+  users: ListType<User>;
+}) => {
   const [action, setAction] = useState(ACTION.DEFAULT);
   const [open, setOpen] = useState<undefined | boolean>(false);
   const form = useForm<SalaryType>({
@@ -57,7 +85,10 @@ export const SalaryPage = ({ data, users }: { data: ListType<SalaryLog>; users: 
     setOpen(true);
     form.reset({ ...e, edit: e.id });
   };
-  const userMap = useMemo(() => new Map(users.items.map((b) => [b.id, b])), [users.items]);
+  const userMap = useMemo(
+    () => new Map(users.items.map((b) => [b.id, b])),
+    [users.items]
+  );
 
   const userFormatter = (data: ListType<SalaryLog>) => {
     const items: SalaryLog[] = data.items.map((item) => {
@@ -94,7 +125,13 @@ export const SalaryPage = ({ data, users }: { data: ListType<SalaryLog>; users: 
     const body = e as SalaryType;
     const { edit, ...payload } = body;
 
-    const res = edit ? await updateOne<ISalaryLog>(Api.salary_log, edit ?? "", payload as unknown as ISalaryLog) : await create<ISalaryLog>(Api.salary_log, e as ISalaryLog);
+    const res = edit
+      ? await updateOne<ISalaryLog>(
+          Api.salary_log,
+          edit ?? "",
+          payload as unknown as ISalaryLog
+        )
+      : await create<ISalaryLog>(Api.salary_log, e as ISalaryLog);
     if (res.success) {
       refresh();
       setOpen(false);
@@ -120,7 +157,10 @@ export const SalaryPage = ({ data, users }: { data: ListType<SalaryLog>; users: 
 
       const link = document.createElement("a");
       link.href = url;
-      link.setAttribute("download", `salary_${mnDate().toISOString().slice(0, 10)}.xlsx`);
+      link.setAttribute(
+        "download",
+        `salary_${mnDate().toISOString().slice(0, 10)}.xlsx`
+      );
       document.body.appendChild(link);
       link.click();
 
@@ -160,26 +200,37 @@ export const SalaryPage = ({ data, users }: { data: ListType<SalaryLog>; users: 
               <FormProvider {...form}>
                 <div className="divide-y">
                   <div className="double-col">
-                    <FormItems label="Статус" control={form.control} name="salary_log_status" className={"col-span-1"}>
+                    <FormItems
+                      label="Статус"
+                      control={form.control}
+                      name="salary_log_status"
+                      className={"col-span-1"}
+                    >
                       {(field) => {
                         return (
                           <ComboBox
                             props={{ ...field }}
-                            items={getEnumValues(SalaryLogStatus).map((item) => {
-                              return {
-                                value: item.toString(),
-                                label: SalaryLogValues[item],
-                              };
-                            })}
+                            items={getEnumValues(SalaryLogStatus).map(
+                              (item) => {
+                                return {
+                                  value: item.toString(),
+                                  label: SalaryLogValues[item],
+                                };
+                              }
+                            )}
                           />
                         );
                       }}
                     </FormItems>
-                    <FormItems label="Нэр" control={form.control} name="user_id" className={"col-span-1"}>
+                    <FormItems
+                      label="Нэр"
+                      control={form.control}
+                      name="user_id"
+                      className={"col-span-1"}
+                    >
                       {(field) => {
                         return (
                           <ComboBox
-                            search={true}
                             props={{ ...field }}
                             items={users.items.map((item) => {
                               return {
@@ -193,10 +244,20 @@ export const SalaryPage = ({ data, users }: { data: ListType<SalaryLog>; users: 
                     </FormItems>
                     <FormItems label="Огноо" control={form.control} name="date">
                       {(field) => {
-                        return <DatePicker name="" pl="Огноо сонгох" props={{ ...field }} />;
+                        return (
+                          <DatePicker
+                            name=""
+                            pl="Огноо сонгох"
+                            props={{ ...field }}
+                          />
+                        );
                       }}
                     </FormItems>
-                    <FormItems control={form.control} name="order_count" label="Нийт хийсэн үйлчилгээ">
+                    <FormItems
+                      control={form.control}
+                      name="order_count"
+                      label="Нийт хийсэн үйлчилгээ"
+                    >
                       {(field) => {
                         return (
                           <TextField

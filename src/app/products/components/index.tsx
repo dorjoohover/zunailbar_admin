@@ -215,7 +215,6 @@ export const ProductPage = ({
                       pl={item.label}
                       name={item.label}
                       className="max-w-36 text-xs!"
-                      search={true}
                       value={filter?.[key] ? String(filter[key]) : ""} //
                       items={item.items.map((it) => ({
                         value: String(it.value),
@@ -258,7 +257,6 @@ export const ProductPage = ({
                       {(field) => {
                         return (
                           <ComboBox
-                            search={true}
                             props={{ ...field }}
                             items={categories.items.map((item) => {
                               return {
@@ -278,7 +276,6 @@ export const ProductPage = ({
                       {(field) => {
                         return (
                           <ComboBox
-                            search={true}
                             props={{ ...field }}
                             items={brands.items.map((item) => {
                               return {
