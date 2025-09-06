@@ -68,7 +68,7 @@ export function ComboBox<T extends FieldValues>({
       <PopoverContent className={cn(className, "p-0 bg-white min-w-48")}>
         <Command>
           {search === true && <CommandInput placeholder={pl} className="h-9" />}
-          <CommandList className="max-h-60 overflow-y-auto">
+          <CommandList className="max-h-60">
             <CommandEmpty>Хайлт олдсонгүй</CommandEmpty>
             <CommandGroup>
               {items.map((framework) => (
