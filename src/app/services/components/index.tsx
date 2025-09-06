@@ -127,7 +127,11 @@ export const ServicePage = ({
     const body = e as ServiceType;
     const { edit, ...payload } = body;
     const res = edit
-      ? await updateOne<Service>(Api.service, edit ?? "", payload as unknown as Service)
+      ? await updateOne<Service>(
+          Api.service,
+          edit ?? "",
+          payload as unknown as Service
+        )
       : await create<Service>(Api.service, e as Service);
     console.log(res);
     if (res.success) {
@@ -208,7 +212,6 @@ export const ServicePage = ({
                       pl={item.label}
                       name={item.label}
                       className="max-w-36 text-xs!"
-                      search={true}
                       value={filter?.[key] ? String(filter[key]) : ""} //
                       items={item.items.map((it) => ({
                         value: String(it.value),

@@ -376,7 +376,6 @@ export const ProductWarehousePage = ({
                       <ComboBox
                         pl={item.label}
                         className="max-w-36 text-xs!"
-                        search={true}
                         value={filter?.[key] ? String(filter[key]) : ""} //
                         items={item.items.map((it) => ({
                           value: String(it.value),
@@ -470,7 +469,7 @@ export const ProductWarehousePage = ({
                     <ComboBox
                       pl={item.label}
                       className="max-w-36 text-xs!"
-                      search={true}
+                      
                       value={filter?.[key] ? String(filter[key]) : ""} //
                       items={item.items.map((it) => ({
                         value: String(it.value),
@@ -578,7 +577,6 @@ export const ProductWarehousePage = ({
                           return (
                             <ComboBox
                               props={{ ...field }}
-                              search={true}
                               items={warehouses.items.map((item) => {
                                 return {
                                   value: item.id,

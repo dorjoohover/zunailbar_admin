@@ -190,7 +190,6 @@ export const DiscountPage = ({
                     {(field) => {
                       return (
                         <ComboBox
-                          search={true}
                           props={{ ...field }}
                           items={services.items.map((item) => {
                             return {
@@ -210,7 +209,6 @@ export const DiscountPage = ({
                     {(field) => {
                       return (
                         <ComboBox
-                          search={true}
                           props={{ ...field }}
                           items={branches.items.map((item) => {
                             return {

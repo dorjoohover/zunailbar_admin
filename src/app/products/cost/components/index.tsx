@@ -248,7 +248,6 @@ export const CostPage = ({
                       pl={item.label}
                       name={item.label}
                       className="max-w-36 text-xs!"
-                      search={true}
                       value={filter?.[key] ? String(filter[key]) : ""} //
                       items={item.items.map((it) => ({
                         value: String(it.value),
@@ -325,7 +324,6 @@ export const CostPage = ({
                       {(field) => {
                         return (
                           <ComboBox
-                            search={true}
                             props={{ ...field }}
                             items={products.items.map((item) => {
                               return {

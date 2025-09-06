@@ -144,12 +144,13 @@ export const EmployeePage = ({
     setAction(ACTION.DEFAULT);
   };
   const onInvalid = async <T,>(e: T) => {
-    const error = Object.keys(e as any)
-      .map((er, i) => {
-        const value = VALUES[er];
-        return i == 0 ? firstLetterUpper(value) : value;
-      })
-      .join(", ") + 'оруулна уу!';
+    const error =
+      Object.keys(e as any)
+        .map((er, i) => {
+          const value = VALUES[er];
+          return i == 0 ? firstLetterUpper(value) : value;
+        })
+        .join(", ") + "оруулна уу!";
     showToast("info", error);
     // setSuccess(false);
   };
@@ -258,7 +259,6 @@ export const EmployeePage = ({
                       pl={item.label}
                       name={item.label}
                       className="max-w-36 text-xs!"
-                      search={true}
                       value={filter?.[key] ? String(filter[key]) : ""} //
                       items={item.items.map((it) => ({
                         value: String(it.value),
@@ -421,7 +421,6 @@ export const EmployeePage = ({
                       {(field) => {
                         return (
                           <ComboBox
-                            search={true}
                             props={{ ...field }}
                             items={branches.items.map((branch) => {
                               return {
