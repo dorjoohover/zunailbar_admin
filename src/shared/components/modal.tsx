@@ -1,6 +1,7 @@
 "use client";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import { Loader2Icon, Plus } from "lucide-react";
 
@@ -79,7 +80,7 @@ export const Modal = ({
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
-        <div className="max-h-[70vh] min-h-[8vh] px-1">{children}</div>
+        <ScrollArea className="max-h-[70vh] min-h-[8vh] px-1">{children}</ScrollArea>
         <DialogFooter className="mt-3">
           <DialogClose asChild>
             <Button variant="outline" className="bg-white">

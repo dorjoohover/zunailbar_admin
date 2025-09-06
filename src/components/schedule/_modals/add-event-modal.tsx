@@ -135,7 +135,6 @@ export default function AddEventModal({
                 : [];
 
               return (
-                <div>
                   <MultiSelect
                     // RHF field-ийг “id массив” болгосон wrapper-оор өгнө
                     props={
@@ -162,7 +161,6 @@ export default function AddEventModal({
                       value: s.id,
                     }))}
                   />
-                </div>
               );
             }}
           </FormItems>
