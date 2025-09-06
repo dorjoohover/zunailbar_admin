@@ -89,7 +89,7 @@ export function ComboBox<T extends FieldValues>({
             />
           )}
           <CommandList
-            className="max-h-60 overflow-y-auto"
+            className="max-h-60 "
             key={localItems.map((i) => i.value).join(",")}
           >
             <CommandEmpty>Хайлт олдсонгүй</CommandEmpty>
