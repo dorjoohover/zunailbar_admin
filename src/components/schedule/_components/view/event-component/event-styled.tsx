@@ -134,7 +134,7 @@ export default function EventStyled({
 
   // Get background color class based on variant
   const getBackgroundColor = (color: number | undefined) => {
-    const userColor = getUserColor(color ? color - 1 : 0);
+    const userColor = getUserColor(color ? color : 0);
     return userColor;
   };
 
