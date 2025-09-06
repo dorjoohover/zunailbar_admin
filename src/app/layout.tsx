@@ -49,7 +49,7 @@ export default async function RootLayout({
             <Template token={token}>
               <ScrollArea
                 className={cn(
-                  "rounded-xl overflow-hidden size-full h-[calc(100vh-1rem)] fixed top-0 left-0 ml-1",
+                  "rounded-xl overflow-hidden size-full h-[calc(100dvh-1rem)] fixed top-0 left-0 ml-1",
                   "bg-[#f8f9fb]",
                   // store.get("sidebar_state")?.value == "false" ? "bg-red-500" : ''
                 )}

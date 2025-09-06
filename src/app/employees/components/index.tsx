@@ -258,7 +258,7 @@ export const EmployeePage = ({
                     <ComboBox
                       pl={item.label}
                       name={item.label}
-                      className="max-w-36 text-xs!"
+                      className="max-w-36 w-full text-xs!"
                       value={filter?.[key] ? String(filter[key]) : ""} //
                       items={item.items.map((it) => ({
                         value: String(it.value),
@@ -312,8 +312,9 @@ export const EmployeePage = ({
               <FormProvider {...form}>
                 {/* Profile Image */}
                 <div className="divide-y">
-                  <div className="grid grid-cols-2 pb-5">
-                    <FormItems
+                  <div className="double-col pb-5">
+                    <div className="double-col">
+                      <FormItems
                       control={form.control}
                       name="file"
                       label="Зураг өөрчлөх"
@@ -402,7 +403,7 @@ export const EmployeePage = ({
                                   <img
                                     src={`/api/file/${field.value}`}
                                     alt="preview"
-                                    className="object-cover overflow-hidden border rounded-md size-full bg-gray"
+                                    className="object-cover overflow-hidden border border-red-400 rounded-md size-full bg-gray"
                                   />
                                 </div>
                               )}
@@ -411,9 +412,9 @@ export const EmployeePage = ({
                         }}
                       </FormItems>
                     )}
-                  </div>
-                  <div className="py-5 double-col">
-                    <FormItems
+                    </div>
+                  <div className="double-col grid-cols-1">
+                     <FormItems
                       control={form.control}
                       name="branch_id"
                       label="Салбар"
@@ -458,6 +459,7 @@ export const EmployeePage = ({
                         );
                       }}
                     </FormItems>
+                  </div>
                   </div>
                   <div className="pt-5 double-col">
                     {!editingUser && (

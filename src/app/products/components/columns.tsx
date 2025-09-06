@@ -6,54 +6,22 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { checkEmpty } from "@/lib/functions";
 import { TableActionButtons } from "@/components/tableActionButtons";
 
-export function getColumns(
-  onEdit: (product: IProduct) => void,
-  remove: (index: number) => Promise<boolean>
-): ColumnDef<IProduct>[] {
+export function getColumns(onEdit: (product: IProduct) => void, remove: (index: number) => Promise<boolean>): ColumnDef<IProduct>[] {
   return [
-    // {
-    //   id: "select",
-    //   header: ({ table }) => <Checkbox checked={table.getIsAllPageRowsSelected()} onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)} aria-label="Select all" />,
-    //   cell: ({ row }) => {
-    //     return <Checkbox checked={row.getIsSelected()} onCheckedChange={(value) => row.toggleSelected(!!value)} aria-label="Select row" />;
-    //   },
-    //   enableSorting: false,
-    //   enableHiding: false,
-    // },
     {
       id: "select",
-      header: ({ table }) => (
-        <Checkbox
-          checked={table.getIsAllPageRowsSelected()}
-          onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-          aria-label="Select all"
-        />
-      ),
-      cell: ({ row }) => {
-        return (
-          <Checkbox
-            checked={row.getIsSelected()}
-            onCheckedChange={(value) => row.toggleSelected(!!value)}
-            aria-label="Select row"
-          />
-        );
-      },
-      enableSorting: false,
-      enableHiding: false,
-      size: 40,
+      header: ({ table }) => <span>№</span>,
+      cell: ({ row }) => <span className="">{row.index + 1}</span>,
     },
+
     {
       accessorKey: "name",
       header: ({ column }) => (
-        <Button
-          variant="table_header"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          className="font-bold"
-        >
+        <Button variant="table_header" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")} className="font-bold">
           Бүтээгдэхүүн <ArrowUpDown className="w-4 h-4 ml-2" />
         </Button>
       ),
-       cell: ({ row }) => <div className="font-bold text-primary">{row.getValue("name")}</div>
+      cell: ({ row }) => <div className="font-bold text-primary">{row.getValue("name")}</div>,
     },
     {
       accessorKey: "brand_name",
@@ -69,11 +37,7 @@ export function getColumns(
     {
       accessorKey: "quantity",
       header: ({ column }) => (
-        <Button
-          variant="table_header"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          className="font-bold"
-        >
+        <Button variant="table_header" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")} className="font-bold">
           Тоо ширхэг <ArrowUpDown className="w-4 h-4 ml-2" />
         </Button>
       ),
@@ -84,11 +48,7 @@ export function getColumns(
       header: "Үйлдэл",
       cell: ({ row }) => (
         // Bagasgasan
-        <TableActionButtons
-          rowData={row.original}
-          onEdit={(data) => onEdit(data)}
-          onRemove={(data) => remove(row.index)}
-        ></TableActionButtons>
+        <TableActionButtons rowData={row.original} onEdit={(data) => onEdit(data)} onRemove={(data) => remove(row.index)}></TableActionButtons>
       ),
     },
   ];

@@ -1,21 +1,8 @@
 "use client";
 import { DataTable } from "@/components/data-table";
-import {
-  Product,
-  ProductWarehouse,
-  Warehouse,
-  IProductWarehouse,
-  IProductsWarehouse,
-} from "@/models";
+import { Product, ProductWarehouse, Warehouse, IProductWarehouse, IProductsWarehouse } from "@/models";
 import { useEffect, useMemo, useState } from "react";
-import {
-  ListType,
-  ACTION,
-  PG,
-  DEFAULT_PG,
-  SearchType,
-  Option,
-} from "@/lib/constants";
+import { ListType, ACTION, PG, DEFAULT_PG, SearchType, Option } from "@/lib/constants";
 import { Modal } from "@/shared/components/modal";
 import z from "zod";
 import { FormProvider, useFieldArray, useForm } from "react-hook-form";
@@ -38,18 +25,13 @@ import { showToast } from "@/shared/components/showToast";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 const productItemSchema = z.object({
-  quantity: z.preprocess(
-    (val) => (typeof val === "string" ? parseFloat(val) : val),
-    z.number().nullable()
-  ) as unknown as number,
+  quantity: z.preprocess((val) => (typeof val === "string" ? parseFloat(val) : val), z.number().nullable()) as unknown as number,
   product_id: z.string().min(1, "Бүтээгдэхүүн заавал сонгоно").nullable(),
 });
 
 const formSchema = z.object({
   warehouse_id: z.string().min(1),
-  products: z
-    .array(productItemSchema)
-    .min(1, "Хамгийн багадаа 1 бүтээгдэхүүн нэмнэ"),
+  products: z.array(productItemSchema).min(1, "Хамгийн багадаа 1 бүтээгдэхүүн нэмнэ"),
   edit: z.string().nullable().optional(),
 });
 const defaultValues = {
@@ -64,15 +46,7 @@ type FilterType = {
   end?: Date;
 };
 type ProductWarehouseType = z.infer<typeof formSchema>;
-export const ProductWarehousePage = ({
-  data,
-  warehouses,
-  productData,
-}: {
-  data: ListType<ProductWarehouse>;
-  warehouses: ListType<Warehouse>;
-  productData: ListType<Product>;
-}) => {
+export const ProductWarehousePage = ({ data, warehouses, productData }: { data: ListType<ProductWarehouse>; warehouses: ListType<Warehouse>; productData: ListType<Product> }) => {
   const [action, setAction] = useState(ACTION.DEFAULT);
   const [open, setOpen] = useState<undefined | boolean>(false);
   const form = useForm<ProductWarehouseType>({
@@ -80,12 +54,8 @@ export const ProductWarehousePage = ({
     defaultValues,
   });
 
-  const [productWarehouse, setProductWarehouse] =
-    useState<ListType<IProductWarehouse> | null>(null);
-  const warehouseMap = useMemo(
-    () => new Map(warehouses.items.map((p) => [p.id, p])),
-    [warehouses.items]
-  );
+  const [productWarehouse, setProductWarehouse] = useState<ListType<IProductWarehouse> | null>(null);
+  const warehouseMap = useMemo(() => new Map(warehouses.items.map((p) => [p.id, p])), [warehouses.items]);
 
   const productWarehouseFormatter = (data: ListType<IProductWarehouse>) => {
     const items: IProductWarehouse[] = data.items.map((item) => {
@@ -139,24 +109,12 @@ export const ProductWarehousePage = ({
     const { edit, ...payload } = body;
     const products = payload.products;
 
-    const res = edit
-      ? await updateOne<IProductsWarehouse>(
-          Api.product_warehouse,
-          edit ?? "",
-          payload as IProductsWarehouse
-        )
-      : await create<IProductsWarehouse>(
-          Api.product_warehouse,
-          e as IProductsWarehouse
-        );
+    const res = edit ? await updateOne<IProductsWarehouse>(Api.product_warehouse, edit ?? "", payload as IProductsWarehouse) : await create<IProductsWarehouse>(Api.product_warehouse, e as IProductsWarehouse);
     if (res.success) {
       refresh();
       setOpen(false);
       form.reset(defaultValues);
-      showToast(
-        "success",
-        edit ? "Мэдээлэл шинэчлэгдлээ!" : "Амжилттай нэмлээ!"
-      );
+      showToast("success", edit ? "Мэдээлэл шинэчлэгдлээ!" : "Амжилттай нэмлээ!");
     } else {
       showToast("error", res.error ?? "");
     }
@@ -194,11 +152,7 @@ export const ProductWarehousePage = ({
     }
   };
 
-  const handleProductQuantityChange = (
-    productId: string,
-    change: number,
-    qty: number
-  ) => {
+  const handleProductQuantityChange = (productId: string, change: number, qty: number) => {
     const products = form.getValues("products");
     const index = products.findIndex((p) => p.product_id === productId);
     console.log(qty);
@@ -252,8 +206,7 @@ export const ProductWarehousePage = ({
     const m = new Map<string, number>();
     const items = productWarehouse?.items ?? [];
     for (const w of items) {
-      const pid =
-        (w as any).product_id ?? (w as any).productId ?? (w as any).id;
+      const pid = (w as any).product_id ?? (w as any).productId ?? (w as any).id;
       m.set(toKey(pid), Number((w as any).quantity) || 0);
     }
     return m;
@@ -271,23 +224,22 @@ export const ProductWarehousePage = ({
     });
   }, [products, qtyByProduct, form.getValues("edit")]);
 
-  const groups: { key: keyof FilterType; label: string; items: Option[] }[] =
-    useMemo(
-      () => [
-        {
-          key: "warehouse",
-          label: "Агуулах",
-          items: warehouses.items.map((b) => ({ value: b.id, label: b.name })),
-        },
+  const groups: { key: keyof FilterType; label: string; items: Option[] }[] = useMemo(
+    () => [
+      {
+        key: "warehouse",
+        label: "Агуулах",
+        items: warehouses.items.map((b) => ({ value: b.id, label: b.name })),
+      },
 
-        {
-          key: "product",
-          label: "Бүтээгдэхүүн",
-          items: productData.items.map((b) => ({ value: b.id, label: b.name })),
-        },
-      ],
-      [productData.items, warehouses.items]
-    );
+      {
+        key: "product",
+        label: "Бүтээгдэхүүн",
+        items: productData.items.map((b) => ({ value: b.id, label: b.name })),
+      },
+    ],
+    [productData.items, warehouses.items]
+  );
 
   const downloadExcel = async (pg: PG = DEFAULT_PG) => {
     setAction(ACTION.RUNNING);
@@ -304,10 +256,7 @@ export const ProductWarehousePage = ({
 
       const link = document.createElement("a");
       link.href = url;
-      link.setAttribute(
-        "download",
-        `product_warehouse_${mnDate().toISOString().slice(0, 10)}.xlsx`
-      );
+      link.setAttribute("download", `product_warehouse_${mnDate().toISOString().slice(0, 10)}.xlsx`);
       document.body.appendChild(link);
       link.click();
 
@@ -329,24 +278,10 @@ export const ProductWarehousePage = ({
       <div className="admin-container py-2">
         <div className="bg-white shadow-light border-light rounded px-4">
           {/* Tab trigger */}
-          <Button
-            variant="ghost"
-            className={cn(
-              "w-fit rounded-none hover:bg-white py-6 px-14",
-              tab === "1" && "border-b-2 border-brand "
-            )}
-            onClick={() => setTab("1")}
-          >
+          <Button variant="ghost" className={cn("w-fit rounded-none hover:bg-white py-6 px-14", tab === "1" && "border-b-2 border-brand ")} onClick={() => setTab("1")}>
             Агуулах
           </Button>
-          <Button
-            variant="ghost"
-            className={cn(
-              "w-fit rounded-none hover:bg-white py-6 px-14",
-              tab === "2" && "border-b-2 border-brand "
-            )}
-            onClick={() => setTab("2")}
-          >
+          <Button variant="ghost" className={cn("w-fit rounded-none hover:bg-white py-6 px-14", tab === "2" && "border-b-2 border-brand ")} onClick={() => setTab("2")}>
             Агуулах дэлгэрэнгүй
           </Button>
         </div>
@@ -370,9 +305,7 @@ export const ProductWarehousePage = ({
                     //   label={item.label}
                     // />
                     <label key={i}>
-                      <span className="filter-label">
-                        {item.label as string}
-                      </span>
+                      <span className="filter-label">{item.label as string}</span>
                       <ComboBox
                         pl={item.label}
                         className="max-w-36 text-xs!"
@@ -395,13 +328,7 @@ export const ProductWarehousePage = ({
                 <FilterPopover
                   content={
                     <div className="flex flex-col gap-2">
-                      <Calendar
-                        mode="single"
-                        selected={filter?.start}
-                        onSelect={(e) =>
-                          setFilter((prev) => ({ ...prev, start: e }))
-                        }
-                      />
+                      <Calendar mode="single" selected={filter?.start} onSelect={(e) => setFilter((prev) => ({ ...prev, start: e }))} />
                     </div>
                   }
                   value={filter?.start?.toString()}
@@ -410,13 +337,7 @@ export const ProductWarehousePage = ({
                 <FilterPopover
                   content={
                     <div className="flex flex-col gap-2">
-                      <Calendar
-                        mode="single"
-                        selected={filter?.end}
-                        onSelect={(e) =>
-                          setFilter((prev) => ({ ...prev, end: e }))
-                        }
-                      />
+                      <Calendar mode="single" selected={filter?.end} onSelect={(e) => setFilter((prev) => ({ ...prev, end: e }))} />
                     </div>
                   }
                   value={filter?.end?.toString()}
@@ -568,11 +489,7 @@ export const ProductWarehousePage = ({
                           className="w-full h-10 bg-white"
                         />
                       </div>
-                      <FormItems
-                        label="Агуулах"
-                        control={form.control}
-                        name="warehouse_id"
-                      >
+                      <FormItems label="Агуулах" control={form.control} name="warehouse_id">
                         {(field) => {
                           return (
                             <ComboBox
@@ -589,7 +506,8 @@ export const ProductWarehousePage = ({
                       </FormItems>
                     </div>
                     <div className="p-3 space-y-2 bg-white border rounded-xl overflow-hidden">
-                      <div className="grid items-center justify-between w-full px-4 py-1 text-sm font-bold grid-cols-20">
+                      <ScrollArea className=" divide-y pt-0 bg-white border border-b-0 rounded h-[50vh] max-w-[calc(100vw-5rem)] border-slate-200 w-full relateive">
+                          <div className="sticky -top-1 left-0 grid items-center justify-between w-full p-4 bg-gray-100 border-b text-sm font-bold grid-cols-20">
                         <span className="col-span-1">№</span>
                         <span className="col-span-4">Бренд</span>
                         <span className="col-span-4">Төрөл</span>
@@ -597,114 +515,58 @@ export const ProductWarehousePage = ({
                         <span className="col-span-1">Тоо</span>
                         <span className="col-span-5 text-center">Үйлдэл</span>
                       </div>
-                      <ScrollArea className="h-[50vh] w-full divide-y pt-0 bg-white border border-b-0 rounded overflow-hidden max-w-[calc(100vw-7rem)]">
-                      <div className="overflow-hidden border-slate-200 w-full">
-                         {products.map((product, index) => {
-                          const [brand, category, name, quantity] =
-                            product.value.split("__");
-                          if (+quantity > 0)
-                            return (
-                              <div
-                                key={product.id}
-                                className="flex items-center justify-between p-3 pr-6 border-b last:border-none flex-nowrap overflow-hidden"
-                              >
-                                <div className="grid items-center justify-between w-full gap-4 grid-cols-20 min-w-[600px]">
-                                  <span className="col-span-1 text-xs font-medium text-gray-700 truncate text-start">
-                                    {index + 1}
-                                  </span>
-                                  <span className="col-span-4 text-xs font-medium text-gray-700 truncate text-start">
-                                    {checkEmpty(brand)}
-                                  </span>
-                                  <span className="col-span-4 text-xs font-medium text-gray-700 truncate">
-                                    {checkEmpty(category)}
-                                  </span>
-                                  <span className="col-span-5 text-xs font-medium text-gray-700">
-                                    {checkEmpty(name)}
-                                  </span>
-                                  <span className="col-span-1 text-xs font-medium text-gray-700">
-                                    {quantity}
-                                  </span>
-                                  <div className="flex items-center justify-center col-span-5 gap-1">
-                                    <Button
-                                      variant="purple"
-                                      className=""
-                                      size="icon"
-                                      onClick={() =>
-                                        handleProductQuantityChange(
-                                          product.id,
-                                          -1,
-                                          +quantity
-                                        )
-                                      }
-                                    >
-                                      −
-                                    </Button>
-                                    <Input
-                                      type="number"
-                                      className="w-16 text-center bg-white border-2 no-spinner hide-number-arrows border-brand-purple"
-                                      max={quantity}
-                                      value={
-                                        (form
-                                          .watch("products")
-                                          ?.find(
-                                            (p) => p.product_id === product.id
-                                          )?.quantity as number) ?? 0
-                                      }
-                                      onClick={() =>
-                                        handleProductClickOnce(
-                                          product.id,
-                                          +quantity
-                                        )
-                                      }
-                                      onChange={(e) => {
-                                        const val = parseInt(
-                                          e.target.value || "0",
-                                          10
-                                        );
-                                        const existing =
-                                          form.getValues("products");
-                                        const index = existing.findIndex(
-                                          (p) => p.product_id === product.id
-                                        );
-                                        const updated = [...existing];
-                                        if (val > +quantity) return;
-                                        if (val <= 0 && index !== -1) {
-                                          updated.splice(index, 1);
-                                        } else if (index !== -1) {
-                                          updated[index] = {
-                                            ...updated[index],
-                                            quantity: val,
-                                          };
-                                        } else if (val > 0) {
-                                          updated.push({
-                                            product_id: product.id,
-                                            quantity: val,
-                                          });
-                                        }
-                                        form.setValue("products", updated);
-                                      }}
-                                    />
-                                    <Button
-                                      variant="purple"
-                                      className=""
-                                      size="icon"
-                                      onClick={() =>
-                                        handleProductQuantityChange(
-                                          product.id,
-                                          1,
-                                          +quantity
-                                        )
-                                      }
-                                    >
-                                      +
-                                    </Button>
+                          {products.map((product, index) => {
+                            const [brand, category, name, quantity] = product.value.split("__");
+                            if (+quantity > 0)
+                              return (
+                                <div key={product.id} className="flex items-center justify-between p-3 pr-6 border-b last:border-none flex-nowrap">
+                                  <div className="grid items-center justify-between w-full gap-4 grid-cols-20 min-w-[600px]">
+                                    <span className="col-span-1 text-xs font-medium text-gray-700 truncate text-start">{index + 1}</span>
+                                    <span className="col-span-4 text-xs font-medium text-gray-700 truncate text-start">{checkEmpty(brand)}</span>
+                                    <span className="col-span-4 text-xs font-medium text-gray-700 truncate">{checkEmpty(category)}</span>
+                                    <span className="col-span-5 text-xs font-medium text-gray-700">{checkEmpty(name)}</span>
+                                    <span className="col-span-1 text-xs font-medium text-gray-700">{quantity}</span>
+                                    <div className="flex items-center justify-center col-span-5 gap-1">
+                                      <Button variant="purple" className="" size="icon" onClick={() => handleProductQuantityChange(product.id, -1, +quantity)}>
+                                        −
+                                      </Button>
+                                      <Input
+                                        type="number"
+                                        className="w-16 text-center bg-white border-2 no-spinner hide-number-arrows border-brand-purple"
+                                        max={quantity}
+                                        value={(form.watch("products")?.find((p) => p.product_id === product.id)?.quantity as number) ?? 0}
+                                        onClick={() => handleProductClickOnce(product.id, +quantity)}
+                                        onChange={(e) => {
+                                          const val = parseInt(e.target.value || "0", 10);
+                                          const existing = form.getValues("products");
+                                          const index = existing.findIndex((p) => p.product_id === product.id);
+                                          const updated = [...existing];
+                                          if (val > +quantity) return;
+                                          if (val <= 0 && index !== -1) {
+                                            updated.splice(index, 1);
+                                          } else if (index !== -1) {
+                                            updated[index] = {
+                                              ...updated[index],
+                                              quantity: val,
+                                            };
+                                          } else if (val > 0) {
+                                            updated.push({
+                                              product_id: product.id,
+                                              quantity: val,
+                                            });
+                                          }
+                                          form.setValue("products", updated);
+                                        }}
+                                      />
+                                      <Button variant="purple" className="" size="icon" onClick={() => handleProductQuantityChange(product.id, 1, +quantity)}>
+                                        +
+                                      </Button>
+                                    </div>
                                   </div>
                                 </div>
-                              </div>
-                            );
-                        })}
-                     </div>
-                         <ScrollBar orientation="horizontal" />
+                              );
+                          })}
+                        <ScrollBar orientation="horizontal" />
                       </ScrollArea>
                     </div>
                   </div>
@@ -714,7 +576,7 @@ export const ProductWarehousePage = ({
           />
         )}
 
-        {tab === "1" && <>tab 2 </>}
+        {tab === "2" && <>tab 2 </>}
       </div>
     </div>
   );

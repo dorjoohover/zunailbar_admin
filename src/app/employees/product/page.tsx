@@ -6,22 +6,10 @@ import { EmployeeProductPage } from "./components";
 import { ROLE } from "@/lib/enum";
 
 export default async function EmployeesPage() {
-  const [userProductRes, branch, product, brand, user] = await Promise.all([
-    find<UserProduct>(Api.user_product),
-    find<Branch>(Api.branch, { limit: -1 }),
-    find<Product>(Api.product, { limit: -1 }),
-    find<Brand>(Api.brand, { limit: -1 }),
-    find<User>(Api.user, { limit: -1, role: ROLE.E_M }),
-  ]);
+  const [userProductRes, branch, product, brand, user] = await Promise.all([find<UserProduct>(Api.user_product), find<Branch>(Api.branch, { limit: -1 }), find<Product>(Api.product, { limit: -1 }), find<Brand>(Api.brand, { limit: -1 }), find<User>(Api.user, { limit: -1, role: ROLE.E_M })]);
   return (
     <section>
-      <EmployeeProductPage
-        data={userProductRes.data}
-        branches={branch.data}
-        users={user.data}
-        brands={brand.data}
-        products={product.data}
-      />
+      <EmployeeProductPage data={userProductRes.data} branches={branch.data} users={user.data} brands={brand.data} products={product.data} />
     </section>
   );
 }

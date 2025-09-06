@@ -12,38 +12,17 @@ import { ICost } from "@/models";
 import { CostStatus } from "@/lib/enum";
 import { getValuesCostStatus } from "@/lib/constants";
 
-export function getColumns(
-  onEdit: (product: ICost) => void,
-  remove: (index: number) => Promise<boolean>
-): ColumnDef<ICost>[] {
+export function getColumns(onEdit: (product: ICost) => void, remove: (index: number) => Promise<boolean>): ColumnDef<ICost>[] {
   return [
     {
       id: "select",
-      header: ({ table }) => (
-        <Checkbox
-          checked={table.getIsAllPageRowsSelected()}
-          onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-          aria-label="Select all"
-        />
-      ),
-      cell: ({ row }) => (
-        <Checkbox
-          checked={row.getIsSelected()}
-          onCheckedChange={(value) => row.toggleSelected(!!value)}
-          aria-label="Select row"
-        />
-      ),
-      enableSorting: false,
-      enableHiding: false,
+      header: ({ table }) => <span>№</span>,
+      cell: ({ row }) => <span className="">{row.index + 1}</span>,
     },
     {
       accessorKey: "product_name",
       header: ({ column }) => (
-        <Button
-          variant="table_header"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          className="font-bold"
-        >
+        <Button variant="table_header" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")} className="font-bold">
           Бүтээгдэхүүн <ArrowUpDown className="w-4 h-4 ml-2" />
         </Button>
       ),
@@ -67,19 +46,14 @@ export function getColumns(
       accessorKey: "cost_status",
       header: "Статус",
       cell: ({ row }) => {
-        const status =
-          getValuesCostStatus[row.getValue<number>("cost_status") as CostStatus];
+        const status = getValuesCostStatus[row.getValue<number>("cost_status") as CostStatus];
         return <span className={status.color}>{status.name}</span>;
       },
     },
     {
       accessorKey: "date",
       header: ({ column }) => (
-        <Button
-          variant="table_header"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          className="font-bold"
-        >
+        <Button variant="table_header" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")} className="font-bold">
           Огноо <ArrowUpDown className="w-4 h-4 ml-2" />
         </Button>
       ),
@@ -98,11 +72,7 @@ export function getColumns(
       header: "Үйлдэл",
       cell: ({ row }) => (
         // Bagasgasan
-        <TableActionButtons
-          rowData={row.original}
-          onEdit={(data) => onEdit(data)}
-          onRemove={(data) => remove(row.index)}
-        ></TableActionButtons>
+        <TableActionButtons rowData={row.original} onEdit={(data) => onEdit(data)} onRemove={(data) => remove(row.index)}></TableActionButtons>
       ),
     },
   ];

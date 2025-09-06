@@ -74,20 +74,20 @@ export const Modal = ({
         </DialogTrigger>
       )}
       {/* <DialogContent className={`max-w-${maw} lg:max-w-${w}`}> */}
-      <DialogContent ref={dialogContentRef} className={cn(mawClasses[maw], "")}>
-        <DialogHeader className="mb-3">
+      <DialogContent ref={dialogContentRef} className={cn(mawClasses[maw], "max-h-[90vh]")}>
+        <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
-        <ScrollArea className="sm:max-h-[70vh] min-h-[8vh] px-1">{children}</ScrollArea>
-        <DialogFooter className="mt-3">
+        <ScrollArea className="p-4">{children}</ScrollArea>
+        <DialogFooter>
           <DialogClose asChild>
-            <Button variant="outline" className="bg-white">
+            <Button variant="outline" className="bg-white min-w-24">
               Цуцлах
             </Button>
           </DialogClose>
           {submit && (
-            <Button variant={"purple"} loading={loading} onClick={(e) => handleSubmit(e)}>
+            <Button variant={"purple"} loading={loading} onClick={(e) => handleSubmit(e)} className="min-w-24">
               {/* Button dotroo loading ni ajillaad end bicsen ni hereggumshig bn  */}
               {/* {loading && btn} */}
               {/* {loading ? "Please wait..." : submitTxt} */}

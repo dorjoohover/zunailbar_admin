@@ -18,8 +18,12 @@
     background-repeat: no-repeat;
     background-size: cover;
     background-position: center;
+    height: 100dvh;
   }
 }
+
+
+
 
 @utility custom-bg {
   @apply bg-[url(/bg/image.png)];
@@ -94,6 +98,7 @@
   --color-brand-blue: #1a80f8;
   --color-brand-purple: #283ab7;
   --color-active: #eff5fe;
+  --light-white: #f8f9fb;
 
   /* System colors */
 
@@ -147,6 +152,7 @@
 :root {
   --radius: 0.625rem;
   --background: #f6f9ff;
+  --light-white: #f8f9fb;
   /* --foreground: oklch(0.145 0 0); */
   --foreground: #1e293b;
   --card: oklch(1 0 0);
