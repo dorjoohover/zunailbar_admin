@@ -342,12 +342,12 @@ export const ProductWarehousePage = ({
       <DynamicHeader count={productWarehouse?.count} />
 
       <div className="admin-container py-2">
-        <div className="bg-white shadow-light border-light rounded px-4">
+        <div className="flex bg-white shadow-light border-light rounded-lg px-4">
           {/* Tab trigger */}
           <Button
             variant="ghost"
             className={cn(
-              "w-fit rounded-none hover:bg-white py-6 px-14",
+              "w-fit rounded-none hover:bg-white py-6 md:px-14 flex-1 md:flex-0",
               tab === "1" && "border-b-2 border-brand "
             )}
             onClick={() => setTab("1")}
@@ -357,8 +357,8 @@ export const ProductWarehousePage = ({
           <Button
             variant="ghost"
             className={cn(
-              "w-fit rounded-none hover:bg-white py-6 px-14",
-              tab === "2" && "border-b-2 border-brand "
+              "w-fit rounded-none hover:bg-white py-6 md:px-14 flex-1 md:flex-0",
+              tab === "2" && "border-b-2 border-brand"
             )}
             onClick={() => setTab("2")}
           >
@@ -373,17 +373,6 @@ export const ProductWarehousePage = ({
                 {groups.map((item, i) => {
                   const { key } = item;
                   return (
-                    // <FilterPopover
-                    //   key={i}
-                    //   content={item.items.map((it, index) => (
-                    //     <label key={index} className="checkbox-label">
-                    //       <Checkbox checked={filter?.[key] == it.value} onCheckedChange={() => changeFilter(key, it.value)} />
-                    //       <span>{it.label as string}</span>
-                    //     </label>
-                    //   ))}
-                    //   value={filter?.[key] ? item.items.filter((item) => item.value == filter[key])[0].label : undefined}
-                    //   label={item.label}
-                    // />
                     <label key={i}>
                       <span className="filter-label">
                         {item.label as string}
@@ -450,7 +439,7 @@ export const ProductWarehousePage = ({
                 title="Агуулахад бараа нэмэх"
                 submit={() => form.handleSubmit(onSubmit, onInvalid)()}
                 open={open == true}
-                maw="5xl"
+                maw="6xl"
                 setOpen={(v) => {
                   setOpen(v);
                   form.reset(defaultValues);
@@ -458,115 +447,6 @@ export const ProductWarehousePage = ({
                 loading={action == ACTION.RUNNING}
               >
                 <FormProvider {...form}>
-                  {/* <div className="flex items-center gap-2 mt-2">
-      <div className="admin-container">
-        <DataTable
-          excel={downloadExcel}
-          clear={() => setFilter(undefined)}
-          filter={
-            <>
-              {groups.map((item, i) => {
-                const { key } = item;
-                return (
-                  // <FilterPopover
-                  //   key={i}
-                  //   content={item.items.map((it, index) => (
-                  //     <label key={index} className="checkbox-label">
-                  //       <Checkbox checked={filter?.[key] == it.value} onCheckedChange={() => changeFilter(key, it.value)} />
-                  //       <span>{it.label as string}</span>
-                  //     </label>
-                  //   ))}
-                  //   value={filter?.[key] ? item.items.filter((item) => item.value == filter[key])[0].label : undefined}
-                  //   label={item.label}
-                  // />
-                  <label key={i}>
-                    <span className="filter-label">{item.label as string}</span>
-                    <ComboBox
-                      pl={item.label}
-                      className="max-w-36 text-xs!"
-                      
-                      value={filter?.[key] ? String(filter[key]) : ""} //
-                      items={item.items.map((it) => ({
-                        value: String(it.value),
-                        label: it.label as string,
-                      }))}
-                      props={{
-                        value: filter?.[key] ? String(filter[key]) : "",
-                        onChange: (val: string) => changeFilter(key, val),
-                        onBlur: () => {},
-                        name: key,
-                        ref: () => {},
-                      }}
-                    />
-                  </label>
-                );
-              })}
-              <FilterPopover
-                content={
-                  <div className="flex flex-col gap-2">
-                    <Calendar
-                      mode="single"
-                      selected={filter?.start}
-                      onSelect={(e) =>
-                        setFilter((prev) => ({ ...prev, start: e }))
-                      }
-                    />
-                  </div>
-                }
-                value={filter?.start?.toString()}
-                label={"Эхлэх огноо"}
-              />
-              <FilterPopover
-                content={
-                  <div className="flex flex-col gap-2">
-                    <Calendar
-                      mode="single"
-                      selected={filter?.end}
-                      onSelect={(e) =>
-                        setFilter((prev) => ({ ...prev, end: e }))
-                      }
-                    />
-                  </div>
-                }
-                value={filter?.end?.toString()}
-                label={"Дуусах огноо"}
-              />
-            </>
-          }
-          columns={columns}
-          count={productWarehouse?.count}
-          data={productWarehouse?.items ?? []}
-          refresh={refresh}
-          loading={action == ACTION.RUNNING}
-          modalAdd={
-            <Modal
-              name={"Бараа нэмэх"}
-              title="Агуулахад бараа нэмэх"
-              submit={() => form.handleSubmit(onSubmit, onInvalid)()}
-              open={open == true}
-              reset={() => {
-                setOpen(false);
-                form.reset({});
-              }}
-              maw="5xl"
-              setOpen={setOpen}
-              loading={action == ACTION.RUNNING}
-            >
-              <FormProvider {...form}>
-                {/* <div className="flex items-center gap-2 mt-2">
-                  <Switch
-                    checked={compare}
-                    onCheckedChange={(val) => form.setValue("compare", val)}
-                    id="compare-switch"
-                  />
-                  <label
-                    htmlFor="compare-switch"
-                    className="text-sm text-muted-foreground"
-                  >
-                    Зөвхөн хэрэглэгчийн авсан бүтээгдэхүүнүүд (
-                    {visibleProducts.length})
-                  </label>
-                </div> */}
                   <div className="space-y-3">
                     <div className="double-col">
                       <div className="space-y-1">
@@ -587,6 +467,7 @@ export const ProductWarehousePage = ({
                         label="Агуулах"
                         control={form.control}
                         name="warehouse_id"
+                        className=""
                       >
                         {(field) => {
                           return (
@@ -603,13 +484,13 @@ export const ProductWarehousePage = ({
                         }}
                       </FormItems>
                     </div>
-                    <div className="p-3 space-y-2 bg-white border rounded-xl overflow-hidden">
-                      <ScrollArea className=" divide-y pt-0 bg-white border border-b-0 rounded h-[50vh] max-w-[calc(100vw-5rem)] border-slate-200 w-full relateive">
-                        <div className="sticky -top-1 left-0 grid items-center justify-between w-full p-4 bg-gray-100 border-b text-sm font-bold grid-cols-20">
+                    <div className="space-y-2 border rounded-lg overflow-hidden">
+                      <ScrollArea className="bg-white h-[50vh] max-w-[calc(100vw-4.5rem)] w-full relative">
+                        <div className="sticky top-0 left-0 grid items-center justify-between w-full p-4 bg-white text-sm font-bold grid-cols-20 shadow-light border-b">
                           <span className="col-span-1">№</span>
-                          <span className="col-span-4">Бренд</span>
+                          <span className="col-span-3">Бренд</span>
                           <span className="col-span-4">Төрөл</span>
-                          <span className="col-span-5">Бараа</span>
+                          <span className="col-span-6">Бараа</span>
                           <span className="col-span-1">Тоо</span>
                           <span className="col-span-5 text-center">Үйлдэл</span>
                         </div>
@@ -620,28 +501,28 @@ export const ProductWarehousePage = ({
                             return (
                               <div
                                 key={product.id}
-                                className="flex items-center justify-between p-3 pr-6 border-b last:border-none flex-nowrap"
+                                className="flex items-center justify-between p-3 pr-6 border-b last:border-b-0 flex-nowrap"
                               >
-                                <div className="grid items-center justify-between w-full gap-4 grid-cols-20 min-w-[600px]">
+                                <div className="grid items-center justify-between w-full gap-4 grid-cols-20 min-w-[800px]">
                                   <span className="col-span-1 text-xs font-medium text-gray-700 truncate text-start">
                                     {index + 1}
                                   </span>
-                                  <span className="col-span-4 text-xs font-medium text-gray-700 truncate text-start">
+                                  <span className="col-span-3 text-xs font-medium text-gray-700 truncate text-start">
                                     {checkEmpty(brand)}
                                   </span>
                                   <span className="col-span-4 text-xs font-medium text-gray-700 truncate">
                                     {checkEmpty(category)}
                                   </span>
-                                  <span className="col-span-5 text-xs font-medium text-gray-700">
+                                  <span className="col-span-6 text-xs font-semibold text-brand-purple">
                                     {checkEmpty(name)}
                                   </span>
                                   <span className="col-span-1 text-xs font-medium text-gray-700">
                                     {quantity}
                                   </span>
-                                  <div className="flex items-center justify-center col-span-5 gap-1">
+                                  <div className="flex items-center justify-end col-span-5 gap-1">
                                     <Button
                                       variant="purple"
-                                      className=""
+                                      className="hover:scale-105"
                                       size="icon"
                                       onClick={() =>
                                         handleProductQuantityChange(
@@ -655,7 +536,7 @@ export const ProductWarehousePage = ({
                                     </Button>
                                     <Input
                                       type="number"
-                                      className="w-16 text-center bg-white border-2 no-spinner hide-number-arrows border-brand-purple"
+                                      className="w-16 text-center bg-gray-200 no-spinner hide-number-arrows border-none focus-visible:border-ring text-xs"
                                       max={quantity}
                                       value={
                                         (form
@@ -700,7 +581,7 @@ export const ProductWarehousePage = ({
                                     />
                                     <Button
                                       variant="purple"
-                                      className=""
+                                      className="hover:scale-105"
                                       size="icon"
                                       onClick={() =>
                                         handleProductQuantityChange(

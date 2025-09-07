@@ -5,19 +5,12 @@ import { z } from "zod";
 
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { Switch } from "@/components/ui/switch";
 import { Minus, Plus } from "lucide-react";
 
 import { fetcher } from "@/hooks/fetcher";
-import {
-  ACTION,
-  DEFAULT_PG,
-  PG,
-  ListType,
-  SearchType,
-  DEFAULT_LIMIT,
-} from "@/lib/constants";
+import { ACTION, DEFAULT_PG, PG, ListType, SearchType, DEFAULT_LIMIT } from "@/lib/constants";
 import { UserProductStatus } from "@/lib/enum";
 import { IUserProduct, UserProduct } from "@/models";
 import { Api } from "@/utils/api";
@@ -26,35 +19,19 @@ import { Modal } from "@/shared/components/modal";
 import { showToast } from "@/shared/components/showToast";
 
 const productItemSchema = z.object({
-  quantity: z.preprocess(
-    (val) => (typeof val === "string" ? parseFloat(val) : val),
-    z.number().nullable()
-  ) as unknown as number,
+  quantity: z.preprocess((val) => (typeof val === "string" ? parseFloat(val) : val), z.number().nullable()) as unknown as number,
   product_id: z.string().min(1, "Бүтээгдэхүүн заавал сонгоно").nullable(),
-  status: z
-    .preprocess(
-      (val) => (typeof val === "string" ? parseInt(val, 10) : val),
-      z.nativeEnum(UserProductStatus).nullable()
-    )
-    .optional() as unknown as number,
+  status: z.preprocess((val) => (typeof val === "string" ? parseInt(val, 10) : val), z.nativeEnum(UserProductStatus).nullable()).optional() as unknown as number,
 });
 
 const formSchema = z.object({
   compare: z.boolean(),
-  products: z
-    .array(productItemSchema)
-    .min(1, "Хамгийн багадаа 1 бүтээгдэхүүн нэмнэ"),
+  products: z.array(productItemSchema).min(1, "Хамгийн багадаа 1 бүтээгдэхүүн нэмнэ"),
 });
 
 type UserProductType = z.infer<typeof formSchema>;
 
-export const EmployeeProductModal = ({
-  id,
-  clear,
-}: {
-  id?: string;
-  clear: () => void;
-}) => {
+export const EmployeeProductModal = ({ id, clear }: { id?: string; clear: () => void }) => {
   const form = useForm<UserProductType>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -64,8 +41,7 @@ export const EmployeeProductModal = ({
 
   const [action, setAction] = useState(ACTION.DEFAULT);
   const [open, setOpen] = useState<boolean | undefined>(false);
-  const [userProducts, setUserProducts] =
-    useState<ListType<UserProduct> | null>(null);
+  const [userProducts, setUserProducts] = useState<ListType<UserProduct> | null>(null);
   const [products, setProducts] = useState<SearchType<number>[]>([]);
 
   const { fields, append, replace } = useFieldArray({
@@ -75,9 +51,7 @@ export const EmployeeProductModal = ({
 
   const compare = form.watch("compare");
   const selectedIds = form.watch("products")?.map((p) => p.product_id);
-  const userProductIds = new Set(
-    userProducts?.items.map((up) => up.product_id)
-  );
+  const userProductIds = new Set(userProducts?.items.map((up) => up.product_id));
 
   const visibleProducts = products.filter((p) => {
     if (compare && !userProductIds.has(p.id)) return false;
@@ -196,7 +170,7 @@ export const EmployeeProductModal = ({
   // const paginationRange = getPaginationRange(page + 1, totalPages);
   return (
     <Modal
-      maw="7xl"
+      maw="6xl"
       open={open === true}
       setOpen={(v) => {
         setOpen(v);
@@ -208,7 +182,7 @@ export const EmployeeProductModal = ({
     >
       <FormProvider {...form}>
         <div className="w-full space-y-5">
-          <div className="flex items-center gap-4">
+          <div className="flex flex-col lg:flex-row items-start justify-between gap-4">
             <Input
               placeholder="Бүтээгдэхүүн хайх..."
               onChange={(e) => {
@@ -216,64 +190,47 @@ export const EmployeeProductModal = ({
                 if (value.length >= 2) searchProduct(value);
                 else searchProduct("");
               }}
-              className="w-full bg-white flex-1"
+              className="w-full bg-white h-10"
             />
 
-            <div className="flex items-center gap-2 mt-2">
-              <Switch
-                checked={compare}
-                onCheckedChange={(val) => form.setValue("compare", val)}
-                id="compare-switch"
-              />
-              <label
-                htmlFor="compare-switch"
-                className="text-sm text-muted-foreground"
-              >
-                Зөвхөн хэрэглэгчийн авсан бүтээгдэхүүнүүд (
-                {visibleProducts.length})
-              </label>
+            <div className="flex items-center gap-2 mt-2 max-w-lg w-full">
               <Switch checked={compare} onCheckedChange={(val) => form.setValue("compare", val)} id="compare-switch" />
+              <label htmlFor="compare-switch" className="text-sm text-muted-foreground">
+                Зөвхөн хэрэглэгчийн авсан бүтээгдэхүүнүүд <span className="font-semibold text-brand-purple">({visibleProducts.length})</span>
+              </label>
             </div>
           </div>
 
-          <div className="bg-white border p-2 rounded-xl space-y-2">
-            <div className="grid grid-cols-10 items-center justify-between w-full py-1 font-bold px-4 text-sm">
-              <span className="col-span-2">Бренд</span>
-              <span className="col-span-4">Төрөл</span>
-              <span className="col-span-2">Бараа</span>
-              <span className="col-span-2"></span>
-            </div>
-            <ScrollArea className="h-[55vh] w-full divide-y border border-b-0 rounded pt-0 bg-white">
+          <div className="space-y-2 border rounded-lg overflow-hidden">
+            <ScrollArea className="bg-white h-[50vh] max-w-[calc(100vw-4.5rem)] w-full relative">
+              <div className="sticky top-0 left-0 grid items-center justify-between w-full p-4 bg-white text-sm font-bold grid-cols-10 shadow-light border-b">
+                <span className="col-span-2">Бренд</span>
+                <span className="col-span-3">Төрөл</span>
+                <span className="col-span-3">Бараа</span>
+                <span className="col-span-2"></span>
+              </div>
               {visibleProducts.map((product, index) => {
                 const [brand, category, name] = product.value.split("__");
                 return (
-                  <div key={product.id} className="flex items-center justify-between p-2 pr-6 border-b last:border-none">
-                    <div className="grid grid-cols-10 items-center justify-between w-full gap-4">
-                      <span className="text-sm text-start font-medium text-gray-700 truncate col-span-2">
-                        {brand} brand
-                      </span>
-                      <span className="text-sm font-medium text-gray-700 truncate col-span-4">
-                        {category}
-                      </span>
-                      <span className="text-sm font-medium text-gray-700 col-span-2">
-                        {name}
-                      </span>
-                      <div className="flex items-center justify-end gap-1 col-span-2">
-                        <Button variant="default" className="" size="icon" onClick={() => handleProductQuantityChange(product.id, -1)}>
+                  <div key={product.id} className="flex items-center justify-between p-3 pr-6 border-b last:border-b-0 flex-nowrap">
+                    <div className="grid grid-cols-10 items-center justify-between w-full gap-4 min-w-[800px]">
+                      <span className="text-xs text-start font-medium text-gray-700 truncate col-span-2">{brand} brand</span>
+                      <span className="text-xs font-medium text-gray-700 truncate col-span-3">{category}</span>
+                      <span className="text-xs font-semibold text-brand-purple col-span-3 truncate">{name}</span>
+                      <div className="flex items-center justify-end col-span-2 gap-1">
+                        <Button variant="purple" className="hover:scale-105" size="icon" onClick={() => handleProductQuantityChange(product.id, -1)}>
                           <Minus strokeWidth={3} className="size-3.5" />
                         </Button>
 
                         <Input
                           type="number"
-                          className="w-16 text-center bg-gray-200 no-spinner hide-number-arrows border-none"
+                          className="w-16 text-center bg-gray-200 no-spinner hide-number-arrows border-none focus-visible:border-ring text-xs"
                           value={(form.watch("products")?.find((p) => p.product_id === product.id)?.quantity as number) ?? ""}
                           onClick={() => handleProductClickOnce(product.id)}
                           onChange={(e) => {
                             const val = parseInt(e.target.value || "0", 10);
                             const existing = form.getValues("products");
-                            const index = existing.findIndex(
-                              (p) => p.product_id === product.id
-                            );
+                            const index = existing.findIndex((p) => p.product_id === product.id);
 
                             const updated = [...existing];
 
@@ -296,7 +253,7 @@ export const EmployeeProductModal = ({
                           }}
                         />
 
-                        <Button variant="default" className="" size="icon" onClick={() => handleProductQuantityChange(product.id, 1)}>
+                        <Button variant="purple" className="hover:scale-105" size="icon" onClick={() => handleProductQuantityChange(product.id, 1)}>
                           <Plus strokeWidth={3} className="size-3.5" />
                         </Button>
                       </div>
@@ -304,6 +261,7 @@ export const EmployeeProductModal = ({
                   </div>
                 );
               })}
+              <ScrollBar orientation="horizontal" />
             </ScrollArea>
           </div>
         </div>

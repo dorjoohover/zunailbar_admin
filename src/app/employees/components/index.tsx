@@ -514,7 +514,7 @@ export const EmployeePage = ({
                                   className={cn(
                                     item === "mobile"
                                       ? "hide-number-arrows"
-                                      : ""
+                                      : "", 
                                   )}
                                 />
                               </>

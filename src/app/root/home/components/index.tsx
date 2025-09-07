@@ -12,7 +12,7 @@ import { fetcher } from "@/hooks/fetcher";
 
 import DynamicHeader from "@/components/dynamicHeader";
 import { Home, IHome, IHomes } from "@/models/home.model";
-import { Pencil, UploadCloud, X } from "lucide-react";
+import { Pencil, Save, UploadCloud, X } from "lucide-react";
 import { firstLetterUpper, numberArray } from "@/lib/functions";
 import { Button } from "@/components/ui/button";
 import { imageUploader } from "@/app/(api)/base";
@@ -384,8 +384,9 @@ export const HomePage = ({ data }: { data: ListType<Home> }) => {
               );
             })}
           </div>
-          <div className="fixed bottom-4 right-4">
+          <div className="fixed bottom-6 right-6 z-40">
             <Button onClick={() => form.handleSubmit(onSubmit, onInvalid)()}>
+              <Save />
               Хадгалах
             </Button>
           </div>

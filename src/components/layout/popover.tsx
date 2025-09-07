@@ -21,8 +21,8 @@ export const FilterPopover = ({
 }) => {
   const [selected, setSelected] = useState();
   return (
-    <div className="relative space-y-2">
-      <h1 className="text-xs font-bold text-gray-500">{label}</h1>
+    <div className="relative">
+      <h1 className="filter-label text-xs font-bold text-primary">{label}</h1>
       <Popover>
         <PopoverTrigger asChild>
           <Button variant="outline" className="inline-flex items-center justify-start text-left gap-1 w-[160px] truncate px-2 lg:h-10 rounded-md">

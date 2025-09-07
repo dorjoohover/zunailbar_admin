@@ -76,7 +76,7 @@ export function ComboBox<T extends FieldValues>({
           <ChevronsUpDown className="opacity-50" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className={cn(className, "p-0 bg-white min-w-48")}>
+      <PopoverContent side="bottom" align="start" className={cn(className, "p-0 bg-white min-w-48")}>
         <Command filter={() => 1}>
           {search && (
             <CommandInput

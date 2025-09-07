@@ -30,7 +30,7 @@ const formSchema = z.object({
   }),
 });
 
-export function LoginPage() {
+export function LoginForm() {
   // {
   // save,
   // }: {
@@ -81,7 +81,7 @@ export function LoginPage() {
                 <Input
                   placeholder="xxxx-xxxx"
                   {...field}
-                  className="h-10 transparent-input"
+                  className="h-12 transparent-input"
                 />
               </FormControl>
               <FormMessage />
@@ -95,7 +95,7 @@ export function LoginPage() {
             <FormItem>
               <PasswordField
                 props={{ ...field }}
-                className="bg-white h-10"
+                className="bg-white h-12"
                 label="Нууц үг"
               />
 
@@ -103,7 +103,7 @@ export function LoginPage() {
             </FormItem>
           )}
         />
-        <Button type="submit" className="w-full h-10" loading={loading}>
+        <Button type="submit" className="w-full h-12 mt-4" loading={loading}>
           Нэвтрэх
         </Button>
       </form>
