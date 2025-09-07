@@ -67,7 +67,7 @@ export function ComboBox<T extends FieldValues>({
           aria-expanded={open}
           className={cn(
             className,
-            "min-w-48 lg:min-h-10 justify-between bg-white text-xs w-full lg:text-sm"
+            "min-w-32 lg:min-h-10 justify-between bg-white text-xs w-full lg:text-sm"
           )}
         >
           {value

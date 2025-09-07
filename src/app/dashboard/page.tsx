@@ -5,6 +5,7 @@ import EChart from "./components/eChart";
 import EChartPie from "./components/eChartPie";
 import { ClipboardCheck, Milk, UsersRound } from "lucide-react";
 import Link from "next/link";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 export default function DashboardPage() {
   return (

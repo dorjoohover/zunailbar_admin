@@ -125,15 +125,15 @@ export function getEnumValues<T extends Record<string, string | number>>(
 }
 
 export const getValuesUserProductStatus = {
-  [UserProductStatus.Active]: { name: "Active", color: "green-badge badge" },
-  [UserProductStatus.Damaged]: { name: "Damaged", color: "red-badge badge" },
-  [UserProductStatus.Lost]: { name: "Lost", color: "yellow-badge badge" },
+  [UserProductStatus.Active]: { name: "Идэвхтэй", color: "green-badge badge" },
+  [UserProductStatus.Damaged]: { name: "Гэмтсэн", color: "red-badge badge" },
+  [UserProductStatus.Lost]: { name: "Гээгдсэн", color: "yellow-badge badge" },
   [UserProductStatus.Replaced]: {
-    name: "Replaced",
+    name: "Орлуулсан",
     color: "slate-badge badge",
   },
   [UserProductStatus.Returned]: {
-    name: "Returned",
+    name: "Буцаасан",
     color: "neutral-badge badge",
   },
 };

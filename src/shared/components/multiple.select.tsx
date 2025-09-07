@@ -98,6 +98,7 @@ export function MultiSelect<T extends FieldValues>({
                     key={it.value}
                     onSelect={() => toggleValue(it.value)}
                   >
+                    
                     <Check
                       className={cn(
                         "mr-2 h-4 w-4",

@@ -1,13 +1,11 @@
 import { ColumnDef } from "@tanstack/react-table";
-import { IProduct } from "@/models/product.model";
 import { ArrowUpDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import { parseDate } from "@/lib/functions";
 import { ISalaryLog } from "@/models";
 import { TableActionButtons } from "@/components/tableActionButtons";
-import { CategoryTypeValues, SalaryLogValues } from "@/lib/constants";
-import { CategoryType, SalaryLogStatus } from "@/lib/enum";
+import { SalaryLogValues } from "@/lib/constants";
+import { SalaryLogStatus } from "@/lib/enum";
 
 export function getColumns(
   onEdit: (product: ISalaryLog) => void,
@@ -18,6 +16,18 @@ export function getColumns(
       id: "select",
       header: ({ table }) => <span>№</span>,
       cell: ({ row }) => <span className="">{row.index + 1}</span>,
+    },
+    {
+      accessorKey: "user_name",
+      header: ({ column }) => (
+        <Button
+          variant="table_header"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          className="font-bold"
+        >
+          Ник нэр <ArrowUpDown className="w-4 h-4 ml-2" />
+        </Button>
+      ),
     },
 
     {

@@ -1,12 +1,5 @@
 "use client";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { ColumnDef } from "@tanstack/react-table";
 import { IUser } from "@/models/user.model";
 import { ArrowUpDown, Hammer, Trash2, UserRoundCog } from "lucide-react";
@@ -14,12 +7,7 @@ import { Button } from "@/components/ui/button";
 import { IBranch } from "@/models";
 import { mobileFormatter, parseDate } from "@/lib/functions";
 import { EmployeeStatus, ROLE, UserStatus } from "@/lib/enum";
-import {
-  EmployeeStatusValue,
-  getEnumValues,
-  roleIconMap,
-  RoleValue,
-} from "@/lib/constants";
+import { EmployeeStatusValue, getEnumValues, roleIconMap, RoleValue } from "@/lib/constants";
 import Image from "next/image";
 import TooltipWrapper from "@/components/tooltipWrapper";
 import { TableActionButtons } from "@/components/tableActionButtons";
@@ -34,12 +22,7 @@ const branches: IBranch[] = [
   { id: "3", name: "Airport Branch", address: "Buyant Ukhaa", user_id: "102" },
 ];
 
-export const getColumns = (
-  onEdit: (product: IUser) => void,
-  setStatus: (index: number, status: EmployeeStatus) => void,
-  giveProduct: (index: number) => void,
-  remove: (index: number) => Promise<boolean>
-): ColumnDef<IUser>[] => [
+export const getColumns = (onEdit: (product: IUser) => void, setStatus: (index: number, status: EmployeeStatus) => void, giveProduct: (index: number) => void, remove: (index: number) => Promise<boolean>): ColumnDef<IUser>[] => [
   // {
   //   id: "select",
   //   header: ({ table }) => (
@@ -60,12 +43,9 @@ export const getColumns = (
   //   enableHiding: false,
   // },
   {
-    id: "index",
-    header: "#",
-    cell: ({ row }) => row.index + 1,
-    enableSorting: false,
-    enableHiding: false,
-    size: 40,
+    id: "select",
+    header: ({ table }) => <span>№</span>,
+    cell: ({ row }) => <span className="">{row.index + 1}</span>,
   },
   {
     accessorKey: "firstname",
@@ -78,11 +58,7 @@ export const getColumns = (
         Нэр <ArrowUpDown className="w-4 h-4 ml-2" />
       </Button>
     ),
-    cell: ({ row }) => (
-      <div className="font-bold text-brand-blue">
-        {row.getValue("firstname")}
-      </div>
-    ),
+    cell: ({ row }) => <div className="font-bold text-brand-blue">{row.getValue("firstname")}</div>,
   },
   {
     accessorKey: "nickname",
@@ -111,9 +87,7 @@ export const getColumns = (
         <div
           className={`h-5 w-8 rounded-full`}
           style={{
-            backgroundColor: `${getUserColor(
-              +((row.getValue("color") as string) ?? -1)
-            )}`,
+            backgroundColor: `${getUserColor(+((row.getValue("color") as string) ?? -1))}`,
           }}
         ></div>
       );
@@ -144,9 +118,7 @@ export const getColumns = (
       return (
         <>
           {profile ? (
-            <span
-              className={`flex gap-2 items-center overflow-hidden font-bold aspect-square size-12 rounded bg-gray-100`}
-            >
+            <span className={`flex gap-2 items-center overflow-hidden font-bold aspect-square size-12 rounded bg-gray-100`}>
               <Image
                 src={`/api/file/${profile}`}
                 width={100}
@@ -171,19 +143,14 @@ export const getColumns = (
 
       const name = RoleValue[role];
       const { color } = roleIconMap[role] ?? {};
-      return (
-        <span className={`flex gap-2 items-center text-${color}-500 font-bold`}>
-          {name}
-        </span>
-      );
+      return <span className={`flex gap-2 items-center text-${color}-500 font-bold`}>{name}</span>;
     },
   },
   {
     accessorKey: "user_status",
     header: "Статус",
     cell: ({ row }) => {
-      const status =
-        EmployeeStatusValue[row.getValue<number>("user_status") as UserStatus];
+      const status = EmployeeStatusValue[row.getValue<number>("user_status") as UserStatus];
       return <span className={cn(`${status.color} badge`)}>{status.name}</span>;
     },
   },
@@ -192,10 +159,7 @@ export const getColumns = (
     header: "Үйлдэл",
     cell: ({ row }) => {
       return (
-        <TableActionButtons
-          rowData={row.original}
-          onEdit={(data) => onEdit(data)}
-        >
+        <TableActionButtons rowData={row.original} onEdit={(data) => onEdit(data)}>
           <DropdownMenu>
             <TooltipWrapper tooltip="Статус солих">
               <DropdownMenuTrigger asChild>
@@ -213,13 +177,8 @@ export const getColumns = (
                 .map((item, i) => {
                   const status = EmployeeStatusValue[item];
                   return (
-                    <DropdownMenuItem
-                      key={i}
-                      onClick={() => setStatus(row.index, item)}
-                    >
-                      <span className={cn(status.color, "w-full text-center")}>
-                        {status.name}
-                      </span>
+                    <DropdownMenuItem key={i} onClick={() => setStatus(row.index, item)}>
+                      <span className={cn(status.color, "w-full text-center")}>{status.name}</span>
                     </DropdownMenuItem>
                   );
                 })}
@@ -227,11 +186,7 @@ export const getColumns = (
           </DropdownMenu>
 
           <TooltipWrapper tooltip="Бүтээгдэхүүн өгөх">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => giveProduct(row.index)}
-            >
+            <Button variant="ghost" size="icon" onClick={() => giveProduct(row.index)}>
               <Hammer className="size-4" />
             </Button>
           </TooltipWrapper>

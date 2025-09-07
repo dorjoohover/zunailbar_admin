@@ -1,7 +1,6 @@
 import { ColumnDef } from "@tanstack/react-table";
 import { ArrowUpDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import { parseDate } from "@/lib/functions";
 import { IUser } from "@/models";
 import { TableActionButtons } from "@/components/tableActionButtons";

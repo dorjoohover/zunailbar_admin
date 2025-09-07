@@ -11,10 +11,7 @@ import { IProductLog, IProductWarehouse } from "@/models";
 import TooltipWrapper from "@/components/tooltipWrapper";
 import { TableActionButtons } from "@/components/tableActionButtons";
 
-export function getColumns(
-  onEdit: (product: IProductWarehouse) => void,
-  remove: (index: number) => Promise<boolean>
-): ColumnDef<IProductWarehouse>[] {
+export function getColumns(onEdit: (product: IProductWarehouse) => void, remove: (index: number) => Promise<boolean>): ColumnDef<IProductWarehouse>[] {
   return [
     {
       id: "select",
@@ -24,11 +21,7 @@ export function getColumns(
     {
       accessorKey: "warehouse_name",
       header: ({ column }) => (
-        <Button
-          variant="table_header"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          className="font-bold"
-        >
+        <Button variant="table_header" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")} className="font-bold">
           Агуулах <ArrowUpDown className="w-4 h-4 ml-2" />
         </Button>
       ),
@@ -36,11 +29,7 @@ export function getColumns(
     {
       accessorKey: "product_name",
       header: ({ column }) => (
-        <Button
-          variant="table_header"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          className="font-bold"
-        >
+        <Button variant="table_header" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")} className="font-bold">
           Бүтээгдэхүүн <ArrowUpDown className="w-4 h-4 ml-2" />
         </Button>
       ),
@@ -49,11 +38,7 @@ export function getColumns(
     {
       accessorKey: "quantity",
       header: ({ column }) => (
-        <Button
-          variant="table_header"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          className="font-bold"
-        >
+        <Button variant="table_header" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")} className="font-bold">
           Тоо ширхэг <ArrowUpDown className="w-4 h-4 ml-2" />
         </Button>
       ),
@@ -70,11 +55,7 @@ export function getColumns(
     {
       accessorKey: "created_at",
       header: ({ column }) => (
-        <Button
-          variant="table_header"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          className="font-bold"
-        >
+        <Button variant="table_header" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")} className="font-bold">
           Үүсгэсэн <ArrowUpDown className="w-4 h-4 ml-2" />
         </Button>
       ),
@@ -91,13 +72,7 @@ export function getColumns(
     {
       id: "actions",
       header: "Үйлдэл",
-      cell: ({ row }) => (
-        <TableActionButtons
-          rowData={row.original}
-          onEdit={(data) => onEdit(data)}
-          onRemove={(data) => remove(row.index)}
-        ></TableActionButtons>
-      ),
+      cell: ({ row }) => <TableActionButtons rowData={row.original} onEdit={(data) => onEdit(data)} onRemove={(data) => remove(row.index)}></TableActionButtons>,
     },
   ];
 }

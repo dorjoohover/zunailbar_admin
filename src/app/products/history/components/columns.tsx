@@ -11,21 +11,10 @@ import { IProductLog } from "@/models";
 import TooltipWrapper from "@/components/tooltipWrapper";
 import { TableActionButtons } from "@/components/tableActionButtons";
 import { getEnumValues, getValuesProductLogStatus } from "@/lib/constants";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 
-export function getColumns(
-  onEdit: (product: IProductLog) => void,
-  remove: (index: number) => Promise<boolean>,
-  setStatus: (index: number, status: ProductLogStatus) => void
-): ColumnDef<IProductLog>[] {
+export function getColumns(onEdit: (product: IProductLog) => void, remove: (index: number) => Promise<boolean>, setStatus: (index: number, status: ProductLogStatus) => void): ColumnDef<IProductLog>[] {
   return [
     {
       id: "select",
@@ -35,11 +24,7 @@ export function getColumns(
     {
       accessorKey: "product_name",
       header: ({ column }) => (
-        <Button
-          variant="table_header"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          className="font-bold"
-        >
+        <Button variant="table_header" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")} className="font-bold">
           Бүтээгдэхүүн <ArrowUpDown className="w-4 h-4 ml-2" />
         </Button>
       ),
@@ -52,11 +37,7 @@ export function getColumns(
     {
       accessorKey: "quantity",
       header: ({ column }) => (
-        <Button
-          variant="table_header"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          className="font-bold"
-        >
+        <Button variant="table_header" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")} className="font-bold">
           Тоо ширхэг <ArrowUpDown className="w-4 h-4 ml-2" />
         </Button>
       ),
@@ -70,10 +51,7 @@ export function getColumns(
       accessorKey: "product_log_status",
       header: "Статус",
       cell: ({ row }) => {
-        const status =
-          getValuesProductLogStatus[
-            row.getValue<number>("product_log_status") as ProductLogStatus
-          ];
+        const status = getValuesProductLogStatus[row.getValue<number>("product_log_status") as ProductLogStatus];
         return <span className={status.color}>{status.name}</span>;
       },
     },
@@ -89,11 +67,7 @@ export function getColumns(
     {
       accessorKey: "created_at",
       header: ({ column }) => (
-        <Button
-          variant="table_header"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          className="font-bold"
-        >
+        <Button variant="table_header" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")} className="font-bold">
           Үүсгэсэн <ArrowUpDown className="w-4 h-4 ml-2" />
         </Button>
       ),
@@ -111,11 +85,7 @@ export function getColumns(
       id: "actions",
       header: "Үйлдэл",
       cell: ({ row }) => (
-        <TableActionButtons
-          rowData={row.original}
-          onEdit={(data) => onEdit(data)}
-          onRemove={(d) => remove(row.index)}
-        >
+        <TableActionButtons rowData={row.original} onEdit={(data) => onEdit(data)} onRemove={(d) => remove(row.index)}>
           <DropdownMenu>
             <TooltipWrapper tooltip="Статус солих">
               <DropdownMenuTrigger asChild>
@@ -134,10 +104,7 @@ export function getColumns(
               {getEnumValues(ProductLogStatus).map((item, i) => {
                 const status = getValuesProductLogStatus[item];
                 return (
-                  <DropdownMenuItem
-                    key={i}
-                    onClick={() => setStatus(row.index, item)}
-                  >
+                  <DropdownMenuItem key={i} onClick={() => setStatus(row.index, item)}>
                     <span className={cn(status.color)}>{status.name}</span>
                   </DropdownMenuItem>
                 );
