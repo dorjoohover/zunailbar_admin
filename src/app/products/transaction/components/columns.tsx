@@ -11,19 +11,24 @@ import { ProductTransactionStatus } from "@/lib/enum";
 import { TableActionButtons } from "@/components/tableActionButtons";
 import { getValuesProductTransactionStatus } from "@/lib/constants";
 
-export function getColumns(onEdit: (product: IProductTransaction) => void, remove: (index: number) => Promise<boolean>): ColumnDef<IProductTransaction>[] {
+export function getColumns(
+  onEdit: (product: IProductTransaction) => void,
+  remove: (index: number) => Promise<boolean>
+): ColumnDef<IProductTransaction>[] {
   return [
     {
       id: "select",
-      header: ({ table }) => <Checkbox checked={table.getIsAllPageRowsSelected()} onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)} aria-label="Select all" />,
-      cell: ({ row }) => <Checkbox checked={row.getIsSelected()} onCheckedChange={(value) => row.toggleSelected(!!value)} aria-label="Select row" />,
-      enableSorting: false,
-      enableHiding: false,
+      header: ({ table }) => <span>№</span>,
+      cell: ({ row }) => <span className="">{row.index + 1}</span>,
     },
     {
       accessorKey: "branch_name",
       header: ({ column }) => (
-        <Button variant="table_header" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")} className="font-bold">
+        <Button
+          variant="table_header"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          className="font-bold"
+        >
           Салбар <ArrowUpDown className="w-4 h-4 ml-2" />
         </Button>
       ),
@@ -39,7 +44,11 @@ export function getColumns(onEdit: (product: IProductTransaction) => void, remov
     {
       accessorKey: "quantity",
       header: ({ column }) => (
-        <Button variant="table_header" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")} className="font-bold">
+        <Button
+          variant="table_header"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          className="font-bold"
+        >
           Тоо ширхэг <ArrowUpDown className="w-4 h-4 ml-2" />
         </Button>
       ),
@@ -48,7 +57,12 @@ export function getColumns(onEdit: (product: IProductTransaction) => void, remov
       accessorKey: "product_transaction_status",
       header: "Status",
       cell: ({ row }) => {
-        const status = getValuesProductTransactionStatus[row.getValue<number>("product_transaction_status") as ProductTransactionStatus];
+        const status =
+          getValuesProductTransactionStatus[
+            row.getValue<number>(
+              "product_transaction_status"
+            ) as ProductTransactionStatus
+          ];
         return <span className={status.color}>{status.name}</span>;
       },
     },
@@ -68,7 +82,11 @@ export function getColumns(onEdit: (product: IProductTransaction) => void, remov
     {
       accessorKey: "created_at",
       header: ({ column }) => (
-        <Button variant="table_header" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")} className="font-bold">
+        <Button
+          variant="table_header"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          className="font-bold"
+        >
           Үүсгэсэн <ArrowUpDown className="w-4 h-4 ml-2" />
         </Button>
       ),
@@ -87,7 +105,11 @@ export function getColumns(onEdit: (product: IProductTransaction) => void, remov
       header: "Үйлдэл",
       cell: ({ row }) => (
         // Bagasgasan
-        <TableActionButtons rowData={row.original} onEdit={(data) => onEdit(data)} onRemove={(data) => remove(row.index)}></TableActionButtons>
+        <TableActionButtons
+          rowData={row.original}
+          onEdit={(data) => onEdit(data)}
+          onRemove={(data) => remove(row.index)}
+        ></TableActionButtons>
       ),
     },
   ];

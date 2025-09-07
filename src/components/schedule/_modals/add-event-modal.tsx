@@ -1,35 +1,26 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 
 import { useModal } from "@/providers/modal-context";
 import { FormProvider, SubmitHandler, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { EventFormData, eventSchema, Variant } from "@/types/index";
+import { EventFormData, eventSchema } from "@/types/index";
 import { useScheduler } from "@/providers/schedular-provider";
 import { Branch, IOrder, Service, User } from "@/models";
-import { OrderStatus, ROLE } from "@/lib/enum";
+import { ROLE } from "@/lib/enum";
 import { FormItems } from "@/shared/components/form.field";
 import { ComboBox } from "@/shared/components/combobox";
+import { SearchType, VALUES } from "@/lib/constants";
 import {
-  getEnumValues,
-  ListType,
-  OrderStatusValues,
-  SearchType,
-} from "@/lib/constants";
-import {
-  formatTime,
+  firstLetterUpper,
   mnDateFormat,
   mobileFormatter,
-  money,
   numberArray,
   totalHours,
   toTimeString,
-  usernameFormatter,
 } from "@/lib/functions";
 import { TextField } from "@/shared/components/text.field";
-import { Select, SelectItem } from "@/components/ui/select";
-import { fi } from "zod/v4/locales";
 import { MultiSelect } from "@/shared/components/multiple.select";
 import { showToast } from "@/shared/components/showToast";
 import { Api } from "@/utils/api";
@@ -68,10 +59,16 @@ export default function AddEventModal({
   const { handlers } = useScheduler();
   const [allItems, setValues] = useState(items);
 
-  const searchField = async (v: string, key: Api) => {
+  const searchField = async (v: string, key: Api, edit?: boolean) => {
     let value = "";
     if (v.length > 1) value = v;
     if (v.length == 1) return;
+    if (edit && v == "") {
+      if (key == Api.customer)
+        form.setValue("customer_id", values?.customer_id);
+      if (key == Api.user) form.setValue("user_id", values?.user_id);
+    }
+
     const artist = form.watch("user_id");
     const details = form.watch("details");
     const payload =
@@ -79,17 +76,23 @@ export default function AddEventModal({
         ? { name: value }
         : key === Api.service
         ? { name: value, user_id: artist }
-        : {
+        : edit === undefined
+        ? {
             id: value,
             role: key == Api.customer ? ROLE.CLIENT : ROLE.E_M,
             services: details.map((d) => d.service_id).join(","),
-          }; // 👈 role нэмлээ
-
+          }
+        : {
+            role: key == Api.customer ? ROLE.CLIENT : ROLE.E_M,
+            services: details.map((d) => d.service_id).join(","),
+            value: v,
+          };
     await search(key == Api.customer ? Api.user : key, {
       ...payload,
       limit: 20,
       page: 0,
     }).then((d) => {
+      console.log(key, d.data);
       setValues((prev) => ({
         ...prev,
         [key]: d.data,
@@ -101,10 +104,15 @@ export default function AddEventModal({
     defaultValues: defaultValues,
   });
   useEffect(() => {
-    if (form.watch("details")?.length > 0) searchField("", Api.user);
-    if (form.watch("user_id") && form.watch("user_id") != "")
+    if (values && form.watch("user_id") == "") {
+      searchField(values.user_id!, Api.user, true);
+      searchField(values.customer_id!, Api.customer, true);
+    }
+    if (form.watch("user_id") && form.watch("user_id") != "") {
       searchField("", Api.service);
-  }, [form.watch("details"), form.watch("user_id")]);
+      searchField("", Api.user, false);
+    }
+  }, [form.watch("details"), form.watch("user_id"), values]);
   // Reset the form on initialization
   useEffect(() => {
     if (data?.default) {
@@ -139,9 +147,14 @@ export default function AddEventModal({
     setClose();
   };
   const onInvalid = async <T,>(e: T) => {
-    console.log(e);
-
-    showToast("error", "Мэдээлэл дутуу байна");
+    const error =
+      Object.keys(e as any)
+        .map((er, i) => {
+          const value = VALUES[er];
+          return i == 0 ? firstLetterUpper(value) : value;
+        })
+        .join(", ") + "оруулна уу!";
+    showToast("info", error);
   };
   return (
     <form
@@ -177,41 +190,40 @@ export default function AddEventModal({
                 : [];
 
               return (
-                  <MultiSelect
-                    // RHF field-ийг “id массив” болгосон wrapper-оор өгнө
-                    search={(e) => searchField(e, Api.service)}
-                    props={
-                      {
-                        name: field.name,
-                        value: selectedIds,
-                        onChange: (ids: string[]) => {
-                          const nextDetails = ids.map((id) => {
-                            const svc = allItems.service.find(
-                              (s) => s.id === id
-                            );
-                            const [name, duration] = svc?.value?.split(
-                              "__"
-                            ) ?? ["", null];
-                            return {
-                              service_id: id,
-                              service_name: name ?? "",
-                              duration: duration ?? null,
-                            };
-                          });
-                          field.onChange(nextDetails);
-                        },
-                        onBlur: field.onBlur,
-                        ref: field.ref,
-                      } as any
-                    }
-                    items={allItems.service.map((s) => {
-                      const [name] = s.value?.split("__") ?? [""];
-                      return {
-                        label: name,
-                        value: s.id,
-                      };
-                    })}
-                  />
+                <MultiSelect
+                  // RHF field-ийг “id массив” болгосон wrapper-оор өгнө
+                  search={(e) => searchField(e, Api.service)}
+                  props={
+                    {
+                      name: field.name,
+                      value: selectedIds,
+                      onChange: (ids: string[]) => {
+                        const nextDetails = ids.map((id) => {
+                          const svc = allItems.service.find((s) => s.id === id);
+                          const [name, duration] = svc?.value?.split("__") ?? [
+                            "",
+                            null,
+                          ];
+                          return {
+                            service_id: id,
+                            service_name: name ?? "",
+                            duration: duration ?? null,
+                          };
+                        });
+                        field.onChange(nextDetails);
+                      },
+                      onBlur: field.onBlur,
+                      ref: field.ref,
+                    } as any
+                  }
+                  items={allItems.service.map((s) => {
+                    const [name] = s.value?.split("__") ?? [""];
+                    return {
+                      label: name,
+                      value: s.id,
+                    };
+                  })}
+                />
               );
             }}
           </FormItems>

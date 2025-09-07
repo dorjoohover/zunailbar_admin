@@ -9,6 +9,7 @@ import {
   getEnumValues,
   ListDefault,
   SalaryLogValues,
+  VALUES,
 } from "@/lib/constants";
 import { Modal } from "@/shared/components/modal";
 import z from "zod";
@@ -24,7 +25,7 @@ import { getColumns } from "./columns";
 import DynamicHeader from "@/components/dynamicHeader";
 import { SalaryLogStatus } from "@/lib/enum";
 import { ISalaryLog, SalaryLog, User } from "@/models";
-import { mnDate, usernameFormatter } from "@/lib/functions";
+import { firstLetterUpper, mnDate, usernameFormatter } from "@/lib/functions";
 import { DatePicker } from "@/shared/components/date.picker";
 import { showToast } from "@/shared/components/showToast";
 
@@ -140,7 +141,14 @@ export const SalaryPage = ({
     setAction(ACTION.DEFAULT);
   };
   const onInvalid = async <T,>(e: T) => {
-    console.log("error", e);
+    const error =
+      Object.keys(e as any)
+        .map((er, i) => {
+          const value = VALUES[er];
+          return i == 0 ? firstLetterUpper(value) : value;
+        })
+        .join(", ") + "оруулна уу!";
+    showToast("info", error);
   };
   const downloadExcel = async (pg: PG = DEFAULT_PG) => {
     setAction(ACTION.RUNNING);

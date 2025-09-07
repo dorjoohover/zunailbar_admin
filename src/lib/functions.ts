@@ -174,6 +174,31 @@ export const mobileFormatter = (mobile: string) => {
   return mobile ? mobile.replace("+976", "") : "";
 };
 
+export const searchUsernameFormatter = (value: string) => {
+  const [mobile, nickname, branch_id, color] = value?.split("__") ?? [
+    "",
+    "",
+    "",
+    "",
+  ];
+  return `${nickname} ${mobileFormatter(mobile)}`;
+};
+export const searchProductFormatter = (value: string) => {
+  const [brand_name, category_name, name, quantity] = value?.split("__") ?? [
+    "",
+    "",
+    "",
+    "",
+  ];
+  return `${name}${brand_name ? ` - ${brand_name}` : ""} | Үлд: ${
+    quantity ?? 0
+  }`;
+};
+export const searchFormatter = (value: string) => {
+  const [name] = value?.split("__") ?? [""];
+  return `${name}`;
+};
+
 export const usernameFormatter = (user: User) => {
   if (user.nickname) {
     return user.nickname;
@@ -185,7 +210,7 @@ export const usernameFormatter = (user: User) => {
     return `${last}${first}`;
   }
 
-  return ''
+  return "";
 };
 export const money = (value: string, currency = "", round = 1) => {
   let v = Math.round(+value / round) * round;

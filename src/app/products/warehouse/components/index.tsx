@@ -15,6 +15,7 @@ import {
   DEFAULT_PG,
   SearchType,
   Option,
+  VALUES,
 } from "@/lib/constants";
 import { Modal } from "@/shared/components/modal";
 import z from "zod";
@@ -29,7 +30,13 @@ import { getColumns } from "./columns";
 import { Input } from "@/components/ui/input";
 
 import { Button } from "@/components/ui/button";
-import { checkEmpty, dateOnly, mnDate, objectCompact } from "@/lib/functions";
+import {
+  checkEmpty,
+  dateOnly,
+  firstLetterUpper,
+  mnDate,
+  objectCompact,
+} from "@/lib/functions";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import DynamicHeader from "@/components/dynamicHeader";
 import { FilterPopover } from "@/components/layout/popover";
@@ -164,7 +171,14 @@ export const ProductWarehousePage = ({
   };
 
   const onInvalid = async <T,>(e: T) => {
-    console.log("error", e);
+    const error =
+      Object.keys(e as any)
+        .map((er, i) => {
+          const value = VALUES[er];
+          return i == 0 ? firstLetterUpper(value) : value;
+        })
+        .join(", ") + "оруулна уу!";
+    showToast("info", error);
   };
 
   const searchProduct = async (name = "") => {
@@ -201,7 +215,6 @@ export const ProductWarehousePage = ({
   ) => {
     const products = form.getValues("products");
     const index = products.findIndex((p) => p.product_id === productId);
-    console.log(qty);
     if (index !== -1) {
       const updated = [...products];
       const currentQty = (updated[index].quantity as number) ?? 0;
@@ -210,6 +223,7 @@ export const ProductWarehousePage = ({
       if (newQty <= 0) {
         updated.splice(index, 1);
       } else {
+        console.log(qty, newQty);
         qty >= newQty
           ? (updated[index] = {
               ...updated[index],
@@ -220,12 +234,13 @@ export const ProductWarehousePage = ({
 
       form.setValue("products", updated);
     } else {
-      if (change > 0 && qty > change) {
+      if (change > 0 && qty >= change) {
         append({
           product_id: productId,
           quantity: change,
         });
       } else {
+        console.log(change, qty);
         showToast("info", "Тоо ширхэг хангалтгүй байна!");
       }
     }
@@ -598,113 +613,118 @@ export const ProductWarehousePage = ({
                         <span className="col-span-5 text-center">Үйлдэл</span>
                       </div>
                       <ScrollArea className="h-[50vh] w-full divide-y pt-0 bg-white border border-b-0 rounded overflow-hidden max-w-[calc(100vw-7rem)]">
-                      <div className="overflow-hidden border-slate-200 w-full">
-                         {products.map((product, index) => {
-                          const [brand, category, name, quantity] =
-                            product.value.split("__");
-                          if (+quantity > 0)
-                            return (
-                              <div
-                                key={product.id}
-                                className="flex items-center justify-between p-3 pr-6 border-b last:border-none flex-nowrap overflow-hidden"
-                              >
-                                <div className="grid items-center justify-between w-full gap-4 grid-cols-20 min-w-[600px]">
-                                  <span className="col-span-1 text-xs font-medium text-gray-700 truncate text-start">
-                                    {index + 1}
-                                  </span>
-                                  <span className="col-span-4 text-xs font-medium text-gray-700 truncate text-start">
-                                    {checkEmpty(brand)}
-                                  </span>
-                                  <span className="col-span-4 text-xs font-medium text-gray-700 truncate">
-                                    {checkEmpty(category)}
-                                  </span>
-                                  <span className="col-span-5 text-xs font-medium text-gray-700">
-                                    {checkEmpty(name)}
-                                  </span>
-                                  <span className="col-span-1 text-xs font-medium text-gray-700">
-                                    {quantity}
-                                  </span>
-                                  <div className="flex items-center justify-center col-span-5 gap-1">
-                                    <Button
-                                      variant="purple"
-                                      className=""
-                                      size="icon"
-                                      onClick={() =>
-                                        handleProductQuantityChange(
-                                          product.id,
-                                          -1,
-                                          +quantity
-                                        )
-                                      }
-                                    >
-                                      −
-                                    </Button>
-                                    <Input
-                                      type="number"
-                                      className="w-16 text-center bg-white border-2 no-spinner hide-number-arrows border-brand-purple"
-                                      max={quantity}
-                                      value={
-                                        (form
-                                          .watch("products")
-                                          ?.find(
-                                            (p) => p.product_id === product.id
-                                          )?.quantity as number) ?? 0
-                                      }
-                                      onClick={() =>
-                                        handleProductClickOnce(
-                                          product.id,
-                                          +quantity
-                                        )
-                                      }
-                                      onChange={(e) => {
-                                        const val = parseInt(
-                                          e.target.value || "0",
-                                          10
-                                        );
-                                        const existing =
-                                          form.getValues("products");
-                                        const index = existing.findIndex(
-                                          (p) => p.product_id === product.id
-                                        );
-                                        const updated = [...existing];
-                                        if (val > +quantity) return;
-                                        if (val <= 0 && index !== -1) {
-                                          updated.splice(index, 1);
-                                        } else if (index !== -1) {
-                                          updated[index] = {
-                                            ...updated[index],
-                                            quantity: val,
-                                          };
-                                        } else if (val > 0) {
-                                          updated.push({
-                                            product_id: product.id,
-                                            quantity: val,
-                                          });
+                        <div className="overflow-hidden border-slate-200 w-full">
+                          {products.map((product, index) => {
+                            const [brand, category, name, quantity] =
+                              product.value.split("__");
+                            if (+quantity > 0)
+                              return (
+                                <div
+                                  key={product.id}
+                                  className="flex items-center justify-between p-3 pr-6 border-b last:border-none flex-nowrap overflow-hidden"
+                                >
+                                  <div className="grid items-center justify-between w-full gap-4 grid-cols-20 min-w-[600px]">
+                                    <span className="col-span-1 text-xs font-medium text-gray-700 truncate text-start">
+                                      {index + 1}
+                                    </span>
+                                    <span className="col-span-4 text-xs font-medium text-gray-700 truncate text-start">
+                                      {checkEmpty(brand)}
+                                    </span>
+                                    <span className="col-span-4 text-xs font-medium text-gray-700 truncate">
+                                      {checkEmpty(category)}
+                                    </span>
+                                    <span className="col-span-5 text-xs font-medium text-gray-700">
+                                      {checkEmpty(name)}
+                                    </span>
+                                    <span className="col-span-1 text-xs font-medium text-gray-700">
+                                      {quantity}
+                                    </span>
+                                    <div className="flex items-center justify-center col-span-5 gap-1">
+                                      <Button
+                                        variant="purple"
+                                        className=""
+                                        size="icon"
+                                        onClick={() =>
+                                          handleProductQuantityChange(
+                                            product.id,
+                                            -1,
+                                            +quantity
+                                          )
                                         }
-                                        form.setValue("products", updated);
-                                      }}
-                                    />
-                                    <Button
-                                      variant="purple"
-                                      className=""
-                                      size="icon"
-                                      onClick={() =>
-                                        handleProductQuantityChange(
-                                          product.id,
-                                          1,
-                                          +quantity
-                                        )
-                                      }
-                                    >
-                                      +
-                                    </Button>
+                                      >
+                                        −
+                                      </Button>
+
+                                      <Input
+                                        type="number"
+                                        className="w-16 text-center bg-white border-2 no-spinner hide-number-arrows border-brand-purple"
+                                        max={quantity}
+                                        value={
+                                          +(
+                                            (form
+                                              .watch("products")
+                                              ?.find(
+                                                (p) =>
+                                                  p.product_id === product.id
+                                              )?.quantity as string) ?? "0"
+                                          )
+                                        }
+                                        onClick={() =>
+                                          handleProductClickOnce(
+                                            product.id,
+                                            +quantity
+                                          )
+                                        }
+                                        onChange={(e) => {
+                                          const val = parseInt(
+                                            e.target.value || "0",
+                                            10
+                                          );
+                                          const existing =
+                                            form.getValues("products");
+                                          const index = existing.findIndex(
+                                            (p) => p.product_id === product.id
+                                          );
+                                          const updated = [...existing];
+                                          if (val > +quantity) return;
+                                          if (val <= 0 && index !== -1) {
+                                            updated.splice(index, 1);
+                                          } else if (index !== -1) {
+                                            updated[index] = {
+                                              ...updated[index],
+                                              quantity: val,
+                                            };
+                                          } else if (val > 0) {
+                                            updated.push({
+                                              product_id: product.id,
+                                              quantity: val,
+                                            });
+                                          }
+                                          console.log(val);
+                                          form.setValue("products", updated);
+                                        }}
+                                      />
+                                      <Button
+                                        variant="purple"
+                                        className=""
+                                        size="icon"
+                                        onClick={() =>
+                                          handleProductQuantityChange(
+                                            product.id,
+                                            1,
+                                            +quantity
+                                          )
+                                        }
+                                      >
+                                        +
+                                      </Button>
+                                    </div>
                                   </div>
                                 </div>
-                              </div>
-                            );
-                        })}
-                     </div>
-                         <ScrollBar orientation="horizontal" />
+                              );
+                          })}
+                        </div>
+                        <ScrollBar orientation="horizontal" />
                       </ScrollArea>
                     </div>
                   </div>

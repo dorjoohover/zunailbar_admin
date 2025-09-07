@@ -8,9 +8,11 @@ import {
   ListType,
   Option,
   PG,
+  SearchType,
+  VALUES,
 } from "@/lib/constants";
 import { useEffect, useMemo, useState } from "react";
-import { UserProductStatus } from "@/lib/enum";
+import { CategoryType, ROLE, UserProductStatus } from "@/lib/enum";
 import z from "zod";
 
 import { Api } from "@/utils/api";
@@ -25,8 +27,14 @@ import {
 } from "@/models";
 import { getColumns } from "./columns";
 import DynamicHeader from "@/components/dynamicHeader";
-import { create, deleteOne, updateOne } from "@/app/(api)";
-import { objectCompact, usernameFormatter } from "@/lib/functions";
+import { create, deleteOne, search, updateOne } from "@/app/(api)";
+import {
+  firstLetterUpper,
+  objectCompact,
+  searchProductFormatter,
+  searchUsernameFormatter,
+  usernameFormatter,
+} from "@/lib/functions";
 import { FormItems } from "@/shared/components/form.field";
 import { Modal } from "@/shared/components/modal";
 import { TextField } from "@/shared/components/text.field";
@@ -74,13 +82,11 @@ export const EmployeeProductPage = ({
   products,
   branches,
   users,
-  brands,
 }: {
   data: ListType<UserProduct>;
-  brands: ListType<Brand>;
   branches: ListType<Branch>;
-  users: ListType<User>;
-  products: ListType<Product>;
+  users: SearchType<User>[];
+  products: SearchType<Product>[];
 }) => {
   const [action, setAction] = useState(ACTION.DEFAULT);
   const [open, setOpen] = useState<boolean | undefined>(false);
@@ -89,18 +95,22 @@ export const EmployeeProductPage = ({
     defaultValues,
   });
   const [userProduct, setUserProduct] = useState<ListType<UserProduct>>(data);
-
+  const [items, setItems] = useState({
+    [Api.product]: products,
+    [Api.user]: users,
+  });
   const productMap = useMemo(
-    () => new Map(products.items.map((p) => [p.id, p])),
-    [products.items]
+    () => new Map(products.map((p) => [p.id, p.value])),
+    [products]
   );
 
   const userProductFormatter = (data: ListType<UserProduct>) => {
     const items: UserProduct[] = data.items.map((item) => {
       const product = productMap.get(item.product_id);
+      console.log(product);
       return {
         ...item,
-        brand_name: product?.brand_name ?? "-",
+        // brand_name: product?.brand_name ?? "-",
       };
     });
     setUserProduct({ items, count: data.count });
@@ -129,9 +139,14 @@ export const EmployeeProductPage = ({
     setAction(ACTION.DEFAULT);
   };
   const onInvalid = async <T,>(e: T) => {
-    console.log("error", e);
-
-    // setSuccess(false);
+    const error =
+      Object.keys(e as any)
+        .map((er, i) => {
+          const value = VALUES[er];
+          return i == 0 ? firstLetterUpper(value) : value;
+        })
+        .join(", ") + "оруулна уу!";
+    showToast("info", error);
   };
 
   const refresh = async (pg: PG = DEFAULT_PG) => {
@@ -203,16 +218,19 @@ export const EmployeeProductPage = ({
         {
           key: "user",
           label: "Артист",
-          items: users.items.map((b) => ({
-            value: b.id,
-            label: usernameFormatter(b),
-          })),
+          items: users.map((b) => {
+            const label = searchUsernameFormatter(b.value);
+            return {
+              value: b.id,
+              label: label,
+            };
+          }),
         },
-        {
-          key: "product",
-          label: "Бүтээгдэхүүн",
-          items: products.items.map((b) => ({ value: b.id, label: b.name })),
-        },
+        // {
+        //   key: "product",
+        //   label: "Бүтээгдэхүүн",
+        //   items: products.map((b) => ({ value: b.id, label: b.name })),
+        // },
         {
           key: "status",
           label: "Статус",
@@ -224,7 +242,36 @@ export const EmployeeProductPage = ({
       ],
       [branches.items]
     );
+  const searchField = async (v: string, key: Api, edit?: boolean) => {
+    let value = "";
+    if (v.length > 1) value = v;
+    if (v.length == 1) return;
 
+    const payload =
+      key === Api.product
+        ? { id: value, type: CategoryType.DEFAULT }
+        : edit === undefined
+        ? {
+            id: value,
+            role: ROLE.E_M,
+          }
+        : {
+            role: ROLE.E_M,
+
+            value: v,
+          };
+    await search(key as any, {
+      ...payload,
+      limit: 20,
+      page: 0,
+    }).then((d) => {
+      console.log(key, d.data);
+      setItems((prev) => ({
+        ...prev,
+        [key]: d.data,
+      }));
+    });
+  };
   return (
     <div className="relative w-full">
       <DynamicHeader count={data.count} />
@@ -299,11 +346,12 @@ export const EmployeeProductPage = ({
                   {(field) => {
                     return (
                       <ComboBox
+                        search={(e) => searchField(e, Api.user)}
                         props={{ ...field }}
-                        items={users.items.map((item) => {
+                        items={items[Api.user].map((item) => {
                           return {
                             value: item.id,
-                            label: usernameFormatter(item),
+                            label: searchUsernameFormatter(item.value),
                           };
                         })}
                       />
@@ -319,11 +367,12 @@ export const EmployeeProductPage = ({
                     {(field) => {
                       return (
                         <ComboBox
+                          search={(e) => searchField(e, Api.product)}
                           props={{ ...field }}
-                          items={products.items.map((item) => {
+                          items={items[Api.product].map((item) => {
                             return {
                               value: item.id,
-                              label: item.name,
+                              label: searchProductFormatter(item.value),
                             };
                           })}
                         />

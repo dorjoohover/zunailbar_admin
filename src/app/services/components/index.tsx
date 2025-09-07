@@ -2,7 +2,14 @@
 import { DataTable } from "@/components/data-table";
 import { Branch, IService, Service } from "@/models";
 import { useEffect, useMemo, useState } from "react";
-import { ListType, ACTION, PG, DEFAULT_PG, Option } from "@/lib/constants";
+import {
+  ListType,
+  ACTION,
+  PG,
+  DEFAULT_PG,
+  Option,
+  VALUES,
+} from "@/lib/constants";
 import { Modal } from "@/shared/components/modal";
 import z from "zod";
 import { FormProvider, useForm } from "react-hook-form";
@@ -15,7 +22,7 @@ import { TextField } from "@/shared/components/text.field";
 import { fetcher } from "@/hooks/fetcher";
 import { getColumns } from "./columns";
 import DynamicHeader from "@/components/dynamicHeader";
-import { objectCompact } from "@/lib/functions";
+import { firstLetterUpper, objectCompact } from "@/lib/functions";
 import { showToast } from "@/shared/components/showToast";
 
 const formSchema = z.object({
@@ -143,8 +150,14 @@ export const ServicePage = ({
     showToast("success");
   };
   const onInvalid = async <T,>(e: T) => {
-    alert(e);
-    console.log("error", e);
+    const error =
+      Object.keys(e as any)
+        .map((er, i) => {
+          const value = VALUES[er];
+          return i == 0 ? firstLetterUpper(value) : value;
+        })
+        .join(", ") + "оруулна уу!";
+    showToast("info", error);
   };
   const [filter, setFilter] = useState<FilterType>();
   const changeFilter = (key: string, value: number | string) => {

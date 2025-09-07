@@ -4,7 +4,7 @@ import { DataTable } from "@/components/data-table";
 import { Category, IProduct, Product } from "@/models";
 import { getColumns } from "./columns";
 import { useState } from "react";
-import { ListType, ACTION, PG, DEFAULT_PG } from "@/lib/constants";
+import { ListType, ACTION, PG, DEFAULT_PG, VALUES } from "@/lib/constants";
 import { Modal } from "@/shared/components/modal";
 import z from "zod";
 import { FormProvider, useForm } from "react-hook-form";
@@ -18,6 +18,7 @@ import { fetcher } from "@/hooks/fetcher";
 import { CategoryType } from "@/lib/enum";
 import DynamicHeader from "@/components/dynamicHeader";
 import { showToast } from "@/shared/components/showToast";
+import { firstLetterUpper } from "@/lib/functions";
 
 const formSchema = z.object({
   category_id: z.string().min(1),
@@ -96,7 +97,14 @@ export const CostPage = ({
     setAction(ACTION.DEFAULT);
   };
   const onInvalid = async <T,>(e: T) => {
-    console.log("error", e);
+    const error =
+      Object.keys(e as any)
+        .map((er, i) => {
+          const value = VALUES[er];
+          return i == 0 ? firstLetterUpper(value) : value;
+        })
+        .join(", ") + "оруулна уу!";
+    showToast("info", error);
   };
 
   return (

@@ -1,7 +1,7 @@
 "use client";
 import { DataTable } from "@/components/data-table";
 import React, { useState } from "react";
-import { ListType, ACTION, zStrOpt, zNumOpt } from "@/lib/constants";
+import { ListType, ACTION, zStrOpt, zNumOpt, VALUES } from "@/lib/constants";
 import { Modal } from "@/shared/components/modal";
 import z from "zod";
 import { FormProvider, useForm } from "react-hook-form";
@@ -15,6 +15,8 @@ import { fetcher } from "@/hooks/fetcher";
 import DynamicHeader from "@/components/dynamicHeader";
 import { getColumns } from "./columns";
 import { Feature, IFeature, IFeatures } from "@/models/home.model";
+import { firstLetterUpper } from "@/lib/functions";
+import { showToast } from "@/shared/components/showToast";
 
 const featureschema = z.object({
   title: zStrOpt,
@@ -100,7 +102,14 @@ export const FeaturePage = ({ data }: { data: ListType<Feature> }) => {
     setAction(ACTION.DEFAULT);
   };
   const onInvalid = async <T,>(e: T) => {
-    console.log("error", e);
+    const error =
+      Object.keys(e as any)
+        .map((er, i) => {
+          const value = VALUES[er];
+          return i == 0 ? firstLetterUpper(value) : value;
+        })
+        .join(", ") + "оруулна уу!";
+    showToast("info", error);
   };
 
   return (

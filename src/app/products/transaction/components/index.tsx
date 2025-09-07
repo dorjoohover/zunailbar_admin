@@ -16,22 +16,31 @@ import {
   getEnumValues,
   getValuesProductTransactionStatus,
   Option,
+  SearchType,
+  VALUES,
 } from "@/lib/constants";
 import { Modal } from "@/shared/components/modal";
 import z from "zod";
 import { FormProvider, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Api } from "@/utils/api";
-import { create, deleteOne, updateOne } from "@/app/(api)";
+import { create, deleteOne, search, updateOne } from "@/app/(api)";
 import { FormItems } from "@/shared/components/form.field";
 import { ComboBox } from "@/shared/components/combobox";
 import { TextField } from "@/shared/components/text.field";
 import { fetcher } from "@/hooks/fetcher";
 import { getColumns } from "./columns";
-import { ProductTransactionStatus } from "@/lib/enum";
-import { objectCompact, usernameFormatter } from "@/lib/functions";
+import { CategoryType, ProductTransactionStatus, ROLE } from "@/lib/enum";
+import {
+  firstLetterUpper,
+  objectCompact,
+  searchProductFormatter,
+  searchUsernameFormatter,
+  usernameFormatter,
+} from "@/lib/functions";
 import DynamicHeader from "@/components/dynamicHeader";
 import { Item } from "@radix-ui/react-dropdown-menu";
+import { showToast } from "@/shared/components/showToast";
 
 const formSchema = z.object({
   branch_id: z.string().min(1),
@@ -72,9 +81,9 @@ export const ProductTransactionPage = ({
   products,
 }: {
   data: ListType<ProductTransaction>;
-  users: ListType<User>;
+  users: SearchType<User>[];
   branches: ListType<Branch>;
-  products: ListType<Product>;
+  products: SearchType<Product>[];
 }) => {
   const [action, setAction] = useState(ACTION.DEFAULT);
   const [open, setOpen] = useState<undefined | boolean>(false);
@@ -89,12 +98,12 @@ export const ProductTransactionPage = ({
     [branches.items]
   );
   const userMap = useMemo(
-    () => new Map(users.items.map((u) => [u.id, u])),
-    [users.items]
+    () => new Map(users.map((u) => [u.id, u.value])),
+    [users]
   );
   const productMap = useMemo(
-    () => new Map(products.items.map((p) => [p.id, p])),
-    [products.items]
+    () => new Map(products.map((p) => [p.id, p.value])),
+    [products]
   );
   const transactionFormatter = (data: ListType<ProductTransaction>) => {
     const items: IProductTransaction[] = data.items.map((item) => {
@@ -105,8 +114,8 @@ export const ProductTransactionPage = ({
       return {
         ...item,
         branch_name: branch?.name ?? "",
-        user_name: user ? usernameFormatter(user) : "",
-        product_name: product?.name ?? "",
+        user_name: user ? searchUsernameFormatter(user) : "",
+        product_name: product?.split("__")?.[2] ?? "",
       };
     });
 
@@ -162,7 +171,14 @@ export const ProductTransactionPage = ({
     setAction(ACTION.DEFAULT);
   };
   const onInvalid = async <T,>(e: T) => {
-    console.log("error", e);
+    const error =
+      Object.keys(e as any)
+        .map((er, i) => {
+          const value = VALUES[er];
+          return i == 0 ? firstLetterUpper(value) : value;
+        })
+        .join(", ") + "оруулна уу!";
+    showToast("info", error);
   };
 
   const [filter, setFilter] = useState<FilterType>();
@@ -192,15 +208,18 @@ export const ProductTransactionPage = ({
         {
           key: "user",
           label: "Артист",
-          items: users.items.map((b) => ({
+          items: users.map((b) => ({
             value: b.id,
-            label: usernameFormatter(b),
+            label: searchUsernameFormatter(b.value),
           })),
         },
         {
           key: "product",
           label: "Бүтээгдэхүүн",
-          items: products.items.map((b) => ({ value: b.id, label: b.name })),
+          items: products.map((b) => ({
+            value: b.id,
+            label: searchProductFormatter(b.value) ?? "",
+          })),
         },
         {
           key: "status",
@@ -213,6 +232,41 @@ export const ProductTransactionPage = ({
       ],
       [branches.items]
     );
+  const [items, setItems] = useState({
+    [Api.product]: products,
+    [Api.user]: users,
+  });
+  const searchField = async (v: string, key: Api, edit?: boolean) => {
+    let value = "";
+    if (v.length > 1) value = v;
+    if (v.length == 1) return;
+
+    const payload =
+      key === Api.product
+        ? { id: value, type: CategoryType.DEFAULT }
+        : edit === undefined
+        ? {
+            id: value,
+            role: ROLE.E_M,
+          }
+        : {
+            role: ROLE.E_M,
+
+            value: v,
+          };
+    await search(key as any, {
+      ...payload,
+      limit: 20,
+      page: 0,
+    }).then((d) => {
+      console.log(key, d.data);
+      setItems((prev) => ({
+        ...prev,
+        [key]: d.data,
+      }));
+    });
+  };
+
   return (
     <div className="">
       <DynamicHeader count={transactions?.count} />
@@ -310,11 +364,12 @@ export const ProductTransactionPage = ({
                       {(field) => {
                         return (
                           <ComboBox
+                            search={(e) => searchField(e, Api.user)}
                             props={{ ...field }}
-                            items={users.items.map((item) => {
+                            items={items[Api.user].map((item) => {
                               return {
                                 value: item.id,
-                                label: usernameFormatter(item),
+                                label: searchUsernameFormatter(item.value),
                               };
                             })}
                           />
@@ -330,11 +385,12 @@ export const ProductTransactionPage = ({
                         {(field) => {
                           return (
                             <ComboBox
+                              search={(e) => searchField(e, Api.product)}
                               props={{ ...field }}
-                              items={products.items.map((item) => {
+                              items={items[Api.product].map((item) => {
                                 return {
                                   value: item.id,
-                                  label: item.name,
+                                  label: searchProductFormatter(item.value),
                                 };
                               })}
                             />

@@ -19,22 +19,8 @@ export function getColumns(
   return [
     {
       id: "select",
-      header: ({ table }) => (
-        <Checkbox
-          checked={table.getIsAllPageRowsSelected()}
-          onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-          aria-label="Select all"
-        />
-      ),
-      cell: ({ row }) => (
-        <Checkbox
-          checked={row.getIsSelected()}
-          onCheckedChange={(value) => row.toggleSelected(!!value)}
-          aria-label="Select row"
-        />
-      ),
-      enableSorting: false,
-      enableHiding: false,
+      header: ({ table }) => <span>№</span>,
+      cell: ({ row }) => <span className="">{row.index + 1}</span>,
     },
     {
       accessorKey: "product_name",
@@ -68,7 +54,9 @@ export function getColumns(
       header: "Статус",
       cell: ({ row }) => {
         const status =
-          getValuesCostStatus[row.getValue<number>("cost_status") as CostStatus];
+          getValuesCostStatus[
+            row.getValue<number>("cost_status") as CostStatus
+          ];
         return <span className={status.color}>{status.name}</span>;
       },
     },

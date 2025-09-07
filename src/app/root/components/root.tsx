@@ -1,10 +1,17 @@
 import { create, updateOne } from "@/app/(api)";
-import { ACTION, CategoryTypeValues, getEnumValues } from "@/lib/constants";
+import {
+  ACTION,
+  CategoryTypeValues,
+  getEnumValues,
+  VALUES,
+} from "@/lib/constants";
 import { CategoryType } from "@/lib/enum";
+import { firstLetterUpper } from "@/lib/functions";
 import { IBrand, ICategory } from "@/models";
 import { ComboBox } from "@/shared/components/combobox";
 import { FormItems } from "@/shared/components/form.field";
 import { Modal } from "@/shared/components/modal";
+import { showToast } from "@/shared/components/showToast";
 import { TextField } from "@/shared/components/text.field";
 import { Api } from "@/utils/api";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -63,7 +70,14 @@ export const RootModal = ({ refresh }: { refresh: () => void }) => {
     setAction(ACTION.DEFAULT);
   };
   const onInvalid = async <T,>(e: T) => {
-    console.log("error", e);
+    const error =
+      Object.keys(e as any)
+        .map((er, i) => {
+          const value = VALUES[er];
+          return i == 0 ? firstLetterUpper(value) : value;
+        })
+        .join(", ") + "оруулна уу!";
+    showToast("info", error);
   };
 
   return (
@@ -84,12 +98,22 @@ export const RootModal = ({ refresh }: { refresh: () => void }) => {
       >
         <FormProvider {...form}>
           <div className="double-col">
-            <FormItems label="Category name" control={form.control} name={"category_name"} className={"col-span-1"}>
+            <FormItems
+              label="Category name"
+              control={form.control}
+              name={"category_name"}
+              className={"col-span-1"}
+            >
               {(field) => {
                 return <TextField props={{ ...field }} />;
               }}
             </FormItems>
-            <FormItems label="Төрөл" control={form.control} name="type" className={"col-span-1"}>
+            <FormItems
+              label="Төрөл"
+              control={form.control}
+              name="type"
+              className={"col-span-1"}
+            >
               {(field) => {
                 return (
                   <ComboBox
@@ -132,7 +156,12 @@ export const RootModal = ({ refresh }: { refresh: () => void }) => {
               const name = item.key as keyof ParentType;
               const label = item.label as keyof ParentType;
               return (
-                <FormItems control={form.control} name={name} key={i} className={item.key === "name" ? "col-span-2" : ""}>
+                <FormItems
+                  control={form.control}
+                  name={name}
+                  key={i}
+                  className={item.key === "name" ? "col-span-2" : ""}
+                >
                   {(field) => {
                     return <TextField props={{ ...field }} label={label} />;
                   }}

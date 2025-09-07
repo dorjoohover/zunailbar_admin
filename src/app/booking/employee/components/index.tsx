@@ -7,6 +7,7 @@ import {
   PG,
   DEFAULT_PG,
   ScheduleEdit,
+  VALUES,
 } from "@/lib/constants";
 import { Modal } from "@/shared/components/modal";
 import z from "zod";
@@ -17,7 +18,11 @@ import { create, deleteOne } from "@/app/(api)";
 import { FormItems } from "@/shared/components/form.field";
 import { ComboBox } from "@/shared/components/combobox";
 import { fetcher } from "@/hooks/fetcher";
-import { numberArray, usernameFormatter } from "@/lib/functions";
+import {
+  firstLetterUpper,
+  numberArray,
+  usernameFormatter,
+} from "@/lib/functions";
 import {
   ScheduleForm,
   ScheduleTable,
@@ -135,7 +140,14 @@ export const SchedulePage = ({
     setAction(ACTION.DEFAULT);
   };
   const onInvalid = async <T,>(e: T) => {
-    console.log("error", e);
+    const error =
+      Object.keys(e as any)
+        .map((er, i) => {
+          const value = VALUES[er];
+          return i == 0 ? firstLetterUpper(value) : value;
+        })
+        .join(", ") + "оруулна уу!";
+    showToast("info", error);
   };
 
   const mounted = useRef(false);

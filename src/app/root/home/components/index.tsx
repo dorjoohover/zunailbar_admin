@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import { ListType, ACTION } from "@/lib/constants";
+import { ListType, ACTION, VALUES } from "@/lib/constants";
 import z from "zod";
 import { FormProvider, Path, useFieldArray, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -13,9 +13,10 @@ import { fetcher } from "@/hooks/fetcher";
 import DynamicHeader from "@/components/dynamicHeader";
 import { Home, IHome, IHomes } from "@/models/home.model";
 import { Pencil, UploadCloud, X } from "lucide-react";
-import { numberArray } from "@/lib/functions";
+import { firstLetterUpper, numberArray } from "@/lib/functions";
 import { Button } from "@/components/ui/button";
 import { imageUploader } from "@/app/(api)/base";
+import { showToast } from "@/shared/components/showToast";
 
 const homeSchema = z.object({
   image: z.string().nullable().optional(),
@@ -46,7 +47,9 @@ export const HomePage = ({ data }: { data: ListType<Home> }) => {
     index: idx1, // 1-based хадгалъя
   });
   const normalizeHomes = (items: Home[] | undefined) => {
-    const base: HomeType[] = Array.from({ length: 12 }, (_, i) => makeEmptyHome(i + 1));
+    const base: HomeType[] = Array.from({ length: 12 }, (_, i) =>
+      makeEmptyHome(i + 1)
+    );
 
     if (!items?.length) return base;
 
@@ -135,7 +138,12 @@ export const HomePage = ({ data }: { data: ListType<Home> }) => {
           // Засварын үед аль item-ыг явуулах нь бизнесийн дүрмээс хамаарна
           // Жишээ нь index==1-ийг илгээе, олдохгүй бол эхнийх
           const target = payload.find((p) => p.index === 1) ?? payload[0];
-          res = await updateOne<IHome>(Api.home, data.edit as string, target, "home");
+          res = await updateOne<IHome>(
+            Api.home,
+            data.edit as string,
+            target,
+            "home"
+          );
         } else {
           res = await create<IHomes>(Api.home, { items: payload }, "home");
         }
@@ -152,7 +160,14 @@ export const HomePage = ({ data }: { data: ListType<Home> }) => {
     }
   };
   const onInvalid = async <T,>(e: T) => {
-    console.log("error", e);
+    const error =
+      Object.keys(e as any)
+        .map((er, i) => {
+          const value = VALUES[er];
+          return i == 0 ? firstLetterUpper(value) : value;
+        })
+        .join(", ") + "оруулна уу!";
+    showToast("info", error);
   };
   const { fields, insert, update } = useFieldArray({
     control: form.control,
@@ -168,19 +183,20 @@ export const HomePage = ({ data }: { data: ListType<Home> }) => {
     form.setValue("homes", next, { shouldDirty: true });
   };
 
-  const handleFileChange = (idx: number) => (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  const handleFileChange =
+    (idx: number) => (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
 
-    ensureHomeAt(idx);
-    const next = (form.getValues("homes") ?? []).slice();
-    next[idx] = { ...(next[idx] ?? {}), file, index: idx };
+      ensureHomeAt(idx);
+      const next = (form.getValues("homes") ?? []).slice();
+      next[idx] = { ...(next[idx] ?? {}), file, index: idx };
 
-    form.setValue("homes", next, {
-      shouldDirty: true,
-      shouldValidate: true,
-    });
-  };
+      form.setValue("homes", next, {
+        shouldDirty: true,
+        shouldValidate: true,
+      });
+    };
   const handleRemove = (idx: number) => () => {
     ensureHomeAt(idx);
     const next = (form.getValues("homes") ?? []).slice();
@@ -196,7 +212,12 @@ export const HomePage = ({ data }: { data: ListType<Home> }) => {
             {numberArray(30).map((index) => {
               return (
                 <div key={index} className="col-span-3 gap-3 p-2 border-b">
-                  <FormItems control={form.control} name="homes" message={false} label={`Зураг ${index}`}>
+                  <FormItems
+                    control={form.control}
+                    name="homes"
+                    message={false}
+                    label={`Зураг ${index}`}
+                  >
                     {(field) => {
                       const values = (field.value ?? []) as HomeType[];
                       const value = values[index];
@@ -205,9 +226,14 @@ export const HomePage = ({ data }: { data: ListType<Home> }) => {
                       const inputId = `file-upload-${index}`;
 
                       // Preview URL: File -> objectURL, else string URL
-                      const objectUrl = typeof window !== "undefined" && value?.file ? URL.createObjectURL(value.file) : null;
+                      const objectUrl =
+                        typeof window !== "undefined" && value?.file
+                          ? URL.createObjectURL(value.file)
+                          : null;
 
-                      const fileUrl = objectUrl ?? (typeof value?.image === "string" ? value.image : null);
+                      const fileUrl =
+                        objectUrl ??
+                        (typeof value?.image === "string" ? value.image : null);
 
                       // cleanup objectURL
                       useEffect(() => {
@@ -222,7 +248,15 @@ export const HomePage = ({ data }: { data: ListType<Home> }) => {
                             {fileUrl ? (
                               <>
                                 {/* Preview */}
-                                <img src={value?.image && !value.file ? `/api/file/${fileUrl}` : fileUrl} alt="preview" className="size-full object-cover rounded bg-white overflow-hidden" />
+                                <img
+                                  src={
+                                    value?.image && !value.file
+                                      ? `/api/file/${fileUrl}`
+                                      : fileUrl
+                                  }
+                                  alt="preview"
+                                  className="size-full object-cover rounded bg-white overflow-hidden"
+                                />
 
                                 {/* Change */}
                                 <label
@@ -242,9 +276,14 @@ export const HomePage = ({ data }: { data: ListType<Home> }) => {
                                 </button>
                               </>
                             ) : (
-                              <label htmlFor={inputId} className="flex flex-col items-center justify-center w-full h-full bg-white border rounded-md cursor-pointer hover:bg-gray-50 transition-colors">
+                              <label
+                                htmlFor={inputId}
+                                className="flex flex-col items-center justify-center w-full h-full bg-white border rounded-md cursor-pointer hover:bg-gray-50 transition-colors"
+                              >
                                 <UploadCloud className="w-6 h-6 text-gray-500" />
-                                <span className="mt-1 text-xs text-gray-500">Browse</span>
+                                <span className="mt-1 text-xs text-gray-500">
+                                  Browse
+                                </span>
                               </label>
                             )}
 
@@ -273,7 +312,8 @@ export const HomePage = ({ data }: { data: ListType<Home> }) => {
                                   });
                                 } else {
                                   // хоорондын index-үүдийг бөглөөд тухайн index дээр оруулна
-                                  for (let i = fields.length; i < index; i++) insert(i, { index: i } as any);
+                                  for (let i = fields.length; i < index; i++)
+                                    insert(i, { index: i } as any);
                                   insert(index, { file, index } as any);
                                 }
                               }}
@@ -283,7 +323,8 @@ export const HomePage = ({ data }: { data: ListType<Home> }) => {
                           <div className="flex-1 w-full space-y-4">
                             {HOME_FIELDS.map(({ key, label }) => {
                               // ✅ watch/setValue/trigger-д зориулсан зөв төрөл
-                              const path = `homes.${index}.${key}` as Path<RootType>;
+                              const path =
+                                `homes.${index}.${key}` as Path<RootType>;
                               const v = (form.watch(path) ?? "") as string;
                               return (
                                 <TextField
@@ -296,7 +337,10 @@ export const HomePage = ({ data }: { data: ListType<Home> }) => {
                                     value: v, // const v = form.watch(path) ?? ''
                                     onChange: (evOrValue) => {
                                       // TextField чинь string эсвэл event өгч болно гэж үзээд хамгаална
-                                      const nextVal = typeof evOrValue === "string" ? evOrValue : evOrValue?.target?.value ?? "";
+                                      const nextVal =
+                                        typeof evOrValue === "string"
+                                          ? evOrValue
+                                          : evOrValue?.target?.value ?? "";
 
                                       ensureHomeAt(index); // ← байхгүй бол мөрийг үүсгэнэ
                                       form.setValue(path, nextVal, {
@@ -341,7 +385,9 @@ export const HomePage = ({ data }: { data: ListType<Home> }) => {
             })}
           </div>
           <div className="fixed bottom-4 right-4">
-            <Button onClick={() => form.handleSubmit(onSubmit, onInvalid)()}>Хадгалах</Button>
+            <Button onClick={() => form.handleSubmit(onSubmit, onInvalid)()}>
+              Хадгалах
+            </Button>
           </div>
         </FormProvider>
       </div>

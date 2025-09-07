@@ -10,21 +10,24 @@ import {
   ListDefault,
   getEnumValues,
   getValueDiscount,
+  SearchType,
+  VALUES,
 } from "@/lib/constants";
 import { Modal } from "@/shared/components/modal";
 import z from "zod";
 import { FormProvider, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Api } from "@/utils/api";
-import { create, deleteOne, updateOne } from "@/app/(api)";
+import { create, deleteOne, search, updateOne } from "@/app/(api)";
 import { FormItems } from "@/shared/components/form.field";
 import { ComboBox } from "@/shared/components/combobox";
 import { TextField } from "@/shared/components/text.field";
 import { fetcher } from "@/hooks/fetcher";
 import { getColumns } from "./columns";
-import { mnDate } from "@/lib/functions";
+import { firstLetterUpper, mnDate, searchFormatter } from "@/lib/functions";
 import { DISCOUNT } from "@/lib/enum";
 import DynamicHeader from "@/components/dynamicHeader";
+import { showToast } from "@/shared/components/showToast";
 
 const formSchema = z.object({
   branch_id: z.string().min(1),
@@ -67,7 +70,7 @@ export const DiscountPage = ({
   branches,
 }: {
   data: ListType<Discount>;
-  services: ListType<Service>;
+  services: SearchType<Service>[];
   branches: ListType<Branch>;
 }) => {
   const [action, setAction] = useState(ACTION.DEFAULT);
@@ -78,8 +81,8 @@ export const DiscountPage = ({
   });
   const [discounts, setDiscounts] = useState<ListType<Discount>>(ListDefault);
   const serviceMap = useMemo(
-    () => new Map(services.items.map((b) => [b.id, b])),
-    [services.items]
+    () => new Map(services.map((b) => [b.id, b.value])),
+    [services]
   );
   const branchMap = useMemo(
     () => new Map(branches.items.map((b) => [b.id, b])),
@@ -93,7 +96,7 @@ export const DiscountPage = ({
 
       return {
         ...item,
-        service_name: service?.name ?? "",
+        service_name: service?.split("__")?.[0] ?? "",
         branch_name: branch?.name ?? "",
       };
     });
@@ -153,10 +156,38 @@ export const DiscountPage = ({
     setAction(ACTION.DEFAULT);
   };
   const onInvalid = async <T,>(e: T) => {
-    alert(e);
-    console.log("error", e);
+    const error =
+      Object.keys(e as any)
+        .map((er, i) => {
+          const value = VALUES[er];
+          return i == 0 ? firstLetterUpper(value) : value;
+        })
+        .join(", ") + "оруулна уу!";
+    showToast("info", error);
   };
 
+  const [items, setItems] = useState({
+    [Api.service]: services,
+  });
+  const searchField = async (v: string, key: Api, edit?: boolean) => {
+    let value = "";
+    if (v.length > 1) value = v;
+    if (v.length == 1) return;
+
+    const payload = { id: value };
+
+    await search(key as any, {
+      ...payload,
+      limit: 20,
+      page: 0,
+    }).then((d) => {
+      console.log(key, d.data);
+      setItems((prev) => ({
+        ...prev,
+        [key]: d.data,
+      }));
+    });
+  };
   return (
     <div className="">
       <DynamicHeader count={discounts?.count} />
@@ -190,11 +221,12 @@ export const DiscountPage = ({
                     {(field) => {
                       return (
                         <ComboBox
+                          search={(e) => searchField(e, Api.service)}
                           props={{ ...field }}
-                          items={services.items.map((item) => {
+                          items={items[Api.service].map((item) => {
                             return {
                               value: item.id,
-                              label: item.name ?? "",
+                              label: searchFormatter(item.value) ?? "",
                             };
                           })}
                         />

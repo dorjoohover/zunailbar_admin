@@ -10,22 +10,29 @@ import {
   getEnumValues,
   getValuesProductLogStatus,
   Option,
+  VALUES,
+  SearchType,
 } from "@/lib/constants";
 import { Modal } from "@/shared/components/modal";
 import z from "zod";
 import { FormProvider, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Api } from "@/utils/api";
-import { create, deleteOne, updateOne } from "@/app/(api)";
+import { create, deleteOne, search, updateOne } from "@/app/(api)";
 import { FormItems } from "@/shared/components/form.field";
 import { ComboBox } from "@/shared/components/combobox";
 import { TextField } from "@/shared/components/text.field";
 import { fetcher } from "@/hooks/fetcher";
 import { getColumns } from "./columns";
-import { ProductLogStatus } from "@/lib/enum";
+import { CategoryType, ProductLogStatus } from "@/lib/enum";
 import { DatePicker } from "@/shared/components/date.picker";
 import DynamicHeader from "@/components/dynamicHeader";
-import { dateOnly, objectCompact } from "@/lib/functions";
+import {
+  dateOnly,
+  firstLetterUpper,
+  objectCompact,
+  searchProductFormatter,
+} from "@/lib/functions";
 import { FilterPopover } from "@/components/layout/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { Input } from "@/components/ui/input";
@@ -37,6 +44,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { showToast } from "@/shared/components/showToast";
 
 const formSchema = z
   .object({
@@ -63,7 +71,7 @@ const formSchema = z
       (val) => (typeof val === "string" ? parseFloat(val) : val),
       z.number()
     ) as unknown as number,
-    currency_value: z.preprocess(
+    currency_amount: z.preprocess(
       (val) => (typeof val === "string" ? parseFloat(val) : val),
       z.number()
     ) as unknown as number,
@@ -79,7 +87,7 @@ const formSchema = z
   });
 const defaultValues = {
   currency: "cny",
-  currency_value: 500,
+  currency_amount: 500,
   product_id: "",
   cargo: "",
   quantity: "",
@@ -101,7 +109,7 @@ export const ProductHistoryPage = ({
   products,
 }: {
   data: ListType<ProductLog>;
-  products: ListType<Product>;
+  products: SearchType<Product>[];
 }) => {
   const [action, setAction] = useState(ACTION.DEFAULT);
   const [open, setOpen] = useState<undefined | boolean>(false);
@@ -113,8 +121,8 @@ export const ProductHistoryPage = ({
     useState<ListType<IProductLog> | null>(null);
 
   const productMap = useMemo(
-    () => new Map(products.items.map((p) => [p.id, p])),
-    [products.items]
+    () => new Map(products.map((p) => [p.id, p.value])),
+    [products]
   );
 
   const logFormatter = (data: ListType<ProductLog>) => {
@@ -123,7 +131,7 @@ export const ProductHistoryPage = ({
 
       return {
         ...item,
-        product_name: product?.name ?? "",
+        product_name: searchProductFormatter(product ?? "") ?? "",
       };
     });
 
@@ -140,7 +148,18 @@ export const ProductHistoryPage = ({
   };
   const edit = async (e: IProductLog) => {
     setOpen(true);
-    form.reset({ ...e, edit: e.id });
+
+    const cargo = Math.abs(Math.round(+e.total_amount - e.quantity * e.price));
+
+    form.reset({
+      ...e,
+      price: e.price / (e.currency_amount ?? 1),
+      quantity: e.quantity,
+      currency_amount: e.currency_amount,
+      cargo: cargo < 1000 ? 0 : cargo,
+      total_amount: +e.total_amount,
+      edit: e.id,
+    });
   };
   const setStatus = async (index: number, status: number) => {
     if (transactions?.items != null) {
@@ -185,7 +204,10 @@ export const ProductHistoryPage = ({
           edit ?? "",
           payload as unknown as IProductLog
         )
-      : await create<IProductLog>(Api.product_log, payload as IProductLog);
+      : await create<IProductLog>(
+          Api.product_log,
+          payload as unknown as IProductLog
+        );
     if (res.success) {
       refresh();
       setOpen(false);
@@ -194,17 +216,26 @@ export const ProductHistoryPage = ({
     setAction(ACTION.DEFAULT);
   };
   const onInvalid = async <T,>(e: T) => {
-    console.log("error", e);
+    const error =
+      Object.keys(e as any)
+        .map((er, i) => {
+          const value = VALUES[er];
+          return i == 0 ? firstLetterUpper(value) : value;
+        })
+        .join(", ") + "оруулна уу!";
+    showToast("info", error);
   };
   const qty = form.watch("quantity") ?? 0;
   const price = form.watch("price") ?? 0;
-  const currency = form.watch("currency_value") ?? 0;
+  const currency = form.watch("currency_amount") ?? 0;
   const cargo = form.watch("cargo") ?? 0;
 
   useEffect(() => {
-    const total =
-      (Number(qty) || 0) * (Number(price) || 0) * +(currency ?? 500) +
+    let total =
+      (Number(qty) || 0) * (Number(price) || 0) * +(currency ?? 1) +
       +(cargo ?? 0);
+    const paid = +(form.getValues("paid_amount") ?? 0);
+    if (Math.abs(paid - total) < 100) total = paid;
     form.setValue("total_amount", total, {
       shouldValidate: true,
       shouldDirty: true,
@@ -234,7 +265,10 @@ export const ProductHistoryPage = ({
         {
           key: "product",
           label: "Бүтээгдэхүүн",
-          items: products.items.map((b) => ({ value: b.id, label: b.name })),
+          items: products.map((b) => ({
+            value: b.id,
+            label: searchProductFormatter(b.value),
+          })),
         },
 
         {
@@ -246,9 +280,30 @@ export const ProductHistoryPage = ({
           })),
         },
       ],
-      [products.items]
+      [products]
     );
+  const [items, setItems] = useState({
+    [Api.product]: products,
+  });
+  const searchField = async (v: string, key: Api, edit?: boolean) => {
+    let value = "";
+    if (v.length > 1) value = v;
+    if (v.length == 1) return;
 
+    const payload = { id: value, type: CategoryType.DEFAULT };
+
+    await search(key as any, {
+      ...payload,
+      limit: 20,
+      page: 0,
+    }).then((d) => {
+      console.log(key, d.data);
+      setItems((prev) => ({
+        ...prev,
+        [key]: d.data,
+      }));
+    });
+  };
   return (
     <div className="">
       <DynamicHeader count={transactions?.count} />
@@ -354,11 +409,12 @@ export const ProductHistoryPage = ({
                     {(field) => {
                       return (
                         <ComboBox
+                          search={(e) => searchField(e, Api.product)}
                           props={{ ...field }}
-                          items={products.items.map((item) => {
+                          items={items[Api.product].map((item) => {
                             return {
                               value: item.id,
-                              label: item.name,
+                              label: searchProductFormatter(item.value),
                             };
                           })}
                         />
@@ -372,7 +428,7 @@ export const ProductHistoryPage = ({
                       <FormItems
                         label="Currency Value"
                         control={form.control}
-                        name="currency_value"
+                        name="currency_amount"
                       >
                         {(field) => {
                           return (

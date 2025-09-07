@@ -7,6 +7,7 @@ import {
   PG,
   DEFAULT_PG,
   ScheduleEdit,
+  VALUES,
 } from "@/lib/constants";
 import { Modal } from "@/shared/components/modal";
 import z from "zod";
@@ -32,7 +33,7 @@ import {
 import DynamicHeader from "@/components/dynamicHeader";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { mnDate, numberArray } from "@/lib/functions";
+import { firstLetterUpper, mnDate, numberArray } from "@/lib/functions";
 import { showToast } from "@/shared/components/showToast";
 
 const hourLine = z.string();
@@ -174,7 +175,14 @@ export const BookingPage = ({
     setAction(ACTION.DEFAULT);
   };
   const onInvalid = async <T,>(e: T) => {
-    console.log("error", e);
+    const error =
+      Object.keys(e as any)
+        .map((er, i) => {
+          const value = VALUES[er];
+          return i == 0 ? firstLetterUpper(value) : value;
+        })
+        .join(", ") + "оруулна уу!";
+    showToast("info", error);
   };
   const mounted = useRef(false);
   useEffect(() => {

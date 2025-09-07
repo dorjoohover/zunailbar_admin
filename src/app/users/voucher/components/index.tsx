@@ -19,21 +19,28 @@ import {
   PG,
   DEFAULT_PG,
   getEnumValues,
+  SearchType,
+  VALUES,
 } from "@/lib/constants";
 import { Modal } from "@/shared/components/modal";
 import z from "zod";
 import { FormProvider, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Api } from "@/utils/api";
-import { create, deleteOne, updateOne } from "@/app/(api)";
+import { create, deleteOne, search, updateOne } from "@/app/(api)";
 import { FormItems } from "@/shared/components/form.field";
 import { ComboBox } from "@/shared/components/combobox";
 import { TextField } from "@/shared/components/text.field";
 import { fetcher } from "@/hooks/fetcher";
 import { getColumns } from "./columns";
-import { usernameFormatter } from "@/lib/functions";
+import {
+  firstLetterUpper,
+  searchFormatter,
+  usernameFormatter,
+} from "@/lib/functions";
 import ContainerHeader from "@/components/containerHeader";
 import DynamicHeader from "@/components/dynamicHeader";
+import { showToast } from "@/shared/components/showToast";
 
 const formSchema = z.object({
   branch_id: z.string().min(1),
@@ -69,7 +76,7 @@ export const VoucherPage = ({
   services,
 }: {
   data: ListType<Voucher>;
-  services: ListType<Service>;
+  services: SearchType<Service>[];
 }) => {
   const [action, setAction] = useState(ACTION.DEFAULT);
   const [open, setOpen] = useState<undefined | boolean>(false);
@@ -79,8 +86,8 @@ export const VoucherPage = ({
   });
   const [vouchers, setVouchers] = useState<ListType<Voucher> | null>(null);
   const serviceMap = useMemo(
-    () => new Map(services.items.map((b) => [b.id, b])),
-    [services.items]
+    () => new Map(services.map((b) => [b.id, b.value])),
+    [services]
   );
 
   const voucherFormatter = (data: ListType<Voucher>) => {
@@ -89,7 +96,7 @@ export const VoucherPage = ({
 
       return {
         ...item,
-        service_name: service?.name ?? "",
+        service_name: searchFormatter(service ?? "") ?? "",
       };
     });
 
@@ -148,7 +155,37 @@ export const VoucherPage = ({
     setAction(ACTION.DEFAULT);
   };
   const onInvalid = async <T,>(e: T) => {
-    console.log("error", e);
+    const error =
+      Object.keys(e as any)
+        .map((er, i) => {
+          const value = VALUES[er];
+          return i == 0 ? firstLetterUpper(value) : value;
+        })
+        .join(", ") + "оруулна уу!";
+    showToast("info", error);
+  };
+
+  const [items, setItems] = useState({
+    [Api.service]: services,
+  });
+  const searchField = async (v: string, key: Api, edit?: boolean) => {
+    let value = "";
+    if (v.length > 1) value = v;
+    if (v.length == 1) return;
+
+    const payload = { id: value };
+
+    await search(key as any, {
+      ...payload,
+      limit: 20,
+      page: 0,
+    }).then((d) => {
+      console.log(key, d.data);
+      setItems((prev) => ({
+        ...prev,
+        [key]: d.data,
+      }));
+    });
   };
 
   return (
@@ -179,11 +216,12 @@ export const VoucherPage = ({
                     {(field) => {
                       return (
                         <ComboBox
+                          search={(e) => searchField(e, Api.service)}
                           props={{ ...field }}
-                          items={services.items.map((item) => {
+                          items={items[Api.service].map((item) => {
                             return {
                               value: item.id ?? "",
-                              label: item.name ?? "",
+                              label: searchFormatter(item.value ?? "") ?? "",
                             };
                           })}
                         />

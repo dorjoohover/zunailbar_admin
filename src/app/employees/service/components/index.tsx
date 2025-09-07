@@ -2,23 +2,38 @@
 import { DataTable } from "@/components/data-table";
 import { IUserService, User, UserService } from "@/models";
 import { useEffect, useMemo, useState } from "react";
-import { ListType, ACTION, PG, DEFAULT_PG, Option } from "@/lib/constants";
+import {
+  ListType,
+  ACTION,
+  PG,
+  DEFAULT_PG,
+  Option,
+  SearchType,
+  VALUES,
+} from "@/lib/constants";
 import { Modal } from "@/shared/components/modal";
 import z from "zod";
 import { FormProvider, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Api } from "@/utils/api";
-import { create, deleteOne } from "@/app/(api)";
+import { create, deleteOne, search } from "@/app/(api)";
 import { FormItems } from "@/shared/components/form.field";
 import { ComboBox } from "@/shared/components/combobox";
 import { fetcher } from "@/hooks/fetcher";
 import { getColumns } from "./columns";
-import { objectCompact, usernameFormatter } from "@/lib/functions";
+import {
+  firstLetterUpper,
+  objectCompact,
+  searchUsernameFormatter,
+  usernameFormatter,
+} from "@/lib/functions";
 import { Service } from "@/models/service.model";
 import DynamicHeader from "@/components/dynamicHeader";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { showToast } from "@/shared/components/showToast";
+import { CategoryType, ROLE } from "@/lib/enum";
+import { SearchParams } from "next/dist/server/request/search-params";
 
 const formSchema = z.object({
   user_id: z.string().min(1),
@@ -43,7 +58,7 @@ export const EmployeeUserServicePage = ({
 }: {
   data: ListType<UserService>;
   services: ListType<Service>;
-  users: ListType<User>;
+  users: SearchType<User>[];
 }) => {
   const [action, setAction] = useState(ACTION.DEFAULT);
   const [open, setOpen] = useState<undefined | boolean>(false);
@@ -58,8 +73,8 @@ export const EmployeeUserServicePage = ({
     [services.items]
   );
   const userMap = useMemo(
-    () => new Map(users.items.map((b) => [b.id, b])),
-    [users.items]
+    () => new Map(users.map((b) => [b.id, b.value])),
+    [users]
   );
 
   const UserServiceFormatter = (data: ListType<UserService>) => {
@@ -71,7 +86,7 @@ export const EmployeeUserServicePage = ({
         user_name: item.user_name
           ? item.user_name
           : user
-          ? usernameFormatter(user)
+          ? searchUsernameFormatter(user)
           : "",
         service_name: service?.name ?? item.service_name ?? "",
       };
@@ -132,7 +147,14 @@ export const EmployeeUserServicePage = ({
     setAction(ACTION.DEFAULT);
   };
   const onInvalid = async <T,>(e: T) => {
-    console.log("error", e);
+    const error =
+      Object.keys(e as any)
+        .map((er, i) => {
+          const value = VALUES[er];
+          return i == 0 ? firstLetterUpper(value) : value;
+        })
+        .join(", ") + "оруулна уу!";
+    showToast("info", error);
   };
   const [filter, setFilter] = useState<FilterType>();
   const changeFilter = (key: string, value: number | string) => {
@@ -154,9 +176,9 @@ export const EmployeeUserServicePage = ({
         {
           key: "user",
           label: "Артист",
-          items: users.items.map((b) => ({
+          items: users.map((b) => ({
             value: b.id,
-            label: usernameFormatter(b),
+            label: searchUsernameFormatter(b.value),
           })),
         },
         {
@@ -165,7 +187,7 @@ export const EmployeeUserServicePage = ({
           items: services.items.map((b) => ({ value: b.id, label: b.name })),
         },
       ],
-      [services.items, users.items]
+      [services.items, users]
     );
 
   useEffect(() => {
@@ -196,7 +218,39 @@ export const EmployeeUserServicePage = ({
       }
     }
   }, [open, form.watch("user_id")]);
+  const [items, setItems] = useState({
+    [Api.user]: users,
+    [Api.service]: services,
+  });
+  const searchField = async (v: string, key: Api, edit?: boolean) => {
+    let value = "";
+    if (v.length > 1) value = v;
+    if (v.length == 1) return;
 
+    const payload =
+      key === Api.product
+        ? { id: value, type: CategoryType.DEFAULT }
+        : edit === undefined
+        ? {
+            id: value,
+            role: ROLE.E_M,
+          }
+        : {
+            role: ROLE.E_M,
+
+            value: v,
+          };
+    await search(key as any, {
+      ...payload,
+      limit: 20,
+      page: 0,
+    }).then((d) => {
+      setItems((prev) => ({
+        ...prev,
+        [key]: d.data,
+      }));
+    });
+  };
   return (
     <div className="">
       <DynamicHeader count={userServices?.count} />
@@ -272,11 +326,12 @@ export const EmployeeUserServicePage = ({
                     {(field) => {
                       return (
                         <ComboBox
+                          search={(e) => searchField(e, Api.user)}
                           props={{ ...field }}
-                          items={users.items.map((item) => {
+                          items={items[Api.user].map((item) => {
                             return {
                               value: item.id,
-                              label: usernameFormatter(item),
+                              label: searchUsernameFormatter(item.value),
                             };
                           })}
                         />

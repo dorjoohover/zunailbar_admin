@@ -264,7 +264,6 @@ export const search = async <T,>(
     };
 
     const url = paginationToQuery(uri, merged, `search`);
-    console.log(url)
     const res = await fetch(url, {
       cache: "no-store",
       headers: {

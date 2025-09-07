@@ -3,13 +3,21 @@ import { DataTable } from "@/components/data-table";
 import { Brand, Category, IProduct, Product } from "@/models";
 import { getColumns } from "./columns";
 import { useEffect, useMemo, useState } from "react";
-import { ListType, ACTION, PG, DEFAULT_PG, Option } from "@/lib/constants";
+import {
+  ListType,
+  ACTION,
+  PG,
+  DEFAULT_PG,
+  Option,
+  SearchType,
+  VALUES,
+} from "@/lib/constants";
 import { Modal } from "@/shared/components/modal";
 import z from "zod";
 import { FormProvider, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Api } from "@/utils/api";
-import { create, deleteOne, excel, updateOne } from "@/app/(api)";
+import { create, deleteOne, excel, search, updateOne } from "@/app/(api)";
 import { FormItems } from "@/shared/components/form.field";
 import { ComboBox } from "@/shared/components/combobox";
 import { TextField } from "@/shared/components/text.field";
@@ -17,7 +25,7 @@ import { fetcher } from "@/hooks/fetcher";
 import { CategoryType } from "@/lib/enum";
 import { showToast } from "@/shared/components/showToast";
 import DynamicHeader from "@/components/dynamicHeader";
-import { mnDate, objectCompact } from "@/lib/functions";
+import { firstLetterUpper, mnDate, objectCompact } from "@/lib/functions";
 
 const formSchema = z.object({
   brand_id: z.string().nullable().optional(),
@@ -44,8 +52,8 @@ export const ProductPage = ({
   brands,
 }: {
   data: ListType<Product>;
-  categories: ListType<Category>;
-  brands: ListType<Brand>;
+  categories: SearchType<Category>[];
+  brands: SearchType<Brand>[];
 }) => {
   const [action, setAction] = useState(ACTION.DEFAULT);
   const [open, setOpen] = useState<undefined | boolean>(false);
@@ -110,8 +118,14 @@ export const ProductPage = ({
     showToast("success", "Амжилттай хадгалагдлаа!");
   };
   const onInvalid = async <T,>(e: T) => {
-    console.log("error", e);
-    showToast("error", "Мэдээлэл дутуу байна!");
+    const error =
+      Object.keys(e as any)
+        .map((er, i) => {
+          const value = VALUES[er];
+          return i == 0 ? firstLetterUpper(value) : value;
+        })
+        .join(", ") + "оруулна уу!";
+    showToast("info", error);
   };
   const [filter, setFilter] = useState<FilterType>();
   const changeFilter = (key: string, value: number | string) => {
@@ -133,18 +147,21 @@ export const ProductPage = ({
         {
           key: "brand",
           label: "Бренд",
-          items: brands.items.map((b) => ({ value: b.id, label: b.name })),
+          items: brands.map((b) => ({
+            value: b.id,
+            label: b.value?.split("__")?.[0],
+          })),
         },
         {
           key: "category",
           label: "Ангилал",
-          items: categories.items.map((b) => ({
+          items: categories.map((b) => ({
             value: b.id,
-            label: b.name,
+            label: b.value?.split("__")?.[0],
           })),
         },
       ],
-      [brands.items, categories.items]
+      [brands, categories]
     );
   const clear = () => {
     form.reset(defaultValues);
@@ -179,6 +196,30 @@ export const ProductPage = ({
     }
     console.log(res);
     setAction(ACTION.DEFAULT);
+  };
+  const [items, setItems] = useState({
+    [Api.brand]: brands,
+    [Api.category]: categories,
+  });
+  const searchField = async (v: string, key: Api, edit?: boolean) => {
+    let value = "";
+    if (v.length > 1) value = v;
+    if (v.length == 1) return;
+
+    const payload = { id: value };
+
+    await search(key as any, {
+      ...payload,
+      limit: 20,
+      page: 0,
+      type: CategoryType.DEFAULT,
+    }).then((d) => {
+      console.log(key, d.data);
+      setItems((prev) => ({
+        ...prev,
+        [key]: d.data,
+      }));
+    });
   };
   return (
     <div className="">
@@ -257,11 +298,12 @@ export const ProductPage = ({
                       {(field) => {
                         return (
                           <ComboBox
+                            search={(e) => searchField(e, Api.category)}
                             props={{ ...field }}
-                            items={categories.items.map((item) => {
+                            items={items[Api.category].map((item) => {
                               return {
                                 value: item.id,
-                                label: item.name,
+                                label: item.value?.split("__")?.[0],
                               };
                             })}
                           />
@@ -276,11 +318,12 @@ export const ProductPage = ({
                       {(field) => {
                         return (
                           <ComboBox
+                            search={(e) => searchField(e, Api.brand)}
                             props={{ ...field }}
-                            items={brands.items.map((item) => {
+                            items={items[Api.brand].map((item) => {
                               return {
                                 value: item.id,
-                                label: item.name,
+                                label: item.value?.split("__")?.[0],
                               };
                             })}
                           />

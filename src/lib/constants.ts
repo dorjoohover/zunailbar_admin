@@ -205,4 +205,13 @@ export const VALUES = {
   experience: "туршлага",
   nickname: "хоч",
   color: "өнгө",
+  quantity: "тоо ширхэг",
+  price: "нэгжийн үнэ",
+  currency: "валют",
+  currency_amount: "валютын ханш",
+  total_amount: "нийт үнэ",
+  paid_amount: "төлсөн үнэ",
+  pre_amount: "урьдчилгаа",
+  cargo: "карго",
+  date: "огноо",
 } as const as any;

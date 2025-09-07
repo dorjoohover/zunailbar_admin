@@ -11,36 +11,10 @@ export function getColumns(
   remove: (index: number) => Promise<boolean>
 ): ColumnDef<IProduct>[] {
   return [
-    // {
-    //   id: "select",
-    //   header: ({ table }) => <Checkbox checked={table.getIsAllPageRowsSelected()} onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)} aria-label="Select all" />,
-    //   cell: ({ row }) => {
-    //     return <Checkbox checked={row.getIsSelected()} onCheckedChange={(value) => row.toggleSelected(!!value)} aria-label="Select row" />;
-    //   },
-    //   enableSorting: false,
-    //   enableHiding: false,
-    // },
     {
       id: "select",
-      header: ({ table }) => (
-        <Checkbox
-          checked={table.getIsAllPageRowsSelected()}
-          onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-          aria-label="Select all"
-        />
-      ),
-      cell: ({ row }) => {
-        return (
-          <Checkbox
-            checked={row.getIsSelected()}
-            onCheckedChange={(value) => row.toggleSelected(!!value)}
-            aria-label="Select row"
-          />
-        );
-      },
-      enableSorting: false,
-      enableHiding: false,
-      size: 40,
+      header: ({ table }) => <span>№</span>,
+      cell: ({ row }) => <span className="">{row.index + 1}</span>,
     },
     {
       accessorKey: "name",
@@ -53,7 +27,9 @@ export function getColumns(
           Бүтээгдэхүүн <ArrowUpDown className="w-4 h-4 ml-2" />
         </Button>
       ),
-       cell: ({ row }) => <div className="font-bold text-primary">{row.getValue("name")}</div>
+      cell: ({ row }) => (
+        <div className="font-bold text-primary">{row.getValue("name")}</div>
+      ),
     },
     {
       accessorKey: "brand_name",

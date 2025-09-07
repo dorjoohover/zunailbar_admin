@@ -12,22 +12,32 @@ import {
   getEnumValues,
   getValuesCostStatus,
   Option,
+  SearchType,
+  VALUES,
 } from "@/lib/constants";
 import { Modal } from "@/shared/components/modal";
 import z from "zod";
 import { FormProvider, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Api } from "@/utils/api";
-import { create, deleteOne, updateOne } from "@/app/(api)";
+import { create, deleteOne, search, updateOne } from "@/app/(api)";
 import { FormItems } from "@/shared/components/form.field";
 import { ComboBox } from "@/shared/components/combobox";
 import { TextField } from "@/shared/components/text.field";
 import { fetcher } from "@/hooks/fetcher";
-import { CostStatus } from "@/lib/enum";
-import { dateOnly, mnDate, objectCompact } from "@/lib/functions";
+import { CategoryType, CostStatus } from "@/lib/enum";
+import {
+  dateOnly,
+  firstLetterUpper,
+  mnDate,
+  objectCompact,
+  searchFormatter,
+  searchProductFormatter,
+} from "@/lib/functions";
 import DynamicHeader from "@/components/dynamicHeader";
 import { FilterPopover } from "@/components/layout/popover";
 import { Calendar } from "@/components/ui/calendar";
+import { showToast } from "@/shared/components/showToast";
 
 const formSchema = z
   .object({
@@ -78,9 +88,9 @@ export const CostPage = ({
   categories,
 }: {
   data: ListType<Cost>;
-  products: ListType<Product>;
+  products: SearchType<Product>[];
   branches: ListType<Branch>;
-  categories: ListType<Category>;
+  categories: SearchType<Category>[];
 }) => {
   const [action, setAction] = useState(ACTION.DEFAULT);
   const [open, setOpen] = useState<undefined | boolean>(false);
@@ -90,8 +100,8 @@ export const CostPage = ({
   });
   const [costs, setCosts] = useState<ListType<Cost>>(ListDefault);
   const productMap = useMemo(
-    () => new Map(products.items.map((b) => [b.id, b])),
-    [products.items]
+    () => new Map(products.map((b) => [b.id, b.value])),
+    [products]
   );
   const branchMap = useMemo(
     () => new Map(branches.items.map((b) => [b.id, b])),
@@ -106,7 +116,7 @@ export const CostPage = ({
       return {
         ...item,
         branch_name: branch?.name ?? "",
-        product_name: product?.name ?? "",
+        product_name: searchProductFormatter(product ?? "") ?? "",
       };
     });
 
@@ -157,7 +167,14 @@ export const CostPage = ({
     setAction(ACTION.DEFAULT);
   };
   const onInvalid = async <T,>(e: T) => {
-    console.log("error", e);
+    const error =
+      Object.keys(e as any)
+        .map((er, i) => {
+          const value = VALUES[er];
+          return i == 0 ? firstLetterUpper(value) : value;
+        })
+        .join(", ") + "оруулна уу!";
+    showToast("info", error);
   };
   const [filter, setFilter] = useState<FilterType>();
   const changeFilter = (key: string, value: number | string) => {
@@ -188,13 +205,19 @@ export const CostPage = ({
         {
           key: "category",
           label: "Ангилал",
-          items: categories.items.map((b) => ({ value: b.id, label: b.name })),
+          items: categories.map((b) => ({
+            value: b.id,
+            label: searchFormatter(b.value),
+          })),
         },
 
         {
           key: "product",
           label: "Бүтээгдэхүүн",
-          items: products.items.map((b) => ({ value: b.id, label: b.name })),
+          items: products.map((b) => ({
+            value: b.id,
+            label: searchProductFormatter(b.value),
+          })),
         },
         {
           key: "status",
@@ -205,8 +228,37 @@ export const CostPage = ({
           })),
         },
       ],
-      [branches.items, categories.items, products.items]
+      [branches.items, categories, products]
     );
+
+  const [items, setItems] = useState({
+    [Api.product]: products,
+    [Api.category]: categories,
+  });
+  const searchField = async (v: string, key: Api, edit?: boolean) => {
+    let value = "";
+    if (v.length > 1) value = v;
+    if (v.length == 1) return;
+
+    const payload =
+      key === Api.product
+        ? { id: value, type: CategoryType.COST }
+        : {
+            id: value,
+          };
+
+    await search(key as any, {
+      ...payload,
+      limit: 20,
+      page: 0,
+    }).then((d) => {
+      console.log(key, d.data);
+      setItems((prev) => ({
+        ...prev,
+        [key]: d.data,
+      }));
+    });
+  };
   return (
     <div className="">
       <DynamicHeader count={costs?.count} />
@@ -324,11 +376,12 @@ export const CostPage = ({
                       {(field) => {
                         return (
                           <ComboBox
+                            search={(e) => searchField(e, Api.product)}
                             props={{ ...field }}
-                            items={products.items.map((item) => {
+                            items={items[Api.product].map((item) => {
                               return {
                                 value: item.id,
-                                label: item.name,
+                                label: item.value?.split("__")?.[2],
                               };
                             })}
                           />

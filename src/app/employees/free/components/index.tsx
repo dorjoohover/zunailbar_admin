@@ -2,7 +2,7 @@
 
 import { DataTable } from "@/components/data-table";
 import { useEffect, useMemo, useState } from "react";
-import { ListType, ACTION, PG, DEFAULT_PG, ListDefault } from "@/lib/constants";
+import { ListType, ACTION, PG, DEFAULT_PG, ListDefault, VALUES } from "@/lib/constants";
 import { Modal } from "@/shared/components/modal";
 import z from "zod";
 import { FormProvider, useForm } from "react-hook-form";
@@ -15,10 +15,11 @@ import { TextField } from "@/shared/components/text.field";
 import { fetcher } from "@/hooks/fetcher";
 import { getColumns } from "./columns";
 import { ISchedule, Schedule, User } from "@/models";
-import { usernameFormatter } from "@/lib/functions";
+import { firstLetterUpper, usernameFormatter } from "@/lib/functions";
 import { ScheduleStatus } from "@/lib/enum";
 import ContainerHeader from "@/components/containerHeader";
 import DynamicHeader from "@/components/dynamicHeader";
+import { showToast } from "@/shared/components/showToast";
 
 const formSchema = z.object({
   // branch_id: z.string().min(1),
@@ -122,7 +123,14 @@ export const PendingSchedulePage = ({
     setAction(ACTION.DEFAULT);
   };
   const onInvalid = async <T,>(e: T) => {
-    console.log("error", e);
+    const error =
+      Object.keys(e as any)
+        .map((er, i) => {
+          const value = VALUES[er];
+          return i == 0 ? firstLetterUpper(value) : value;
+        })
+        .join(", ") + "оруулна уу!";
+    showToast("info", error);
   };
 
   return (

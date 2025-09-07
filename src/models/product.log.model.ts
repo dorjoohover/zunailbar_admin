@@ -16,12 +16,12 @@ export interface IProductLog {
   product_id: string;
   product_name: string;
   quantity: number;
+  currency_amount?: number;
   price: number;
   total_amount: number;
   paid_amount: number;
   product_log_status: number;
   currency?: string;
-  currency_value?: number;
   date: Date;
   created_by?: string;
   created_at?: Date;

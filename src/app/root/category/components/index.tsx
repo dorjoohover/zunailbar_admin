@@ -9,6 +9,7 @@ import {
   DEFAULT_PG,
   getEnumValues,
   CategoryTypeValues,
+  VALUES,
 } from "@/lib/constants";
 import { Modal } from "@/shared/components/modal";
 import z from "zod";
@@ -23,6 +24,8 @@ import { fetcher } from "@/hooks/fetcher";
 import { getColumns } from "./columns";
 import { CategoryType as CategoryTypEnum } from "@/lib/enum";
 import DynamicHeader from "@/components/dynamicHeader";
+import { firstLetterUpper } from "@/lib/functions";
+import { showToast } from "@/shared/components/showToast";
 
 const formSchema = z.object({
   name: z.string().min(1),
@@ -94,7 +97,14 @@ export const CategoryPage = ({ data }: { data: ListType<Category> }) => {
     setAction(ACTION.DEFAULT);
   };
   const onInvalid = async <T,>(e: T) => {
-    console.log("error", e);
+    const error =
+      Object.keys(e as any)
+        .map((er, i) => {
+          const value = VALUES[er];
+          return i == 0 ? firstLetterUpper(value) : value;
+        })
+        .join(", ") + "оруулна уу!";
+    showToast("info", error);
   };
 
   return (

@@ -3,7 +3,7 @@ import {
   Product,
   ProductLog
 } from "@/models";
-import { find } from "@/app/(api)";
+import { find, search } from "@/app/(api)";
 import { ProductHistoryPage } from "./components";
 import ContainerHeader from "@/components/containerHeader";
 import { CategoryType } from "@/lib/enum";
@@ -12,7 +12,7 @@ import { CategoryType } from "@/lib/enum";
 export default async function Page() {
   const [res, product] = await Promise.all([
     find<ProductLog>(Api.product_log),
-    find<Product>(Api.product, { type: CategoryType.DEFAULT, limit: -1 }),
+    search<Product>(Api.product, { type: CategoryType.DEFAULT, limit: 20 }),
   ]);
   return (
     <section>
