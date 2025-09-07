@@ -137,6 +137,9 @@ export default function AddEventModal({
       // order_status: formData.order_status as OrderStatus | undefined,
       total_amount: formData.total_amount as number | undefined,
       order_date: formData.order_date,
+      paid_amount: +(formData.paid_amount ?? 0),
+      pre_amount: +(formData.pre_amount ?? 0),
+
       start_time: `${formData.start_time}`,
       details: formData.details,
       edit: formData.edit ?? undefined,
