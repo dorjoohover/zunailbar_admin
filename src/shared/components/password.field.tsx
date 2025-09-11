@@ -30,7 +30,7 @@ export const PasswordField = <T extends FieldValues>({
         />
 
         {/* Toggle Icon */}
-        <div className="absolute right-3 top-2.5 cursor-pointer text-gray-500 h-full">
+        <div className="absolute right-3 top-[35%] cursor-pointer text-gray-500 h-full">
           {isView ? (
             <Eye onClick={() => setIsView(false)} className="size-4.5" />
           ) : (

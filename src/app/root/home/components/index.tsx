@@ -39,6 +39,7 @@ export type RootType = z.infer<typeof formSchema>;
 export type HomeType = z.infer<typeof homeSchema>;
 type FormInput = z.input<typeof formSchema>; // optional тал
 type FormOutput = z.output<typeof formSchema>;
+
 export const HomePage = ({ data }: { data: ListType<Home> }) => {
   const [action, setAction] = useState(ACTION.DEFAULT);
   const makeEmptyHome = (idx1: number): HomeType => ({
