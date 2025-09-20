@@ -18,7 +18,7 @@ export const SelectTime = <T extends FieldValues>({
   label?: string;
   props: ControllerRenderProps<T>;
 }) => {
-  const hours = Array.from({ length: 18 }, (_, i) => i + 5);
+  const hours = Array.from({ length: 16 }, (_, i) => i + 7);
   const [display, setDisplay] = useState(String(formatDate(props.value) ?? ""));
   return (
     <div className="relative space-y-2">

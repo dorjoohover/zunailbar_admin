@@ -116,7 +116,6 @@ export default function EventStyled({
   // Handler function
   function handleEditEvent(event: IOrder) {
     // Open the modal with the content
-
     setOpen(
       <CustomModal title="Edit Event">
         <AddEventModal

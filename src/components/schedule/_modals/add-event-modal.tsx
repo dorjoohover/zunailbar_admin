@@ -61,8 +61,8 @@ export default function AddEventModal({
 
   const searchField = async (v: string, key: Api, edit?: boolean) => {
     let value = "";
-    if (v.length > 1) value = v;
-    if (v.length == 1) return;
+    if (v?.length > 1) value = v;
+    if (v?.length == 1) return;
     if (edit && v == "") {
       if (key == Api.customer)
         form.setValue("customer_id", values?.customer_id);
@@ -92,7 +92,6 @@ export default function AddEventModal({
       limit: 20,
       page: 0,
     }).then((d) => {
-      console.log(key, d.data);
       setValues((prev) => ({
         ...prev,
         [key]: d.data,
@@ -363,7 +362,7 @@ export default function AddEventModal({
                 <ComboBox
                   props={{ ...field }}
                   items={numberArray(totalHours).map((item) => {
-                    const value = item + 4;
+                    const value = item + 6;
 
                     return {
                       value: value.toString(),

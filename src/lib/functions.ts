@@ -281,4 +281,4 @@ export function getPaginationRange(
   return range;
 }
 
-export const totalHours = 18;
+export const totalHours = 16;

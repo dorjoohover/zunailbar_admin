@@ -1,6 +1,14 @@
 "use client";
 
-import React, { useRef, useState, useCallback, useEffect, useMemo, Dispatch, SetStateAction } from "react";
+import React, {
+  useRef,
+  useState,
+  useCallback,
+  useEffect,
+  useMemo,
+  Dispatch,
+  SetStateAction,
+} from "react";
 import { AnimatePresence, motion } from "framer-motion";
 
 import { ArrowLeft, ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
@@ -13,14 +21,20 @@ import { CustomEventModal } from "@/types";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import CustomModal from "@/components/ui/custom-modal";
-import { mnDate, mnDateFormat, mnDateFormatTitle, totalHours, toTimeString } from "@/lib/functions";
+import {
+  mnDate,
+  mnDateFormat,
+  mnDateFormatTitle,
+  totalHours,
+  toTimeString,
+} from "@/lib/functions";
 import { Branch, IOrder, Order, Service, User } from "@/models";
 import { SearchType } from "@/lib/constants";
 import { Api } from "@/utils/api";
 
 // Generate hours in 12-hour format
 const hours = Array.from({ length: totalHours }, (_, i) => {
-  const hour = i + 5;
+  const hour = i + 7;
   return `${hour}:00`;
 });
 
@@ -108,7 +122,10 @@ const groupEventsByTimePeriod = (events: Order[] | undefined) => {
   };
 
   // Find connected components using DFS
-  const findConnectedComponents = (graph: Record<string, string[]>, events: IOrder[]) => {
+  const findConnectedComponents = (
+    graph: Record<string, string[]>,
+    events: IOrder[]
+  ) => {
     const visited: Record<string, boolean> = {};
     const components: IOrder[][] = [];
 
@@ -131,7 +148,9 @@ const groupEventsByTimePeriod = (events: Order[] | undefined) => {
         dfs(event.id, component);
 
         // Map IDs back to events
-        const eventGroup = component.map((id) => events.find((e) => e.id === id)!);
+        const eventGroup = component.map(
+          (id) => events.find((e) => e.id === id)!
+        );
 
         components.push(eventGroup);
       }
@@ -177,7 +196,17 @@ export default function DailyView({
 }: {
   prevButton?: React.ReactNode;
   deleteOrder: (id: string) => void;
-  refresh: <T>({ page, limit, sort, filter }: { page?: number; limit?: number; sort?: boolean; filter?: T }) => void;
+  refresh: <T>({
+    page,
+    limit,
+    sort,
+    filter,
+  }: {
+    page?: number;
+    limit?: number;
+    sort?: boolean;
+    filter?: T;
+  }) => void;
   currentDate: Date;
   setCurrentDate: Dispatch<SetStateAction<Date>>;
   nextButton?: React.ReactNode;
@@ -211,22 +240,31 @@ export default function DailyView({
     });
     return map;
   }, [events]);
-  const handleMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-    if (!hoursColumnRef.current) return;
-    const rect = hoursColumnRef.current.getBoundingClientRect();
-    const y = e.clientY - rect.top;
-    const hourHeight = Math.ceil(rect.height / totalHours);
-    const hour = Math.max(0, Math.min(23, Math.floor(y / hourHeight))) + 5;
-    const hour12 = hour;
-    setDetailedHour(`${hour12}:00`);
+  const handleMouseMove = useCallback(
+    (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+      if (!hoursColumnRef.current) return;
+      const rect = hoursColumnRef.current.getBoundingClientRect();
+      const y = e.clientY - rect.top;
+      const hourHeight = Math.ceil(rect.height / totalHours);
+      const hour = Math.max(0, Math.min(23, Math.floor(y / hourHeight))) + 7;
+      const hour12 = hour;
+      setDetailedHour(`${hour12}:00`);
 
-    const position = Math.max(0, Math.min(rect.height, Math.round(y)));
-    setTimelinePosition(position);
-  }, []);
+      const position = Math.max(0, Math.min(rect.height, Math.round(y)));
+      setTimelinePosition(position);
+    },
+    []
+  );
 
-  const getFormattedDayTitle = useCallback(() => mnDateFormatTitle(mnDateFormat(currentDate)), [currentDate]);
+  const getFormattedDayTitle = useCallback(
+    () => mnDateFormatTitle(mnDateFormat(currentDate)),
+    [currentDate]
+  );
 
-  const dayEvents = getters.getEventsForDay(currentDate?.getDate() || 0, currentDate);
+  const dayEvents = getters.getEventsForDay(
+    currentDate?.getDate() || 0,
+    currentDate
+  );
 
   // Calculate time groups once for all events
   const timeGroups = groupEventsByTimePeriod(dayEvents);
@@ -234,13 +272,16 @@ export default function DailyView({
   function handleAddEvent(event?: IOrder) {
     // Create the modal content with the provided event data or defaults
     const orderDate = event?.order_date || new Date();
-
+    console.log(event);
     // Open the modal with the content
-
     setOpen(
       <CustomModal title="Захиалга нэмэх" contentClass="max-w-3xl">
         <AddEventModal
           items={values}
+          values={{
+            order_date: event?.order_date,
+            start_time: event?.start_time,
+          }}
           send={send}
           loading={loading}
           // CustomAddEventModal={
@@ -284,7 +325,13 @@ export default function DailyView({
       return;
     }
 
-    const date = new Date(currentDate.getFullYear(), currentDate.getMonth(), chosenDay, hours, minutes);
+    const date = new Date(
+      currentDate.getFullYear(),
+      currentDate.getMonth(),
+      chosenDay,
+      hours,
+      minutes
+    );
 
     handleAddEvent({
       order_date: mnDateFormat(date),
@@ -320,7 +367,6 @@ export default function DailyView({
       },
     });
   }, [currentDate]);
-  console.log(events);
   return (
     <>
       <div className="flex justify-between gap-3 flex-wrap mb-5">
@@ -333,7 +379,11 @@ export default function DailyView({
           {prevButton ? (
             <div onClick={handlePrevDay}>{prevButton}</div>
           ) : (
-            <Button variant={"outline"} className={classNames?.prev} onClick={handlePrevDay}>
+            <Button
+              variant={"outline"}
+              className={classNames?.prev}
+              onClick={handlePrevDay}
+            >
               <ChevronLeft />
               Өмнөх
             </Button>
@@ -341,7 +391,11 @@ export default function DailyView({
           {nextButton ? (
             <div onClick={handleNextDay}>{nextButton}</div>
           ) : (
-            <Button variant={"outline"} className={classNames?.next} onClick={handleNextDay}>
+            <Button
+              variant={"outline"}
+              className={classNames?.next}
+              onClick={handleNextDay}
+            >
               Дараах
               <ChevronRight />
             </Button>
@@ -368,7 +422,14 @@ export default function DailyView({
                 {dayEvents && dayEvents?.length
                   ? dayEvents?.map((event, eventIndex) => {
                       return (
-                        <motion.div key={event.id} initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.2 }} className="mb-2">
+                        <motion.div
+                          key={event.id}
+                          initial={{ opacity: 0, y: -10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -10 }}
+                          transition={{ duration: 0.2 }}
+                          className="mb-2"
+                        >
                           <EventStyled
                             onDelete={deleteOrder}
                             values={values}
@@ -399,7 +460,11 @@ export default function DailyView({
             >
               <div className="flex  flex-col">
                 {hours.map((hour, index) => (
-                  <motion.div key={`hour-${index}`} variants={itemVariants} className="cursor-pointer   transition duration-300  p-4 h-[64px] text-left text-sm text-muted-foreground border-default-200">
+                  <motion.div
+                    key={`hour-${index}`}
+                    variants={itemVariants}
+                    className="cursor-pointer   transition duration-300  p-4 h-[64px] text-left text-sm text-muted-foreground border-default-200"
+                  >
                     {hour}
                   </motion.div>
                 ))}
@@ -413,7 +478,9 @@ export default function DailyView({
                     key={`hour-${index}`}
                     className="cursor-pointer w-full relative border-b  hover:bg-default-200/50  transition duration-300  p-4 h-[64px] text-left text-sm text-muted-foreground border-default-200"
                   >
-                    <div className="absolute bg-accent flex items-center justify-center text-xs opacity-0 transition left-0 top-0 duration-250 hover:opacity-100 w-full h-full">Захиалга нэмэх</div>
+                    <div className="absolute bg-accent flex items-center justify-center text-xs opacity-0 transition left-0 top-0 duration-250 hover:opacity-100 w-full h-full">
+                      Захиалга нэмэх
+                    </div>
                   </div>
                 ))}
 
@@ -422,9 +489,18 @@ export default function DailyView({
                     ? events.map((event, eventIndex) => {
                         const group = orderMap.get(event.start_time) ?? []; // эсвэл orderMap[event.start_time]
                         const eventsInSamePeriod = group.length;
-                        const periodIndex = group.findIndex((e) => e.id === event.id);
+                        const periodIndex = group.findIndex(
+                          (e) => e.id === event.id
+                        );
 
-                        const { height, left, maxWidth, minWidth, top, zIndex } = handlers.handleEventStyling(event, events, {
+                        const {
+                          height,
+                          left,
+                          maxWidth,
+                          minWidth,
+                          top,
+                          zIndex,
+                        } = handlers.handleEventStyling(event, events, {
                           eventsInSamePeriod,
                           periodIndex,
                           adjustForPeriod: true,
@@ -468,8 +544,14 @@ export default function DailyView({
             </motion.div>
 
             {detailedHour && (
-              <div className="absolute left-[50px] w-[calc(100%-53px)] h-[2px] bg-primary/40 rounded-full pointer-events-none" style={{ top: `${timelinePosition}px` }}>
-                <Badge variant="outline" className="absolute -translate-y-1/2 bg-white z-50 left-[-20px] text-xs">
+              <div
+                className="absolute left-[50px] w-[calc(100%-53px)] h-[2px] bg-primary/40 rounded-full pointer-events-none"
+                style={{ top: `${timelinePosition}px` }}
+              >
+                <Badge
+                  variant="outline"
+                  className="absolute -translate-y-1/2 bg-white z-50 left-[-20px] text-xs"
+                >
                   {detailedHour}
                 </Badge>
               </div>
