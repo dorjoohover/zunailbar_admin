@@ -5,15 +5,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 
 import { Button } from "@/components/ui/button";
-import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { ILoginUser } from "@/models";
 import { login } from "@/app/(api)/auth";
@@ -23,10 +15,10 @@ import { useState } from "react";
 
 const formSchema = z.object({
   mobile: z.string().min(2, {
-    message: "mobile must be at least 2 characters.",
+    message: "Утасны дугаар 8 оронтой байна.",
   }),
   password: z.string().min(2, {
-    message: "password must be at least 2 characters.",
+    message: "Нууц үг хамгийн багадаа 2 оронтой байна.",
   }),
 });
 
@@ -78,11 +70,7 @@ export function LoginForm() {
             <FormItem>
               <FormLabel>Утасны дугаар</FormLabel>
               <FormControl>
-                <Input
-                  placeholder="xxxx-xxxx"
-                  {...field}
-                  className="h-12 transparent-input"
-                />
+                <Input placeholder="xxxx-xxxx" {...field} className="h-12 transparent-input" />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -93,12 +81,9 @@ export function LoginForm() {
           name="password"
           render={({ field }) => (
             <FormItem>
-              <PasswordField
-                props={{ ...field }}
-                className="bg-white h-12"
-                label="Нууц үг"
-              />
-
+              <FormControl>
+                <PasswordField props={{ ...field }} className="bg-white h-12" label="Нууц үг" />
+              </FormControl>
               <FormMessage />
             </FormItem>
           )}
