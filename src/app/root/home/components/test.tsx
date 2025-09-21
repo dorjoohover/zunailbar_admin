@@ -13,7 +13,7 @@ import { fetcher } from "@/hooks/fetcher";
 import DynamicHeader from "@/components/dynamicHeader";
 import { Home, IHome, IHomes } from "@/models/home.model";
 import { CloudUpload, Lock, Pencil, Save, Trash, UploadCloud, X } from "lucide-react";
-import { firstLetterUpper, numberArray } from "@/lib/functions";
+import { firstLetterUpper, numberArray, totalHours } from "@/lib/functions";
 import { Button } from "@/components/ui/button";
 import { imageUploader } from "@/app/(api)/base";
 import { showToast } from "@/shared/components/showToast";
@@ -247,7 +247,7 @@ export const TestHeroUploader = ({ data }: { data: ListType<Home> }) => {
                     <ScrollArea className="w-[100%] pl-10">
                       <div className="flex w-full flex-col px-10">
                         <div className="flex justify-center space-x-8 py-4">
-                          {numberArray(15)
+                          {numberArray(totalHours)
                             .slice(start, end)
                             .map((index) => {
                               const home = form.watch(`homes.${index}` as Path<RootType>);

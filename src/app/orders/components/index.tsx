@@ -1,7 +1,14 @@
 "use client";
 import { Branch, IOrder, Order, Service, User } from "@/models";
 import { useEffect, useMemo, useState } from "react";
-import { ListType, ACTION, PG, DEFAULT_PG, ListDefault, SearchType } from "@/lib/constants";
+import {
+  ListType,
+  ACTION,
+  PG,
+  DEFAULT_PG,
+  ListDefault,
+  SearchType,
+} from "@/lib/constants";
 import z from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -19,25 +26,52 @@ const formSchema = z.object({
   branch_id: z.string().min(1),
   name: z.string().min(1),
   max_price: z
-    .preprocess((val) => (typeof val === "string" ? parseFloat(val) : val), z.number())
+    .preprocess(
+      (val) => (typeof val === "string" ? parseFloat(val) : val),
+      z.number()
+    )
     .nullable()
     .optional() as unknown as number,
-  min_price: z.preprocess((val) => (typeof val === "string" ? parseFloat(val) : val), z.number()) as unknown as number,
-  duration: z.preprocess((val) => (typeof val === "string" ? parseFloat(val) : val), z.number()) as unknown as number,
+  min_price: z.preprocess(
+    (val) => (typeof val === "string" ? parseFloat(val) : val),
+    z.number()
+  ) as unknown as number,
+  duration: z.preprocess(
+    (val) => (typeof val === "string" ? parseFloat(val) : val),
+    z.number()
+  ) as unknown as number,
   edit: z.string().nullable().optional(),
 });
 
 type OrderType = z.infer<typeof formSchema>;
-export const OrderPage = ({ branches, users, customers, services }: { branches: SearchType<Branch>[]; services: SearchType<Service>[]; users: SearchType<User>[]; customers: SearchType<User>[] }) => {
+export const OrderPage = ({
+  branches,
+  users,
+  customers,
+  services,
+}: {
+  branches: SearchType<Branch>[];
+  services: SearchType<Service>[];
+  users: SearchType<User>[];
+  customers: SearchType<User>[];
+}) => {
   const [action, setAction] = useState(ACTION.DEFAULT);
   const [currentDate, setCurrentDate] = useState<Date>(new Date());
   const [orders, setOrders] = useState<ListType<Order>>(ListDefault);
-  const userMap = useMemo(() => new Map(users.map((b) => [b.id, b.value])), [users]);
+  const userMap = useMemo(
+    () => new Map(users.map((b) => [b.id, b.value])),
+    [users]
+  );
 
   const orderFormatter = (data: ListType<Order>) => {
     const items: Order[] = data.items.map((item) => {
       const user = userMap.get(item.user_id);
-      const [mobile, nickname, branch_id, color] = user?.split("__") ?? ["", "", "", ""];
+      const [mobile, nickname, branch_id, color] = user?.split("__") ?? [
+        "",
+        "",
+        "",
+        "",
+      ];
       return {
         ...item,
         user_name: user ? `${nickname} ${mobile}` : "",
@@ -80,6 +114,7 @@ export const OrderPage = ({ branches, users, customers, services }: { branches: 
     setAction(ACTION.RUNNING);
     const body = e as OrderType;
     const { edit, ...payload } = body;
+    console.log(payload, e);
     const res = edit
       ? await updateOne<Order>(
           Api.order,
@@ -96,9 +131,14 @@ export const OrderPage = ({ branches, users, customers, services }: { branches: 
         } as unknown as Order);
     if (res.success) {
       refresh();
-      showToast("success", edit ? "Мэдээлэл шинэчиллээ!" : "Амжилттай нэмэгдлээ!");
+      showToast(
+        "success",
+        edit ? "Мэдээлэл шинэчиллээ!" : "Амжилттай нэмэгдлээ!"
+      );
     } else {
-      showToast("error", res.error ?? "Алдаа гарлаа!");
+      showToast("info", res.error ?? "Алдаа гарлаа!", {
+        duration: 5000,
+      });
     }
     setAction(ACTION.DEFAULT);
   };
@@ -118,7 +158,10 @@ export const OrderPage = ({ branches, users, customers, services }: { branches: 
 
       const link = document.createElement("a");
       link.href = url;
-      link.setAttribute("download", `order_${mnDate().toISOString().slice(0, 10)}.xlsx`);
+      link.setAttribute(
+        "download",
+        `order_${mnDate().toISOString().slice(0, 10)}.xlsx`
+      );
       document.body.appendChild(link);
       link.click();
 

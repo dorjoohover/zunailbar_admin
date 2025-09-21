@@ -230,6 +230,7 @@ export const create = async <T,>(
     });
 
     const data = await res.json();
+    console.log(data)
     if (!res.ok) {
       console.log(data);
       return { error: (data as Error).message, success: false };

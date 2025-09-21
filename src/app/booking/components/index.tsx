@@ -88,7 +88,6 @@ export const BookingPage = ({
   }, [data]);
   const clear = () => {
     form.reset(defaultValues);
-    console.log(form.getValues());
   };
   const deleteBooking = async (index: number) => {
     const id = bookings!.items[index].id;
@@ -127,7 +126,6 @@ export const BookingPage = ({
     const date = lastDate;
     setAction(ACTION.RUNNING);
     const body = e as BookingType;
-    const { edit, ...payload } = body;
     const res = await create<IBooking>(Api.booking, {
       date: date,
       times: body.dates,
@@ -152,11 +150,6 @@ export const BookingPage = ({
       } else {
         return "";
       }
-    });
-    console.log({
-      date: date,
-      times: dates,
-      branch_id: branch.id,
     });
     const res = await create<Booking>(Api.booking, {
       date: date,
@@ -191,30 +184,25 @@ export const BookingPage = ({
   }, [page, branch]);
   const setUpdate = (time: number, day: number) => {
     setEdit((prev0: ScheduleEdit[]) => {
-      const prev = Array.isArray(prev0) ? prev0 : []; // анхны []-г баталгаажуулж байна
-      const newTime = time + 7;
+      const prev = Array.isArray(prev0) ? prev0 : [];
+      const newTime = time + 6;
 
-      // тухайн өдрийн индекс
       const idx = prev.findIndex((d) => d.day == day);
 
-      // 1) Байхгүй бол шинээр нэмнэ
       if (idx === -1) {
         return [...prev, { day: day, times: [newTime] }];
       }
 
-      // 2) Байсан бол times дээр toggle
       const days = prev[idx];
       const exists = days.times.includes(newTime);
       const newTimes = exists
-        ? days.times.filter((t) => t !== newTime) // байсан бол устгана
-        : [...days.times, newTime].sort((a, b) => a - b); // байгаагүй бол нэмээд эрэмбэлнэ
+        ? days.times.filter((t) => t !== newTime)
+        : [...days.times, newTime].sort((a, b) => a - b);
 
-      // 3) Хэрэв times хоосон бол тухайн өдрийг массивээс устгана
       if (newTimes.length === 0) {
         return [...prev.slice(0, idx), ...prev.slice(idx + 1)];
       }
 
-      // 4) Өдрийг шинэчилж буцаана
       const updated: ScheduleEdit = {
         ...days,
         times: newTimes,

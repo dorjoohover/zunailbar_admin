@@ -13,6 +13,7 @@ import {
   numberArray,
   sameYMD,
   stripTime,
+  totalHours,
 } from "@/lib/functions";
 import { Button } from "../ui/button";
 import { cn } from "@/lib/utils";
@@ -46,7 +47,7 @@ export const ScheduleTable = ({
   function getDisabledDaysForWeek(days: number[], time: number) {
     const start = stripTime(checkDate); // тухайн 7 хоногийн Ням
     const end = new Date(start);
-    end.setDate(start.getDate() + 6); // Бямба
+    end.setDate(start.getDate() + 7); // Бямба
 
     const td = stripTime(today);
 
@@ -90,8 +91,8 @@ export const ScheduleTable = ({
         </TableRow>
       </TableHeader>
       <TableBody>
-        {numberArray(15).map((time) => {
-          const hour = time + 7; // 8..22
+        {numberArray(totalHours).map((time) => {
+          const hour = time + 6; // 8..22
           return (
             <TableRow key={time}>
               {days.map((day) => {
@@ -101,17 +102,17 @@ export const ScheduleTable = ({
                 const keyStr = String(hour);
                 const includes = times.includes(keyStr);
                 const selected = edit?.findIndex(
-                  (e) => e.day == day && e.times.includes(time + 7)
+                  (e) => e.day == day && e.times.includes(time + 6)
                 );
                 return (
                   <TableCell key={day}>
                     <Button
                       type="button"
                       variant={"ghost"}
-
-                        
                       className={cn(
-                        includes
+                        includes && selected != -1
+                          ? "bg-red-500 text-white hover:bg-teal-500/80 hover:text-white"
+                          : includes
                           ? "bg-teal-500 text-white hover:bg-teal-500/80 hover:text-white"
                           : selected != -1
                           ? "bg-teal-300 text-white hover:bg-teal-300/80 hover:text-white -translate-y-1"
@@ -124,8 +125,7 @@ export const ScheduleTable = ({
                           : getDisabledDaysForWeek(days, time)[day - 1]
                       }
                       onClick={() => {
-                        if (setEdit && !includes) {
-                          console.log(time, day)
+                        if (setEdit) {
                           setEdit(time, day);
                         }
                       }}
@@ -173,8 +173,8 @@ export const ScheduleForm = ({
       </TableHeader>
 
       <TableBody className="h-72 overflow-hidden">
-        {numberArray(15).map((time) => {
-          const hour = time + 7; // 8..22
+        {numberArray(totalHours).map((time) => {
+          const hour = time + 6; // 8..22
           return (
             <TableRow key={time}>
               {days.map((day) => {

@@ -267,9 +267,9 @@ export const SchedulerProvider = ({
 
       // Get the event start hour as a fraction (e.g., 13.5 for 13:30)
       const eventStartHour = Math.abs(
-        +event.start_time.slice(0, 2) - 5 < 0
+        +event.start_time.slice(0, 2) - 7 < 0
           ? 0
-          : +event.start_time.slice(0, 2) - 5
+          : +event.start_time.slice(0, 2) - 7
       );
       // Define the day-end hour (24.0 for midnight)
       const dayEndHour = 22;
