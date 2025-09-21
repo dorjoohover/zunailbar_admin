@@ -88,7 +88,11 @@ export const EmployeeUserServicePage = ({
           : user
           ? searchUsernameFormatter(user)
           : "",
-        service_name: service?.name ?? item.service_name ?? "",
+        service_name: item.services
+          ?.map((s) => {
+            return `${s.service_name}`;
+          })
+          .join(", "),
       };
     });
 
@@ -116,13 +120,21 @@ export const EmployeeUserServicePage = ({
   const refresh = async (pg: PG = DEFAULT_PG) => {
     setAction(ACTION.RUNNING);
     const { page, limit, sort } = pg;
-    await fetcher<UserService>(Api.user_service, {
-      page: page ?? DEFAULT_PG.page,
-      limit: limit ?? DEFAULT_PG.limit,
-      sort: sort ?? DEFAULT_PG.sort,
-      ...pg,
-      //   name: pg.filter,
-    }).then((d) => {
+    const service_id = filter?.service;
+    const user_id = filter?.user;
+    await fetcher<UserService>(
+      Api.user_service,
+      {
+        page: page ?? DEFAULT_PG.page,
+        limit: limit ?? DEFAULT_PG.limit,
+        sort: sort ?? DEFAULT_PG.sort,
+        service_id,
+        user_id,
+        ...pg,
+        //   name: pg.filter,
+      },
+      "employee"
+    ).then((d) => {
       UserServiceFormatter(d);
       console.log(d);
     });
@@ -153,7 +165,7 @@ export const EmployeeUserServicePage = ({
           const value = VALUES[er];
           return i == 0 ? firstLetterUpper(value) : value;
         })
-        .join(", ") + "оруулна уу!";
+        .join(", ") + " оруулна уу!";
     showToast("info", error);
   };
   const [filter, setFilter] = useState<FilterType>();

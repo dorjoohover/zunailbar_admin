@@ -73,7 +73,7 @@ export enum ACTION {
   RUNNING = 30,
 }
 
-export const DEFAULT_LIMIT = 20;
+export const DEFAULT_LIMIT = 2;
 export const DEFAULT_PAGE = 0;
 export const DEFAULT_SORT = true;
 
@@ -214,4 +214,5 @@ export const VALUES = {
   pre_amount: "урьдчилгаа",
   cargo: "карго",
   date: "огноо",
+  product_id: "бүтээгдэхүүн",
 } as const as any;

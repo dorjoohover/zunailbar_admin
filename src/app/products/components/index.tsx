@@ -83,15 +83,18 @@ export const ProductPage = ({
   const refresh = async (pg: PG = DEFAULT_PG) => {
     setAction(ACTION.RUNNING);
     const { page, limit, sort } = pg;
+    const brand_id = filter?.brand;
+    const category_id = filter?.category;
     await fetcher<Product>(Api.product, {
       page: page ?? DEFAULT_PG.page,
       limit: limit ?? DEFAULT_PG.limit,
       sort: sort ?? DEFAULT_PG.sort,
       name: pg.filter,
       type: CategoryType.DEFAULT,
+      brand_id,
+      category_id,
       ...pg,
     }).then((d) => {
-      console.log(d);
       setProducts(d);
     });
     setAction(ACTION.DEFAULT);
@@ -124,7 +127,7 @@ export const ProductPage = ({
           const value = VALUES[er];
           return i == 0 ? firstLetterUpper(value) : value;
         })
-        .join(", ") + "оруулна уу!";
+        .join(", ") + " оруулна уу!";
     showToast("info", error);
   };
   const [filter, setFilter] = useState<FilterType>();

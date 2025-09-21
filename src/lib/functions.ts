@@ -46,6 +46,11 @@ export const objectCompact = <T extends Record<string, any>>(v: T) =>
     )
   ) as Partial<T>;
 
+export const round = (value: number, l = 2) => {
+  const res = Math.round(value * Math.pow(10, l)) / Math.pow(10, l);
+  return res;
+};
+
 export function getDayName(dayNumber: number): string {
   const days: Record<number, string> = {
     1: "Даваа",
@@ -212,8 +217,8 @@ export const usernameFormatter = (user: User) => {
 
   return "";
 };
-export const money = (value: string, currency = "", round = 1) => {
-  let v = Math.round(+value / round) * round;
+export const money = (value: string, currency = "") => {
+  let v = round(+(value ?? "0"));
   return `${currency}${v
     .toString()
     .replaceAll(",", "")

@@ -11,10 +11,21 @@ import { IProductLog } from "@/models";
 import TooltipWrapper from "@/components/tooltipWrapper";
 import { TableActionButtons } from "@/components/tableActionButtons";
 import { getEnumValues, getValuesProductLogStatus } from "@/lib/constants";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 
-export function getColumns(onEdit: (product: IProductLog) => void, remove: (index: number) => Promise<boolean>, setStatus: (index: number, status: ProductLogStatus) => void): ColumnDef<IProductLog>[] {
+export function getColumns(
+  onEdit: (product: IProductLog) => void,
+  remove: (index: number) => Promise<boolean>,
+  setStatus: (index: number, status: ProductLogStatus) => void
+): ColumnDef<IProductLog>[] {
   return [
     {
       id: "select",
@@ -24,26 +35,42 @@ export function getColumns(onEdit: (product: IProductLog) => void, remove: (inde
     {
       accessorKey: "product_name",
       header: ({ column }) => (
-        <Button variant="table_header" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")} className="font-bold">
+        <Button
+          variant="table_header"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          className="font-bold"
+        >
           Бүтээгдэхүүн <ArrowUpDown className="w-4 h-4 ml-2" />
         </Button>
       ),
     },
     {
       accessorKey: "price",
+      header: "Үнэ",
 
-      cell: ({ row }) => money(row.getValue("price"), "₮"),
+      cell: ({ row }) => money(row.getValue("price"), row.getValue("currency")),
+    },
+    {
+      accessorKey: "unit_price",
+      header: "Нэгжийн үнэ",
+
+      cell: ({ row }) => money(row.getValue("unit_price"), "₮"),
     },
     {
       accessorKey: "quantity",
       header: ({ column }) => (
-        <Button variant="table_header" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")} className="font-bold">
+        <Button
+          variant="table_header"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          className="font-bold"
+        >
           Тоо ширхэг <ArrowUpDown className="w-4 h-4 ml-2" />
         </Button>
       ),
     },
     {
       accessorKey: "total_amount",
+      header: "Нийт үнэ",
       cell: ({ row }) => money(row.getValue("total_amount"), "₮"),
     },
 
@@ -51,7 +78,10 @@ export function getColumns(onEdit: (product: IProductLog) => void, remove: (inde
       accessorKey: "product_log_status",
       header: "Статус",
       cell: ({ row }) => {
-        const status = getValuesProductLogStatus[row.getValue<number>("product_log_status") as ProductLogStatus];
+        const status =
+          getValuesProductLogStatus[
+            row.getValue<number>("product_log_status") as ProductLogStatus
+          ];
         return <span className={status.color}>{status.name}</span>;
       },
     },
@@ -67,7 +97,11 @@ export function getColumns(onEdit: (product: IProductLog) => void, remove: (inde
     {
       accessorKey: "created_at",
       header: ({ column }) => (
-        <Button variant="table_header" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")} className="font-bold">
+        <Button
+          variant="table_header"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          className="font-bold"
+        >
           Үүсгэсэн <ArrowUpDown className="w-4 h-4 ml-2" />
         </Button>
       ),
@@ -85,7 +119,11 @@ export function getColumns(onEdit: (product: IProductLog) => void, remove: (inde
       id: "actions",
       header: "Үйлдэл",
       cell: ({ row }) => (
-        <TableActionButtons rowData={row.original} onEdit={(data) => onEdit(data)} onRemove={(d) => remove(row.index)}>
+        <TableActionButtons
+          rowData={row.original}
+          onEdit={(data) => onEdit(data)}
+          onRemove={(d) => remove(row.index)}
+        >
           <DropdownMenu>
             <TooltipWrapper tooltip="Статус солих">
               <DropdownMenuTrigger asChild>
@@ -104,7 +142,10 @@ export function getColumns(onEdit: (product: IProductLog) => void, remove: (inde
               {getEnumValues(ProductLogStatus).map((item, i) => {
                 const status = getValuesProductLogStatus[item];
                 return (
-                  <DropdownMenuItem key={i} onClick={() => setStatus(row.index, item)}>
+                  <DropdownMenuItem
+                    key={i}
+                    onClick={() => setStatus(row.index, item)}
+                  >
                     <span className={cn(status.color)}>{status.name}</span>
                   </DropdownMenuItem>
                 );

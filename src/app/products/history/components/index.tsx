@@ -31,6 +31,7 @@ import {
   dateOnly,
   firstLetterUpper,
   objectCompact,
+  round,
   searchProductFormatter,
 } from "@/lib/functions";
 import { FilterPopover } from "@/components/layout/popover";
@@ -60,6 +61,10 @@ const formSchema = z
     ) as unknown as number,
     currency: z.string().min(1),
     total_amount: z.preprocess(
+      (val) => (typeof val === "string" ? parseFloat(val) : val),
+      z.number()
+    ) as unknown as number,
+    unit_price: z.preprocess(
       (val) => (typeof val === "string" ? parseFloat(val) : val),
       z.number()
     ) as unknown as number,
@@ -93,6 +98,7 @@ const defaultValues = {
   quantity: "",
   total_amount: 0,
   paid_amount: "",
+  unit_price: "",
   date: "",
   product_log_status: ProductLogStatus.Bought,
 };
@@ -148,15 +154,12 @@ export const ProductHistoryPage = ({
   };
   const edit = async (e: IProductLog) => {
     setOpen(true);
-
-    const cargo = Math.abs(Math.round(+e.total_amount - e.quantity * e.price));
-
     form.reset({
       ...e,
-      price: e.price / (e.currency_amount ?? 1),
+      price: e.price,
       quantity: e.quantity,
       currency_amount: e.currency_amount,
-      cargo: cargo < 1000 ? 0 : cargo,
+      cargo: e.cargo,
       total_amount: +e.total_amount,
       edit: e.id,
     });
@@ -174,10 +177,18 @@ export const ProductHistoryPage = ({
   const refresh = async (pg: PG = DEFAULT_PG) => {
     setAction(ACTION.RUNNING);
     const { page, limit, sort } = pg;
+    const product_id = filter?.product;
+    const product_log_status = filter?.status;
+    const start_date = filter?.start ? dateOnly(filter?.start) : undefined;
+    const end_date = filter?.end ? dateOnly(filter?.end) : undefined;
     await fetcher<ProductLog>(Api.product_log, {
       page: page ?? DEFAULT_PG.page,
       limit: limit ?? DEFAULT_PG.limit,
       sort: sort ?? DEFAULT_PG.sort,
+      product_id,
+      product_log_status,
+      start_date,
+      end_date,
       ...pg,
       //   name: pg.filter,
     }).then((d) => {
@@ -192,22 +203,20 @@ export const ProductHistoryPage = ({
     let { edit, cargo, ...payload } = body;
     payload = {
       ...payload,
-      price: Math.round(
-        +(payload.total_amount ?? 0) / +(payload.quantity ?? 1)
-      ),
-      total_amount: Math.round(+(payload.total_amount ?? 0)),
+      price: round(+(payload.price ?? 0)),
+      unit_price: round(+(payload.unit_price ?? 0)),
+      total_amount: round(+(payload.total_amount ?? 0)),
     };
 
     const res = edit
-      ? await updateOne<IProductLog>(
-          Api.product_log,
-          edit ?? "",
-          payload as unknown as IProductLog
-        )
-      : await create<IProductLog>(
-          Api.product_log,
-          payload as unknown as IProductLog
-        );
+      ? await updateOne<IProductLog>(Api.product_log, edit ?? "", {
+          ...payload,
+          cargo,
+        } as unknown as IProductLog)
+      : await create<IProductLog>(Api.product_log, {
+          ...payload,
+          cargo,
+        } as unknown as IProductLog);
     if (res.success) {
       refresh();
       setOpen(false);
@@ -219,10 +228,11 @@ export const ProductHistoryPage = ({
     const error =
       Object.keys(e as any)
         .map((er, i) => {
+          console.log(er);
           const value = VALUES[er];
           return i == 0 ? firstLetterUpper(value) : value;
         })
-        .join(", ") + "оруулна уу!";
+        .join(", ") + " оруулна уу!";
     showToast("info", error);
   };
   const qty = form.watch("quantity") ?? 0;
@@ -231,12 +241,15 @@ export const ProductHistoryPage = ({
   const cargo = form.watch("cargo") ?? 0;
 
   useEffect(() => {
-    let total =
-      (Number(qty) || 0) * (Number(price) || 0) * +(currency ?? 1) +
-      +(cargo ?? 0);
+    const unit_price = round((Number(price) || 0) * +(currency ?? 1));
+    let total = (Number(qty) || 0) * unit_price + +(cargo ?? 0);
     const paid = +(form.getValues("paid_amount") ?? 0);
     if (Math.abs(paid - total) < 100) total = paid;
     form.setValue("total_amount", total, {
+      shouldValidate: true,
+      shouldDirty: true,
+    });
+    form.setValue("unit_price", unit_price, {
       shouldValidate: true,
       shouldDirty: true,
     });
@@ -316,17 +329,6 @@ export const ProductHistoryPage = ({
               {groups.map((item, i) => {
                 const { key } = item;
                 return (
-                  // <FilterPopover
-                  //   key={i}
-                  //   content={item.items.map((it, index) => (
-                  //     <label key={index} className="checkbox-label">
-                  //       <Checkbox checked={filter?.[key] == it.value} onCheckedChange={() => changeFilter(key, it.value)} />
-                  //       <span>{it.label as string}</span>
-                  //     </label>
-                  //   ))}
-                  //   value={filter?.[key] ? item.items.filter((item) => item.value == filter[key])[0].label : undefined}
-                  //   label={item.label}
-                  // />
                   <label key={i}>
                     <span className="filter-label">{item.label as string}</span>
                     <ComboBox
@@ -487,21 +489,17 @@ export const ProductHistoryPage = ({
                         type: "number",
                         label: "Тоо ширхэг",
                       },
-                      // {
-                      //   key: "currency",
-                      //   label: "Currency",
-                      // },
-                      // {
-                      //   key: "currency_value",
-                      //   label: "Currency value",
-                      //   type: "number",
-                      // },
+
                       {
                         key: "price",
                         type: "number",
-                        label: "Үнэ",
+                        label: "Үнэ (Тухайн вальютаар)",
                       },
-
+                      {
+                        key: "unit_price",
+                        type: "money",
+                        label: "Нэгжийн үнэ",
+                      },
                       {
                         key: "total_amount",
                         type: "money",
@@ -539,22 +537,25 @@ export const ProductHistoryPage = ({
                         </FormItems>
                       );
                     })}
+                    <div className="">
+                      <FormItems
+                        label="Огноо"
+                        control={form.control}
+                        name="date"
+                      >
+                        {(field) => {
+                          return (
+                            <DatePicker
+                              name=""
+                              pl="Огноо сонгох"
+                              props={{ ...field }}
+                            />
+                          );
+                        }}
+                      </FormItems>
+                    </div>
                   </div>
                   <div className="divide-x-gray"></div>
-
-                  <div className="double-col ">
-                    <FormItems label="Огноо" control={form.control} name="date">
-                      {(field) => {
-                        return (
-                          <DatePicker
-                            name=""
-                            pl="Огноо сонгох"
-                            props={{ ...field }}
-                          />
-                        );
-                      }}
-                    </FormItems>
-                  </div>
                 </div>
               </FormProvider>
             </Modal>

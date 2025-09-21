@@ -139,10 +139,18 @@ export const ProductTransactionPage = ({
   const refresh = async (pg: PG = DEFAULT_PG) => {
     setAction(ACTION.RUNNING);
     const { page, limit, sort } = pg;
+    const branch_id = filter?.branch;
+    const user_id = filter?.user;
+    const product_id = filter?.product;
+    const product_transaction_status = filter?.status;
     await fetcher<ProductTransaction>(Api.product_transaction_admin, {
       page: page ?? DEFAULT_PG.page,
       limit: limit ?? DEFAULT_PG.limit,
       sort: sort ?? DEFAULT_PG.sort,
+      branch_id,
+      user_id,
+      product_id,
+      product_transaction_status,
       ...pg,
     }).then((d) => {
       transactionFormatter(d);
@@ -177,7 +185,7 @@ export const ProductTransactionPage = ({
           const value = VALUES[er];
           return i == 0 ? firstLetterUpper(value) : value;
         })
-        .join(", ") + "оруулна уу!";
+        .join(", ") + " оруулна уу!";
     showToast("info", error);
   };
 

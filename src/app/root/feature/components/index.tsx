@@ -108,7 +108,7 @@ export const FeaturePage = ({ data }: { data: ListType<Feature> }) => {
           const value = VALUES[er];
           return i == 0 ? firstLetterUpper(value) : value;
         })
-        .join(", ") + "оруулна уу!";
+        .join(", ") + " оруулна уу!";
     showToast("info", error);
   };
 

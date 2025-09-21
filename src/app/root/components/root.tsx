@@ -76,7 +76,7 @@ export const RootModal = ({ refresh }: { refresh: () => void }) => {
           const value = VALUES[er];
           return i == 0 ? firstLetterUpper(value) : value;
         })
-        .join(", ") + "оруулна уу!";
+        .join(", ") + " оруулна уу!";
     showToast("info", error);
   };
 

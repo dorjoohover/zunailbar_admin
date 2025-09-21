@@ -8,7 +8,7 @@ import { ROLE } from "@/lib/enum";
 
 export default async function Page() {
   const [res, service, user] = await Promise.all([
-    find<UserService>(Api.user_service),
+    find<UserService>(Api.user_service, {}, "employee"),
     find<Service>(Api.service, { limit: -1 }),
     search<User>(Api.user, { limit: 20, role: ROLE.E_M }),
   ]);
@@ -16,11 +16,11 @@ export default async function Page() {
     <section>
       {/* <ContainerHeader title="Ажилтны хийдэг үйлчилгээ" />
       <div className="admin-container"> */}
-        <EmployeeUserServicePage
-          data={res.data}
-          services={service.data}
-          users={user.data}
-        />
+      <EmployeeUserServicePage
+        data={res.data}
+        services={service.data}
+        users={user.data}
+      />
       {/* </div> */}
     </section>
   );

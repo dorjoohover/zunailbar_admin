@@ -5,13 +5,22 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 
 import { Button } from "@/components/ui/button";
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { ILoginUser } from "@/models";
 import { login } from "@/app/(api)/auth";
 import { useRouter } from "next/navigation";
 import { PasswordField } from "@/shared/components/password.field";
 import { useState } from "react";
+import { showToast } from "@/shared/components/showToast";
 
 const formSchema = z.object({
   mobile: z.string().min(2, {
@@ -56,8 +65,11 @@ export function LoginForm() {
   const onSubmit = async (value: ILoginUser) => {
     setLoading(true);
     const { data, error } = await login(value);
-    console.log(data, error);
-    save(data.accessToken, data.branch_id, data.merchant_id);
+    if (error) {
+      showToast("info", error);
+    } else {
+      save(data.accessToken, data.branch_id, data.merchant_id);
+    }
     setLoading(false);
   };
   return (
@@ -70,7 +82,11 @@ export function LoginForm() {
             <FormItem>
               <FormLabel>Утасны дугаар</FormLabel>
               <FormControl>
-                <Input placeholder="xxxx-xxxx" {...field} className="h-12 transparent-input" />
+                <Input
+                  placeholder="xxxx-xxxx"
+                  {...field}
+                  className="h-12 transparent-input"
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -82,7 +98,11 @@ export function LoginForm() {
           render={({ field }) => (
             <FormItem>
               <FormControl>
-                <PasswordField props={{ ...field }} className="bg-white h-12" label="Нууц үг" />
+                <PasswordField
+                  props={{ ...field }}
+                  className="bg-white h-12"
+                  label="Нууц үг"
+                />
               </FormControl>
               <FormMessage />
             </FormItem>

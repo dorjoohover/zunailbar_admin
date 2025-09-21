@@ -150,7 +150,7 @@ export const EmployeePage = ({
           const value = VALUES[er];
           return i == 0 ? firstLetterUpper(value) : value;
         })
-        .join(", ") + "оруулна уу!";
+        .join(", ") + " оруулна уу!";
     showToast("info", error);
     // setSuccess(false);
   };
@@ -158,14 +158,19 @@ export const EmployeePage = ({
   const refresh = async (pg: PG = DEFAULT_PG) => {
     setAction(ACTION.RUNNING);
     const { page, limit, sort } = pg;
+    const branch_id = filter?.branch;
+    const role = filter?.role;
+    const user_status = filter?.status;
 
     await fetcher<User>(Api.user, {
       page: page ?? DEFAULT_PG.page,
       limit: limit ?? DEFAULT_PG.limit,
       sort: sort ?? DEFAULT_PG.sort,
       isCost: false,
-      role: ROLE.E_M,
+      role: role ?? ROLE.E_M,
       mobile: pg.filter,
+      user_status,
+      branch_id,
       ...pg,
     }).then((d) => {
       setUsers(d);
@@ -315,151 +320,151 @@ export const EmployeePage = ({
                   <div className="double-col pb-5">
                     <div className="double-col">
                       <FormItems
-                      control={form.control}
-                      name="file"
-                      label="Зураг өөрчлөх"
-                    >
-                      {(field) => {
-                        const fileUrl = field.value
-                          ? URL.createObjectURL(field.value as any)
-                          : null;
-
-                        return (
-                          <div className="relative w-32 h-32">
-                            {fileUrl ? (
-                              <>
-                                {/* Preview */}
-                                <img
-                                  src={fileUrl}
-                                  alt="preview"
-                                  className="object-cover w-full h-full overflow-hidden bg-white border rounded-md"
-                                />
-
-                                {/* Change */}
-                                <label
-                                  htmlFor="file-upload"
-                                  className="absolute p-1 rounded cursor-pointer top-1 right-7 bg-primary hover:bg-slate-600"
-                                >
-                                  <Pencil className="text-white size-3" />
-                                </label>
-
-                                {/* Remove */}
-                                <button
-                                  type="button"
-                                  onClick={() => field.onChange(null)}
-                                  className="absolute p-1 rounded cursor-pointer top-1 right-1 bg-primary hover:bg-slate-600"
-                                >
-                                  <X className="text-white size-3" />
-                                </button>
-                              </>
-                            ) : (
-                              // Empty state uploader
-                              <label
-                                htmlFor="file-upload"
-                                className="flex flex-col items-center justify-center w-full h-full transition-colors bg-white border rounded-md cursor-pointer hover:bg-gray-50"
-                              >
-                                <UploadCloud className="w-6 h-6 text-gray-500" />
-                                <span className="mt-1 text-xs text-gray-500">
-                                  Browse
-                                </span>
-                              </label>
-                            )}
-
-                            {/* Hidden input */}
-                            <input
-                              id="file-upload"
-                              type="file"
-                              className="hidden"
-                              accept={ACCEPT_ATTR}
-                              onChange={(e) => {
-                                const file = e.target.files?.[0];
-                                if (!file) return;
-
-                                const res = validateImageFile(file);
-                                if (!res.ok) {
-                                  showToast("error", res.message);
-                                  e.currentTarget.value = ""; // буруу бол reset
-                                  return;
-                                }
-                                field.onChange(file);
-                              }}
-                            />
-                          </div>
-                        );
-                      }}
-                    </FormItems>
-                    {/* odoogiin */}
-                    {form.getValues("profile_img") && (
-                      <FormItems
                         control={form.control}
-                        name="profile_img"
-                        label="Одоогийн зураг"
+                        name="file"
+                        label="Зураг өөрчлөх"
                       >
                         {(field) => {
+                          const fileUrl = field.value
+                            ? URL.createObjectURL(field.value as any)
+                            : null;
+
                           return (
-                            <>
-                              {field.value && (
-                                <div className="relative w-32 h-32 bg-white">
+                            <div className="relative w-32 h-32">
+                              {fileUrl ? (
+                                <>
+                                  {/* Preview */}
                                   <img
-                                    src={`/api/file/${field.value}`}
+                                    src={fileUrl}
                                     alt="preview"
-                                    className="object-cover overflow-hidden border border-red-400 rounded-md size-full bg-gray"
+                                    className="object-cover w-full h-full overflow-hidden bg-white border rounded-md"
                                   />
-                                </div>
+
+                                  {/* Change */}
+                                  <label
+                                    htmlFor="file-upload"
+                                    className="absolute p-1 rounded cursor-pointer top-1 right-7 bg-primary hover:bg-slate-600"
+                                  >
+                                    <Pencil className="text-white size-3" />
+                                  </label>
+
+                                  {/* Remove */}
+                                  <button
+                                    type="button"
+                                    onClick={() => field.onChange(null)}
+                                    className="absolute p-1 rounded cursor-pointer top-1 right-1 bg-primary hover:bg-slate-600"
+                                  >
+                                    <X className="text-white size-3" />
+                                  </button>
+                                </>
+                              ) : (
+                                // Empty state uploader
+                                <label
+                                  htmlFor="file-upload"
+                                  className="flex flex-col items-center justify-center w-full h-full transition-colors bg-white border rounded-md cursor-pointer hover:bg-gray-50"
+                                >
+                                  <UploadCloud className="w-6 h-6 text-gray-500" />
+                                  <span className="mt-1 text-xs text-gray-500">
+                                    Browse
+                                  </span>
+                                </label>
                               )}
-                            </>
+
+                              {/* Hidden input */}
+                              <input
+                                id="file-upload"
+                                type="file"
+                                className="hidden"
+                                accept={ACCEPT_ATTR}
+                                onChange={(e) => {
+                                  const file = e.target.files?.[0];
+                                  if (!file) return;
+
+                                  const res = validateImageFile(file);
+                                  if (!res.ok) {
+                                    showToast("error", res.message);
+                                    e.currentTarget.value = ""; // буруу бол reset
+                                    return;
+                                  }
+                                  field.onChange(file);
+                                }}
+                              />
+                            </div>
                           );
                         }}
                       </FormItems>
-                    )}
+                      {/* odoogiin */}
+                      {form.getValues("profile_img") && (
+                        <FormItems
+                          control={form.control}
+                          name="profile_img"
+                          label="Одоогийн зураг"
+                        >
+                          {(field) => {
+                            return (
+                              <>
+                                {field.value && (
+                                  <div className="relative w-32 h-32 bg-white">
+                                    <img
+                                      src={`/api/file/${field.value}`}
+                                      alt="preview"
+                                      className="object-cover overflow-hidden border border-red-400 rounded-md size-full bg-gray"
+                                    />
+                                  </div>
+                                )}
+                              </>
+                            );
+                          }}
+                        </FormItems>
+                      )}
                     </div>
-                  <div className="double-col grid-cols-1">
-                     <FormItems
-                      control={form.control}
-                      name="branch_id"
-                      label="Салбар"
-                    >
-                      {(field) => {
-                        return (
-                          <ComboBox
-                            props={{ ...field }}
-                            items={branches.items.map((branch) => {
-                              return {
-                                value: branch.id,
-                                label: branch.name,
-                              };
-                            })}
-                          />
-                        );
-                      }}
-                    </FormItems>
+                    <div className="double-col grid-cols-1">
+                      <FormItems
+                        control={form.control}
+                        name="branch_id"
+                        label="Салбар"
+                      >
+                        {(field) => {
+                          return (
+                            <ComboBox
+                              props={{ ...field }}
+                              items={branches.items.map((branch) => {
+                                return {
+                                  value: branch.id,
+                                  label: branch.name,
+                                };
+                              })}
+                            />
+                          );
+                        }}
+                      </FormItems>
 
-                    <FormItems
-                      control={form.control}
-                      name="role"
-                      label="Эрхийн түвшин"
-                    >
-                      {(field) => {
-                        return (
-                          <ComboBox
-                            items={[
-                              ROLE.ADMIN,
-                              ROLE.EMPLOYEE,
-                              ROLE.MANAGER,
-                            ].map((role) => {
-                              return {
-                                label: RoleValue[role],
-                                value: role.toString(),
-                              };
-                            })}
-                            props={{
-                              ...field,
-                            }}
-                          />
-                        );
-                      }}
-                    </FormItems>
-                  </div>
+                      <FormItems
+                        control={form.control}
+                        name="role"
+                        label="Эрхийн түвшин"
+                      >
+                        {(field) => {
+                          return (
+                            <ComboBox
+                              items={[
+                                ROLE.ADMIN,
+                                ROLE.EMPLOYEE,
+                                ROLE.MANAGER,
+                              ].map((role) => {
+                                return {
+                                  label: RoleValue[role],
+                                  value: role.toString(),
+                                };
+                              })}
+                              props={{
+                                ...field,
+                              }}
+                            />
+                          );
+                        }}
+                      </FormItems>
+                    </div>
                   </div>
                   <div className="pt-5 double-col">
                     {!editingUser && (
@@ -514,7 +519,7 @@ export const EmployeePage = ({
                                   className={cn(
                                     item === "mobile"
                                       ? "hide-number-arrows"
-                                      : "", 
+                                      : ""
                                   )}
                                 />
                               </>

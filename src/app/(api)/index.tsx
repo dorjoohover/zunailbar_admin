@@ -230,7 +230,7 @@ export const create = async <T,>(
     });
 
     const data = await res.json();
-    console.log(data)
+    console.log(data);
     if (!res.ok) {
       console.log(data);
       return { error: (data as Error).message, success: false };
@@ -253,7 +253,7 @@ export const search = async <T,>(
     sort: DEFAULT_SORT,
   },
   route?: string
-): Promise<{ data: SearchType<T>[] ; error?: string }> => {
+): Promise<{ data: SearchType<T>[]; error?: string }> => {
   try {
     const store = await cookies();
     const token = store.get("token")?.value;

@@ -141,11 +141,23 @@ export const CostPage = ({
   const refresh = async (pg: PG = DEFAULT_PG) => {
     setAction(ACTION.RUNNING);
     const { page, limit, sort } = pg;
+    const branch_id = filter?.branch;
+    const category_id = filter?.category;
+    const product_id = filter?.product;
+    const user_product_status = filter?.status;
+    const start_date = filter?.start ? dateOnly(filter?.start) : undefined;
+    const end_date = filter?.end ? dateOnly(filter?.end) : undefined;
     await fetcher<Cost>(Api.cost, {
       page: page ?? DEFAULT_PG.page,
       limit: limit ?? DEFAULT_PG.limit,
       sort: sort ?? DEFAULT_PG.sort,
       name: pg.filter,
+      branch_id,
+      category_id,
+      product_id,
+      user_product_status,
+      start_date,
+      end_date,
       ...pg,
     }).then((d) => {
       costFormatter(d);
@@ -173,7 +185,7 @@ export const CostPage = ({
           const value = VALUES[er];
           return i == 0 ? firstLetterUpper(value) : value;
         })
-        .join(", ") + "оруулна уу!";
+        .join(", ") + " оруулна уу!";
     showToast("info", error);
   };
   const [filter, setFilter] = useState<FilterType>();

@@ -17,7 +17,14 @@ import z from "zod";
 
 import { Api } from "@/utils/api";
 import { fetcher } from "@/hooks/fetcher";
-import { Branch, Brand, IUserProduct, Product, User, UserProduct } from "@/models";
+import {
+  Branch,
+  Brand,
+  IUserProduct,
+  Product,
+  User,
+  UserProduct,
+} from "@/models";
 import { getColumns } from "./columns";
 import DynamicHeader from "@/components/dynamicHeader";
 import { create, deleteOne, search, updateOne } from "@/app/(api)";
@@ -48,8 +55,16 @@ const formSchema = z.object({
   product_id: z.string().min(1),
   product_name: z.string().nullable().optional(),
   user_name: z.string().nullable().optional(),
-  quantity: z.preprocess((val) => (typeof val === "string" ? parseFloat(val) : val), z.number()) as unknown as number,
-  user_product_status: z.preprocess((val) => (typeof val === "string" ? parseInt(val, 10) : val), z.nativeEnum(UserProductStatus).nullable()).optional() as unknown as number,
+  quantity: z.preprocess(
+    (val) => (typeof val === "string" ? parseFloat(val) : val),
+    z.number()
+  ) as unknown as number,
+  user_product_status: z
+    .preprocess(
+      (val) => (typeof val === "string" ? parseInt(val, 10) : val),
+      z.nativeEnum(UserProductStatus).nullable()
+    )
+    .optional() as unknown as number,
   edit: z.string().nullable().optional(),
 });
 const defaultValues: UserProductType = {
@@ -105,7 +120,13 @@ export const EmployeeProductPage = ({
     const { edit, ...body } = form.getValues();
     let payload = body;
 
-    const res = edit ? await updateOne<UserProduct>(Api.user_product, edit as string, payload as UserProduct) : await create(Api.user_product, { items: [payload as UserProduct] });
+    const res = edit
+      ? await updateOne<UserProduct>(
+          Api.user_product,
+          edit as string,
+          payload as UserProduct
+        )
+      : await create(Api.user_product, { items: [payload as UserProduct] });
     if (res.success) {
       refresh();
 
@@ -124,17 +145,25 @@ export const EmployeeProductPage = ({
           const value = VALUES[er];
           return i == 0 ? firstLetterUpper(value) : value;
         })
-        .join(", ") + "оруулна уу!";
+        .join(", ") + " оруулна уу!";
     showToast("info", error);
   };
 
   const refresh = async (pg: PG = DEFAULT_PG) => {
     setAction(ACTION.RUNNING);
     const { page, limit, sort } = pg;
+    const branch_id = filter?.branch;
+    const user_id = filter?.user;
+    const product_id = filter?.product;
+    const user_product_status = filter?.status;
     await fetcher<UserProduct>(Api.user_product, {
       page: page ?? DEFAULT_PG.page,
       limit: limit ?? DEFAULT_PG.limit,
       sort: sort ?? DEFAULT_PG.sort,
+      branch_id,
+      user_id,
+      product_id,
+      user_product_status,
       ...pg,
     }).then((d) => {
       userProductFormatter(d);
@@ -158,7 +187,9 @@ export const EmployeeProductPage = ({
     const res = await updateOne(Api.user_product, userProduct.items[index].id, {
       user_product_status: status,
     });
-    res.success ? showToast("success", "Амжилттай шинэчлэгдлээ.") : showToast("error", res.error ?? "");
+    res.success
+      ? showToast("success", "Амжилттай шинэчлэгдлээ.")
+      : showToast("error", res.error ?? "");
     refresh();
   };
   const deleteUserProduct = async (index: number) => {
@@ -242,7 +273,6 @@ export const EmployeeProductPage = ({
       limit: 20,
       page: 0,
     }).then((d) => {
-      console.log(key, d.data);
       setItems((prev) => ({
         ...prev,
         [key]: d.data,
@@ -314,7 +344,12 @@ export const EmployeeProductPage = ({
               loading={action == ACTION.RUNNING}
             >
               <FormProvider {...form}>
-                <FormItems label="Ажилтан" control={form.control} name="user_id" className="pb-5 border-b">
+                <FormItems
+                  label="Ажилтан"
+                  control={form.control}
+                  name="user_id"
+                  className="pb-5 border-b"
+                >
                   {(field) => {
                     return (
                       <ComboBox
@@ -331,7 +366,11 @@ export const EmployeeProductPage = ({
                   }}
                 </FormItems>
                 <div className="space-y-4 pt-5">
-                  <FormItems label="Бүтээгдэхүүн" control={form.control} name="product_id">
+                  <FormItems
+                    label="Бүтээгдэхүүн"
+                    control={form.control}
+                    name="product_id"
+                  >
                     {(field) => {
                       return (
                         <ComboBox
@@ -347,22 +386,39 @@ export const EmployeeProductPage = ({
                       );
                     }}
                   </FormItems>
-                  <FormItems control={form.control} name={"quantity"} className={"col-span-2"}>
+                  <FormItems
+                    control={form.control}
+                    name={"quantity"}
+                    className={"col-span-2"}
+                  >
                     {(field) => {
-                      return <TextField props={{ ...field }} type={"number"} label={"Тоо ширхэг"} />;
+                      return (
+                        <TextField
+                          props={{ ...field }}
+                          type={"number"}
+                          label={"Тоо ширхэг"}
+                        />
+                      );
                     }}
                   </FormItems>
-                  <FormItems control={form.control} name={"user_product_status"} label="Төлөв" className={"col-span-2"}>
+                  <FormItems
+                    control={form.control}
+                    name={"user_product_status"}
+                    label="Төлөв"
+                    className={"col-span-2"}
+                  >
                     {(field) => {
                       return (
                         <ComboBox
                           props={{ ...field }}
-                          items={getEnumValues(UserProductStatus).map((item) => {
-                            return {
-                              value: item.toString(),
-                              label: getValuesUserProductStatus[item].name,
-                            };
-                          })}
+                          items={getEnumValues(UserProductStatus).map(
+                            (item) => {
+                              return {
+                                value: item.toString(),
+                                label: getValuesUserProductStatus[item].name,
+                              };
+                            }
+                          )}
                         />
                       );
                     }}

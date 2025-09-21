@@ -129,10 +129,18 @@ export const ProductWarehousePage = ({
   const refresh = async (pg: PG = DEFAULT_PG) => {
     setAction(ACTION.RUNNING);
     const { page, limit, sort } = pg;
+    const warehouse_id = filter?.warehouse;
+    const product_id = filter?.product;
+    const start_date = filter?.start ? dateOnly(filter?.start) : undefined;
+    const end_date = filter?.end ? dateOnly(filter?.end) : undefined;
     await fetcher<IProductWarehouse>(Api.product_warehouse, {
       page: page ?? DEFAULT_PG.page,
       limit: limit ?? DEFAULT_PG.limit,
       sort: sort ?? DEFAULT_PG.sort,
+      warehouse_id,
+      product_id,
+      start_date,
+      end_date,
       ...pg,
     }).then((d) => {
       productWarehouseFormatter(d);
@@ -144,7 +152,6 @@ export const ProductWarehousePage = ({
     setAction(ACTION.RUNNING);
     const body = e as ProductWarehouseType;
     const { edit, ...payload } = body;
-    const products = payload.products;
 
     const res = edit
       ? await updateOne<IProductsWarehouse>(
@@ -177,7 +184,7 @@ export const ProductWarehousePage = ({
           const value = VALUES[er];
           return i == 0 ? firstLetterUpper(value) : value;
         })
-        .join(", ") + "оруулна уу!";
+        .join(", ") + " оруулна уу!";
     showToast("info", error);
   };
 

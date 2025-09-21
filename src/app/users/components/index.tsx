@@ -102,13 +102,14 @@ export const UserPage = ({ data }: { data: ListType<User> }) => {
   const refresh = async (pg: PG = DEFAULT_PG, searchValue?: string) => {
     setAction(ACTION.RUNNING);
     const { page, limit, sort, filter } = pg;
-    console.log(pg);
+    const user_status = filter?.status;
     await fetcher<User>(Api.user, {
       page: page ?? DEFAULT_PG.page,
       limit: limit ?? DEFAULT_PG.limit,
       sort: sort ?? DEFAULT_PG.sort,
       role: ROLE.CLIENT,
       mobile: filter,
+      user_status,
       ...pg,
     }).then((d) => {
       UserFormatter(d);

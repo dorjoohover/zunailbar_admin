@@ -25,33 +25,47 @@ import DynamicHeader from "@/components/dynamicHeader";
 import { firstLetterUpper, objectCompact } from "@/lib/functions";
 import { showToast } from "@/shared/components/showToast";
 
-const formSchema = z.object({
-  branch_id: z.string().min(1),
-  name: z.string().min(1),
-  max_price: z
-    .preprocess(
+const formSchema = z
+  .object({
+    branch_id: z.string().min(1),
+    name: z.string().min(1),
+    max_price: z
+      .preprocess(
+        (val) => (typeof val === "string" ? parseFloat(val) : val),
+        z.number()
+      )
+      .nullable()
+      .optional() as unknown as number,
+    pre_amount: z
+      .preprocess(
+        (val) => (typeof val === "string" ? parseFloat(val) : val),
+        z.number()
+      )
+      .nullable()
+      .optional() as unknown as number,
+    min_price: z.preprocess(
       (val) => (typeof val === "string" ? parseFloat(val) : val),
       z.number()
-    )
-    .nullable()
-    .optional() as unknown as number,
-  pre_amount: z
-    .preprocess(
+    ) as unknown as number,
+    duration: z.preprocess(
       (val) => (typeof val === "string" ? parseFloat(val) : val),
       z.number()
-    )
-    .nullable()
-    .optional() as unknown as number,
-  min_price: z.preprocess(
-    (val) => (typeof val === "string" ? parseFloat(val) : val),
-    z.number()
-  ) as unknown as number,
-  duration: z.preprocess(
-    (val) => (typeof val === "string" ? parseFloat(val) : val),
-    z.number()
-  ) as unknown as number,
-  edit: z.string().nullable().optional(),
-});
+    ) as unknown as number,
+    edit: z.string().nullable().optional(),
+  })
+  .refine((data) => (data?.max_price ?? 0) >= (data?.min_price ?? 0), {
+    message: "Их үнэ бага үнээс хямд байна байж болохгүй",
+    path: ["max_price"],
+  })
+  .refine(
+    (data) =>
+      (data?.pre_amount ?? 0) <= (data?.max_price ?? data?.min_price ?? 0),
+    {
+      message: "Урьдчилгаа нийт дүнгээс хэтэрч болохгүй",
+      path: ["pre_amount"],
+    }
+  );
+
 const defaultValues: ServiceType = {
   branch_id: "",
   name: "",
@@ -118,10 +132,12 @@ export const ServicePage = ({
   const refresh = async (pg: PG = DEFAULT_PG) => {
     setAction(ACTION.RUNNING);
     const { page, limit, sort } = pg;
+    const branch_id = filter?.branch;
     await fetcher<Service>(Api.service, {
       page: page ?? DEFAULT_PG.page,
       limit: limit ?? DEFAULT_PG.limit,
       sort: sort ?? DEFAULT_PG.sort,
+      branch_id,
       ...pg,
     }).then((d) => {
       serviceFormatter(d);
@@ -150,13 +166,17 @@ export const ServicePage = ({
     showToast("success");
   };
   const onInvalid = async <T,>(e: T) => {
+    console.log(e);
     const error =
-      Object.keys(e as any)
-        .map((er, i) => {
+      Object.entries(e as any)
+        .map(([er, v], i) => {
+          if ((v as any)?.message) {
+            return (v as any)?.message;
+          }
           const value = VALUES[er];
           return i == 0 ? firstLetterUpper(value) : value;
         })
-        .join(", ") + "оруулна уу!";
+        .join(", ") + " оруулна уу!";
     showToast("info", error);
   };
   const [filter, setFilter] = useState<FilterType>();

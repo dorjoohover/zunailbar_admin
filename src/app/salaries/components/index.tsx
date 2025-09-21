@@ -147,7 +147,7 @@ export const SalaryPage = ({
           const value = VALUES[er];
           return i == 0 ? firstLetterUpper(value) : value;
         })
-        .join(", ") + "оруулна уу!";
+        .join(", ") + " оруулна уу!";
     showToast("info", error);
   };
   const downloadExcel = async (pg: PG = DEFAULT_PG) => {

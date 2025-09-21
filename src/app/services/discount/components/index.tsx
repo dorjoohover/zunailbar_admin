@@ -143,11 +143,10 @@ export const DiscountPage = ({
   const onSubmit = async <T,>(e: T) => {
     setAction(ACTION.RUNNING);
     const body = e as DiscountType;
-    const { edit } = body;
+    const { edit, ...payload } = body;
     const res = edit
-      ? await updateOne<Discount>(Api.discount, edit ?? "", e as Discount)
-      : await create<Discount>(Api.discount, e as Discount);
-    console.log(res);
+      ? await updateOne<Discount>(Api.discount, edit ?? "", payload as Discount)
+      : await create<Discount>(Api.discount, payload as Discount);
     if (res.success) {
       refresh();
       setOpen(false);
@@ -162,7 +161,7 @@ export const DiscountPage = ({
           const value = VALUES[er];
           return i == 0 ? firstLetterUpper(value) : value;
         })
-        .join(", ") + "оруулна уу!";
+        .join(", ") + " оруулна уу!";
     showToast("info", error);
   };
 

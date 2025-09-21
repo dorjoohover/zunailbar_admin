@@ -134,7 +134,10 @@ export function DataTable<TData, TValue>({
     pageCount: count,
     manualPagination: true,
     onPaginationChange,
-    onGlobalFilterChange: setGlobalFilter,
+    onGlobalFilterChange: (e) => {
+      console.log(e);
+      setGlobalFilter(e);
+    },
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
