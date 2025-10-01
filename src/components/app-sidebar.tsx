@@ -89,6 +89,11 @@ export const sidebar_items = [
             icon: SquareUserRound,
             url: "/employees/service",
           },
+          {
+            title: "Ажилтны цалин",
+            icon: SquareUserRound,
+            url: "/employees/salary",
+          },
           // {
           //   title: "Ажилтны чөлөө авах хүсэлт",
           //   icon: SquareUserRound,
@@ -202,6 +207,14 @@ export const sidebar_items = [
             title: "Цалингийн удирдлага",
             url: "/salaries",
             // icon: Milk,
+          },
+          {
+            title: "Урьдчилгаа",
+            url: "/salaries/pre",
+          },
+          {
+            title: "Танилын будалт",
+            url: "/salaries/friends",
           },
         ],
       },
@@ -354,7 +367,10 @@ export function AppSidebar() {
                       <Collapsible key={mi} className="group/collapsible">
                         <SidebarMenuItem className="text-white">
                           {hasChildren ? (
-                            <CollapsibleTrigger asChild className="group-data-[state=open]/collapsible:bg-white/20">
+                            <CollapsibleTrigger
+                              asChild
+                              className="group-data-[state=open]/collapsible:bg-white/20"
+                            >
                               <SidebarMenuButton
                                 asChild
                                 size="lg"

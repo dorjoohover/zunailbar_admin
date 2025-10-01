@@ -18,6 +18,7 @@ import { Branch, IOrder, Order, Service, User } from "@/models";
 import { showToast } from "@/shared/components/showToast";
 import { Api } from "@/utils/api";
 import AppDialog from "@/shared/components/appDialog";
+import { mobileFormatter } from "@/lib/functions";
 
 // Function to format date
 const formatDate = (date: Date) => {
@@ -245,6 +246,9 @@ export default function EventStyled({
             <div className="font-semibold text-xs truncate mb-1">
               {event?.details?.map((e) => e.service_name).join(",") ||
                 "Untitled Order"}
+            </div>
+            <div className="font-semibold text-xs truncate mb-1">
+              {mobileFormatter(event?.phone ?? "")}
             </div>
             {event?.minmized && (
               <div className="text-[10px] flex justify-between">

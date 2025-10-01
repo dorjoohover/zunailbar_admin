@@ -12,6 +12,7 @@ import {
   Option,
   VALUES,
   SearchType,
+  ZValidator,
 } from "@/lib/constants";
 import { Modal } from "@/shared/components/modal";
 import z from "zod";
@@ -49,7 +50,7 @@ import { showToast } from "@/shared/components/showToast";
 
 const formSchema = z
   .object({
-    product_id: z.string().min(1),
+    product_id: ZValidator.product,
 
     quantity: z.preprocess(
       (val) => (typeof val === "string" ? parseFloat(val) : val),
@@ -59,7 +60,7 @@ const formSchema = z
       (val) => (typeof val === "string" ? parseFloat(val) : val),
       z.number()
     ) as unknown as number,
-    currency: z.string().min(1),
+    currency: ZValidator.currency,
     total_amount: z.preprocess(
       (val) => (typeof val === "string" ? parseFloat(val) : val),
       z.number()
@@ -94,12 +95,12 @@ const defaultValues = {
   currency: "cny",
   currency_amount: 500,
   product_id: "",
-  cargo: "",
-  quantity: "",
+  cargo: 0,
+  quantity: 0,
   total_amount: 0,
-  paid_amount: "",
-  unit_price: "",
-  date: "",
+  paid_amount: 0,
+  unit_price: 0,
+  date: new Date(),
   product_log_status: ProductLogStatus.Bought,
 };
 type FilterType = {
@@ -225,14 +226,15 @@ export const ProductHistoryPage = ({
     setAction(ACTION.DEFAULT);
   };
   const onInvalid = async <T,>(e: T) => {
-    const error =
-      Object.keys(e as any)
-        .map((er, i) => {
-          console.log(er);
-          const value = VALUES[er];
-          return i == 0 ? firstLetterUpper(value) : value;
-        })
-        .join(", ") + " оруулна уу!";
+    const error = Object.entries(e as any)
+      .map(([er, v], i) => {
+        if ((v as any)?.message) {
+          return (v as any)?.message;
+        }
+        const value = VALUES[er];
+        return i == 0 ? firstLetterUpper(value) : value;
+      })
+      .join(", ");
     showToast("info", error);
   };
   const qty = form.watch("quantity") ?? 0;

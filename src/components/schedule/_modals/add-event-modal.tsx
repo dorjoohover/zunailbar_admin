@@ -8,10 +8,15 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { EventFormData, eventSchema } from "@/types/index";
 import { useScheduler } from "@/providers/schedular-provider";
 import { Branch, IOrder, Service, User } from "@/models";
-import { ROLE } from "@/lib/enum";
+import { OrderStatus, ROLE } from "@/lib/enum";
 import { FormItems } from "@/shared/components/form.field";
 import { ComboBox } from "@/shared/components/combobox";
-import { SearchType, VALUES } from "@/lib/constants";
+import {
+  getEnumValues,
+  OrderStatusValues,
+  SearchType,
+  VALUES,
+} from "@/lib/constants";
 import {
   firstLetterUpper,
   mnDateFormat,
@@ -33,6 +38,10 @@ const defaultValues = {
   order_date: mnDateFormat(new Date()),
   start_time: "",
   edit: undefined,
+  order_status: OrderStatus.Pending,
+  total_amount: 0,
+  pre_amount: 0,
+  paid_amount: 0,
 };
 export default function AddEventModal({
   // CustomAddEventModal,
@@ -133,7 +142,7 @@ export default function AddEventModal({
       customer_id: formData.customer_id,
       user_id: formData.user_id,
       user_desc: formData.user_desc ?? undefined,
-      // order_status: formData.order_status as OrderStatus | undefined,
+      order_status: formData.order_status as OrderStatus | undefined,
       total_amount: formData.total_amount as number | undefined,
       order_date: formData.order_date,
       paid_amount: +(formData.paid_amount ?? 0),
@@ -143,19 +152,20 @@ export default function AddEventModal({
       details: formData.details,
       edit: formData.edit ?? undefined,
     };
-
     send(newEvent);
 
     setClose();
   };
   const onInvalid = async <T,>(e: T) => {
-    const error =
-      Object.keys(e as any)
-        .map((er, i) => {
-          const value = VALUES[er];
-          return i == 0 ? firstLetterUpper(value) : value;
-        })
-        .join(", ") + " оруулна уу!";
+    const error = Object.entries(e as any)
+      .map(([er, v], i) => {
+        if ((v as any)?.message) {
+          return (v as any)?.message;
+        }
+        const value = VALUES[er];
+        return i == 0 ? firstLetterUpper(value) : value;
+      })
+      .join(", ");
     showToast("info", error);
   };
   return (
@@ -305,7 +315,7 @@ export default function AddEventModal({
           }}
         </FormItems>
         <div className="double-col">
-          {/* <FormItems control={form.control} name="order_status" label="Статус">
+          <FormItems control={form.control} name="order_status" label="Статус">
             {(field) => {
               return (
                 <ComboBox
@@ -319,7 +329,7 @@ export default function AddEventModal({
                 />
               );
             }}
-          </FormItems> */}
+          </FormItems>
           <FormItems
             control={form.control}
             name="total_amount"

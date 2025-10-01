@@ -1,7 +1,7 @@
 "use client";
 import { DataTable } from "@/components/data-table";
 import { Branch, IService, Service } from "@/models";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ListType,
   ACTION,
@@ -24,39 +24,58 @@ import { getColumns } from "./columns";
 import DynamicHeader from "@/components/dynamicHeader";
 import { firstLetterUpper, objectCompact } from "@/lib/functions";
 import { showToast } from "@/shared/components/showToast";
+import { Switch } from "@/components/ui/switch";
 
 const formSchema = z
   .object({
-    branch_id: z.string().min(1),
-    name: z.string().min(1),
+    branch_id: z.string(),
+    name: z.string().refine((data) => data.length > 0, {
+      message: "Нэр оруулна уу",
+    }),
     max_price: z
-      .preprocess(
-        (val) => (typeof val === "string" ? parseFloat(val) : val),
-        z.number()
-      )
+      .preprocess((val) => {
+        if (val === null || val === undefined || val === "") return null;
+        return typeof val === "string" ? parseFloat(val) : val;
+      }, z.number().nullable())
       .nullable()
-      .optional() as unknown as number,
+      .optional() as unknown as number | null,
     pre_amount: z
+      .preprocess((val) => {
+        if (val === null || val === undefined || val === "") return 0;
+        return typeof val === "string" ? parseFloat(val) : val;
+      }, z.number())
+      .nullable()
+      .optional() as unknown as number,
+    min_price: z
+      .preprocess((val) => {
+        if (val === null || val === undefined || val === "") return 0;
+        return typeof val === "string" ? parseFloat(val) : val;
+      }, z.number())
+      .optional() as unknown as number,
+    duration: z
       .preprocess(
         (val) => (typeof val === "string" ? parseFloat(val) : val),
         z.number()
       )
-      .nullable()
-      .optional() as unknown as number,
-    min_price: z.preprocess(
-      (val) => (typeof val === "string" ? parseFloat(val) : val),
-      z.number()
-    ) as unknown as number,
-    duration: z.preprocess(
-      (val) => (typeof val === "string" ? parseFloat(val) : val),
-      z.number()
-    ) as unknown as number,
+      .refine((val) => +(val ?? "0") > 0, {
+        message: "Хугацаа оруулна уу",
+      }) as unknown as number,
     edit: z.string().nullable().optional(),
+    isAll: z.boolean(),
   })
-  .refine((data) => (data?.max_price ?? 0) >= (data?.min_price ?? 0), {
-    message: "Их үнэ бага үнээс хямд байна байж болохгүй",
-    path: ["max_price"],
+  .refine((data) => data.isAll, {
+    message: "Салбар сонгоно уу",
   })
+  .refine(
+    (data) =>
+      data.max_price === null || data.max_price === undefined
+        ? true
+        : data.max_price >= (data.min_price ?? 0),
+    {
+      message: "Их үнэ бага үнээс хямд байна байж болохгүй",
+      path: ["max_price"],
+    }
+  )
   .refine(
     (data) =>
       (data?.pre_amount ?? 0) <= (data?.max_price ?? data?.min_price ?? 0),
@@ -74,6 +93,7 @@ const defaultValues: ServiceType = {
   pre_amount: 0,
   duration: 0,
   edit: undefined,
+  isAll: true,
 };
 type FilterType = {
   branch?: string;
@@ -131,6 +151,7 @@ export const ServicePage = ({
 
   const refresh = async (pg: PG = DEFAULT_PG) => {
     setAction(ACTION.RUNNING);
+    console.log(pg);
     const { page, limit, sort } = pg;
     const branch_id = filter?.branch;
     await fetcher<Service>(Api.service, {
@@ -167,28 +188,31 @@ export const ServicePage = ({
   };
   const onInvalid = async <T,>(e: T) => {
     console.log(e);
-    const error =
-      Object.entries(e as any)
-        .map(([er, v], i) => {
-          if ((v as any)?.message) {
-            return (v as any)?.message;
-          }
-          const value = VALUES[er];
-          return i == 0 ? firstLetterUpper(value) : value;
-        })
-        .join(", ") + " оруулна уу!";
+    const error = Object.entries(e as any)
+      .map(([er, v], i) => {
+        if ((v as any)?.message) {
+          return (v as any)?.message;
+        }
+        const value = VALUES[er];
+        return i == 0 ? firstLetterUpper(value) : value;
+      })
+      .join(", ");
     showToast("info", error);
   };
   const [filter, setFilter] = useState<FilterType>();
   const changeFilter = (key: string, value: number | string) => {
     setFilter((prev) => ({ ...prev, [key]: value }));
   };
-
+  const firstRender = useRef(true);
   useEffect(() => {
+    if (firstRender.current) {
+      firstRender.current = false;
+      return;
+    }
+
     refresh(
       objectCompact({
         branch_id: filter?.branch,
-
         page: 0,
       })
     );
@@ -204,6 +228,8 @@ export const ServicePage = ({
       ],
       [branches.items]
     );
+
+  const isAll = form.watch("isAll");
   return (
     <div className="">
       <DynamicHeader />
@@ -373,6 +399,19 @@ export const ServicePage = ({
                       </FormItems>
                     );
                   })}
+                </div>
+                <div className="flex items-center gap-2 mt-2 max-w-lg w-full">
+                  <Switch
+                    checked={isAll}
+                    onCheckedChange={(val) => form.setValue("isAll", val)}
+                    id="compare-switch"
+                  />
+                  <label
+                    htmlFor="compare-switch"
+                    className="text-sm text-muted-foreground"
+                  >
+                    Бүх салбарын үйлчилгээ эсэх
+                  </label>
                 </div>
               </FormProvider>
             </Modal>

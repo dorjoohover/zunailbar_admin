@@ -21,6 +21,12 @@ import DynamicHeader from "@/components/dynamicHeader";
 import { mnDate, usernameFormatter } from "@/lib/functions";
 import { showToast } from "@/shared/components/showToast";
 import { OrderStatus, ROLE } from "@/lib/enum";
+import { getColumns } from "./columns";
+import { DataTable } from "@/components/data-table";
+import { Switch } from "@/components/ui/switch";
+import { DatePicker } from "@/shared/components/date.picker";
+import { Button } from "@/components/ui/button";
+import { CalendarIcon, FileText } from "lucide-react";
 
 const formSchema = z.object({
   branch_id: z.string().min(1),
@@ -63,6 +69,8 @@ export const OrderPage = ({
     [users]
   );
 
+  const [status, setStatus] = useState<OrderStatus | null>(null);
+
   const orderFormatter = (data: ListType<Order>) => {
     const items: Order[] = data.items.map((item) => {
       const user = userMap.get(item.user_id);
@@ -75,6 +83,7 @@ export const OrderPage = ({
       return {
         ...item,
         user_name: user ? `${nickname} ${mobile}` : "",
+        phone: mobile,
         branch_id: branch_id,
         color: +color,
         // branch_name: user?.name ?? "",
@@ -104,6 +113,8 @@ export const OrderPage = ({
       limit: limit ?? DEFAULT_PG.limit,
       sort: sort ?? DEFAULT_PG.sort,
       date: pg.filter?.date ?? date,
+      order_status: pg.filter?.status,
+      friend: pg.filter?.status != OrderStatus.Friend ? undefined : 0,
       //   name: pg.filter,
     }).then((d) => {
       orderFormatter(d);
@@ -114,20 +125,17 @@ export const OrderPage = ({
     setAction(ACTION.RUNNING);
     const body = e as OrderType;
     const { edit, ...payload } = body;
-    console.log(payload, e);
     const res = edit
       ? await updateOne<Order>(
           Api.order,
           edit ?? "",
           {
             ...payload,
-            order_status: OrderStatus.Finished,
           } as unknown as Order,
           "update"
         )
       : await create<Order>(Api.order, {
           ...e,
-          order_status: OrderStatus.Finished,
         } as unknown as Order);
     if (res.success) {
       refresh();
@@ -173,10 +181,24 @@ export const OrderPage = ({
     console.log(res);
     setAction(ACTION.DEFAULT);
   };
+  const deleteOrders = async (index: number) => {
+    // const id = costs?.items?.[index]?.id ?? "";
+    // const res = await deleteOne(Api.cost, id);
+    // refresh();
+    // return res.success;
+    return false;
+  };
+  const edit = async (e: IOrder) => {
+    // setOpen(true);
+    // console.log(e);
+    // form.reset({ ...e, date: e.date?.toString().slice(0, 10), edit: e.id });
+  };
+  const columns = getColumns(edit, deleteOrders);
 
   return (
     <div className="relative">
       <DynamicHeader count={orders?.count} />
+
       <div className="admin-container relative">
         <div className="bg-white rounded-xl shadow-light border-light p-5">
           <SchedulerProvider weekStartsOn="monday">
@@ -194,6 +216,10 @@ export const OrderPage = ({
                 service: services,
                 user: users,
               }}
+              status={status}
+              setStatus={setStatus}
+              action={action}
+              columns={columns}
               refresh={refresh}
             />
           </SchedulerProvider>

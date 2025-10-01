@@ -16,6 +16,9 @@ import {
   SearchType,
   Option,
   VALUES,
+  ErrorMessage,
+  ErrorToast,
+  ZValidator,
 } from "@/lib/constants";
 import { Modal } from "@/shared/components/modal";
 import z from "zod";
@@ -53,7 +56,7 @@ const productItemSchema = z.object({
 });
 
 const formSchema = z.object({
-  warehouse_id: z.string().min(1),
+  warehouse_id: ZValidator.warehouse,
   products: z
     .array(productItemSchema)
     .min(1, "Хамгийн багадаа 1 бүтээгдэхүүн нэмнэ"),
@@ -107,9 +110,20 @@ export const ProductWarehousePage = ({
   };
 
   const [products, setProducts] = useState<SearchType<number>[]>([]);
+  const warehouse_id = form.watch("warehouse_id");
   useEffect(() => {
     productWarehouseFormatter(data);
   }, [data]);
+
+  // useEffect(() => {
+  //   const ps = products.map((product) => {
+  //     const [brand, category, name, quantity] =
+  //                           product.value.split("__");
+  //     quantity
+  //   })
+  //   setProducts()
+
+  // }, [warehouse_id]);
 
   const deleteLog = async (index: number) => {
     const id = productWarehouse!.items[index].id;
@@ -178,24 +192,29 @@ export const ProductWarehousePage = ({
   };
 
   const onInvalid = async <T,>(e: T) => {
-    const error =
-      Object.keys(e as any)
-        .map((er, i) => {
-          const value = VALUES[er];
-          return i == 0 ? firstLetterUpper(value) : value;
-        })
-        .join(", ") + " оруулна уу!";
+    const error = Object.entries(e as any)
+      .map(([er, v], i) => {
+        if ((v as any)?.message) {
+          return (v as any)?.message;
+        }
+        const value = VALUES[er];
+        return i == 0 ? firstLetterUpper(value) : value;
+      })
+      .join(", ");
     showToast("info", error);
   };
 
   const searchProduct = async (name = "") => {
-    const result = await search<number>(Api.product, { id: name });
+    const result = await search<number>(Api.product_warehouse, {
+      id: name,
+      warehouse_id: warehouse_id,
+    });
     setProducts(result.data);
   };
 
   useEffect(() => {
     searchProduct();
-  }, []);
+  }, [warehouse_id]);
 
   const { fields, append, replace } = useFieldArray({
     control: form.control,
@@ -230,13 +249,12 @@ export const ProductWarehousePage = ({
       if (newQty <= 0) {
         updated.splice(index, 1);
       } else {
-        console.log(qty, newQty);
         qty >= newQty
           ? (updated[index] = {
               ...updated[index],
               quantity: newQty,
             })
-          : showToast("info", "Тоо ширхэг хангалтгүй байна!");
+          : ErrorToast("STOCK_INSUFFICIENT");
       }
 
       form.setValue("products", updated);
@@ -248,7 +266,7 @@ export const ProductWarehousePage = ({
         });
       } else {
         console.log(change, qty);
-        showToast("info", "Тоо ширхэг хангалтгүй байна!");
+        ErrorToast("STOCK_INSUFFICIENT");
       }
     }
   };
@@ -281,17 +299,6 @@ export const ProductWarehousePage = ({
     return m;
   }, [productWarehouse?.items]);
   type ProductWithQty = SearchType<number> & { quantity?: number };
-  const productsWithQty: ProductWithQty[] = useMemo(() => {
-    const edit = form.getValues("edit");
-    if (edit != undefined) {
-      const pw = productWarehouse?.items.filter((p) => p.id == edit)?.[0];
-      return products.filter((p) => p.id == pw?.product_id);
-    }
-    return products.map((p) => {
-      const q = qtyByProduct.get(toKey(p.id)) ?? 0;
-      return { ...p, quantity: q };
-    });
-  }, [products, qtyByProduct, form.getValues("edit")]);
 
   const groups: { key: keyof FilterType; label: string; items: Option[] }[] =
     useMemo(
@@ -545,13 +552,17 @@ export const ProductWarehousePage = ({
                                       type="number"
                                       className="w-16 text-center bg-gray-200 no-spinner hide-number-arrows border-none focus-visible:border-ring text-xs"
                                       max={quantity}
-                                      value={
-                                        (form
-                                          .watch("products")
-                                          ?.find(
-                                            (p) => p.product_id === product.id
-                                          )?.quantity as number) ?? 0
-                                      }
+                                      value={String(
+                                        Number(
+                                          form
+                                            .watch("products")
+                                            ?.find(
+                                              (p) => p.product_id === product.id
+                                            )?.quantity ??
+                                            product.quantity ??
+                                            0
+                                        )
+                                      )}
                                       onClick={() =>
                                         handleProductClickOnce(
                                           product.id,
@@ -569,7 +580,11 @@ export const ProductWarehousePage = ({
                                           (p) => p.product_id === product.id
                                         );
                                         const updated = [...existing];
-                                        if (val > +quantity) return;
+                                        if (val > +quantity) {
+                                          ErrorToast("STOCK_INSUFFICIENT");
+
+                                          return;
+                                        }
                                         if (val <= 0 && index !== -1) {
                                           updated.splice(index, 1);
                                         } else if (index !== -1) {

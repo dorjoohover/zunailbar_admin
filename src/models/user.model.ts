@@ -15,10 +15,12 @@ export interface IUser {
   description?: string;
   password?: string;
   experience?: number;
+  percent?: number;
   created_at?: Date;
 }
 export interface User {
   id: string;
+  percent?: number;
   color?: number;
   firstname?: string;
   lastname?: string;

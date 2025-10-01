@@ -14,6 +14,7 @@ import {
   Option,
   SearchType,
   VALUES,
+  ZValidator,
 } from "@/lib/constants";
 import { Modal } from "@/shared/components/modal";
 import z from "zod";
@@ -30,6 +31,7 @@ import {
   dateOnly,
   firstLetterUpper,
   mnDate,
+  mnDateFormat,
   objectCompact,
   searchFormatter,
   searchProductFormatter,
@@ -42,8 +44,8 @@ import { showToast } from "@/shared/components/showToast";
 const formSchema = z
   .object({
     category_id: z.string().nullable().optional(),
-    branch_id: z.string().min(1),
-    product_id: z.string().min(1),
+    branch_id: ZValidator.branch,
+    product_id: ZValidator.product,
     date: z.preprocess(
       (val) => (typeof val === "string" ? new Date(val) : val),
       z.date()
@@ -67,7 +69,7 @@ const defaultValues = {
   category_id: "",
   branch_id: "",
   product_id: "",
-  date: mnDate(),
+  date: mnDateFormat(mnDate()),
   price: 0,
   paid_amount: 0,
   edit: undefined,
@@ -179,13 +181,15 @@ export const CostPage = ({
     setAction(ACTION.DEFAULT);
   };
   const onInvalid = async <T,>(e: T) => {
-    const error =
-      Object.keys(e as any)
-        .map((er, i) => {
-          const value = VALUES[er];
-          return i == 0 ? firstLetterUpper(value) : value;
-        })
-        .join(", ") + " оруулна уу!";
+    const error = Object.entries(e as any)
+      .map(([er, v], i) => {
+        if ((v as any)?.message) {
+          return (v as any)?.message;
+        }
+        const value = VALUES[er];
+        return i == 0 ? firstLetterUpper(value) : value;
+      })
+      .join(", ");
     showToast("info", error);
   };
   const [filter, setFilter] = useState<FilterType>();

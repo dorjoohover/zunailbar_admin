@@ -10,10 +10,13 @@ import {
   ROLE,
   SalaryLogStatus,
   ScheduleStatus,
+  STATUS,
   UserProductStatus,
   UserStatus,
 } from "./enum";
 import z from "zod";
+import { showToast } from "@/shared/components/showToast";
+import { firstLetterUpper } from "./functions";
 
 export const roleIconMap = {
   [ROLE.SYSTEM]: { icon: Crown, color: "yellow" },
@@ -138,6 +141,21 @@ export const getValuesUserProductStatus = {
   },
 };
 
+export const getValuesStatus = {
+  [STATUS.Active]: { name: "Идэвхтэй", color: "green-badge badge" },
+  [STATUS.Hidden]: { name: "Цуцлах", color: "red-badge badge" },
+  [STATUS.Pending]: { name: "Хүлээгдэж байна", color: "yellow-badge badge" },
+};
+
+export const ErrorMessage = {
+  STOCK_INSUFFICIENT: "Үлдэгдэл хүрэлцэхгүй байна.",
+} as const;
+
+export const ErrorToast = (err: keyof typeof ErrorMessage) => {
+  const message = ErrorMessage[err];
+  showToast("info", message);
+};
+
 export const getValuesCostStatus = {
   [CostStatus.Paid]: { name: "Төлсөн", color: "green-badge badge" },
   [CostStatus.Remainder]: { name: "Үлдэгдэлтэй", color: "yellow-badge badge" },
@@ -188,17 +206,18 @@ export const SalaryLogValues = {
 };
 
 export const OrderStatusValues = {
-  [OrderStatus.Active]: "Active",
-  [OrderStatus.Started]: "Started",
-  [OrderStatus.Cancelled]: "Cancelled",
-  [OrderStatus.Finished]: "Finished",
-  [OrderStatus.Pending]: "Pending",
-  [OrderStatus.ABSENT]: "ABSENT",
+  [OrderStatus.Active]: "Бэлэн",
+  [OrderStatus.Started]: "Эхэлсэн",
+  [OrderStatus.Cancelled]: "Цуцалсан",
+  [OrderStatus.Finished]: "Дууссан",
+  [OrderStatus.Pending]: "Хүлээгдэж байна",
+  [OrderStatus.ABSENT]: "Ирээгүй",
+  [OrderStatus.Friend]: "Танил",
 };
 
 export const VALUES = {
-  firstname: "овог",
-  lastname: "нэр",
+  firstname: "нэр",
+  lastname: "овог",
   branch_id: "салбар",
   mobile: "утасны дугаар",
   birthday: "төрсөн өдөр",
@@ -208,6 +227,7 @@ export const VALUES = {
   quantity: "тоо ширхэг",
   price: "нэгжийн үнэ",
   currency: "валют",
+  status: "төлөв",
   currency_amount: "валютын ханш",
   total_amount: "нийт үнэ",
   paid_amount: "төлсөн үнэ",
@@ -215,4 +235,20 @@ export const VALUES = {
   cargo: "карго",
   date: "огноо",
   product_id: "бүтээгдэхүүн",
+  role: "хэрэглэгчийн түвшин",
+  percent: "Цалингийн хувь",
 } as const as any;
+
+export const ZValidator = {
+  branch: z.string().min(1, "Салбар сонгоно уу"),
+  category: z.string().min(1, "Ангилал сонгоно уу"),
+  service: z.string().min(1, "Үйлчилгээ сонгоно уу"),
+  category_name: z.string().min(1, "Ангилалын нэр оруулна уу"),
+  brand_name: z.string().min(1, "Брендийн нэр оруулна уу"),
+  user: z.string().min(1, "Артист сонгоно уу"),
+  customer: z.string().min(1, "Хэрэглэгч сонгоно уу"),
+  product: z.string().min(1, "Бүтээгдэхүүн сонгоно уу"),
+  currency: z.string().min(1, "Ханш оруулна уу"),
+  name: z.string().min(1, "Нэр оруулна уу"),
+  warehouse: z.string().min(1, "Агуулах сонгоно уу"),
+};

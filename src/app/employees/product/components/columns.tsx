@@ -47,7 +47,7 @@ export const getColumns = (
         variant="table_header"
         onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
       >
-        Ник нэр
+        Хоч
         <ArrowUpDown className="w-4 h-4 ml-2" />
       </Button>
     ),

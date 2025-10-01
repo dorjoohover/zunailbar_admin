@@ -1,6 +1,6 @@
 "use client";
 import { DataTable } from "@/components/data-table";
-import { IUserService, User, UserService } from "@/models";
+import { IUserSalary, User, UserSalary } from "@/models";
 import { useEffect, useMemo, useState } from "react";
 import {
   ListType,
@@ -10,13 +10,15 @@ import {
   Option,
   SearchType,
   VALUES,
+  getEnumValues,
+  getValuesStatus,
 } from "@/lib/constants";
 import { Modal } from "@/shared/components/modal";
 import z from "zod";
 import { FormProvider, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Api } from "@/utils/api";
-import { create, deleteOne, search } from "@/app/(api)";
+import { create, deleteOne, search, updateOne } from "@/app/(api)";
 import { FormItems } from "@/shared/components/form.field";
 import { ComboBox } from "@/shared/components/combobox";
 import { fetcher } from "@/hooks/fetcher";
@@ -25,128 +27,136 @@ import {
   firstLetterUpper,
   objectCompact,
   searchUsernameFormatter,
-  usernameFormatter,
 } from "@/lib/functions";
-import { Service } from "@/models/service.model";
 import DynamicHeader from "@/components/dynamicHeader";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { showToast } from "@/shared/components/showToast";
-import { CategoryType, ROLE } from "@/lib/enum";
-import { SearchParams } from "next/dist/server/request/search-params";
+import { CategoryType, ROLE, STATUS } from "@/lib/enum";
+import { TextField } from "@/shared/components/text.field";
 
 const formSchema = z.object({
   user_id: z.string().min(1, "Артист сонгоно уу"),
-  services: z.array(z.string()).refine((arr) => arr.length > 0, {
-    message: "Үйлчилгээний жагсаалтыг сонгоно уу",
-  }),
 
+  percent: z.preprocess(
+    (val) => (typeof val === "string" ? parseFloat(val) : val),
+    z.number()
+  ) as unknown as number,
+  duration: z.preprocess(
+    (val) => (typeof val === "string" ? parseFloat(val) : val),
+    z.number()
+  ) as unknown as number,
+  date: z.preprocess(
+    (val) => (typeof val === "string" ? new Date(val) : val),
+    z.date()
+  ) as unknown as Date,
+  status: z
+    .preprocess(
+      (val) => (typeof val === "string" ? parseInt(val, 10) : val),
+      z.nativeEnum(STATUS).nullable()
+    )
+    .optional() as unknown as number,
   edit: z.string().nullable().optional(),
 });
-const defaultValues: UserServiceType = {
+const defaultValues: UserSalaryType = {
   user_id: "",
-  services: [],
+  date: new Date(),
+  duration: 5,
+  percent: 30,
+  status: STATUS.Active,
   edit: undefined,
 };
-type UserServiceType = z.infer<typeof formSchema>;
+type UserSalaryType = z.infer<typeof formSchema>;
 type FilterType = {
   service?: string;
   user?: string;
 };
-export const EmployeeUserServicePage = ({
+export const EmployeeUserSalaryPage = ({
   data,
-  services,
   users,
 }: {
-  data: ListType<UserService>;
-  services: ListType<Service>;
+  data: ListType<UserSalary>;
   users: SearchType<User>[];
 }) => {
   const [action, setAction] = useState(ACTION.DEFAULT);
   const [open, setOpen] = useState<undefined | boolean>(false);
-  const form = useForm<UserServiceType>({
+  const form = useForm<UserSalaryType>({
     resolver: zodResolver(formSchema),
     defaultValues,
   });
-  const [userServices, setUserServices] =
-    useState<ListType<UserService> | null>(null);
-  const serviceMap = useMemo(
-    () => new Map(services.items.map((b) => [b.id, b])),
-    [services.items]
+  const [userSalaries, setUserSalarys] = useState<ListType<UserSalary> | null>(
+    null
   );
+
   const userMap = useMemo(
     () => new Map(users.map((b) => [b.id, b.value])),
     [users]
   );
 
-  const UserServiceFormatter = (data: ListType<UserService>) => {
-    const items: UserService[] = data.items.map((item) => {
+  const UserSalaryFormatter = (data: ListType<UserSalary>) => {
+    const items: UserSalary[] = data.items.map((item) => {
       const user = userMap.get(item.user_id);
-      const service = serviceMap.get(item.service_id);
       return {
         ...item,
-        user_name: item.user_name
-          ? item.user_name
-          : user
-          ? searchUsernameFormatter(user)
-          : "",
-        service_name: item.services
-          ?.map((s) => {
-            return `${s.service_name}`;
-          })
-          .join(", "),
+        user_name: user ? searchUsernameFormatter(user) : "",
       };
     });
 
-    setUserServices({ items, count: data.count });
+    setUserSalarys({ items, count: data.count });
   };
   useEffect(() => {
-    UserServiceFormatter(data);
+    UserSalaryFormatter(data);
   }, [data]);
   const clear = () => {
     form.reset(defaultValues);
     console.log(form.getValues());
   };
-  const deleteUserService = async (index: number) => {
-    const id = userServices!.items[index].id;
-    const res = await deleteOne(Api.user_service, id);
+  const deleteUserSalary = async (index: number) => {
+    const id = userSalaries!.items[index].id;
+    const res = await deleteOne(Api.user_salaries, id);
     refresh();
     return res.success;
   };
-  const edit = async (e: IUserService) => {
-    form.reset({ edit: e.user_id, user_id: e.user_id });
+  const edit = async (e: IUserSalary) => {
+    form.reset({
+      edit: e.id,
+      user_id: e.user_id,
+      date: e.date,
+      duration: e.duration,
+      percent: e.percent,
+      status: e.status,
+    });
     setOpen(true);
   };
-  const columns = getColumns(edit, deleteUserService);
+  const columns = getColumns(edit, deleteUserSalary);
 
   const refresh = async (pg: PG = DEFAULT_PG) => {
     setAction(ACTION.RUNNING);
     const { page, limit, sort } = pg;
-    const service_id = filter?.service;
     const user_id = filter?.user;
-    await fetcher<UserService>(
-      Api.user_service,
-      {
-        page: page ?? DEFAULT_PG.page,
-        limit: limit ?? DEFAULT_PG.limit,
-        sort: sort ?? DEFAULT_PG.sort,
-        service_id,
-        user_id,
-        ...pg,
-        //   name: pg.filter,
-      },
-      "employee"
-    ).then((d) => {
-      UserServiceFormatter(d);
-      console.log(d);
+    await fetcher<UserSalary>(Api.user_salaries, {
+      page: page ?? DEFAULT_PG.page,
+      limit: limit ?? DEFAULT_PG.limit,
+      sort: sort ?? DEFAULT_PG.sort,
+      user_id,
+      ...pg,
+      //   name: pg.filter,
+    }).then((d) => {
+      UserSalaryFormatter(d);
     });
     setAction(ACTION.DEFAULT);
   };
   const onSubmit = async <T,>(e: T) => {
     setAction(ACTION.RUNNING);
-    const body = e as UserServiceType;
+    const body = e as UserSalaryType;
     const { edit, ...payload } = body;
-    const res = await create<IUserService>(Api.user_service, e as IUserService);
+    const res = edit
+      ? await updateOne<IUserSalary>(
+          Api.user_salaries,
+          edit as string,
+          payload as IUserSalary
+        )
+      : await create<IUserSalary>(Api.user_salaries, e as IUserSalary);
     if (res.success) {
       refresh();
       setOpen(false);
@@ -197,46 +207,12 @@ export const EmployeeUserServicePage = ({
             label: searchUsernameFormatter(b.value),
           })),
         },
-        {
-          key: "service",
-          label: "Үйлчилгээ",
-          items: services.items.map((b) => ({ value: b.id, label: b.name })),
-        },
       ],
-      [services.items, users]
+      [users]
     );
 
-  useEffect(() => {
-    if (open) {
-      const editUser = form.watch("edit");
-      if (editUser) {
-        const services =
-          userServices?.items
-            .filter((se) => se.user_id == editUser)
-            ?.map((s) => {
-              return [...(s.services?.map((s) => s.service_id) ?? [])];
-            }) ?? [];
-        form.reset({
-          services: [...services[0]],
-          user_id: editUser,
-          edit: editUser,
-        });
-      } else {
-        const user_id = form.watch("user_id");
-        const services =
-          userServices?.items
-            .filter((se) => se.user_id == user_id)
-            ?.map((s) => s.service_id) ?? [];
-        form.reset({
-          user_id,
-          services,
-        });
-      }
-    }
-  }, [open, form.watch("user_id")]);
   const [items, setItems] = useState({
     [Api.user]: users,
-    [Api.service]: services,
   });
   const searchField = async (v: string, key: Api, edit?: boolean) => {
     let value = "";
@@ -269,7 +245,7 @@ export const EmployeeUserServicePage = ({
   };
   return (
     <div className="">
-      <DynamicHeader count={userServices?.count} />
+      <DynamicHeader count={userSalaries?.count} />
 
       <div className="admin-container">
         <DataTable
@@ -278,17 +254,6 @@ export const EmployeeUserServicePage = ({
               {groups.map((item, i) => {
                 const { key } = item;
                 return (
-                  // <FilterPopover
-                  //   key={i}
-                  //   content={item.items.map((it, index) => (
-                  //     <label key={index} className="checkbox-label">
-                  //       <Checkbox checked={filter?.[key] == it.value} onCheckedChange={() => changeFilter(key, it.value)} />
-                  //       <span>{it.label as string}</span>
-                  //     </label>
-                  //   ))}
-                  //   value={filter?.[key] ? item.items.filter((item) => item.value == filter[key])[0].label : undefined}
-                  //   label={item.label}
-                  // />
                   <label key={i}>
                     <span className="filter-label">{item.label as string}</span>
                     <ComboBox
@@ -316,14 +281,14 @@ export const EmployeeUserServicePage = ({
           search={false}
           clear={() => setFilter(undefined)}
           columns={columns}
-          count={userServices?.count}
-          data={userServices?.items ?? []}
+          count={userSalaries?.count}
+          data={userSalaries?.items ?? []}
           refresh={refresh}
           loading={action == ACTION.RUNNING}
           modalAdd={
             <Modal
               maw="md"
-              name={"Үйлчилгээ нэмэх"}
+              name={"Цалин нэмэх"}
               submit={() => form.handleSubmit(onSubmit, onInvalid)()}
               open={open == true}
               setOpen={(v) => {
@@ -333,10 +298,11 @@ export const EmployeeUserServicePage = ({
               loading={action == ACTION.RUNNING}
             >
               <FormProvider {...form}>
-                <div className="grid grid-cols-1 gap-3 space-y-4">
+                <div className="grid grid-cols-2 gap-3 space-y-4">
                   <FormItems
                     control={form.control}
                     name="user_id"
+                    className="col-span-2"
                     label="Ажилчин"
                   >
                     {(field) => {
@@ -354,52 +320,57 @@ export const EmployeeUserServicePage = ({
                       );
                     }}
                   </FormItems>
-                  {form.watch("user_id") && (
-                    <FormItems
-                      control={form.control}
-                      name="services"
-                      label="Үйлчилгээ"
-                    >
-                      {(field) => (
-                        <div className="p-2 mt-2 bg-white border rounded-md">
-                          {services.items.map((service: any) => {
-                            const selected = field.value ?? ([] as string[]);
-                            const isChecked = selected.includes(service.id);
 
-                            return (
-                              <div
-                                key={service.id}
-                                className="flex items-center gap-2 hover:bg-[#e9ebfa] p-2 border-b last:border-none"
-                              >
-                                <Checkbox
-                                  id={service.id}
-                                  checked={isChecked}
-                                  onCheckedChange={(val) => {
-                                    const checked = val === true;
-                                    const prev = field.value ?? [];
-                                    const next = checked
-                                      ? Array.from(
-                                          new Set([...prev, service.id])
-                                        )
-                                      : (prev as string[]).filter(
-                                          (id: string) => id !== service.id
-                                        );
-                                    field.onChange(next);
-                                  }}
-                                />
-                                <Label
-                                  htmlFor={service.id}
-                                  className="py-2 size-full"
-                                >
-                                  {service.name}
-                                </Label>
-                              </div>
-                            );
+                  <FormItems
+                    control={form.control}
+                    name={"duration"}
+                    className={"col-span-1"}
+                  >
+                    {(field) => {
+                      return (
+                        <TextField
+                          props={{ ...field }}
+                          type={"number"}
+                          label={"Хугацаа"}
+                        />
+                      );
+                    }}
+                  </FormItems>
+                  <FormItems
+                    control={form.control}
+                    name={"percent"}
+                    className={"col-span-1"}
+                  >
+                    {(field) => {
+                      return (
+                        <TextField
+                          props={{ ...field }}
+                          type={"number"}
+                          label={"Цалинийн хувь"}
+                        />
+                      );
+                    }}
+                  </FormItems>
+                  <FormItems
+                    control={form.control}
+                    name={"status"}
+                    label="Төлөв"
+                    className={"col-span-1"}
+                  >
+                    {(field) => {
+                      return (
+                        <ComboBox
+                          props={{ ...field }}
+                          items={[STATUS.Active, STATUS.Pending].map((item) => {
+                            return {
+                              value: item.toString(),
+                              label: getValuesStatus[item].name,
+                            };
                           })}
-                        </div>
-                      )}
-                    </FormItems>
-                  )}
+                        />
+                      );
+                    }}
+                  </FormItems>
                 </div>
               </FormProvider>
             </Modal>

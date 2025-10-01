@@ -29,7 +29,7 @@ export interface IBooking {
   approved_by?: string;
   merchant_id?: string;
   branch_id: string;
-  date: Date;
+  index: number;
   start_time?: Date;
   end_time?: Date;
   status?: number;
@@ -43,7 +43,7 @@ export interface Booking {
   approved_by: string;
   merchant_id: string;
   branch_id: string;
-  date: Date;
+  index: number;
   start_time: Date;
   end_time: Date;
   status: number;

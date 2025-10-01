@@ -12,6 +12,7 @@ import {
   getValueDiscount,
   SearchType,
   VALUES,
+  ZValidator,
 } from "@/lib/constants";
 import { Modal } from "@/shared/components/modal";
 import z from "zod";
@@ -30,9 +31,9 @@ import DynamicHeader from "@/components/dynamicHeader";
 import { showToast } from "@/shared/components/showToast";
 
 const formSchema = z.object({
-  branch_id: z.string().min(1),
-  name: z.string().min(1),
-  service_id: z.string().min(1),
+  branch_id: ZValidator.branch,
+  name: ZValidator.name,
+  service_id: ZValidator.service,
   start_date: z.preprocess(
     (val) => (typeof val === "string" ? mnDate(new Date(val)) : val),
     z.date()
@@ -155,13 +156,15 @@ export const DiscountPage = ({
     setAction(ACTION.DEFAULT);
   };
   const onInvalid = async <T,>(e: T) => {
-    const error =
-      Object.keys(e as any)
-        .map((er, i) => {
-          const value = VALUES[er];
-          return i == 0 ? firstLetterUpper(value) : value;
-        })
-        .join(", ") + " оруулна уу!";
+    const error = Object.entries(e as any)
+      .map(([er, v], i) => {
+        if ((v as any)?.message) {
+          return (v as any)?.message;
+        }
+        const value = VALUES[er];
+        return i == 0 ? firstLetterUpper(value) : value;
+      })
+      .join(", ");
     showToast("info", error);
   };
 

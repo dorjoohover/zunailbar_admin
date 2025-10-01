@@ -42,35 +42,6 @@ export const ScheduleTable = ({
   const checkDate = mnDate(date as Date);
   checkDate.setHours(0, 0, 0, 0);
 
-  const stripedDate = stripTime(checkDate);
-
-  function getDisabledDaysForWeek(days: number[], time: number) {
-    const start = stripTime(checkDate); // тухайн 7 хоногийн Ням
-    const end = new Date(start);
-    end.setDate(start.getDate() + 7); // Бямба
-
-    const td = stripTime(today);
-
-    if (td < start) {
-      // Ирээдүйн 7 хоног → өнөөдрөөс өмнө гэж тооцогдох өдөр алга
-      return days.map(() => false);
-    }
-
-    if (td > end) {
-      // Өнгөрсөн 7 хоног → бүх өдөр өнөөдрөөс өмнө
-      return days.map(() => true);
-    }
-    if (hour >= time + 7) {
-      return days.map(() => true);
-    }
-
-    // Өнөөдөр энэ 7 хоногт багтаж байна
-    let todayIdx = td.getDay(); // 0..6 (0=Ням)
-    todayIdx = todayIdx == 0 ? 7 : todayIdx;
-    const s = days.map((day) => day < todayIdx);
-    return s;
-  }
-
   // Ашиглах нь
 
   return (
@@ -82,7 +53,7 @@ export const ScheduleTable = ({
             return (
               <TableHead className="w-[60px] " key={day}>
                 <div className="flex items-center justify-center flex-col">
-                  {!artist && <div>{d.date}</div>}
+                  {/* {!artist && <div>{d.date}</div>} */}
                   <div>{d.day}</div>
                 </div>
               </TableHead>
@@ -119,11 +90,6 @@ export const ScheduleTable = ({
                           : "bg-gray-100 text-black hover:bg-gray-200",
                         "w-full"
                       )}
-                      disabled={
-                        artist
-                          ? false
-                          : getDisabledDaysForWeek(days, time)[day - 1]
-                      }
                       onClick={() => {
                         if (setEdit) {
                           setEdit(time, day);
@@ -163,7 +129,6 @@ export const ScheduleForm = ({
             return (
               <TableHead className="w-[60px] " key={day}>
                 <div className="flex items-center justify-center flex-col">
-                  {!artist && <div>{d.date}</div>}
                   <div>{d.day}</div>
                 </div>
               </TableHead>
@@ -195,12 +160,6 @@ export const ScheduleForm = ({
                           : "bg-gray-100 text-black hover:bg-gray-200",
                         "w-full"
                       )}
-                      disabled={
-                        false
-                        // date &&
-                        // new Date(date).getDate() == new Date().getDate() &&
-                        // today > day
-                      }
                       onClick={() => {
                         let nextTimes = includes
                           ? times.filter((t) => t !== keyStr)

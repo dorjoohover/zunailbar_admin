@@ -13,6 +13,7 @@ export interface IOrder {
   is_pre_amount_paid?: boolean;
   total_amount?: number;
   branch_id?: string;
+  phone?: string;
   paid_amount?: number;
   customer_desc?: string;
   user_desc?: string;
@@ -25,6 +26,7 @@ export interface Order {
   id: string;
   branch_id?: string;
   user_id: string;
+  phone: string;
   customer_id: string;
   duration: number;
   order_date: string;

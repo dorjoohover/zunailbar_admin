@@ -63,7 +63,7 @@ const defaultValues = {
   edit: undefined,
 };
 type SalaryType = z.infer<typeof formSchema>;
-export const SalaryPage = ({
+export const PrePage = ({
   data,
   users,
 }: {

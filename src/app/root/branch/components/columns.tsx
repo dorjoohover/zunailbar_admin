@@ -4,13 +4,13 @@ import { ArrowUpDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { parseDate } from "@/lib/functions";
-import { IBrand, ICategory } from "@/models";
+import { IBranch } from "@/models";
 import { TableActionButtons } from "@/components/tableActionButtons";
 
 export function getColumns(
-  onEdit: (product: IBrand) => void,
+  onEdit: (product: IBranch) => void,
   remove: (index: number) => Promise<boolean>
-): ColumnDef<IBrand>[] {
+): ColumnDef<IBranch>[] {
   return [
     {
       id: "select",
@@ -19,28 +19,16 @@ export function getColumns(
     },
     {
       accessorKey: "name",
-      header: ({ column }) => (
-        <Button
-          variant="table_header"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          className="font-bold"
-        >
-          Салбар <ArrowUpDown className="w-4 h-4 ml-2" />
-        </Button>
-      ),
+      header: ({ column }) => <span>Салбар</span>,
+    },
+    {
+      accessorKey: "order_days",
+      header: () => <div>Захиалга авах хоног</div>,
     },
 
     {
       accessorKey: "created_at",
-      header: ({ column }) => (
-        <Button
-          variant="table_header"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          className="font-bold"
-        >
-          Үүсгэсэн <ArrowUpDown className="w-4 h-4 ml-2" />
-        </Button>
-      ),
+      header: ({ column }) => <span> Үүсгэсэн</span>,
       cell: ({ row }) => {
         const date = parseDate(new Date(row.getValue("created_at")), false);
         return date;

@@ -1,17 +1,9 @@
 import { ColumnDef } from "@tanstack/react-table";
-import { IProduct } from "@/models/product.model";
-import { ArrowUpDown, Pencil, Trash2 } from "lucide-react";
+import { ArrowUpDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
-import { AppAlertDialog } from "@/components/AlertDialog";
-import { toast } from "sonner";
-import { money, parseDate } from "@/lib/functions";
-import { IProductTransaction, IUserService } from "@/models";
-import { ProductTransactionStatus } from "@/lib/enum";
-import { IService } from "@/models/service.model";
-import TooltipWrapper from "@/components/tooltipWrapper";
+import { IUserService } from "@/models";
 import { TableActionButtons } from "@/components/tableActionButtons";
-import { EmployeeUserServicePage } from ".";
+import { add15Days, parseDate } from "@/lib/functions";
 
 // Generate service badge color
 function stringToNiceColor(str: string) {
@@ -55,39 +47,31 @@ export function getColumns(
       ),
     },
     {
-      accessorKey: "service_name",
-      header: ({ column }) => (
-        <Button
-          variant="table_header"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          className="font-bold"
-        >
-          Үйлчилгээ <ArrowUpDown className="w-4 h-4 ml-2" />
-        </Button>
+      accessorKey: "duration",
+      header: ({ column }) => <span>Хугацаа</span>,
+      cell: ({ row }) => (
+        <div className="font-bold text-brand-blue">
+          {add15Days(row.getValue("duration"))}
+        </div>
       ),
-
-      // Badge nemsen
+    },
+    {
+      accessorKey: "percent",
+      header: ({ column }) => <span>Цалингийн хувь</span>,
+      cell: ({ row }) => (
+        <div className="font-bold text-brand-blue">
+          {row.getValue("percent")}
+        </div>
+      ),
+    },
+    {
+      accessorKey: "date",
+      header: "Огноо",
       cell: ({ row }) => {
-        const service = row.getValue("service_name") as string;
-        const color = stringToNiceColor(service);
-        return (
-          <div className="gap-2 flex">
-            {service.split(",").map((s, k) => (
-              <span
-                className="badge "
-                style={{
-                  backgroundColor: color,
-                }}
-                key={k}
-              >
-                {s}
-              </span>
-            ))}
-          </div>
-        );
+        const date = parseDate(new Date(row.getValue("date")), false);
+        return date;
       },
     },
-
     {
       id: "actions",
       header: "Үйлдэл",

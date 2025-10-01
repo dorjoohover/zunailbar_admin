@@ -30,6 +30,7 @@ export enum Api {
   booking = "booking",
   voucher = "voucher",
   user_service = "user_service",
+  user_salaries = "user_salaries",
   product = "product",
   home = "home",
   cost = "cost",
@@ -68,6 +69,7 @@ export const API = {
   [Api.branch]: BASE + "branch",
   [Api.upload]: BASE + "upload",
   [Api.category]: BASE + "category",
+  [Api.user_salaries]: BASE + "user_salaries",
 };
 
 // export const baseUrl =

@@ -31,11 +31,16 @@ import DynamicHeader from "@/components/dynamicHeader";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { showToast } from "@/shared/components/showToast";
+import { getColumns } from "./columns";
+import { Switch } from "@/components/ui/switch";
+import { DataTable } from "@/components/data-table";
 
 const hourLine = z.string();
 const limit = 7;
 const formSchema = z.object({
-  user_id: z.string().min(1),
+  user_id: z.string().refine((data) => data.length > 0, {
+    message: "Артист сонгоно уу",
+  }),
   dates: z.array(hourLine).length(7), // 7 хоног
   edit: z.string().nullable().optional(),
 });
@@ -49,7 +54,7 @@ export const SchedulePage = ({
   data,
   users,
 }: {
-  data: ListType<Schedule>;
+  data: ListType<ISchedule>;
   users: ListType<User>;
 }) => {
   const [action, setAction] = useState(ACTION.DEFAULT);
@@ -58,8 +63,8 @@ export const SchedulePage = ({
     resolver: zodResolver(formSchema),
     defaultValues,
   });
-  const [schedules, setSchedules] = useState<ListType<Schedule> | null>(null);
-  const [lastSchedule, setLastSchedule] = useState<Schedule | null>(null);
+  const [schedules, setSchedules] = useState<ListType<ISchedule> | null>(null);
+  const [lastSchedule, setLastSchedule] = useState<ISchedule | null>(null);
   const [page, setPage] = useState(0);
   const [branch, setBranch] = useState(users.items[0]);
   const userMap = useMemo(
@@ -67,8 +72,8 @@ export const SchedulePage = ({
     [users.items]
   );
 
-  const ScheduleFormatter = (data: ListType<Schedule>) => {
-    const items: Schedule[] = data.items.map((item) => {
+  const ScheduleFormatter = (data: ListType<ISchedule>) => {
+    const items: ISchedule[] = data.items.map((item) => {
       const user = userMap.get(item.user_id);
 
       return {
@@ -88,7 +93,7 @@ export const SchedulePage = ({
   };
   const deleteSchedule = async (index: number) => {
     const id = schedules!.items[index].id;
-    const res = await deleteOne(Api.schedule, id);
+    const res = await deleteOne(Api.schedule, id!);
     refresh();
     return res.success;
   };
@@ -101,7 +106,7 @@ export const SchedulePage = ({
   const refresh = async (pg: PG = DEFAULT_PG) => {
     setAction(ACTION.RUNNING);
     const { sort } = pg;
-    await fetcher<Schedule>(
+    await fetcher<ISchedule>(
       Api.schedule,
       {
         page: page,
@@ -140,13 +145,15 @@ export const SchedulePage = ({
     setAction(ACTION.DEFAULT);
   };
   const onInvalid = async <T,>(e: T) => {
-    const error =
-      Object.keys(e as any)
-        .map((er, i) => {
-          const value = VALUES[er];
-          return i == 0 ? firstLetterUpper(value) : value;
-        })
-        .join(", ") + " оруулна уу!";
+    const error = Object.entries(e as any)
+      .map(([er, v], i) => {
+        if ((v as any)?.message) {
+          return (v as any)?.message;
+        }
+        const value = VALUES[er];
+        return i == 0 ? firstLetterUpper(value) : value;
+      })
+      .join(", ");
     showToast("info", error);
   };
 
@@ -190,7 +197,7 @@ export const SchedulePage = ({
   const setUpdate = (time: number, day: number) => {
     setEdit((prev0: ScheduleEdit[]) => {
       const prev = Array.isArray(prev0) ? prev0 : [];
-      const newTime = time + 7;
+      const newTime = time + 6;
 
       // тухайн өдрийн индекс
       const idx = prev.findIndex((d) => d.day == day);
@@ -232,6 +239,8 @@ export const SchedulePage = ({
       return found ? found.times : "";
     }).reverse();
   }, [schedules?.items]);
+  const columns = getColumns(edit, deleteSchedule);
+  const [isList, setList] = useState(false);
   return (
     <div className="">
       <DynamicHeader />
@@ -257,7 +266,19 @@ export const SchedulePage = ({
               value: branch?.id,
             }}
           />
-
+          <div className="flex items-center justify-end gap-2 mt-2 max-w-lg w-full">
+            <Switch
+              checked={isList}
+              onCheckedChange={(val) => setList(val)}
+              id="compare-switch"
+            />
+            <label
+              htmlFor="compare-switch"
+              className="text-sm text-muted-foreground"
+            >
+              Жагсаалтаар харах
+            </label>
+          </div>
           <Modal
             maw="5xl"
             title="Арчистын хуваарь оруулах форм"
@@ -319,22 +340,23 @@ export const SchedulePage = ({
             </Button>
           )}
         </div>
-        {schedules?.items && schedules?.items?.length > 0 ? (
+        {isList ? (
+          <DataTable
+            columns={columns}
+            count={schedules?.count}
+            data={schedules?.items ?? []}
+            refresh={refresh}
+            loading={action == ACTION.RUNNING}
+          />
+        ) : schedules?.items && schedules?.items?.length > 0 ? (
           <ScheduleTable
             artist={true}
             d={schedules.items?.[0]?.index ?? 0}
-            value={times}
+            value={times as string[]}
             edit={editSchedule}
             setEdit={setUpdate}
           />
         ) : null}
-        {/* <DataTable
-        columns={columns}
-        count={Schedules?.count}
-        data={Schedules?.items ?? []}
-        refresh={refresh}
-        loading={action == ACTION.RUNNING}
-      /> */}
       </div>
     </div>
   );

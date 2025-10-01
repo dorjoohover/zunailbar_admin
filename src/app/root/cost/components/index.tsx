@@ -4,7 +4,14 @@ import { DataTable } from "@/components/data-table";
 import { Category, IProduct, Product } from "@/models";
 import { getColumns } from "./columns";
 import { useState } from "react";
-import { ListType, ACTION, PG, DEFAULT_PG, VALUES } from "@/lib/constants";
+import {
+  ListType,
+  ACTION,
+  PG,
+  DEFAULT_PG,
+  VALUES,
+  ZValidator,
+} from "@/lib/constants";
 import { Modal } from "@/shared/components/modal";
 import z from "zod";
 import { FormProvider, useForm } from "react-hook-form";
@@ -21,8 +28,8 @@ import { showToast } from "@/shared/components/showToast";
 import { firstLetterUpper } from "@/lib/functions";
 
 const formSchema = z.object({
-  category_id: z.string().min(1),
-  name: z.string().min(1),
+  category_id: ZValidator.category,
+  name: ZValidator.name,
   // color: z.string().nullable().optional(),
 
   // size: z.string().nullable().optional(),
@@ -97,13 +104,15 @@ export const CostPage = ({
     setAction(ACTION.DEFAULT);
   };
   const onInvalid = async <T,>(e: T) => {
-    const error =
-      Object.keys(e as any)
-        .map((er, i) => {
-          const value = VALUES[er];
-          return i == 0 ? firstLetterUpper(value) : value;
-        })
-        .join(", ") + " оруулна уу!";
+    const error = Object.entries(e as any)
+      .map(([er, v], i) => {
+        if ((v as any)?.message) {
+          return (v as any)?.message;
+        }
+        const value = VALUES[er];
+        return i == 0 ? firstLetterUpper(value) : value;
+      })
+      .join(", ");
     showToast("info", error);
   };
 

@@ -57,7 +57,7 @@ export function getColumns(
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           className="font-bold"
         >
-          Ник нэр <ArrowUpDown className="w-4 h-4 ml-2" />
+          Хоч <ArrowUpDown className="w-4 h-4 ml-2" />
         </Button>
       ),
     },

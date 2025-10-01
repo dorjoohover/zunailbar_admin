@@ -13,7 +13,11 @@ export enum ROLE {
   ANY = 60,
   E_M = 35,
 }
-
+export enum STATUS {
+  Active = 10,
+  Pending = 20,
+  Hidden = 30,
+}
 export enum EmployeeStatus {
   ACTIVE = 10,
   DEKIRIT = 20,
@@ -43,6 +47,7 @@ export enum OrderStatus {
   Cancelled = 50,
   // ireegui
   ABSENT = 60,
+  Friend = 70,
 }
 // export enum EmployeeStatus {
 //   ACTIVE = 10,

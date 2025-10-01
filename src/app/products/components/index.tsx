@@ -29,8 +29,8 @@ import { firstLetterUpper, mnDate, objectCompact } from "@/lib/functions";
 
 const formSchema = z.object({
   brand_id: z.string().nullable().optional(),
-  category_id: z.string().min(1),
-  name: z.string().min(1),
+  category_id: z.string().min(1, 'Ангилал сонгоно уу'),
+  name: z.string().min(1, "Нэр оруулна уу"),
 
   edit: z.string().nullable().optional(),
 });
@@ -121,13 +121,15 @@ export const ProductPage = ({
     showToast("success", "Амжилттай хадгалагдлаа!");
   };
   const onInvalid = async <T,>(e: T) => {
-    const error =
-      Object.keys(e as any)
-        .map((er, i) => {
-          const value = VALUES[er];
-          return i == 0 ? firstLetterUpper(value) : value;
-        })
-        .join(", ") + " оруулна уу!";
+   const error = Object.entries(e as any)
+      .map(([er, v], i) => {
+        if ((v as any)?.message) {
+          return (v as any)?.message;
+        }
+        const value = VALUES[er];
+        return i == 0 ? firstLetterUpper(value) : value;
+      })
+      .join(", ");
     showToast("info", error);
   };
   const [filter, setFilter] = useState<FilterType>();

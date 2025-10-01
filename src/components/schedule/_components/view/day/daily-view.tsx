@@ -31,6 +31,7 @@ import {
 import { Branch, IOrder, Order, Service, User } from "@/models";
 import { SearchType } from "@/lib/constants";
 import { Api } from "@/utils/api";
+import { DatePicker } from "@/shared/components/date.picker";
 
 // Generate hours in 12-hour format
 const hours = Array.from({ length: totalHours }, (_, i) => {
@@ -355,18 +356,7 @@ export default function DailyView({
     prevDay.setDate(currentDate.getDate() - 1);
     setCurrentDate(prevDay);
   }, [currentDate]);
-  useEffect(() => {
-    const d = mnDate(currentDate);
-    const y = d.getFullYear();
-    const m = String(d.getMonth() + 1).padStart(2, "0");
-    const day = String(d.getDate()).padStart(2, "0");
-    const date = `${y}-${m}-${day}`;
-    refresh<{ date: string }>({
-      filter: {
-        date,
-      },
-    });
-  }, [currentDate]);
+
   return (
     <>
       <div className="flex justify-between gap-3 flex-wrap mb-5">

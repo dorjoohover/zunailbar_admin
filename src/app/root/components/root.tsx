@@ -4,6 +4,7 @@ import {
   CategoryTypeValues,
   getEnumValues,
   VALUES,
+  ZValidator,
 } from "@/lib/constants";
 import { CategoryType } from "@/lib/enum";
 import { firstLetterUpper } from "@/lib/functions";
@@ -19,8 +20,8 @@ import { useState } from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import z from "zod";
 const formSchema = z.object({
-  category_name: z.string().min(1).nullable().optional(),
-  brand_name: z.string().min(1).nullable().optional(),
+  category_name: ZValidator.category_name.nullable().optional(),
+  brand_name: ZValidator.brand_name.nullable().optional(),
   type: z.string().nullable().optional(),
   edit: z.string().nullable().optional(),
 });
@@ -70,13 +71,15 @@ export const RootModal = ({ refresh }: { refresh: () => void }) => {
     setAction(ACTION.DEFAULT);
   };
   const onInvalid = async <T,>(e: T) => {
-    const error =
-      Object.keys(e as any)
-        .map((er, i) => {
-          const value = VALUES[er];
-          return i == 0 ? firstLetterUpper(value) : value;
-        })
-        .join(", ") + " оруулна уу!";
+    const error = Object.entries(e as any)
+      .map(([er, v], i) => {
+        if ((v as any)?.message) {
+          return (v as any)?.message;
+        }
+        const value = VALUES[er];
+        return i == 0 ? firstLetterUpper(value) : value;
+      })
+      .join(", ");
     showToast("info", error);
   };
 

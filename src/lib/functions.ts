@@ -2,6 +2,7 @@ import { defaultPagination, Pagination } from "@/base/query";
 import { User } from "@/models";
 import { Api, API } from "@/utils/api";
 import { Dispatch, SetStateAction } from "react";
+import { VALUES } from "./constants";
 
 export const formatDate = (value: string, limit = 10) => {
   if (!value || value == "") return "";
@@ -103,6 +104,18 @@ export function mnDateFormatTitle(d: Date | string | number = new Date()) {
 export function toTimeString(hour: number | string): string {
   const h = String(hour).padStart(2, "0");
   return `${h}:00:00`;
+}
+
+export function add15Days(day: number) {
+  const today = new Date();
+  const month = today.getMonth();
+  const year = today.getFullYear();
+
+  const date = new Date(year, month, day);
+  const newDate = new Date(date);
+  newDate.setDate(date.getDate() + 15);
+
+  return `${date.getDate()} | ${newDate.getDate()}`;
 }
 export function mnDateFormat(d: Date | string | number = new Date()) {
   return new Intl.DateTimeFormat("en-CA", {
@@ -262,6 +275,10 @@ export function paginationToQuery(
 export const firstLetterUpper = (value: string) => {
   if (value.length == 0) return value;
   return `${value.substring(0, 1).toUpperCase()}${value.substring(1)}`;
+};
+
+export const textValue = (value: string) => {
+  return firstLetterUpper(VALUES[value]);
 };
 
 export function getPaginationRange(

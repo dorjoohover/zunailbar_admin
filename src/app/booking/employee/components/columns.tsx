@@ -5,58 +5,40 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { AppAlertDialog } from "@/components/AlertDialog";
 import { toast } from "sonner";
-import { formatTime, money, parseDate } from "@/lib/functions";
-import { IProductTransaction, IUser } from "@/models";
+import {
+  formatTime,
+  getDayName,
+  getDayNameWithDate,
+  mnDate,
+  money,
+  parseDate,
+} from "@/lib/functions";
+import { IProductTransaction, ISchedule } from "@/models";
 import { ProductTransactionStatus } from "@/lib/enum";
 import TooltipWrapper from "@/components/tooltipWrapper";
 
 export function getColumns(
-  onEdit: (product: IUser) => void,
+  onEdit: (product: ISchedule) => void,
   remove: (index: number) => Promise<boolean>
-): ColumnDef<IUser>[] {
+): ColumnDef<ISchedule>[] {
   return [
     {
       id: "select",
-      header: ({ table }) => (
-        <Checkbox
-          checked={table.getIsAllPageRowsSelected()}
-          onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-          aria-label="Select all"
-        />
-      ),
-      cell: ({ row }) => (
-        <Checkbox
-          checked={row.getIsSelected()}
-          onCheckedChange={(value) => row.toggleSelected(!!value)}
-          aria-label="Select row"
-        />
-      ),
-      enableSorting: false,
-      enableHiding: false,
+      header: ({ table }) => <span>№</span>,
+      cell: ({ row }) => <span className="">{row.index + 1}</span>,
     },
+
     {
-      accessorKey: "branch_name",
-      header: ({ column }) => (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          className="font-bold"
-        >
-          Branch <ArrowUpDown className="w-4 h-4 ml-2" />
-        </Button>
-      ),
-    },
-    {
-      accessorKey: "date",
-      header: "Date",
+      accessorKey: "index",
+      header: "Гараг",
       cell: ({ row }) => {
-        const date = parseDate(new Date(row.getValue("date")), false);
-        return date;
+        const date = getDayName(+(row.getValue("index") as string) + 1);
+        return `${date}`;
       },
     },
     {
       accessorKey: "start_time",
-      header: "Start_time",
+      header: "Эхлэх цаг",
       cell: ({ row }) => {
         const time = row.getValue("start_time") as string;
         return formatTime(time);
@@ -64,7 +46,7 @@ export function getColumns(
     },
     {
       accessorKey: "end_time",
-      header: "end_time",
+      header: "Дуусах цаг",
       cell: ({ row }) => {
         const time = row.getValue("end_time") as string;
         return formatTime(time);
@@ -72,39 +54,13 @@ export function getColumns(
     },
     {
       accessorKey: "times",
-      header: "times",
+      header: "Цагууд",
       cell: ({ row }) => {
         const time = row.getValue("times") as string;
-        return formatTime(time);
+        return `${time.split("|").join(", ")}`;
       },
     },
 
-    {
-      accessorKey: "min_price",
-      header: ({ column }) => (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          className="font-bold"
-        >
-          Price <ArrowUpDown className="w-4 h-4 ml-2" />
-        </Button>
-      ),
-      cell: ({ row }) => money(row.getValue("min_price"), "₮"),
-    },
-    {
-      accessorKey: "max_price",
-      header: ({ column }) => (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          className="font-bold"
-        >
-          Max Price <ArrowUpDown className="w-4 h-4 ml-2" />
-        </Button>
-      ),
-      cell: ({ row }) => money(row.getValue("max_price"), "₮"),
-    },
     {
       accessorKey: "created_at",
       header: ({ column }) => (

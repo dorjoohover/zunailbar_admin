@@ -18,6 +18,7 @@ import {
   Option,
   SearchType,
   VALUES,
+  ZValidator,
 } from "@/lib/constants";
 import { Modal } from "@/shared/components/modal";
 import z from "zod";
@@ -43,8 +44,8 @@ import { Item } from "@radix-ui/react-dropdown-menu";
 import { showToast } from "@/shared/components/showToast";
 
 const formSchema = z.object({
-  branch_id: z.string().min(1),
-  product_id: z.string().min(1),
+  branch_id: ZValidator.branch,
+  product_id: ZValidator.product,
   user_id: z.string().nullable().optional(),
   quantity: z.preprocess(
     (val) => (typeof val === "string" ? parseFloat(val) : val),
@@ -70,8 +71,8 @@ const defaultValues = {
   branch_id: "",
   edit: undefined,
   product_id: "",
-  product_transaction_status: "",
-  quantity: "",
+  product_transaction_status: ProductTransactionStatus.Used,
+  quantity: 0,
   user_id: "",
 };
 export const ProductTransactionPage = ({
@@ -179,13 +180,15 @@ export const ProductTransactionPage = ({
     setAction(ACTION.DEFAULT);
   };
   const onInvalid = async <T,>(e: T) => {
-    const error =
-      Object.keys(e as any)
-        .map((er, i) => {
-          const value = VALUES[er];
-          return i == 0 ? firstLetterUpper(value) : value;
-        })
-        .join(", ") + " оруулна уу!";
+    const error = Object.entries(e as any)
+      .map(([er, v], i) => {
+        if ((v as any)?.message) {
+          return (v as any)?.message;
+        }
+        const value = VALUES[er];
+        return i == 0 ? firstLetterUpper(value) : value;
+      })
+      .join(", ");
     showToast("info", error);
   };
 

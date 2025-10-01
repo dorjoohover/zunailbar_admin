@@ -35,7 +35,7 @@ export function getColumns(
     },
     {
       accessorKey: "user_name",
-      header: "Ник нэр",
+      header: "Хоч",
     },
     {
       accessorKey: "product_name",
@@ -55,7 +55,7 @@ export function getColumns(
     },
     {
       accessorKey: "product_transaction_status",
-      header: "Status",
+      header: "Төлөв",
       cell: ({ row }) => {
         const status =
           getValuesProductTransactionStatus[

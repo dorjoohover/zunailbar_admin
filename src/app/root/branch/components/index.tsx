@@ -18,11 +18,22 @@ import { firstLetterUpper } from "@/lib/functions";
 import { showToast } from "@/shared/components/showToast";
 
 const formSchema = z.object({
-  name: z.string().min(1),
+  name: z.string().refine((data) => data.length > 0, {
+    message: "Нэр оруулна уу",
+  }),
+  order_days: z
+    .preprocess(
+      (val) => (typeof val === "string" ? parseFloat(val) : val),
+      z.number()
+    )
+    .refine((data) => data != null, {
+      message: "Захиалга авах хоног оруулна уу",
+    }) as unknown as number,
   edit: z.string().nullable().optional(),
 });
 const defaultValues = {
   name: "",
+  order_days: 7,
   edit: undefined,
 };
 type BranchType = z.infer<typeof formSchema>;
@@ -80,13 +91,15 @@ export const BranchPage = ({ data }: { data: ListType<Branch> }) => {
     setAction(ACTION.DEFAULT);
   };
   const onInvalid = async <T,>(e: T) => {
-    const error =
-      Object.keys(e as any)
-        .map((er, i) => {
-          const value = VALUES[er];
-          return i == 0 ? firstLetterUpper(value) : value;
-        })
-        .join(", ") + " оруулна уу!";
+    const error = Object.entries(e as any)
+      .map(([er, v], i) => {
+        if ((v as any)?.message) {
+          return (v as any)?.message;
+        }
+        const value = VALUES[er];
+        return i == 0 ? firstLetterUpper(value) : value;
+      })
+      .join(", ");
     showToast("info", error);
   };
 
@@ -119,10 +132,20 @@ export const BranchPage = ({ data }: { data: ListType<Branch> }) => {
                       label={"Салбарын нэр"}
                       control={form.control}
                       name={"name"}
-                      className={"col-span-1"}
+                      className={"col-span-1 mb-4"}
                     >
                       {(field) => {
                         return <TextField props={{ ...field }} />;
+                      }}
+                    </FormItems>
+                    <FormItems
+                      label={"Захиалга авах хоног"}
+                      control={form.control}
+                      name={"order_days"}
+                      className={"col-span-1"}
+                    >
+                      {(field) => {
+                        return <TextField props={{ ...field }} type="number" />;
                       }}
                     </FormItems>
                   </div>

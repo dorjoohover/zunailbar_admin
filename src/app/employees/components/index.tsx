@@ -23,7 +23,12 @@ import { FormProvider, useForm, useFormContext } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import { TextField } from "@/shared/components/text.field";
-import { firstLetterUpper, numberArray, objectCompact } from "@/lib/functions";
+import {
+  firstLetterUpper,
+  numberArray,
+  objectCompact,
+  textValue,
+} from "@/lib/functions";
 import { DatePicker } from "@/shared/components/date.picker";
 import { create, deleteOne, updateOne } from "@/app/(api)";
 import { Api } from "@/utils/api";
@@ -42,10 +47,13 @@ import { ACCEPT_ATTR, validateImageFile } from "@/lib/image.validator";
 import { COLOR_HEX } from "@/lib/colors";
 
 const formSchema = z.object({
-  firstname: z.string().min(1),
-  lastname: z.string().min(1),
-  branch_id: z.string().min(1),
-  mobile: z.string().length(8, { message: "8 тэмдэгт байх ёстой" }),
+  firstname: z.string().min(1, "Нэр оруулна уу"),
+  lastname: z.string().min(1, "Овог оруулна уу"),
+  branch_id: z.string().min(1, "Салбар сонгоно уу"),
+  mobile: z
+    .string()
+    .min(1, "Утасны дугаар оруулна уу")
+    .length(8, "Утасны дугаар буруу байна"),
   birthday: z.preprocess(
     (val) => (typeof val === "string" ? new Date(val) : val),
     z.date()
@@ -54,18 +62,28 @@ const formSchema = z.object({
     (val) => (typeof val === "string" ? parseFloat(val) : val),
     z.number()
   ) as unknown as number,
-  password: z.string().nullable().optional(),
-  nickname: z.string().min(1),
-  profile_img: z.string().nullable().optional(),
-  color: z.preprocess(
+  percent: z.preprocess(
     (val) => (typeof val === "string" ? parseFloat(val) : val),
     z.number()
+  ) as unknown as number,
+  password: z.string().nullable().optional(),
+  nickname: z.string().min(1, "Хоч оруулна уу"),
+  profile_img: z.string().nullable().optional(),
+  color: z.preprocess(
+    (val) => {
+      if (val === null || val === undefined || val === "") return NaN; // алдаа гэж үзнэ
+      if (typeof val === "string") return parseFloat(val);
+      return val;
+    },
+    z.number().refine((v) => !isNaN(v), {
+      message: "Өнгө заавал сонгоно уу",
+    })
   ) as unknown as number,
   role: z
     .preprocess(
       (val) => (typeof val === "string" ? parseInt(val, 10) : val),
       z.number().refine((val) => [ROLE.EMPLOYEE, ROLE.MANAGER].includes(val), {
-        message: "Only EMPLOYEE and MANAGER roles are allowed",
+        message: "Зөвхөн EMPLOYEE эсвэл MANAGER сонгож болно",
       })
     )
     .optional() as unknown as number,
@@ -74,6 +92,7 @@ const formSchema = z.object({
     // .refine((f) => f.size > 0, { message: "Файл заавал оруулна" })
     .nullable(),
 });
+
 type UserType = z.infer<typeof formSchema>;
 interface FilterType {
   role?: number;
@@ -82,6 +101,15 @@ interface FilterType {
 }
 const defaultValues = {
   role: ROLE.EMPLOYEE,
+  firstname: "",
+  lastname: "",
+  branch_id: "",
+  nickname: "",
+  mobile: "",
+  birthday: new Date(),
+  percent: 30,
+  // color: 0,
+  experience: 0,
   password: "string",
 };
 export const EmployeePage = ({
@@ -144,13 +172,16 @@ export const EmployeePage = ({
     setAction(ACTION.DEFAULT);
   };
   const onInvalid = async <T,>(e: T) => {
-    const error =
-      Object.keys(e as any)
-        .map((er, i) => {
-          const value = VALUES[er];
-          return i == 0 ? firstLetterUpper(value) : value;
-        })
-        .join(", ") + " оруулна уу!";
+    const error = Object.entries(e as any)
+      .map(([er, v], i) => {
+        const value = VALUES[er];
+        if (er == "color") return firstLetterUpper(value) + " оруулна уу";
+        if ((v as any)?.message) {
+          return (v as any)?.message;
+        }
+        return i == 0 ? firstLetterUpper(value) : value;
+      })
+      .join(", ");
     showToast("info", error);
     // setSuccess(false);
   };
@@ -220,7 +251,7 @@ export const EmployeePage = ({
       () => [
         {
           key: "role",
-          label: "ROLE",
+          label: textValue("role"),
           items: [
             { value: ROLE.EMPLOYEE, label: "Ажилтан" },
             { value: ROLE.MANAGER, label: "Manager" },
@@ -233,7 +264,7 @@ export const EmployeePage = ({
         },
         {
           key: "status",
-          label: "Статус",
+          label: textValue("status"),
           items: getEnumValues(UserStatus).map((s) => ({
             value: s,
             label: UserStatusValue[s].name,
@@ -447,16 +478,14 @@ export const EmployeePage = ({
                         {(field) => {
                           return (
                             <ComboBox
-                              items={[
-                                ROLE.ADMIN,
-                                ROLE.EMPLOYEE,
-                                ROLE.MANAGER,
-                              ].map((role) => {
-                                return {
-                                  label: RoleValue[role],
-                                  value: role.toString(),
-                                };
-                              })}
+                              items={[ROLE.EMPLOYEE, ROLE.MANAGER].map(
+                                (role) => {
+                                  return {
+                                    label: RoleValue[role],
+                                    value: role.toString(),
+                                  };
+                                }
+                              )}
                               props={{
                                 ...field,
                               }}
@@ -490,12 +519,13 @@ export const EmployeePage = ({
                       "firstname",
                       "mobile",
                       "nickname",
+                      "percent",
                       "experience",
                     ].map((i, index) => {
                       const item = i as keyof UserType;
                       return (
                         <FormItems
-                          label={firstLetterUpper(item)}
+                          label={firstLetterUpper(VALUES[item])}
                           control={form.control}
                           name={item}
                           key={index}
