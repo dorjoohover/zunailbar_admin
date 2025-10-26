@@ -58,7 +58,7 @@ export default function AddEventModal({
   };
   loading?: boolean;
   send: (order: IOrder) => void;
-  values?: IOrder;
+  values?: IOrder | any;
   // CustomAddEventModal?: React.FC<{ register: any; errors: any }>;
 }) {
   const { setClose, data } = useModal();

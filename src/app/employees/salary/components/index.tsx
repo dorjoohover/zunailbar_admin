@@ -84,7 +84,7 @@ export const EmployeeUserSalaryPage = ({
     resolver: zodResolver(formSchema),
     defaultValues,
   });
-  const [userSalaries, setUserSalarys] = useState<ListType<UserSalary> | null>(
+  const [userSalaries, setUserSalarys] = useState<ListType<IUserSalary> | null>(
     null
   );
 
@@ -112,8 +112,8 @@ export const EmployeeUserSalaryPage = ({
     console.log(form.getValues());
   };
   const deleteUserSalary = async (index: number) => {
-    const id = userSalaries!.items[index].id;
-    const res = await deleteOne(Api.user_salaries, id);
+    const id = userSalaries!.items[index]?.id;
+    const res = await deleteOne(Api.user_salaries, id!);
     refresh();
     return res.success;
   };
@@ -282,7 +282,7 @@ export const EmployeeUserSalaryPage = ({
           clear={() => setFilter(undefined)}
           columns={columns}
           count={userSalaries?.count}
-          data={userSalaries?.items ?? []}
+          data={(userSalaries?.items as any) ?? []}
           refresh={refresh}
           loading={action == ACTION.RUNNING}
           modalAdd={

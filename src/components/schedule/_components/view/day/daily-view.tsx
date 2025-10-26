@@ -319,7 +319,7 @@ export default function DailyView({
     );
 
     handleAddEvent({
-      order_date: mnDate(date),
+      order_date: mnDateFormat(date),
       start_time: toTimeString(hours),
       end_time: toTimeString(hours + 1),
       branch_id: "",

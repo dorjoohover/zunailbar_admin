@@ -1,3 +1,4 @@
+import { OrderStatus } from "@/lib/enum";
 import { UserService } from "./user.service.model";
 
 export interface IOrder {
@@ -5,7 +6,7 @@ export interface IOrder {
   customer_id?: string;
   customer_desc?: string;
   branch_id?: string;
-  order_date?: Date;
+  order_date?: string;
   start_time?: string;
   end_time?: string;
   // pre_amount: number;
@@ -14,13 +15,23 @@ export interface IOrder {
   details?: IOrderDetail[] | any[];
   duplicated?: boolean;
   id?: string;
+  order_status?: OrderStatus | undefined;
+  edit?: string;
+  total_amount?: number;
+  paid_amount?: number;
+  pre_amount?: number;
+  duration?: number;
+  is_pre_amount_paid?: boolean;
+  phone?: string;
+  color?: number;
 }
 export interface Order {
   id: string;
   user_id: string;
   customer_id: string;
+  branch_id?: string;
   duration: number;
-  order_date: Date;
+  order_date: string;
   start_time: string;
   end_time: string;
   order_status: number;
