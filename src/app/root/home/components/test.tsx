@@ -285,8 +285,8 @@ export const TestHeroUploader = ({ data }: { data: ListType<Home> }) => {
                               const home = form.watch(
                                 `homes.${index}` as Path<RootType>
                               );
-                              const file = home.file;
-                              const image = home.image
+                              const file = home?.file;
+                              const image = home?.image
                                 ? `/api/file/${home.image}`
                                 : file
                                 ? URL.createObjectURL(file)
