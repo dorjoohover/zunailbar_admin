@@ -1,14 +1,13 @@
 import { Api } from "@/utils/api";
-import { Brand, Warehouse } from "@/models";
 import { find } from "@/app/(api)";
-// import { BrandPage } from "./components";
-import ContainerHeader from "@/components/containerHeader";
+import { FeaturePage } from "./components";
+import { Feature } from "@/models/home.model";
 
 export default async function Page() {
-  const [res] = await Promise.all([find<Brand>(Api.brand)]);
+  const res = await find<Feature>(Api.home, {}, "web/feature");
   return (
     <section>
-      {/* <BrandPage data={res.data} /> */}
+      <FeaturePage data={res.data} />
     </section>
   );
 }

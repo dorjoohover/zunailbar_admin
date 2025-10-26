@@ -12,7 +12,15 @@ import { fetcher } from "@/hooks/fetcher";
 
 import DynamicHeader from "@/components/dynamicHeader";
 import { Home, IHome, IHomes } from "@/models/home.model";
-import { CloudUpload, Lock, Pencil, Save, Trash, UploadCloud, X } from "lucide-react";
+import {
+  CloudUpload,
+  Lock,
+  Pencil,
+  Save,
+  Trash,
+  UploadCloud,
+  X,
+} from "lucide-react";
 import { firstLetterUpper, numberArray, totalHours } from "@/lib/functions";
 import { Button } from "@/components/ui/button";
 import { imageUploader } from "@/app/(api)/base";
@@ -21,7 +29,13 @@ import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import Image from "next/image";
 
 const homeSchema = z.object({
@@ -54,7 +68,9 @@ export const TestHeroUploader = ({ data }: { data: ListType<Home> }) => {
     index: idx1, // 1-based хадгалъя
   });
   const normalizeHomes = (items: Home[] | undefined) => {
-    const base: HomeType[] = Array.from({ length: 12 }, (_, i) => makeEmptyHome(i + 1));
+    const base: HomeType[] = Array.from({ length: 12 }, (_, i) =>
+      makeEmptyHome(i + 1)
+    );
 
     if (!items?.length) return base;
 
@@ -107,50 +123,33 @@ export const TestHeroUploader = ({ data }: { data: ListType<Home> }) => {
     setAction(ACTION.RUNNING);
     try {
       const homes = data.homes ?? [];
-      const payload: IHome[] = [];
 
-      // index==0-г алгасах логик байвал хадгаллаа
-      for (let i = 0; i < homes.length; i++) {
-        const h = homes[i];
-        if (!h) continue;
-        if (h.artist_name == "" || !h.artist_name) continue;
-        // 0-ийг алгасах бол:
-        const idx = h.index ?? i;
-        if (idx === 0) continue;
-
+      if (selectedIndex) {
+        const h = homes[selectedIndex];
+        if (h.artist_name == "" || !h.artist_name) {
+          showToast("info", "Артистын нэрийг оруулна уу");
+          return;
+        }
         let url = typeof h.image === "string" ? h.image : "";
 
-        // Шинэ зураг байвал эхлээд upload
         if (h.file instanceof File) {
           const fd = new FormData();
           fd.append("files", h.file, h.file.name);
-          const uploadResult = await imageUploader(fd); // ← энэ нь массив гэж үзэв
+          const uploadResult = await imageUploader(fd);
           url = uploadResult?.[0] ?? url;
         }
-
-        // Payload-д нэмэх
-        payload.push({
+        const payload = {
           artist_name: h.artist_name ?? "",
           name: h.name ?? "",
           image: url, // upload-оос ирсэн эсвэл өмнөх URL
-          index: idx || 1, // fallback
-        });
-      }
+          index: selectedIndex, // fallback
+        };
 
-      let res;
-      if (data.homes) {
-        if (data.edit) {
-          // Засварын үед аль item-ыг явуулах нь бизнесийн дүрмээс хамаарна
-          // Жишээ нь index==1-ийг илгээе, олдохгүй бол эхнийх
-          const target = payload.find((p) => p.index === 1) ?? payload[0];
-          res = await updateOne<IHome>(Api.home, data.edit as string, target, "home");
-        } else {
-          res = await create<IHomes>(Api.home, { items: payload }, "home");
+        let res = await create<IHome>(Api.home, payload as IHome, "home");
+
+        if (res?.success) {
+          refresh();
         }
-      }
-
-      if (res?.success) {
-        refresh();
       }
     } catch (err) {
       console.error(err);
@@ -183,26 +182,24 @@ export const TestHeroUploader = ({ data }: { data: ListType<Home> }) => {
     form.setValue("homes", next, { shouldDirty: true });
   };
 
-  const handleFileChange = (idx: number) => (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = (
+    e: React.ChangeEvent<HTMLInputElement>,
+    idx: number
+  ) => {
     const file = e.target.files?.[0];
     if (!file) return;
-
-    ensureHomeAt(idx);
-    const next = (form.getValues("homes") ?? []).slice();
-    next[idx] = { ...(next[idx] ?? {}), file, index: idx };
-
-    form.setValue("homes", next, {
-      shouldDirty: true,
-      shouldValidate: true,
+    const homes = form.getValues("homes");
+    const filteredHomes = homes?.map((home, i) => {
+      if (home.index == idx) {
+        return {
+          ...home,
+          file,
+        };
+      }
+      return home;
     });
+    form.setValue("homes", filteredHomes);
   };
-  const handleRemove = (idx: number) => () => {
-    ensureHomeAt(idx);
-    const next = (form.getValues("homes") ?? []).slice();
-    next[idx] = { ...(next[idx] ?? {}), file: null, image: null };
-    form.setValue("homes", next, { shouldDirty: true, shouldValidate: true });
-  };
-
   // Bishu
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null); //
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -212,7 +209,30 @@ export const TestHeroUploader = ({ data }: { data: ListType<Home> }) => {
     setIsModalOpen(true);
   };
 
-  const closeModal = () => setIsModalOpen(false);
+  const removeHeaderImage = () => {
+    if (selectedIndex) {
+      const homes = form.getValues("homes");
+      const filteredHomes = homes?.map((home) => {
+        if (home.index == selectedIndex) {
+          return {
+            ...home,
+            image: null,
+            file: null,
+          };
+        }
+        return home;
+      });
+      form.setValue(`homes`, filteredHomes);
+    }
+  };
+
+  const home = form.watch(`homes.${selectedIndex}` as Path<RootType>);
+
+  const imageSrc = home?.image
+    ? `/api/file/${home.image}`
+    : home?.file
+    ? URL.createObjectURL(home.file)
+    : null;
 
   return (
     // Bishu
@@ -225,11 +245,17 @@ export const TestHeroUploader = ({ data }: { data: ListType<Home> }) => {
 
             <div className=" pl-3 pr-12 h-14 flex justify-between border-b">
               <div className="flex items-center gap-1.5 h-full">
-                <div className="w-2.5 h-2.5 rounded-full bg-red-400"></div> <div className="w-2.5 h-2.5 rounded-full bg-amber-400"></div> <div className="w-2.5 h-2.5 rounded-full bg-green-500"></div>
+                <div className="w-2.5 h-2.5 rounded-full bg-red-400"></div>{" "}
+                <div className="w-2.5 h-2.5 rounded-full bg-amber-400"></div>{" "}
+                <div className="w-2.5 h-2.5 rounded-full bg-green-500"></div>
               </div>
               <div className="flex items-center grow">
                 <div className="rounded-md font-medium text-xs leading-6 py-1 flex items-center ring-1 ring-inset ring-slate-900/5 px-2 ml-3 w-full">
-                  <Lock className="text-slate-300 size-3.5 mr-1.5" strokeWidth={3} /> zu-nailbar.mn
+                  <Lock
+                    className="text-slate-300 size-3.5 mr-1.5"
+                    strokeWidth={3}
+                  />{" "}
+                  zu-nailbar.mn
                 </div>
               </div>
             </div>
@@ -240,7 +266,13 @@ export const TestHeroUploader = ({ data }: { data: ListType<Home> }) => {
                 const start = groupIndex * 5;
                 const end = start + 5;
                 return (
-                  <div key={groupIndex} className={cn(groupIndex == 1 ? "pl-20" : "pr-20", "flex flex-col items-center space-y-0 py-3")}>
+                  <div
+                    key={groupIndex}
+                    className={cn(
+                      groupIndex == 1 ? "pl-20" : "pr-20",
+                      "flex flex-col items-center space-y-0 py-3"
+                    )}
+                  >
                     {/* <h1 className="text-sm font-semibold text-left">
                       {groupIndex + 1 + "-р"} эгнээ: Зураг {start + 1}–{end}
                     </h1> */}
@@ -250,13 +282,35 @@ export const TestHeroUploader = ({ data }: { data: ListType<Home> }) => {
                           {numberArray(totalHours)
                             .slice(start, end)
                             .map((index) => {
-                              const home = form.watch(`homes.${index}` as Path<RootType>);
+                              const home = form.watch(
+                                `homes.${index}` as Path<RootType>
+                              );
+                              const file = home.file;
+                              const image = home.image
+                                ? `/api/file/${home.image}`
+                                : file
+                                ? URL.createObjectURL(file)
+                                : null;
                               return (
-                                <div key={index} onClick={() => openModal(index)} className={cn("h-52 aspect-[5/7] cursor-pointer rounded-md overflow-hidden relative flex flex-col justify-end p-4", selectedIndex === index && "outline-2 outline-offset-4 outline-brand-purple")}>
+                                <div
+                                  key={index}
+                                  onClick={() => openModal(home.index)}
+                                  className={cn(
+                                    "h-52 aspect-[5/7] cursor-pointer rounded-md overflow-hidden relative flex flex-col justify-end p-4",
+                                    selectedIndex === index &&
+                                      "outline-2 outline-offset-4 outline-brand-purple"
+                                  )}
+                                >
                                   <div className="flex-1 rounded-xl absolute top-0 left-0 size-full">
-                                    {home?.image ? (
+                                    {image ? (
                                       <>
-                                        <img src={home.image} alt={home.name || `Artist ${index + 1}`} className="size-full object-cover bg-gray-200" />
+                                        <img
+                                          src={image}
+                                          alt={
+                                            home.name || `Artist ${index + 1}`
+                                          }
+                                          className="size-full object-cover bg-gray-200"
+                                        />
                                         <div className="size-full absolute top-0 left-0 bg-gradient-to-t from-black/90 to-transparent" />
                                       </>
                                     ) : (
@@ -264,17 +318,37 @@ export const TestHeroUploader = ({ data }: { data: ListType<Home> }) => {
                                         <div className="absolute top-0 left-0 size-full flex flex-col items-center justify-center text-gray-400">
                                           {/* <Image src="/bg/nail-input.png" width={300} height={300} alt="no image" className="w-[100%] mx-auto opacity-70" /> */}
                                           <CloudUpload className="size-10" />
-                                          <span className="text-[11px] font-semibold">Зураг оруулах</span>
+                                          <span className="text-[11px] font-semibold">
+                                            Зураг оруулах
+                                          </span>
                                         </div>
-                                        <input type="file" accept="image/*" className="hidden" onChange={handleFileChange(index)} />
+                                        <input
+                                          type="file"
+                                          accept="image/*"
+                                          className="hidden"
+                                          onChange={(e) =>
+                                            handleFileChange(e, index)
+                                          }
+                                        />
                                       </label>
                                     )}
                                   </div>
 
                                   {/* Артист нэр ба үйлчилгээ нэр */}
-                                  <div className={cn("mt-2 text-center relative z-10", home?.image ? "text-white" : "text-primary")}>
-                                    <h1 className="text-[10px] truncate font-semibold">{home?.name || "хоосон"}</h1>
-                                    <h1 className="text-[9px] truncate">{home?.artist_name || `хоосон`}</h1>
+                                  <div
+                                    className={cn(
+                                      "mt-2 text-center relative z-10",
+                                      home?.image
+                                        ? "text-white"
+                                        : "text-primary"
+                                    )}
+                                  >
+                                    <h1 className="text-[10px] truncate font-semibold">
+                                      {home?.name || "хоосон"}
+                                    </h1>
+                                    <h1 className="text-[9px] truncate">
+                                      {home?.artist_name || `хоосон`}
+                                    </h1>
                                   </div>
                                 </div>
                               );
@@ -294,26 +368,54 @@ export const TestHeroUploader = ({ data }: { data: ListType<Home> }) => {
               {selectedIndex !== null ? (
                 <>
                   <div className="border-2 border-slate-200 rounded-xl aspect-[5/7] overflow-hidden relative">
-                    {form.watch(`homes.${selectedIndex}.image` as Path<RootType>) ? (
+                    {imageSrc ? (
                       <>
-                        <img src={form.watch(`homes.${selectedIndex}.image` as Path<RootType>) as string} alt="preview" className="size-full object-cover" />
+                        <img
+                          src={imageSrc}
+                          alt="preview"
+                          className="size-full object-cover"
+                        />
                         <div className="absolute bottom-2 left-2 space-x-1">
                           {/* Edit */}
-                          <Button variant={"outline"} size={"icon"} className="bg-white rounded cursor-pointer">
-                            <Pencil className="size-3.5 text-primary" strokeWidth={2.5} />
-                          </Button>
+                          {/* <Button
+                            variant={"outline"}
+                            size={"icon"}
+                            className="bg-white rounded cursor-pointer"
+                          >
+                            <Pencil
+                              className="size-3.5 text-primary"
+                              strokeWidth={2.5}
+                            />
+                          </Button> */}
 
                           {/* Remove */}
-                          <Button variant={"ghost"} size={"icon"} className="bg-rose-50 hover:bg-rose-100 rounded border border-rose-200 cursor-pointer">
-                            <X className="size-3.5 text-rose-500" strokeWidth={2.5} />
+                          <Button
+                            variant={"ghost"}
+                            size={"icon"}
+                            className="bg-rose-50 hover:bg-rose-100 rounded border border-rose-200 cursor-pointer"
+                            onClick={removeHeaderImage}
+                          >
+                            <X
+                              className="size-3.5 text-rose-500"
+                              strokeWidth={2.5}
+                            />
                           </Button>
                         </div>
                       </>
                     ) : (
                       <label className="flex flex-col items-center justify-center h-full cursor-pointer bg-slate-200">
-                        <span className="text-gray-500 text-sm mb-2">No Image</span>
-                        <input type="file" accept="image/*" className="hidden" onChange={handleFileChange(selectedIndex!)} />
-                        <span className="px-3 py-1 bg-blue-500 text-white text-xs rounded">Upload</span>
+                        <span className="text-gray-500 text-sm mb-2">
+                          No Image
+                        </span>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={(e) => handleFileChange(e, selectedIndex)}
+                        />
+                        <span className="px-3 py-1 bg-blue-500 text-white text-xs rounded">
+                          Upload
+                        </span>
                       </label>
                     )}
                   </div>
@@ -324,17 +426,29 @@ export const TestHeroUploader = ({ data }: { data: ListType<Home> }) => {
                     className="pr-0 h-9 text-sm! placeholder:text-gray-400"
                     props={{
                       name: `homes.${selectedIndex}.name` as Path<RootType>,
-                      value: (form.watch(`homes.${selectedIndex}.name` as Path<RootType>) ?? "") as string,
+                      value: (form.watch(
+                        `homes.${selectedIndex}.name` as Path<RootType>
+                      ) ?? "") as string,
                       onChange: (evOrValue) => {
-                        const nextVal = typeof evOrValue === "string" ? evOrValue : evOrValue?.target?.value ?? "";
+                        const nextVal =
+                          typeof evOrValue === "string"
+                            ? evOrValue
+                            : evOrValue?.target?.value ?? "";
 
                         ensureHomeAt(selectedIndex);
-                        form.setValue(`homes.${selectedIndex}.name` as Path<RootType>, nextVal, {
-                          shouldDirty: true,
-                          shouldValidate: true,
-                        });
+                        form.setValue(
+                          `homes.${selectedIndex}.name` as Path<RootType>,
+                          nextVal,
+                          {
+                            shouldDirty: true,
+                            shouldValidate: true,
+                          }
+                        );
                       },
-                      onBlur: () => form.trigger(`homes.${selectedIndex}.name` as Path<RootType>),
+                      onBlur: () =>
+                        form.trigger(
+                          `homes.${selectedIndex}.name` as Path<RootType>
+                        ),
                       ref: () => {},
                     }}
                   />
@@ -345,117 +459,42 @@ export const TestHeroUploader = ({ data }: { data: ListType<Home> }) => {
                     className="pr-0 h-9 text-sm! placeholder:text-gray-400"
                     props={{
                       name: `homes.${selectedIndex}.artist_name` as Path<RootType>,
-                      value: (form.watch(`homes.${selectedIndex}.artist_name` as Path<RootType>) ?? "") as string,
+                      value: (form.watch(
+                        `homes.${selectedIndex}.artist_name` as Path<RootType>
+                      ) ?? "") as string,
                       onChange: (evOrValue) => {
-                        const nextVal = typeof evOrValue === "string" ? evOrValue : evOrValue?.target?.value ?? "";
+                        const nextVal =
+                          typeof evOrValue === "string"
+                            ? evOrValue
+                            : evOrValue?.target?.value ?? "";
 
                         ensureHomeAt(selectedIndex); // мөр байхгүй бол үүсгэнэ
-                        form.setValue(`homes.${selectedIndex}.artist_name` as Path<RootType>, nextVal, {
-                          shouldDirty: true,
-                          shouldValidate: true,
-                        });
+                        form.setValue(
+                          `homes.${selectedIndex}.artist_name` as Path<RootType>,
+                          nextVal,
+                          {
+                            shouldDirty: true,
+                            shouldValidate: true,
+                          }
+                        );
                       },
-                      onBlur: () => form.trigger(`homes.${selectedIndex}.artist_name` as Path<RootType>),
+                      onBlur: () =>
+                        form.trigger(
+                          `homes.${selectedIndex}.artist_name` as Path<RootType>
+                        ),
                       ref: () => {},
                     }}
                   />
 
-                  <Button onClick={() => onSubmit(form.getValues())}>Хадгалах</Button>
+                  <Button onClick={() => onSubmit(form.getValues())}>
+                    Хадгалах
+                  </Button>
                 </>
               ) : (
                 <p className="text-gray-500 text-sm">Кардаа сонгоно уу.</p>
               )}
             </div>
           </div>
-
-          {/* <div className="hidden!">
-            <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-              <DialogContent className="sm:max-w-[400px] overflow-hidden">
-                <DialogHeader>
-                  <DialogTitle>Зургийн засвар</DialogTitle>
-                </DialogHeader>
-
-                {selectedIndex !== null && (
-                  <div className="flex flex-col space-y-4 p-4">
-                    <div className="flex justify-center">
-                      <div className="rounded-xl aspect-[5/7] overflow-hidden h-[30vh] relative">
-                        {form.watch(`homes.${selectedIndex}.image` as Path<RootType>) ? (
-                          <>
-                            <img src={form.watch(`homes.${selectedIndex}.image` as Path<RootType>) as string} alt="preview" className="size-full object-cover" />
-                            <div className="size-full absolute top-0 left-0 bg-gradient-to-t from-black/90 to-transparent" />
-                          </>
-                        ) : (
-                          <label className="flex flex-col items-center justify-start h-full cursor-pointer border-dashed border-gray-400 border-2 text-white text-sm bg-white rounded-xl">
-                            <div className="absolute top-0 left-0 size-full flex flex-col items-center justify-center text-gray-400">
-                              <CloudUpload className="size-10" />
-                              <span className="text-[11px] font-semibold">Зураг оруулах</span>
-                            </div>
-                            <input type="file" accept="image/*" className="hidden" />
-                          </label>
-                        )}
-                      </div>
-                    </div>
-
-                    <TextField
-                      label="Үйлчилгээний нэр"
-                      pl="Нэр..."
-                      className="pr-0 h-9 text-sm! placeholder:text-gray-400"
-                      props={{
-                        name: `homes.${selectedIndex}.name` as Path<RootType>,
-                        value: (form.watch(`homes.${selectedIndex}.name` as Path<RootType>) ?? "") as string,
-                        onChange: (evOrValue) => {
-                          const nextVal = typeof evOrValue === "string" ? evOrValue : evOrValue?.target?.value ?? "";
-
-                          ensureHomeAt(selectedIndex);
-                          form.setValue(`homes.${selectedIndex}.name` as Path<RootType>, nextVal, {
-                            shouldDirty: true,
-                            shouldValidate: true,
-                          });
-                        },
-                        onBlur: () => form.trigger(`homes.${selectedIndex}.name` as Path<RootType>),
-                        ref: () => {},
-                      }}
-                    />
-
-                    <TextField
-                      label="Артист нэр"
-                      pl="Артист нэр..."
-                      className="pr-0 h-9 text-sm! placeholder:text-gray-400"
-                      props={{
-                        name: `homes.${selectedIndex}.artist_name` as Path<RootType>,
-                        value: (form.watch(`homes.${selectedIndex}.artist_name` as Path<RootType>) ?? "") as string,
-                        onChange: (evOrValue) => {
-                          const nextVal = typeof evOrValue === "string" ? evOrValue : evOrValue?.target?.value ?? "";
-
-                          ensureHomeAt(selectedIndex); // мөр байхгүй бол үүсгэнэ
-                          form.setValue(`homes.${selectedIndex}.artist_name` as Path<RootType>, nextVal, {
-                            shouldDirty: true,
-                            shouldValidate: true,
-                          });
-                        },
-                        onBlur: () => form.trigger(`homes.${selectedIndex}.artist_name` as Path<RootType>),
-                        ref: () => {},
-                      }}
-                    />
-                  </div>
-                )}
-
-                <DialogFooter className="flex justify-end space-x-2">
-                  <Button variant="outline" onClick={closeModal}>
-                    Хаах
-                  </Button>
-                  <Button
-                    onClick={() => {
-                      onSubmit(form.getValues());
-                      closeModal();
-                    }}
-                  >
-                    Хадгалах
-                  </Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
-          </div> */}
         </div>
       </div>
     </div>

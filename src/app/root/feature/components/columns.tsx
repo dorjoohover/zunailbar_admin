@@ -5,6 +5,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { parseDate } from "@/lib/functions";
 import { TableActionButtons } from "@/components/tableActionButtons";
 import { IFeature } from "@/models/home.model";
+import { icons } from "@/lib/constants";
 
 export function getColumns(
   onEdit: (product: IFeature, index: number) => void,
@@ -13,84 +14,34 @@ export function getColumns(
   return [
     {
       id: "select",
-      header: ({ table }) => (
-        <Checkbox
-          checked={table.getIsAllPageRowsSelected()}
-          onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-          aria-label="Select all"
-        />
-      ),
-      cell: ({ row }) => (
-        <Checkbox
-          checked={row.getIsSelected()}
-          onCheckedChange={(value) => row.toggleSelected(!!value)}
-          aria-label="Select row"
-        />
-      ),
-      enableSorting: false,
-      enableHiding: false,
-    },
-    {
-      accessorKey: "name",
-      header: ({ column }) => (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          className="font-bold"
-        >
-          Name <ArrowUpDown className="w-4 h-4 ml-2" />
-        </Button>
-      ),
-    },
-    {
-      accessorKey: "ref",
-      header: "Reference",
-    },
-    {
-      accessorKey: "quantity",
-      header: ({ column }) => (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          className="font-bold"
-        >
-          Quantity <ArrowUpDown className="w-4 h-4 ml-2" />
-        </Button>
-      ),
+      header: ({ table }) => <span>№</span>,
+      cell: ({ row }) => <span className="">{row.index + 1}</span>,
     },
 
     {
-      accessorKey: "color",
-      header: "Color",
+      accessorKey: "title",
+      header: "Гарчиг",
     },
     {
-      accessorKey: "size",
-      header: "Size",
+      accessorKey: "index",
+      header: "Дараалал",
     },
     {
-      accessorKey: "created_at",
-      header: ({ column }) => (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          className="font-bold"
-        >
-          Created <ArrowUpDown className="w-4 h-4 ml-2" />
-        </Button>
-      ),
+      accessorKey: "icon",
+      header: "Icon",
       cell: ({ row }) => {
-        const date = parseDate(new Date(row.getValue("created_at")), false);
-        return date;
-      },
-      sortingFn: (rowA, rowB, columnId) => {
-        const dateA = new Date(rowA.getValue(columnId)).getTime();
-        const dateB = new Date(rowB.getValue(columnId)).getTime();
-        return dateA - dateB;
+        const Icon = icons?.[row.getValue("icon") as string];
+        return <Icon size={18} />;
       },
     },
+    {
+      accessorKey: "description",
+      header: "Тайлбар",
+    },
+
     {
       id: "actions",
-      header: "Actions",
+      header: "Үйлдэл",
       cell: ({ row }) => (
         // Bagasgasan
         <TableActionButtons

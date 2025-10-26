@@ -11,43 +11,38 @@ import { create, deleteOne, updateOne } from "@/app/(api)";
 import { FormItems } from "@/shared/components/form.field";
 import { TextField } from "@/shared/components/text.field";
 import { fetcher } from "@/hooks/fetcher";
-
 import DynamicHeader from "@/components/dynamicHeader";
 import { getColumns } from "./columns";
 import { Feature, IFeature, IFeatures } from "@/models/home.model";
 import { firstLetterUpper } from "@/lib/functions";
 import { showToast } from "@/shared/components/showToast";
-
-const featureschema = z.object({
-  title: zStrOpt,
-  description: zStrOpt,
-  icon: zNumOpt,
-  edit: zStrOpt,
-});
-
-const makeEmptyFeature = (i: number) => ({
-  title: "",
-  description: "",
-  icon: null,
-  edit: null,
-});
+import { IconPicker } from "@/components/icons/picker";
+import { Textarea } from "@/components/ui/textarea";
 
 const formSchema = z.object({
-  features: z
-    .array(featureschema)
-    .length(4)
-    .default(Array.from({ length: 4 }, (_, i) => makeEmptyFeature(i))),
-  edit: z.string().nullable().optional(),
+  title: zStrOpt,
+  description: zStrOpt,
+  icon: zStrOpt,
+  index: zStrOpt,
+  edit: zStrOpt,
 });
 export type RootType = z.infer<typeof formSchema>;
-export type HomeType = z.infer<typeof featureschema>;
 type FormInput = z.input<typeof formSchema>; // optional тал
 type FormOutput = z.output<typeof formSchema>;
+const defaultValues = {
+  title: "",
+  description: "",
+
+  index: null,
+  icon: null,
+  edit: null,
+};
 export const FeaturePage = ({ data }: { data: ListType<Feature> }) => {
   const [action, setAction] = useState(ACTION.DEFAULT);
-  const [open, setOpen] = useState<number>(0);
+  const [open, setOpen] = useState<undefined | boolean>(false);
   const form = useForm<FormInput, any, FormOutput>({
     resolver: zodResolver(formSchema),
+    defaultValues,
   });
   const [features, setFeatures] = useState<ListType<Feature>>(data);
   const deleteRoot = async (index: number, isHome: boolean) => {
@@ -58,9 +53,9 @@ export const FeaturePage = ({ data }: { data: ListType<Feature> }) => {
     refresh();
     return res.success;
   };
-  const edit = async (e: IFeature, index: number) => {
-    setOpen(index);
-    form.reset({ ...e, edit: e.id });
+  const edit = async (e: IFeature) => {
+    setOpen(true);
+    // form.reset({ ...e, edit: e.id });
   };
 
   const columns = getColumns(edit, deleteRoot);
@@ -77,27 +72,23 @@ export const FeaturePage = ({ data }: { data: ListType<Feature> }) => {
     const body = e as RootType;
     const { edit, ...payload } = body;
     let res;
-    if (body.features) {
-      res = edit
-        ? await updateOne<IFeature>(
-            Api.home,
-            edit as string,
-            body.features[0] as IFeature,
-            "home"
-          )
-        : await create<IFeatures>(
-            Api.home,
-            {
-              items: body.features as IFeature[],
-            },
-            "home"
-          );
-    }
+    res = edit
+      ? await updateOne<IFeature>(
+          Api.home,
+          edit as string,
+          { ...payload, index: +(payload.index ?? "0") } as IFeature,
+          "feature"
+        )
+      : await create<IFeature>(
+          Api.home,
+          { ...payload, index: +(payload.index ?? "0") } as IFeature,
+          "feature"
+        );
 
     if (res?.success) {
       refresh();
-      setOpen(0);
-      form.reset({});
+      setOpen(false);
+      form.reset(defaultValues);
     }
     setAction(ACTION.DEFAULT);
   };
@@ -113,6 +104,7 @@ export const FeaturePage = ({ data }: { data: ListType<Feature> }) => {
       .join(", ");
     showToast("info", error);
   };
+  const [search, setSearch] = useState("");
 
   return (
     <div className="">
@@ -131,44 +123,46 @@ export const FeaturePage = ({ data }: { data: ListType<Feature> }) => {
                 name="Feature"
                 title="Feature форм"
                 submit={() => form.handleSubmit(onSubmit, onInvalid)()}
-                open={open == 2}
-                reset={() => {
-                  setOpen(0);
-                  form.reset({});
-                }}
+                open={open == true}
                 setOpen={(v) => {
-                  if (!v) {
-                    setOpen(0);
-                  }
+                  setOpen(v);
+                  form.reset(defaultValues);
                 }}
                 loading={action == ACTION.RUNNING}
               >
                 <FormProvider {...form}>
                   <div className="divide-y">
-                    <div className="grid grid-cols-2 gap-3 pt-5">
-                      {/* Жишээ: features массивыг 4 мөрөөр засах (schema-д тааруулж) */}
-                      {Array.from({ length: 4 }).map((_, i) => {
-                        return (
-                          <React.Fragment key={i}>
-                            <FormItems
-                              control={form.control}
-                              name={`features.${i}.title`}
-                            >
-                              {(field) => (
-                                <TextField label="Нэр" props={field} />
-                              )}
-                            </FormItems>
-                            <FormItems
-                              control={form.control}
-                              name={`features.${i}.description`}
-                            >
-                              {(field) => (
-                                <TextField label="Тайлбар" props={field} />
-                              )}
-                            </FormItems>
-                          </React.Fragment>
-                        );
-                      })}
+                    <div className="grid grid-cols-1 gap-3 pt-5">
+                      <FormItems control={form.control} name={`title`}>
+                        {(field) => <TextField label="Нэр" props={field} />}
+                      </FormItems>
+                      <FormItems control={form.control} name={`index`}>
+                        {(field) => (
+                          <TextField label="Дараалал" props={field} />
+                        )}
+                      </FormItems>
+                      <FormItems control={form.control} name={`description`}>
+                        {(field) => {
+                          return (
+                            <Textarea
+                              className=""
+                              onChange={field.onChange}
+                              value={field.value as string}
+                            />
+                          );
+                        }}
+                      </FormItems>
+                      <FormItems control={form.control} name={`icon`}>
+                        {(field) => {
+                          const value = field.value;
+                          return (
+                            <IconPicker
+                              value={value ? value : undefined}
+                              onChange={(e) => field.onChange(e)}
+                            />
+                          );
+                        }}
+                      </FormItems>
                     </div>
                   </div>
                 </FormProvider>

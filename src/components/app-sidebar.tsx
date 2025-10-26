@@ -7,7 +7,6 @@ import {
   Wallet,
   SquareUserRound,
   Milk,
-  ShieldUserIcon,
   ChevronRight,
   UsersRound,
   UserRound,
@@ -450,7 +449,7 @@ export function AppSidebar() {
                   size={"lg"}
                   className="text-white hover:bg-white/20"
                 >
-                  <ShieldUserIcon /> Админ
+                  Админ
                   <ChevronUp className="ml-auto" />
                 </SidebarMenuButton>
               </DropdownMenuTrigger>

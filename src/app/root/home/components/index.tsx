@@ -202,6 +202,7 @@ export const HomePage = ({ data }: { data: ListType<Home> }) => {
     };
   const handleRemove = (idx: number) => () => {
     ensureHomeAt(idx);
+    console.log(idx);
     const next = (form.getValues("homes") ?? []).slice();
     next[idx] = { ...(next[idx] ?? {}), file: null, image: null };
     form.setValue("homes", next, { shouldDirty: true, shouldValidate: true });

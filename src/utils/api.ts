@@ -10,7 +10,7 @@ const BASE = process.env.API
     ? process.env.API
     : process.env.API + "/"
   : // : "http://localhost:4000/api/v1/";
-    "https://srv952218.hstgr.cloud/api/v1/";
+    "http://api.zunailbar.mn/api/v1/";
 
 export enum Api {
   login = "login",
@@ -74,4 +74,4 @@ export const API = {
 
 // export const baseUrl =
 //   process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
-process.env.NEXT_PUBLIC_BASE_URL || "https://admin.srv952218.hstgr.cloud";
+process.env.NEXT_PUBLIC_BASE_URL || "https://admin.zunailbar.mn";

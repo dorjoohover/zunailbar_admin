@@ -13,7 +13,7 @@ import z from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Api } from "@/utils/api";
-import { create, deleteOne, excel, search, updateOne } from "@/app/(api)";
+import { create, deleteOne, excel, find, search, updateOne } from "@/app/(api)";
 import { fetcher } from "@/hooks/fetcher";
 import SchedulerViewFilteration from "@/components/schedule/_components/view/schedular-view-filteration";
 import { SchedulerProvider } from "@/providers/schedular-provider";
@@ -26,7 +26,8 @@ import { DataTable } from "@/components/data-table";
 import { Switch } from "@/components/ui/switch";
 import { DatePicker } from "@/shared/components/date.picker";
 import { Button } from "@/components/ui/button";
-import { CalendarIcon, FileText } from "lucide-react";
+import { CalendarIcon, Check, FileText, Trash2 } from "lucide-react";
+import { AppAlertDialog } from "@/components/AlertDialog";
 
 const formSchema = z.object({
   branch_id: z.string().min(1),
@@ -98,15 +99,18 @@ export const OrderPage = ({
     refresh();
     return res.success;
   };
-
+  const dateFormat = (d: Date) => {
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    return `${y}-${m}-${day}`;
+  };
   const refresh = async (pg: PG = DEFAULT_PG) => {
     setAction(ACTION.RUNNING);
     const { page, limit, sort } = pg;
     const d = mnDate(currentDate);
-    const y = d.getFullYear();
-    const m = String(d.getMonth() + 1).padStart(2, "0");
-    const day = String(d.getDate()).padStart(2, "0");
-    const date = `${y}-${m}-${day}`;
+
+    const date = dateFormat(d);
 
     await fetcher<Order>(Api.order, {
       page: page ?? DEFAULT_PG.page,
@@ -123,8 +127,17 @@ export const OrderPage = ({
   };
   const onSubmit = async <T,>(e: T) => {
     setAction(ACTION.RUNNING);
-    const body = e as OrderType;
-    const { edit, ...payload } = body;
+    const body = e as any;
+    const edit = body.edit;
+    let details = await Promise.all(
+      body.details.map((detail: any) => {
+        return {
+          ...detail,
+          user_id: body.user_id,
+        };
+      })
+    );
+    const payload = { ...body, details };
     const res = edit
       ? await updateOne<Order>(
           Api.order,
@@ -134,8 +147,8 @@ export const OrderPage = ({
           } as unknown as Order,
           "update"
         )
-      : await create<Order>(Api.order, {
-          ...e,
+      : await create(Api.order, {
+          ...payload,
         } as unknown as Order);
     if (res.success) {
       refresh();
@@ -193,8 +206,18 @@ export const OrderPage = ({
     // console.log(e);
     // form.reset({ ...e, date: e.date?.toString().slice(0, 10), edit: e.id });
   };
-  const columns = getColumns(edit, deleteOrders);
 
+  const confirmOrders = async () => {
+    const date = dateFormat(mnDate(currentDate));
+    const res = await find(Api.order, {}, `confirm/${date}`);
+    const success = res?.data?.count > 0;
+    showToast(
+      success ? "success" : "info",
+      success ? `${res.data.count} захиалга баталгаажлаа` : "Захиалга олдсонгүй"
+    );
+  };
+
+  const columns = getColumns(edit, deleteOrders);
   return (
     <div className="relative">
       <DynamicHeader count={orders?.count} />
@@ -223,6 +246,22 @@ export const OrderPage = ({
               refresh={refresh}
             />
           </SchedulerProvider>
+          <div className="flex justify-end my-8">
+            <AppAlertDialog
+              onConfirm={confirmOrders}
+              title={`${dateFormat(
+                mnDate(currentDate)
+              )} өдрийн захиалгуудыг хаахдаа бэлэн байна уу`}
+              trigger={
+                <Button variant="default">
+                  <Check className="w-4 h-4 text-green-500" />
+                  Захиалга хаах
+                </Button>
+              }
+            />
+          </div>
+
+          {/* <Button>Баталгаажуулах</Button> */}
         </div>
       </div>
     </div>
