@@ -1,19 +1,24 @@
 "use client";
+
 import React from "react";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useModal } from "@/providers/modal-context";
 import AddEventModal from "@/components/schedule/_modals/add-event-modal";
-import { CalendarIcon, ClockIcon, Trash2 } from "lucide-react";
+import { CustomEventModal } from "@/types";
+import { TrashIcon, CalendarIcon, ClockIcon, Trash2 } from "lucide-react";
 import { useScheduler } from "@/providers/schedular-provider";
+import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import CustomModal from "@/components/ui/custom-modal";
 import { getUserColor } from "@/lib/colors";
 import { OrderStatusValues, SearchType } from "@/lib/constants";
 import { OrderStatus } from "@/lib/enum";
-import { Branch, IOrder, Service, User } from "@/models";
+import { Branch, IOrder, Order, Service, User } from "@/models";
 import { showToast } from "@/shared/components/showToast";
+import { Api } from "@/utils/api";
 import AppDialog from "@/shared/components/appDialog";
-import { mobileFormatter } from "@/lib/functions";
+import { mnDateStr, mobileFormatter } from "@/lib/functions";
 
 // Function to format date
 const formatDate = (date: Date) => {
