@@ -58,8 +58,8 @@ export function LoginForm() {
         merchant,
       }),
     });
-    // router.push("/");
     window.location.replace(window.location.href);
+    router.push('/')
   };
   const onSubmit = async (value: ILoginUser) => {
     setLoading(true);
@@ -67,6 +67,7 @@ export function LoginForm() {
     if (error) {
       showToast("info", error);
     } else {
+      showToast("success", "Амжилттай нэвтэрлээ");
       save(data.accessToken, data.branch_id, data.merchant_id);
     }
     setLoading(false);
