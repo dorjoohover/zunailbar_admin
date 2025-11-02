@@ -6,13 +6,11 @@ export async function POST(request: Request) {
   try {
     const body = await request.json();
     const store = await cookies();
-    console.log(body);
 
     store.set("token", body.token);
     store.set("merchant_id", body.merchant);
     store.set("branch_id", body.branch);
 
-    console.log("✅ Cookie set:", body);
 
     return NextResponse.redirect(
       new URL("/", process.env.NEXT_PUBLIC_BASE_URL || "http://admin.zunailbar.mn/")

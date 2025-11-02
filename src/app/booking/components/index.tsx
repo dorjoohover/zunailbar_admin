@@ -214,6 +214,7 @@ export const BookingPage = ({
       return [...prev.slice(0, idx), updated, ...prev.slice(idx + 1)];
     });
   };
+  console.log(bookings?.items);
   return (
     <div className="">
       <DynamicHeader count={bookings?.count} />
@@ -299,6 +300,7 @@ export const BookingPage = ({
               </Button>
             )}
           </div>
+
           {bookings?.items && bookings?.items?.length > 0 ? (
             <ScheduleTable
               d={bookings.items?.[0]?.index ?? 0}

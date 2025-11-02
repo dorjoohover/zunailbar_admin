@@ -39,8 +39,6 @@ export const ScheduleTable = ({
   const today = mnDate();
   const hour = today.getHours();
   today.setHours(0, 0, 0, 0);
-  const checkDate = mnDate(date as Date);
-  checkDate.setHours(0, 0, 0, 0);
 
   // Ашиглах нь
 

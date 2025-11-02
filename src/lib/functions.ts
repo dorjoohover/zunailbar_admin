@@ -80,7 +80,7 @@ export const mnDateStr = (now = new Date()): string => {
 };
 export const mnDate = (now = new Date()): Date => {
   const ubOffset = 8 * 60;
-  const utc = now.getTime() + now.getTimezoneOffset() * 60000;
+  const utc = now?.getTime() + now.getTimezoneOffset() * 60000;
   const ubTime = utc + ubOffset * 60 * 1000;
   return new Date(ubTime);
 };
