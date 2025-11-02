@@ -40,7 +40,6 @@ export const find = async <T,>(
         "merchant-id": merchant || "",
       },
     });
-
     if (!res.ok) {
       return {
         data: { count: 0, items: [] },

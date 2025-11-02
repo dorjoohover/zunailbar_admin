@@ -33,7 +33,7 @@ import {
 import DynamicHeader from "@/components/dynamicHeader";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { firstLetterUpper, mnDate, numberArray } from "@/lib/functions";
+import { firstLetterUpper, numberArray } from "@/lib/functions";
 import { showToast } from "@/shared/components/showToast";
 
 const hourLine = z.string();

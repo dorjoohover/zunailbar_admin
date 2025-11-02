@@ -40,7 +40,7 @@ export enum OrderStatus {
   // uridchilgaa tolson
   Active = 20,
   // uilchilgee ehelsen
-  Started = 30,
+  // Started = 30,
   // duussan
   Finished = 40,
   // tsutsalsan

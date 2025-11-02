@@ -67,11 +67,22 @@ export function getDayName(dayNumber: number): string {
   return days[dayNumber] || "";
 }
 
+export const mnDateStr = (now = new Date()): string => {
+  const ubDate = new Intl.DateTimeFormat(undefined, {
+    timeZone: "Asia/Ulaanbaatar",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(new Date(now));
+  return ubDate;
+};
 export const mnDate = (now = new Date()): Date => {
-  const mongoliaTime = new Date(
-    now.toLocaleString("en-US", { timeZone: "Asia/Ulaanbaatar" })
-  );
-  return mongoliaTime;
+  const ubOffset = 8 * 60;
+  const utc = now.getTime() + now.getTimezoneOffset() * 60000;
+  const ubTime = utc + ubOffset * 60 * 1000;
+  return new Date(ubTime);
 };
 
 export function sameYMD(a: Date, b: Date) {
@@ -189,7 +200,8 @@ export const changeValue = (
 };
 
 export const mobileFormatter = (mobile: string) => {
-  return mobile ? mobile.replace("+976", "") : "";
+  const value = mobile ? mobile.replace("+976", "") : "";
+  return value.slice(0, 4) + "-" + value.slice(4);
 };
 
 export const searchUsernameFormatter = (value: string) => {

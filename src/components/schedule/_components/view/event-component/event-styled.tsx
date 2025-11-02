@@ -1,22 +1,17 @@
 "use client";
-
 import React from "react";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useModal } from "@/providers/modal-context";
 import AddEventModal from "@/components/schedule/_modals/add-event-modal";
-import { CustomEventModal } from "@/types";
-import { TrashIcon, CalendarIcon, ClockIcon, Trash2 } from "lucide-react";
+import { CalendarIcon, ClockIcon, Trash2 } from "lucide-react";
 import { useScheduler } from "@/providers/schedular-provider";
-import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import CustomModal from "@/components/ui/custom-modal";
 import { getUserColor } from "@/lib/colors";
 import { OrderStatusValues, SearchType } from "@/lib/constants";
 import { OrderStatus } from "@/lib/enum";
-import { Branch, IOrder, Order, Service, User } from "@/models";
+import { Branch, IOrder, Service, User } from "@/models";
 import { showToast } from "@/shared/components/showToast";
-import { Api } from "@/utils/api";
 import AppDialog from "@/shared/components/appDialog";
 import { mobileFormatter } from "@/lib/functions";
 
@@ -118,7 +113,7 @@ export default function EventStyled({
   function handleEditEvent(event: IOrder) {
     // Open the modal with the content
     setOpen(
-      <CustomModal title="Edit Event">
+      <CustomModal title="Захиалга засах">
         <AddEventModal
           send={send}
           items={values}
@@ -221,8 +216,7 @@ export default function EventStyled({
               branch_id: event.branch_id,
               customer_id: event.customer_id,
               user_id: event.user_id,
-              user_desc: event.user_desc,
-              customer_desc: event.customer_desc,
+              description: event.description,
               order_status: event.order_status,
               total_amount: event.total_amount ?? 0,
               order_date: event.order_date,
@@ -262,12 +256,10 @@ export default function EventStyled({
                 </span>
               </div>
             )}
-            {!event?.minmized && event?.user_desc && (
-              <div className="my-2 text-sm">{event?.user_desc} </div>
+            {!event?.minmized && event?.description && (
+              <div className="my-2 text-sm">{event?.description} </div>
             )}
-            {!event?.minmized && event?.customer_desc && (
-              <div className="my-2 text-sm">{event?.customer_desc} </div>
-            )}
+
             {!event?.minmized && (
               <div className="text-xs space-y-1 mt-2">
                 <div className="flex items-center">

@@ -17,10 +17,12 @@ export interface IUser {
   experience?: number;
   percent?: number;
   created_at?: Date;
+  level?: number;
 }
 export interface User {
   id: string;
   percent?: number;
+  level?: number;
   color?: number;
   firstname?: string;
   lastname?: string;

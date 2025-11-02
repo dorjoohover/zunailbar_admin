@@ -221,7 +221,7 @@ export const SalaryLogValues = {
 
 export const OrderStatusValues = {
   [OrderStatus.Active]: "Бэлэн",
-  [OrderStatus.Started]: "Эхэлсэн",
+  // [OrderStatus.Started]: "Эхэлсэн",
   [OrderStatus.Cancelled]: "Цуцалсан",
   [OrderStatus.Finished]: "Дууссан",
   [OrderStatus.Pending]: "Хүлээгдэж байна",
