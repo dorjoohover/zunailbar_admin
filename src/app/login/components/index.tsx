@@ -59,8 +59,7 @@ export function LoginForm() {
       }),
     });
     // router.push("/");
-    window.location.href = "/";
-    router.refresh();
+    window.location.replace(window.location.href);
   };
   const onSubmit = async (value: ILoginUser) => {
     setLoading(true);
