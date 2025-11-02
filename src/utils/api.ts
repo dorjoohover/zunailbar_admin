@@ -10,7 +10,7 @@ const BASE = process.env.API
     ? process.env.API
     : process.env.API + "/"
   : // : "http://localhost:4000/api/v1/";
-    "http://api.zunailbar.mn/api/v1/";
+    "https://api.zunailbar.mn/api/v1/";
 
 export enum Api {
   login = "login",
