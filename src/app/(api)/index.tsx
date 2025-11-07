@@ -215,7 +215,7 @@ export const create = async <T,>(
     const merchant = store.get("merchant_id")?.value;
 
     const url = `${API[uri]}${route ? `/${route}` : ""}`;
-
+    console.log(url);
     const res = await fetch(url, {
       cache: "no-store",
       method: METHOD.post,

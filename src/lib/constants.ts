@@ -55,16 +55,16 @@ export const zNumOpt = z.number().nullable().optional();
 
 export const EmployeeStatusValue = {
   [EmployeeStatus.ACTIVE]: { name: "Идэвхтэй", color: "green-badge badge" },
-  [EmployeeStatus.FIRED]: { name: "Халагдсан", color: "slate-badge badge" },
+  [EmployeeStatus.FIRED]: { name: "Ажлаас гарсан", color: "slate-badge badge" },
   [EmployeeStatus.DEKIRIT]: { name: "Декирит", color: "red-badge badge" },
   [EmployeeStatus.VACATION]: { name: "Амарсан", color: "yellow-badge badge" },
-  [EmployeeStatus.BANNED]: { name: "Бандуулсан", color: "red-badge badge" },
+  [EmployeeStatus.BANNED]: { name: "Идэвхгүй", color: "red-badge badge" },
 };
 export type Option<T = string | number> = { value: T; label: string };
 
 export const UserStatusValue = {
   [UserStatus.ACTIVE]: { name: "Идэвхтэй", color: "green-badge badge" },
-  [UserStatus.BANNED]: { name: "Бандуулсан", color: "red-badge badge" },
+  [UserStatus.BANNED]: { name: "Идэвхгүй", color: "red-badge badge" },
 };
 export const ScheduleStatusValue = {
   [ScheduleStatus.Active]: { name: "Active", color: "green-badge badge" },
@@ -77,6 +77,10 @@ export interface ListType<T> {
   count: number;
   items: T[];
 }
+export interface ScheduleData {
+  [day: number]: string[];
+}
+
 export interface SearchType<T> {
   id: string;
   value: string;

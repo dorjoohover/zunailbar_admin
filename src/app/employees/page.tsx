@@ -3,11 +3,11 @@ import ContainerHeader from "@/components/containerHeader";
 import { Api } from "@/utils/api";
 import { find } from "../(api)";
 import { EmployeePage } from "./components";
-import { ROLE } from "@/lib/enum";
+import { ROLE, UserStatus } from "@/lib/enum";
 
 export default async function EmployeesPage() {
   const [userRes, branchRes] = await Promise.all([
-    find<User>(Api.user, { role: ROLE.E_M }),
+    find<User>(Api.user, { role: ROLE.E_M, user_status: UserStatus.ACTIVE }),
     find<Branch>(Api.branch),
   ]);
   return (

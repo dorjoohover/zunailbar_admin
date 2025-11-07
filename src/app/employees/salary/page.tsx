@@ -1,10 +1,8 @@
 import { Api } from "@/utils/api";
-import { Service } from "@/models/service.model";
-import { User, UserService } from "@/models";
-import ContainerHeader from "@/components/containerHeader";
+import { User } from "@/models";
 import { find, search } from "@/app/(api)";
 import { EmployeeUserSalaryPage } from "./components";
-import { ROLE, STATUS } from "@/lib/enum";
+import { ROLE } from "@/lib/enum";
 import { UserSalary } from "@/models/user.salary.model";
 
 export default async function Page() {

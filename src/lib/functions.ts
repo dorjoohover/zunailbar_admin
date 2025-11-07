@@ -112,9 +112,10 @@ export function mnDateFormatTitle(d: Date | string | number = new Date()) {
   // Жишээ: "даваа, 2025 оны 9 сарын 1"
   return `${weekday}, ${yearMonthDay}`;
 }
-export function toTimeString(hour: number | string): string {
+export function toTimeString(hour: number | string, slice?: boolean): string {
   const h = String(hour).padStart(2, "0");
-  return `${h}:00:00`;
+  const value = `${h}:00:00`;
+  return slice ? value.slice(0, 5) : value;
 }
 
 export function add15Days(day: number) {

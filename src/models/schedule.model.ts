@@ -1,3 +1,8 @@
+export interface ScheduleUserMeta {
+  mobile: string;
+  nickname: string;
+  color: number;
+}
 export interface ISchedule {
   id?: string;
   user_id: string;
@@ -6,10 +11,11 @@ export interface ISchedule {
   index: number;
   start_time?: Date;
   end_time?: Date;
-  times: string[];
+  times?: string[] | null;
   schedule_status?: number;
   created_at?: Date;
   updated_at?: Date;
+  meta?: ScheduleUserMeta;
 }
 export interface Schedule {
   id: string;
@@ -23,6 +29,7 @@ export interface Schedule {
   times: string;
   created_at?: Date;
   updated_at?: Date;
+  meta?: ScheduleUserMeta;
 }
 export interface IBooking {
   id?: string;
@@ -32,9 +39,8 @@ export interface IBooking {
   index: number;
   start_time?: Date;
   end_time?: Date;
-  status?: number;
   booking_status?: number;
-  times: string[];
+  times?: string[];
   created_at?: Date;
   updated_at?: Date;
 }
@@ -46,7 +52,6 @@ export interface Booking {
   index: number;
   start_time: Date;
   end_time: Date;
-  status: number;
   booking_status: number;
   times: string;
   created_at?: Date;

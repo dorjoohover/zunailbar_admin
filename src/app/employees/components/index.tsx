@@ -231,7 +231,9 @@ export const EmployeePage = ({
   };
   const columns = getColumns(edit, setStatus, giveProduct, deleteEmployee);
 
-  const [filter, setFilter] = useState<FilterType>();
+  const [filter, setFilter] = useState<FilterType>({
+    status: UserStatus.ACTIVE,
+  });
   const changeFilter = (key: string, value: number | string) => {
     setFilter((prev) => ({ ...prev, [key]: value }));
   };
@@ -283,7 +285,7 @@ export const EmployeePage = ({
           clear={() => setUserProduct(undefined)}
         />
         <DataTable
-          clear={() => setFilter(undefined)}
+          clear={() => setFilter({})}
           filter={
             <>
               {groups.map((item, i) => {
@@ -309,18 +311,6 @@ export const EmployeePage = ({
                       }}
                     />
                   </label>
-                  // <FilterPopover
-                  //   key={i}
-                  //   label={item.label}
-                  //   content={item.items.map((it, index) => (
-                  //     <label key={index} className="checkbox-label">
-                  //       <Checkbox checked={filter?.[key] == it.value} onCheckedChange={() => changeFilter(key, it.value)} />
-                  //       <span>{it.label as string}</span>
-                  //     </label>
-
-                  //   ))}
-                  //   value={filter?.[key] ? item.items.filter((item) => item.value == filter[key])[0].label : undefined}
-                  // />
                 );
               })}
             </>
@@ -346,7 +336,6 @@ export const EmployeePage = ({
               loading={action == ACTION.RUNNING}
             >
               <FormProvider {...form}>
-                {/* Profile Image */}
                 <div className="divide-y">
                   <div className="double-col pb-5">
                     <div className="double-col">
@@ -371,7 +360,6 @@ export const EmployeePage = ({
                                     className="object-cover w-full h-full overflow-hidden bg-white border rounded-md"
                                   />
 
-                                  {/* Change */}
                                   <label
                                     htmlFor="file-upload"
                                     className="absolute p-1 rounded cursor-pointer top-1 right-7 bg-primary hover:bg-slate-600"
@@ -379,7 +367,6 @@ export const EmployeePage = ({
                                     <Pencil className="text-white size-3" />
                                   </label>
 
-                                  {/* Remove */}
                                   <button
                                     type="button"
                                     onClick={() => field.onChange(null)}
@@ -389,7 +376,6 @@ export const EmployeePage = ({
                                   </button>
                                 </>
                               ) : (
-                                // Empty state uploader
                                 <label
                                   htmlFor="file-upload"
                                   className="flex flex-col items-center justify-center w-full h-full transition-colors bg-white border rounded-md cursor-pointer hover:bg-gray-50"
@@ -401,7 +387,6 @@ export const EmployeePage = ({
                                 </label>
                               )}
 
-                              {/* Hidden input */}
                               <input
                                 id="file-upload"
                                 type="file"
@@ -414,7 +399,7 @@ export const EmployeePage = ({
                                   const res = validateImageFile(file);
                                   if (!res.ok) {
                                     showToast("error", res.message);
-                                    e.currentTarget.value = ""; // буруу бол reset
+                                    e.currentTarget.value = "";
                                     return;
                                   }
                                   field.onChange(file);
@@ -534,7 +519,6 @@ export const EmployeePage = ({
                           {(field) => {
                             return (
                               <>
-                                {/* <TextField type={"mobile" == item ? "number" : "text"} props={{ ...field }} label={firstLetterUpper(item)} /> */}
                                 <TextField
                                   type={item === "mobile" ? "number" : "text"}
                                   props={{
