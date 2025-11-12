@@ -1,6 +1,15 @@
 "use client";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import { Loader2Icon, Plus } from "lucide-react";
@@ -9,7 +18,7 @@ import { ReactNode, useRef } from "react";
 
 export const Modal = ({
   // Button text
-  name = "Нэмэх",
+  name,
   // Modal text
   title = name,
   btn = <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />,
@@ -67,14 +76,20 @@ export const Modal = ({
     <Dialog open={open} onOpenChange={(v) => setOpen(v)} modal={true}>
       {name && name !== "" && (
         <DialogTrigger asChild>
-          <Button variant="purple" className="cursor-pointer uppercase text-xs font-bold ml-1">
+          <Button
+            variant="purple"
+            className="cursor-pointer uppercase text-xs font-bold ml-1"
+          >
             <Plus strokeWidth={2.5} />
             <span className="hidden md:block">{name}</span>
           </Button>
         </DialogTrigger>
       )}
       {/* <DialogContent className={`max-w-${maw} lg:max-w-${w}`}> */}
-      <DialogContent ref={dialogContentRef} className={cn(mawClasses[maw], "max-h-[90vh]")}>
+      <DialogContent
+        ref={dialogContentRef}
+        className={cn(mawClasses[maw], "max-h-[90vh]")}
+      >
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription>{description}</DialogDescription>
@@ -87,7 +102,12 @@ export const Modal = ({
             </Button>
           </DialogClose>
           {submit && (
-            <Button variant={"purple"} loading={loading} onClick={(e) => handleSubmit(e)} className="min-w-24">
+            <Button
+              variant={"purple"}
+              loading={loading}
+              onClick={(e) => handleSubmit(e)}
+              className="min-w-24"
+            >
               {/* Button dotroo loading ni ajillaad end bicsen ni hereggumshig bn  */}
               {/* {loading && btn} */}
               {/* {loading ? "Please wait..." : submitTxt} */}

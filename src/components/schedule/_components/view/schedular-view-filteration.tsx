@@ -3,13 +3,8 @@
 import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  Calendar as CalendarIcon,
-  CalendarDaysIcon,
-  Calendar,
-  FileText,
-} from "lucide-react";
+import { Tabs, TabsContent } from "@/components/ui/tabs";
+import { FileText, CircleX } from "lucide-react";
 
 import AddEventModal from "../../_modals/add-event-modal";
 import DailyView from "./day/daily-view";
@@ -27,7 +22,12 @@ import {
 import { Branch, IOrder, Order, Service, User } from "@/models";
 import { Api } from "@/utils/api";
 import { DatePicker } from "@/shared/components/date.picker";
-import { mnDate } from "@/lib/functions";
+import {
+  firstLetterUpper,
+  mnDate,
+  mobileFormatter,
+  usernameFormatter,
+} from "@/lib/functions";
 import { Switch } from "@/components/ui/switch";
 import { DataTable } from "@/components/data-table";
 import { ColumnDef } from "@tanstack/react-table";
@@ -42,6 +42,7 @@ import { FormItems } from "@/shared/components/form.field";
 import { TextField } from "@/shared/components/text.field";
 import { PasswordField } from "@/shared/components/password.field";
 import { ComboBox } from "@/shared/components/combobox";
+import { FilterType } from "@/app/orders/components";
 
 // Animation settings for Framer Motion
 const animationConfig = {
@@ -80,10 +81,8 @@ export default function SchedulerViewFilteration({
   refresh,
   values,
   send,
-  currentDate,
-  setCurrentDate,
-  setStatus,
-  status,
+  filter,
+  setFilter,
   deleteOrder,
   action,
   columns,
@@ -91,17 +90,18 @@ export default function SchedulerViewFilteration({
   loading: boolean;
   deleteOrder: (id: string) => void;
   orders: ListType<Order>;
+  setFilter: (
+    key: string,
+    value: string | number | undefined | boolean
+  ) => void;
+  filter?: FilterType;
   values: {
     branch: SearchType<Branch>[];
     customer: SearchType<User>[];
     user: SearchType<User>[];
-    service: SearchType<Service>[];
+    service: ListType<Service>;
   };
   views?: Views;
-  currentDate: Date;
-  setCurrentDate: Dispatch<SetStateAction<Date>>;
-  setStatus: Dispatch<SetStateAction<OrderStatus | null>>;
-  status: OrderStatus | null;
   stopDayEventSummary?: boolean;
   CustomComponents?: CustomComponents;
   classNames?: ClassNames;
@@ -225,15 +225,12 @@ export default function SchedulerViewFilteration({
       excel({});
     }
   };
-  const [acitons, setAction] = useState(ACTION.DEFAULT);
   const [open, setIsOPen] = useState<undefined | boolean>(false);
   const onSubmit = async <T,>(e: T) => {
-    setAction(ACTION.RUNNING);
     const body = e as UserType;
-    const { ...payload } = body;
 
     const res = await create<User>(Api.user, {
-      ...e,
+      ...body,
       role: ROLE.CLIENT,
       birthday: null,
     } as any);
@@ -246,54 +243,93 @@ export default function SchedulerViewFilteration({
     } else {
       showToast("error", res.error ?? "");
     }
-    setAction(ACTION.DEFAULT);
   };
   const onInvalid = async <T,>(e: T) => {
     const value = e as any;
     if (value.password != undefined)
       showToast("info", value.password?.message ?? "");
   };
-  const [isList, setList] = useState(false);
-  useEffect(() => {
-    const d = mnDate(currentDate);
-    const y = d.getFullYear();
-    const m = String(d.getMonth() + 1).padStart(2, "0");
-    const day = String(d.getDate()).padStart(2, "0");
-    const date = `${y}-${m}-${day}`;
-    refresh<{ date: string; status: number | null }>({
-      filter: {
-        date: date,
-        status,
-      },
-    });
-  }, [currentDate, status]);
+
   return (
     <div className="flex w-full flex-col">
       <div className="daily-weekly-monthly-selection relative w-full">
         <div className="flex items-center justify-between space-x-2 mb-0">
-          <div className="flex gap-2">
-            <DatePicker
-              name=""
-              pl="Огноо сонгох"
-              props={{
-                name: "",
-                onBlur: () => {},
-                onChange: (e) => {
-                  setCurrentDate(e);
-                },
-                ref: () => null,
-                value: currentDate,
-              }}
-            />
+          <div className="flex gap-2 items-end">
+            <label>
+              <span className="filter-label">Огноо</span>
 
-            <div className="w-full maw-[300px]">
+              <DatePicker
+                range={filter?.date}
+                setRange={() => {}}
+                name=""
+                pl="Огноо сонгох"
+                props={{
+                  name: "",
+                  onBlur: () => {},
+                  onChange: (e) => {
+                    // setCurrentDate(e);
+                    setFilter("date", e);
+                  },
+                  ref: () => null,
+                  value: filter?.date,
+                }}
+              />
+            </label>
+            <label className="w-full maw-[300px]">
+              <span className="filter-label">Салбар</span>
+              <ComboBox
+                props={{
+                  name: "Артист",
+                  onBlur: () => {},
+                  onChange: (e) => setFilter("branch", e),
+                  ref: () => null,
+                  value: filter?.branch,
+                }}
+                items={values.branch.map((item) => {
+                  const [name] = item?.value?.split("__") ?? [""];
+                  return {
+                    value: item.id,
+                    label: name ?? "",
+                  };
+                })}
+              />
+            </label>
+            <label className="w-full maw-[300px]">
+              <span className="filter-label">Артист</span>
+              <ComboBox
+                props={{
+                  name: "Артист",
+                  onBlur: () => {},
+                  onChange: (e) => setFilter("artist", e),
+                  ref: () => null,
+                  value: filter?.artist,
+                }}
+                items={values.user.map((item) => {
+                  const [mobile, nickname] = item?.value?.split("__") ?? [
+                    "",
+                    "",
+                    "",
+                    "",
+                  ];
+                  return {
+                    value: item.id,
+                    label: `${firstLetterUpper(
+                      nickname ?? ""
+                    )} - ${mobileFormatter(mobile ?? "")}`,
+                  };
+                })}
+              />
+            </label>
+
+            <label className="w-full maw-[300px]">
+              <span className="filter-label">Төлөв</span>
               <ComboBox
                 props={{
                   name: "Төлөв",
                   onBlur: () => {},
-                  onChange: (e) => setStatus(e),
+                  onChange: (e) => setFilter("status", e),
                   ref: () => null,
-                  value: status,
+                  value: filter?.status,
                 }}
                 items={getEnumValues(OrderStatus).map((item) => {
                   return {
@@ -302,8 +338,19 @@ export default function SchedulerViewFilteration({
                   };
                 })}
               />
-            </div>
-
+            </label>
+            <Button
+              variant="ghost"
+              onClick={() => {
+                setFilter("artist", undefined);
+                setFilter("branch", undefined);
+                setFilter("status", undefined);
+                setFilter("date", undefined);
+              }}
+              className="text-xs text-red-500 hover:text-red-500 bg-red-50 hover:bg-red-100  lg:h-10"
+            >
+              <CircleX />
+            </Button>
             <Modal
               maw="md"
               name={"Хэрэглэгч нэмэх"}
@@ -389,26 +436,11 @@ export default function SchedulerViewFilteration({
                 Excel
               </Button>
             )}
-            {/* Add Event Button */}
-            {CustomComponents?.customButtons?.CustomAddEventButton ? (
-              <div onClick={() => handleAddEvent()}>
-                {CustomComponents?.customButtons.CustomAddEventButton}
-              </div>
-            ) : (
-              <Button
-                onClick={() => handleAddEvent()}
-                className={classNames?.buttons?.addEvent}
-                variant="purple"
-              >
-                <CalendarIcon className="mr-2 h-4 w-4" />
-                Хуваарь нэмэх
-              </Button>
-            )}
           </div>
           <div className="flex items-center justify-end gap-2 mt-2 max-w-lg w-full">
             <Switch
-              checked={isList}
-              onCheckedChange={(val) => setList(val)}
+              checked={filter?.list}
+              onCheckedChange={(val) => setFilter("list", val)}
               id="compare-switch"
             />
             <label
@@ -420,7 +452,7 @@ export default function SchedulerViewFilteration({
           </div>
         </div>
         <div className="divide-x-gray"></div>
-        {isList ? (
+        {filter?.list ? (
           <DataTable
             // clear={() => setFilter(undefined)}
 
@@ -443,10 +475,9 @@ export default function SchedulerViewFilteration({
                     <DailyView
                       deleteOrder={deleteOrder}
                       loading={loading}
-                      currentDate={currentDate}
-                      setCurrentDate={setCurrentDate}
+                      filter={filter}
+                      setFilter={setFilter}
                       values={values}
-                      refresh={refresh}
                       events={orders.items}
                       send={send}
                       stopDayEventSummary={stopDayEventSummary}

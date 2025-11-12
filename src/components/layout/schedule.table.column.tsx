@@ -6,7 +6,6 @@ import { LoaderMini } from "../loader";
 
 interface DayScheduleColumnProps {
   dayName: string;
-  date: string;
   dayIndex: number;
   loading: boolean;
   times: string[];
@@ -16,7 +15,6 @@ interface DayScheduleColumnProps {
 
 export function DayScheduleColumn({
   dayName,
-  date,
   loading,
   times,
   onUpdateTimes,
@@ -72,7 +70,6 @@ export function DayScheduleColumn({
       {/* Header */}
       <div className="mb-4 pb-3 border-b border-slate-200">
         <div className="text-slate-800 mb-1 text-sm">{dayName}</div>
-        <div className="text-slate-500 text-sm">{date}</div>
         <div className="text-teal-600 text-xs mt-1">
           {times.length} цаг идэвхтэй
         </div>

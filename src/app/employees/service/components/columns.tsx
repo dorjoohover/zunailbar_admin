@@ -39,15 +39,7 @@ export function getColumns(
     },
     {
       accessorKey: "user_name",
-      header: ({ column }) => (
-        <Button
-          variant="table_header"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          className="font-bold"
-        >
-          Хоч <ArrowUpDown className="w-4 h-4 ml-2" />
-        </Button>
-      ),
+      header: ({ column }) => "Хоч",
       cell: ({ row }) => (
         <div className="font-bold text-brand-blue">
           {row.getValue("user_name")}
@@ -56,15 +48,7 @@ export function getColumns(
     },
     {
       accessorKey: "service_name",
-      header: ({ column }) => (
-        <Button
-          variant="table_header"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          className="font-bold"
-        >
-          Үйлчилгээ <ArrowUpDown className="w-4 h-4 ml-2" />
-        </Button>
-      ),
+      header: ({ column }) => "Үйлчилгээ",
 
       // Badge nemsen
       cell: ({ row }) => {

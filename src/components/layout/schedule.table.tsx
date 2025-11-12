@@ -29,16 +29,8 @@ export function AdminScheduleManager({
     today.setHours(0, 0, 0, 0);
 
     for (let i = 0; i < 7; i++) {
-      const date = new Date(today);
-      date.setDate(today.getDate() + i);
-      const dayIndex = date.getDay();
-      const mongolianDayIndex = dayIndex === 0 ? 6 : dayIndex - 1;
-
       days.push({
-        date,
-        dayName: dayNames[mongolianDayIndex],
-        dayNumber: date.getDate(),
-        month: date.getMonth() + 1,
+        dayName: dayNames[i],
       });
     }
     return days;
@@ -57,7 +49,6 @@ export function AdminScheduleManager({
             loading={loading}
             key={index}
             dayName={day.dayName}
-            date={`${day.month}/${day.dayNumber}`}
             dayIndex={index}
             times={schedule[index] || []}
             onUpdateTimes={(times, action) =>

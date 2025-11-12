@@ -11,7 +11,7 @@ export async function POST(request: Request) {
     store.set("merchant_id", body.merchant);
     store.set("branch_id", body.branch);
 
-
+    console.log(process.env.NEXT_PUBLIC_BASE_URL)
     return NextResponse.redirect(
       new URL("/", process.env.NEXT_PUBLIC_BASE_URL || "http://admin.zunailbar.mn/")
     );

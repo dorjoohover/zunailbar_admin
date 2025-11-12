@@ -29,9 +29,10 @@ import {
   toTimeString,
 } from "@/lib/functions";
 import { Branch, IOrder, Order, Service, User } from "@/models";
-import { SearchType } from "@/lib/constants";
+import { ListType, SearchType } from "@/lib/constants";
 import { Api } from "@/utils/api";
 import { DatePicker } from "@/shared/components/date.picker";
+import { FilterType } from "@/app/orders/components";
 
 // Generate hours in 12-hour format
 const hours = Array.from({ length: totalHours }, (_, i) => {
@@ -41,7 +42,7 @@ const hours = Array.from({ length: totalHours }, (_, i) => {
 
 // Animation variants
 const containerVariants = {
-  hidden: { opacity: 0 },
+  hidden: { opacity: 1 },
   visible: {
     opacity: 1,
     transition: {
@@ -175,25 +176,14 @@ export default function DailyView({
   classNames,
   values,
   send,
-  refresh,
-  currentDate,
-  setCurrentDate,
+  filter,
+  setFilter,
 }: {
   prevButton?: React.ReactNode;
   deleteOrder: (id: string) => void;
-  refresh: <T>({
-    page,
-    limit,
-    sort,
-    filter,
-  }: {
-    page?: number;
-    limit?: number;
-    sort?: boolean;
-    filter?: T;
-  }) => void;
-  currentDate: Date;
-  setCurrentDate: Dispatch<SetStateAction<Date>>;
+
+  setFilter: (key: string, value: string | number | undefined) => void;
+  filter?: FilterType;
   nextButton?: React.ReactNode;
   CustomEventComponent?: React.FC<IOrder>;
   events: Order[];
@@ -203,7 +193,7 @@ export default function DailyView({
     branch: SearchType<Branch>[];
     customer: SearchType<User>[];
     user: SearchType<User>[];
-    service: SearchType<Service>[];
+    service: ListType<Service>;
   };
   CustomEventModal?: CustomEventModal;
   stopDayEventSummary?: boolean;
@@ -212,7 +202,8 @@ export default function DailyView({
   const hoursColumnRef = useRef<HTMLDivElement>(null);
   const [detailedHour, setDetailedHour] = useState<string | null>(null);
   const [timelinePosition, setTimelinePosition] = useState<number>(0);
-
+  const nextDate = filter?.date?.to ?? new Date();
+  const currentDate = filter?.date?.from ?? new Date();
   const [direction, setDirection] = useState<number>(0);
   const { setOpen } = useModal();
   const { getters, handlers } = useScheduler();
@@ -331,14 +322,20 @@ export default function DailyView({
     setDirection(1);
     const nextDay = new Date(currentDate);
     nextDay.setDate(currentDate.getDate() + 1);
-    setCurrentDate(nextDay);
+    setFilter("date", {
+      from: nextDay,
+      to: nextDate,
+    } as any);
   }, [currentDate]);
 
   const handlePrevDay = useCallback(() => {
     setDirection(-1);
     const prevDay = new Date(currentDate);
     prevDay.setDate(currentDate.getDate() - 1);
-    setCurrentDate(prevDay);
+    setFilter("date", {
+      from: prevDay,
+      to: nextDate,
+    } as any);
   }, [currentDate]);
 
   return (
@@ -380,14 +377,14 @@ export default function DailyView({
         <motion.div
           key={currentDate.toISOString()}
           custom={direction}
-          variants={pageTransitionVariants as any}
-          initial="enter"
-          animate="center"
-          exit="exit"
-          transition={{
-            x: { type: "spring", stiffness: 300, damping: 30 },
-            opacity: { duration: 0.2 },
-          }}
+          // variants={pageTransitionVariants as any}
+          // initial="enter"
+          // animate="center"
+          // exit="exit"
+          // transition={{
+          //   x: { type: "spring", stiffness: 300, damping: 30 },
+          //   opacity: { duration: 0.2 },
+          // }}
           className="flex flex-col gap-4"
         >
           {!stopDayEventSummary && (
@@ -398,10 +395,10 @@ export default function DailyView({
                       return (
                         <motion.div
                           key={event.id}
-                          initial={{ opacity: 0, y: -10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0, y: -10 }}
-                          transition={{ duration: 0.2 }}
+                          // initial={{ opacity: 0, y: -10 }}
+                          // animate={{ opacity: 1, y: 0 }}
+                          // exit={{ opacity: 0, y: -10 }}
+                          // transition={{ duration: 0.2 }}
                           className="mb-2"
                         >
                           <EventStyled
@@ -426,9 +423,9 @@ export default function DailyView({
             <motion.div
               className="relative rounded-xl flex ease-in-out"
               ref={hoursColumnRef}
-              variants={containerVariants}
-              initial="hidden" // Ensure initial state is hidden
-              animate="visible" // Trigger animation to visible state
+              // variants={containerVariants}
+              // initial="hidden" // Ensure initial state is hidden
+              // animate="visible" // Trigger animation to visible state
               onMouseMove={handleMouseMove}
               onMouseLeave={() => setDetailedHour(null)}
             >
@@ -479,6 +476,7 @@ export default function DailyView({
                           periodIndex,
                           adjustForPeriod: true,
                         });
+                        console.log(event);
                         return (
                           <motion.div
                             key={event.id}
@@ -493,10 +491,10 @@ export default function DailyView({
                               boxSizing: "border-box",
                             }}
                             className="flex transition-all duration-1000 flex-grow flex-col z-50 absolute"
-                            initial={{ opacity: 0, scale: 0.95 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            exit={{ opacity: 0, scale: 0.95 }}
-                            transition={{ duration: 0.2 }}
+                            // initial={{ opacity: 0, scale: 0.95 }}
+                            // animate={{ opacity: 1, scale: 1 }}
+                            // exit={{ opacity: 0, scale: 0.95 }}
+                            // transition={{ duration: 0.2 }}
                           >
                             <EventStyled
                               onDelete={deleteOrder}

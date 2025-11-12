@@ -26,7 +26,7 @@ import { TextField } from "@/shared/components/text.field";
 import { fetcher } from "@/hooks/fetcher";
 import { getColumns } from "./columns";
 import { firstLetterUpper, mnDate, searchFormatter } from "@/lib/functions";
-import { DISCOUNT } from "@/lib/enum";
+import { DISCOUNT, INPUT_TYPE } from "@/lib/enum";
 import DynamicHeader from "@/components/dynamicHeader";
 import { showToast } from "@/shared/components/showToast";
 
@@ -272,14 +272,14 @@ export const DiscountPage = ({
                   {[
                     {
                       key: "value",
-                      type: "number",
+                      type: INPUT_TYPE.NUMBER,
                       label: "Дүн",
                     },
 
                     {
                       key: "name",
                       label: "Урамшууллын нэр",
-                      type: "text",
+                      type: INPUT_TYPE.TEXT,
                     },
                   ].map((item, i) => {
                     const name = item.key as keyof DiscountType;
@@ -312,7 +312,7 @@ export const DiscountPage = ({
                         <TextField
                           props={{ ...field }}
                           max={form.watch("end_date") as string}
-                          type={"date"}
+                          type={INPUT_TYPE.DATE}
                         />
                       );
                     }}
@@ -328,7 +328,7 @@ export const DiscountPage = ({
                         <TextField
                           min={form.watch("start_date") as string}
                           props={{ ...field }}
-                          type={"date"}
+                          type={INPUT_TYPE.DATE}
                         />
                       );
                     }}

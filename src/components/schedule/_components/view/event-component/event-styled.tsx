@@ -12,8 +12,13 @@ import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import CustomModal from "@/components/ui/custom-modal";
 import { getUserColor } from "@/lib/colors";
-import { OrderStatusValues, SearchType } from "@/lib/constants";
-import { OrderStatus } from "@/lib/enum";
+import {
+  getUserLevelValue,
+  ListType,
+  OrderStatusValues,
+  SearchType,
+} from "@/lib/constants";
+import { OrderStatus, UserLevel } from "@/lib/enum";
 import { Branch, IOrder, Order, Service, User } from "@/models";
 import { showToast } from "@/shared/components/showToast";
 import { Api } from "@/utils/api";
@@ -99,7 +104,7 @@ export default function EventStyled({
     branch: SearchType<Branch>[];
     customer: SearchType<User>[];
     user: SearchType<User>[];
-    service: SearchType<Service>[];
+    service: ListType<Service>;
   };
   index?: number;
   send: (order: IOrder) => void;
@@ -138,7 +143,17 @@ export default function EventStyled({
     const userColor = getUserColor(color ? color : 0);
     return userColor;
   };
+  const artists = (() => {
+    const uniqueArtists = [
+      ...new Map(
+        event.details
+          ?.filter((e) => e.user_id) // зөвхөн user_id байгаа мөрүүд
+          .map((e) => [e.user_id, e.user]) // user_id -> user
+      ).values(),
+    ];
 
+    return uniqueArtists;
+  })();
   return (
     <div
       key={event?.id}
@@ -239,26 +254,59 @@ export default function EventStyled({
 
             event?.minmized ? "flex-grow overflow-hidden" : "min-h-fit"
           )}
-          style={{ backgroundColor: getBackgroundColor(event?.color) }}
+          style={{
+            backgroundColor: getBackgroundColor(
+              event?.details?.[0]?.user?.color
+            ),
+          }}
         >
           <div className="flex flex-col h-full">
             <div className="font-semibold text-xs truncate mb-1">
-              {event?.details?.map((e) => e.service_name).join(",") ||
-                "Untitled Order"}
+              {event?.details?.map((e, i) => {
+                return (
+                  <div key={i}>
+                    Үйлчилгээ: <b>{e.service_name ?? "-"} |</b> Артист:
+                    <b>{e.user.nickname}</b>
+                  </div>
+                );
+              })}
             </div>
             <div className="font-semibold text-xs truncate mb-1">
-              {mobileFormatter(event?.phone ?? "")}
+              Хэрэглэгчийн дугаар:{" "}
+              <b>{mobileFormatter(event?.customer?.mobile ?? "")}</b> Эрэмбэ:{" "}
+              <b
+                className={`text-[${
+                  getUserLevelValue[
+                    (event.customer?.level as UserLevel) ?? UserLevel.BRONZE
+                  ].textColor
+                }]`}
+              >
+                {
+                  getUserLevelValue[
+                    (event.customer?.level as UserLevel) ?? UserLevel.BRONZE
+                  ].name
+                }
+              </b>
             </div>
             {event?.minmized && (
-              <div className="text-[10px] flex justify-between">
-                <div>
-                  <span> {event?.start_time?.slice(0, 5)} - </span>
-                  <span> {event?.end_time?.slice(0, 5)} </span>
+              <div className="flex flex-col">
+                <div className="text-[10px] flex justify-between">
+                  <div>
+                    <span>Цаг: </span>
+                    <span> {event?.start_time?.slice(0, 5)} - </span>
+                    <span> {event?.end_time?.slice(0, 5)} </span>
+                  </div>
+                  <span className="opacity-80">
+                    {event?.order_status &&
+                      OrderStatusValues[event?.order_status as OrderStatus]}
+                  </span>
                 </div>
-                <span className="opacity-80">
-                  {event?.order_status &&
-                    OrderStatusValues[event?.order_status as OrderStatus]}
-                </span>
+
+                {event.description && (
+                  <div className="my-2 text-sm">
+                    Tip massage: {event?.description}{" "}
+                  </div>
+                )}
               </div>
             )}
             {!event?.minmized && event?.description && (

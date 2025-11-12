@@ -1,6 +1,6 @@
-"use client";;
+"use client";
 import { Branch, IOrder, Order, Service, User } from "@/models";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   ListType,
   ACTION,
@@ -23,29 +23,16 @@ import { getColumns } from "./columns";
 import { Button } from "@/components/ui/button";
 import { Check } from "lucide-react";
 import { AppAlertDialog } from "@/components/AlertDialog";
+import { DateRange } from "react-day-picker";
 
-const formSchema = z.object({
-  branch_id: z.string().min(1),
-  name: z.string().min(1),
-  max_price: z
-    .preprocess(
-      (val) => (typeof val === "string" ? parseFloat(val) : val),
-      z.number()
-    )
-    .nullable()
-    .optional() as unknown as number,
-  min_price: z.preprocess(
-    (val) => (typeof val === "string" ? parseFloat(val) : val),
-    z.number()
-  ) as unknown as number,
-  duration: z.preprocess(
-    (val) => (typeof val === "string" ? parseFloat(val) : val),
-    z.number()
-  ) as unknown as number,
-  edit: z.string().nullable().optional(),
-});
+export type FilterType = {
+  status?: OrderStatus;
+  artist?: string;
+  date?: DateRange;
+  branch?: string;
+  list?: boolean;
+};
 
-type OrderType = z.infer<typeof formSchema>;
 export const OrderPage = ({
   branches,
   users,
@@ -53,15 +40,29 @@ export const OrderPage = ({
   services,
 }: {
   branches: SearchType<Branch>[];
-  services: SearchType<Service>[];
+  services: ListType<Service>;
   users: SearchType<User>[];
   customers: SearchType<User>[];
 }) => {
   const [action, setAction] = useState(ACTION.DEFAULT);
-  const [currentDate, setCurrentDate] = useState<Date>(new Date());
   const [orders, setOrders] = useState<ListType<Order>>(ListDefault);
 
-  const [status, setStatus] = useState<OrderStatus | null>(null);
+  const [filter, setFilter] = useState<FilterType>();
+  const changeFilter = (
+    key: string,
+    value: number | string | undefined | boolean
+  ) => {
+    setFilter((prev) => ({ ...prev, [key]: value }));
+  };
+  const isFirstRender = useRef(true);
+  useEffect(() => {
+    console.log("asdf");
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
+    refresh();
+  }, [filter?.date, filter?.artist, filter?.branch, filter?.status]);
 
   const orderFormatter = (data: ListType<Order>) => {
     const items: Order[] = data.items.map((item) => {
@@ -85,9 +86,11 @@ export const OrderPage = ({
     return `${y}-${m}-${day}`;
   };
   const refresh = async (pg: PG = DEFAULT_PG) => {
+    console.log(new Date(), pg);
     setAction(ACTION.RUNNING);
     const { page, limit, sort } = pg;
-    const d = mnDate(currentDate);
+    const d = mnDate(filter?.date?.from);
+    const end_date = mnDate(filter?.date?.to);
 
     const date = dateFormat(d);
 
@@ -95,8 +98,11 @@ export const OrderPage = ({
       page: page ?? DEFAULT_PG.page,
       limit: limit ?? DEFAULT_PG.limit,
       sort: sort ?? DEFAULT_PG.sort,
-      date: pg.filter?.date ?? date,
+      date: date,
+      end_date: filter?.list ? dateFormat(end_date) : undefined,
       order_status: pg.filter?.status,
+      user_id: filter?.artist,
+      branch_id: filter?.branch,
       friend: pg.filter?.status != OrderStatus.Friend ? undefined : 0,
       //   name: pg.filter,
     }).then((d) => {
@@ -181,7 +187,8 @@ export const OrderPage = ({
   };
 
   const confirmOrders = async () => {
-    const date = dateFormat(mnDate(currentDate));
+    // range tawij batalgaajuulna
+    const date = dateFormat(mnDate(filter?.date?.from));
     const res = await find(Api.order, {}, `confirm/${date}`);
     const success = res?.data?.count > 0;
     showToast(
@@ -189,7 +196,6 @@ export const OrderPage = ({
       success ? `${res.data.count} захиалга баталгаажлаа` : "Захиалга олдсонгүй"
     );
   };
-  console.log(orders);
 
   const columns = getColumns(edit, deleteOrders);
   return (
@@ -200,8 +206,6 @@ export const OrderPage = ({
         <div className="bg-white rounded-xl shadow-light border-light p-5">
           <SchedulerProvider weekStartsOn="monday">
             <SchedulerViewFilteration
-              currentDate={currentDate}
-              setCurrentDate={setCurrentDate}
               loading={action == ACTION.RUNNING}
               send={onSubmit}
               excel={downloadExcel}
@@ -213,8 +217,8 @@ export const OrderPage = ({
                 service: services,
                 user: users,
               }}
-              status={status}
-              setStatus={setStatus}
+              filter={filter}
+              setFilter={changeFilter}
               action={action}
               columns={columns}
               refresh={refresh}
@@ -224,7 +228,7 @@ export const OrderPage = ({
             <AppAlertDialog
               onConfirm={confirmOrders}
               title={`${dateFormat(
-                mnDate(currentDate)
+                mnDate(filter?.date?.from)
               )} өдрийн захиалгуудыг хаахдаа бэлэн байна уу`}
               trigger={
                 <Button variant="default">

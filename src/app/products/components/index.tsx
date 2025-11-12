@@ -2,7 +2,7 @@
 import { DataTable } from "@/components/data-table";
 import { Brand, Category, IProduct, Product } from "@/models";
 import { getColumns } from "./columns";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ListType,
   ACTION,
@@ -11,6 +11,7 @@ import {
   Option,
   SearchType,
   VALUES,
+  zStrOpt,
 } from "@/lib/constants";
 import { Modal } from "@/shared/components/modal";
 import z from "zod";
@@ -28,9 +29,17 @@ import DynamicHeader from "@/components/dynamicHeader";
 import { firstLetterUpper, mnDate, objectCompact } from "@/lib/functions";
 
 const formSchema = z.object({
-  brand_id: z.string().nullable().optional(),
-  category_id: z.string().min(1, 'Ангилал сонгоно уу'),
-  name: z.string().min(1, "Нэр оруулна уу"),
+  brand_id: zStrOpt({
+    label: "Бранд",
+  }),
+  category_id: zStrOpt({
+    allowNullable: false,
+    label: "Ангилал",
+  }),
+  name: zStrOpt({
+    allowNullable: false,
+    label: "Нэр",
+  }),
 
   edit: z.string().nullable().optional(),
 });
@@ -121,7 +130,7 @@ export const ProductPage = ({
     showToast("success", "Амжилттай хадгалагдлаа!");
   };
   const onInvalid = async <T,>(e: T) => {
-   const error = Object.entries(e as any)
+    const error = Object.entries(e as any)
       .map(([er, v], i) => {
         if ((v as any)?.message) {
           return (v as any)?.message;
@@ -137,14 +146,14 @@ export const ProductPage = ({
     setFilter((prev) => ({ ...prev, [key]: value }));
   };
 
+  const isFirstRender = useRef(true);
+
   useEffect(() => {
-    refresh(
-      objectCompact({
-        brand_id: filter?.brand,
-        category_id: filter?.category,
-        page: 0,
-      })
-    );
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
+    refresh();
   }, [filter]);
   const groups: { key: keyof FilterType; label: string; items: Option[] }[] =
     useMemo(
@@ -244,17 +253,6 @@ export const ProductPage = ({
               {groups.map((item, i) => {
                 const { key } = item;
                 return (
-                  // <FilterPopover
-                  //   key={i}
-                  //   content={item.items.map((it, index) => (
-                  //     <label key={index} className="checkbox-label">
-                  //       <Checkbox checked={filter?.[key] == it.value} onCheckedChange={() => changeFilter(key, it.value)} />
-                  //       <span>{it.label as string}</span>
-                  //     </label>
-                  //   ))}
-                  //   value={filter?.[key] ? item.items.filter((item) => item.value == filter[key])[0].label : undefined}
-                  //   label={item.label}
-                  // />
                   <label key={i}>
                     <span className="filter-label">{item.label as string}</span>
                     <ComboBox

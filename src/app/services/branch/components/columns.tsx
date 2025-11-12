@@ -1,20 +1,20 @@
 import { ColumnDef } from "@tanstack/react-table";
 import { IProduct } from "@/models/product.model";
-import { ArrowUpDown, Check, Pencil, Trash2, X } from "lucide-react";
+import { ArrowUpDown, Pencil, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { AppAlertDialog } from "@/components/AlertDialog";
 import { toast } from "sonner";
 import { money, parseDate } from "@/lib/functions";
-import { IService } from "@/models";
+import { IBranchService } from "@/models";
 import { TableActionButtons } from "@/components/tableActionButtons";
 import Image from "next/image";
 import { getValueServiceView, icons, ServiceView } from "@/lib/constants";
 
 export function getColumns(
-  onEdit: (product: IService) => void,
+  onEdit: (product: IBranchService) => void,
   remove: (index: number) => Promise<boolean>
-): ColumnDef<IService>[] {
+): ColumnDef<IBranchService>[] {
   return [
     {
       id: "select",
@@ -22,46 +22,16 @@ export function getColumns(
       cell: ({ row }) => <span className="">{row.index + 1}</span>,
     },
     {
-      accessorKey: "name",
-      header: ({ column }) => "Үйлчилгээ",
-
-      cell: ({ row }) => {
-        const view = (row.original as any).view;
-        const color = view
-          ? getValueServiceView[view as ServiceView].color
-          : null;
-        return (
-          <p className={`${color ? color : ""}`}>{row.getValue("name")}</p>
-        );
-      },
+      header: "Ангилал",
+      accessorFn: (row) => row.meta?.categoryName ?? "-",
+      cell: ({ getValue }) => getValue(),
     },
     {
-      accessorKey: "image",
-      header: "Зураг",
-      cell: ({ row }) => (
-        <Image
-          alt={row.getValue("name")}
-          src={`/api/file/${row.getValue("image")}`}
-          width={50}
-          height={50}
-        />
-      ),
+      header: "Үйлчилгээний нэр",
+      accessorFn: (row) => row.meta?.serviceName ?? "-",
+      cell: ({ getValue }) => getValue(),
     },
 
-    {
-      accessorKey: "icon",
-      header: "Icon",
-      cell: ({ row }) => {
-        const Icon = icons?.[row.getValue("icon") as string];
-        if (Icon) return <Icon size={18} />;
-      },
-    },
-
-    {
-      accessorKey: "duration",
-      header: ({ column }) => "Хугацаа",
-      cell: ({ row }) => `${row.getValue("duration")}мин`,
-    },
     {
       accessorKey: "min_price",
       header: ({ column }) => "Үнэ",
@@ -69,7 +39,7 @@ export function getColumns(
     },
     {
       accessorKey: "max_price",
-      header: ({ column }) => "Дээд үнэ",
+      header: ({ column }) => "Их үнэ",
       cell: ({ row }) => money(row.getValue("max_price"), "₮"),
     },
     {
@@ -78,17 +48,15 @@ export function getColumns(
       cell: ({ row }) => money(row.getValue("pre") ?? "0", "₮"),
     },
     {
-      accessorKey: "parallel",
-      header: "Давхар эсэх",
-      cell: ({ row }) => (
-        <div className="flex ">
-          {row.getValue("parallel") == true ? (
-            <Check color="green" strokeWidth={4} />
-          ) : (
-            <X color="red" strokeWidth={4} />
-          )}
-        </div>
-      ),
+      accessorKey: "duration",
+      header: "Хугацаа",
+      cell: ({ row }) => `${row.getValue("duration") ?? 0}мин`,
+    },
+
+    {
+      accessorKey: "custom_name",
+      header: "Оноосон нэр",
+      cell: ({ row }) => row.getValue("custom_name") ?? "-",
     },
 
     {

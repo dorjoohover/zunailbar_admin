@@ -1,7 +1,6 @@
 "use client";
 
 import * as React from "react";
-
 import { Button } from "@/components/ui/button";
 import {
   Command,
@@ -22,14 +21,14 @@ import { ControllerRenderProps, FieldValues } from "react-hook-form";
 import { COLOR_HEX, ColorName } from "@/lib/colors";
 
 type InputType = {
-  value: string;
+  value: string | number;
   label: string;
   color?: string;
 };
 
 export function ComboBox<T extends FieldValues>({
   items,
-  search = undefined,
+  search,
   name = "Сонгох",
   className = "w-full",
   pl,
@@ -40,20 +39,34 @@ export function ComboBox<T extends FieldValues>({
   search?: (v: string) => void;
   className?: string;
   pl?: string;
-  value?: string;
+  value?: string | number;
   label?: string;
   color?: string;
   props: ControllerRenderProps<T>;
 }) {
   const [open, setOpen] = React.useState(false);
   const [localItems, setLocalItems] = React.useState(items);
+  const { onChange, value: propValue } = props;
+
+  // selectedValue-г string болгож state-д хадгалах
+  const [selectedValue, setSelectedValue] = React.useState<string | undefined>(
+    propValue !== undefined ? propValue?.toString() : undefined
+  );
+
+  // prop value өөрчлөгдөхөд state-ийг синхрончлох
+  React.useEffect(() => {
+    setSelectedValue(
+      propValue !== undefined ? propValue?.toString() : undefined
+    );
+  }, [propValue]);
+
   React.useEffect(() => {
     setLocalItems(items);
   }, [items]);
-  const { value, onChange } = props;
+
   return (
     <Popover
-      modal={true}
+      modal
       open={open}
       onOpenChange={(v) => {
         setOpen(v);
@@ -70,68 +83,64 @@ export function ComboBox<T extends FieldValues>({
             "min-w-32 lg:min-h-10 justify-between bg-white text-xs w-full lg:text-sm"
           )}
         >
-          {value
-            ? items.find((framework) => framework.value == value)?.label
+          {selectedValue
+            ? items.find((i) => i.value.toString() === selectedValue)?.label ??
+              name
             : name}
           <ChevronsUpDown className="opacity-50" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent side="bottom" align="start" className={cn(className, "p-0 bg-white min-w-48")}>
+
+      <PopoverContent
+        side="bottom"
+        align="start"
+        className={cn(className, "p-0 bg-white min-w-48")}
+      >
         <Command filter={() => 1}>
           {search && (
             <CommandInput
               placeholder={pl}
-              onValueChange={(e) => {
-                search(e);
-              }}
-              // onchange
+              onValueChange={search}
               className="h-9"
             />
           )}
-          <CommandList
-            className="max-h-60 "
-            key={localItems.map((i) => i.value).join(",")}
-          >
+          <CommandList className="max-h-60">
             <CommandEmpty>Хайлт олдсонгүй</CommandEmpty>
             <CommandGroup>
-              {items.map((framework) => (
-                <CommandItem
-                  key={framework.value}
-                  value={`${framework.label}__${framework.value}`}
-                  onSelect={(currentValue) => {
-                    const val = currentValue?.split("__")?.[1];
-                    const vl =
-                      currentValue === value ? "" : val ? val : currentValue;
-                    onChange(vl);
-                    setOpen(false);
-                  }}
-                  // className={framework.color ? `text-white` : ""}
-                  // style={{
-                  //   background: framework?.color
-                  //     ? COLOR_HEX[framework.color as ColorName]
-                  //     : "",
-                  // }}
-                >
-                  {framework?.color && (
-                    <div
-                      className="size-4 rounded"
-                      style={{
-                        backgroundColor: framework?.color
-                          ? COLOR_HEX[framework.color as ColorName]
-                          : "",
-                      }}
-                    ></div>
-                  )}
-
-                  {framework.label}
-                  <Check
-                    className={cn(
-                      "ml-auto",
-                      value === framework.value ? "opacity-100" : "opacity-0"
+              {items.map((framework) => {
+                const valueStr = framework.value.toString();
+                return (
+                  <CommandItem
+                    key={framework.value}
+                    value={`${framework.label}__${valueStr}`}
+                    onSelect={(currentValue) => {
+                      const val = currentValue?.split("__")[1] ?? currentValue;
+                      if (val === selectedValue) return;
+                      setSelectedValue(val); // state update
+                      onChange(val); // parent update
+                      setOpen(false);
+                    }}
+                  >
+                    {framework.color && (
+                      <div
+                        className="size-4 rounded"
+                        style={{
+                          backgroundColor: framework.color
+                            ? COLOR_HEX[framework.color as ColorName]
+                            : "",
+                        }}
+                      />
                     )}
-                  />
-                </CommandItem>
-              ))}
+                    {framework.label}
+                    <Check
+                      className={cn(
+                        "ml-auto",
+                        selectedValue === valueStr ? "opacity-100" : "opacity-0"
+                      )}
+                    />
+                  </CommandItem>
+                );
+              })}
             </CommandGroup>
           </CommandList>
         </Command>

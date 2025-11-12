@@ -48,7 +48,16 @@ export function getColumns(
         </span>
       ),
     },
+    {
+      accessorKey: "order_date",
+      header: ({ table }) => <span>Захиалгын огноо</span>,
 
+      cell: ({ row }) => (
+        <div>
+          <span> {row.getValue("order_date") as string}</span>
+        </div>
+      ),
+    },
     {
       accessorKey: "start_time",
       header: ({ table }) => <span>Эхлэх цаг</span>,

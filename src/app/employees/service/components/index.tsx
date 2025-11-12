@@ -25,7 +25,6 @@ import {
   firstLetterUpper,
   objectCompact,
   searchUsernameFormatter,
-  usernameFormatter,
 } from "@/lib/functions";
 import { Service } from "@/models/service.model";
 import DynamicHeader from "@/components/dynamicHeader";
@@ -33,7 +32,6 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { showToast } from "@/shared/components/showToast";
 import { CategoryType, ROLE } from "@/lib/enum";
-import { SearchParams } from "next/dist/server/request/search-params";
 
 const formSchema = z.object({
   user_id: z.string().min(1, "Артист сонгоно уу"),
@@ -105,7 +103,6 @@ export const EmployeeUserServicePage = ({
   }, [data]);
   const clear = () => {
     form.reset(defaultValues);
-    console.log(form.getValues());
   };
   const deleteUserService = async (index: number) => {
     const id = userServices!.items[index].id;

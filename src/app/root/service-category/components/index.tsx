@@ -12,48 +12,43 @@ import { TextField } from "@/shared/components/text.field";
 import { fetcher } from "@/hooks/fetcher";
 import { getColumns } from "./columns";
 import { useState } from "react";
-import { Branch, IBranch } from "@/models";
+import { ServiceCategory, IServiceCategory } from "@/models";
 import DynamicHeader from "@/components/dynamicHeader";
 import { firstLetterUpper } from "@/lib/functions";
 import { showToast } from "@/shared/components/showToast";
-import { INPUT_TYPE } from "@/lib/enum";
 
 const formSchema = z.object({
   name: z.string().refine((data) => data.length > 0, {
     message: "Нэр оруулна уу",
   }),
-  order_days: z
-    .preprocess(
-      (val) => (typeof val === "string" ? parseFloat(val) : val),
-      z.number()
-    )
-    .refine((data) => data != null, {
-      message: "Захиалга авах хоног оруулна уу",
-    }) as unknown as number,
+
   edit: z.string().nullable().optional(),
 });
 const defaultValues = {
   name: "",
-  order_days: 7,
   edit: undefined,
 };
-type BranchType = z.infer<typeof formSchema>;
-export const BranchPage = ({ data }: { data: ListType<Branch> }) => {
+type ServiceCategoryType = z.infer<typeof formSchema>;
+export const ServiceCategoryPage = ({
+  data,
+}: {
+  data: ListType<ServiceCategory>;
+}) => {
   const [action, setAction] = useState(ACTION.DEFAULT);
   const [open, setOpen] = useState<undefined | boolean>(false);
-  const form = useForm<BranchType>({
+  const form = useForm<ServiceCategoryType>({
     resolver: zodResolver(formSchema),
     defaultValues,
   });
-  const [categories, setCategories] = useState<ListType<Branch>>(data);
+  const [categories, setCategories] = useState<ListType<ServiceCategory>>(data);
 
   const deleteLog = async (index: number) => {
     const id = categories!.items[index].id;
-    const res = await deleteOne(Api.branch, id);
+    const res = await deleteOne(Api.service_category, id);
     refresh();
     return res.success;
   };
-  const edit = async (e: IBranch) => {
+  const edit = async (e: IServiceCategory) => {
     setOpen(true);
     form.reset({ ...e, edit: e.id });
   };
@@ -62,7 +57,7 @@ export const BranchPage = ({ data }: { data: ListType<Branch> }) => {
   const refresh = async (pg: PG = DEFAULT_PG) => {
     setAction(ACTION.RUNNING);
     const { page, limit, sort } = pg;
-    await fetcher<Branch>(Api.branch, {
+    await fetcher<ServiceCategory>(Api.service_category, {
       page,
       limit,
       sort,
@@ -74,16 +69,19 @@ export const BranchPage = ({ data }: { data: ListType<Branch> }) => {
   };
   const onSubmit = async <T,>(e: T) => {
     setAction(ACTION.RUNNING);
-    const body = e as BranchType;
+    const body = e as ServiceCategoryType;
     const { edit, ...payload } = body;
 
     const res = edit
-      ? await updateOne<Branch>(
-          Api.branch,
+      ? await updateOne<ServiceCategory>(
+          Api.service_category,
           edit ?? "",
-          payload as unknown as Branch
+          payload as unknown as ServiceCategory
         )
-      : await create<Branch>(Api.branch, e as Branch);
+      : await create<ServiceCategory>(
+          Api.service_category,
+          e as ServiceCategory
+        );
     if (res.success) {
       refresh();
       setOpen(false);
@@ -117,7 +115,7 @@ export const BranchPage = ({ data }: { data: ListType<Branch> }) => {
           loading={action == ACTION.RUNNING}
           modalAdd={
             <Modal
-              name={"Салбар нэмэх"}
+              name={"Ангилал нэмэх"}
               submit={() => form.handleSubmit(onSubmit, onInvalid)()}
               open={open == true}
               setOpen={(v) => {
@@ -130,28 +128,13 @@ export const BranchPage = ({ data }: { data: ListType<Branch> }) => {
                 <div className="divide-y">
                   <div className="">
                     <FormItems
-                      label={"Салбарын нэр"}
+                      label={"Ангилалын нэр"}
                       control={form.control}
                       name={"name"}
                       className={"col-span-1 mb-4"}
                     >
                       {(field) => {
                         return <TextField props={{ ...field }} />;
-                      }}
-                    </FormItems>
-                    <FormItems
-                      label={"Захиалга авах хоног"}
-                      control={form.control}
-                      name={"order_days"}
-                      className={"col-span-1"}
-                    >
-                      {(field) => {
-                        return (
-                          <TextField
-                            props={{ ...field }}
-                            type={INPUT_TYPE.NUMBER}
-                          />
-                        );
                       }}
                     </FormItems>
                   </div>

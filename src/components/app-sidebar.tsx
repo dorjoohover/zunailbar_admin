@@ -156,6 +156,11 @@ export const sidebar_items = [
             // icon: Milk,
           },
           {
+            title: "Салбарын үйлчилгээ",
+            url: "/services/branch",
+            // icon: Milk,
+          },
+          {
             title: "Үйлчилгээний урамшуулал",
             url: "/services/discount",
             // icon: Milk,
@@ -252,6 +257,11 @@ export const sidebar_items = [
           {
             title: "Салбар удирдлага",
             url: "/root/branch",
+            // icon: Milk,
+          },
+          {
+            title: "Үйлчилгээний ангилал удирдлага",
+            url: "/root/service-category",
             // icon: Milk,
           },
         ],

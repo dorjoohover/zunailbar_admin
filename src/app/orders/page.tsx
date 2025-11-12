@@ -10,9 +10,8 @@ export default async function Page() {
     search<Branch>(Api.branch, { limit: -1 }),
     search<User>(Api.user, { limit: 20, role: ROLE.E_M }),
     search<User>(Api.user, { limit: 20, role: ROLE.CLIENT }),
-    search<Service>(Api.service, { limit: 20 }),
+    find<Service>(Api.service, { limit: 20 }),
   ]);
-
   return (
     <section>
       {/* <div className="admin-container"> */}

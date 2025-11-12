@@ -1,6 +1,6 @@
 "use client";
 import { DataTable } from "@/components/data-table";
-import { Branch, IService, Service } from "@/models";
+import { Branch, IService, Service, ServiceCategory } from "@/models";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ListType,
@@ -13,6 +13,8 @@ import {
   ServiceView,
   getEnumValues,
   getValueServiceView,
+  zBoolOpt,
+  zNumOpt,
 } from "@/lib/constants";
 import { Modal } from "@/shared/components/modal";
 import z from "zod";
@@ -35,60 +37,39 @@ import { IconPicker } from "@/components/icons/picker";
 import { Label } from "@/components/ui/label";
 import { imageUploader } from "@/app/(api)/base";
 import { Textarea } from "@/components/ui/textarea";
+import { INPUT_TYPE } from "@/lib/enum";
 
 const formSchema = z
   .object({
-    branch_id: z.string(),
-    name: z.string().refine((data) => data.length > 0, {
-      message: "Нэр оруулна уу",
+    category_id: zStrOpt(),
+    name: zStrOpt({
+      allowNullable: false,
+      label: "Үйлчилгээний нэр",
     }),
-    max_price: z
-      .preprocess((val) => {
-        if (val === null || val === undefined || val === "") return null;
-        return typeof val === "string" ? parseFloat(val) : val;
-      }, z.number().nullable())
-      .nullable()
-      .optional() as unknown as number | null,
-    pre: z
-      .preprocess((val) => {
-        if (val === null || val === undefined || val === "") return 0;
-        return typeof val === "string" ? parseFloat(val) : val;
-      }, z.number())
-      .nullable()
-      .optional() as unknown as number,
-    description: zStrOpt,
-    min_price: z
-      .preprocess((val) => {
-        if (val === null || val === undefined || val === "") return 0;
-        return typeof val === "string" ? parseFloat(val) : val;
-      }, z.number())
-      .optional() as unknown as number,
-    duration: z
-      .preprocess(
-        (val) => (typeof val === "string" ? parseFloat(val) : val),
-        z.number()
-      )
-      .refine((val) => +(val ?? "0") > 0, {
-        message: "Хугацаа оруулна уу",
-      }) as unknown as number,
+    max_price: zNumOpt(),
+    min_price: zNumOpt({
+      allowNullable: false,
+      label: "Үнэ",
+    }),
+    duration: zNumOpt({
+      allowNullable: false,
+      label: "Хугацаа",
+    }),
+    image: zStrOpt(),
+    icon: zStrOpt(),
+    description: zStrOpt(),
+    parallel: zBoolOpt,
+    pre: zNumOpt(),
+    view: zNumOpt(),
+    index: zNumOpt(),
+
     edit: z.string().nullable().optional(),
-    isAll: z.boolean().nullable().optional(),
-    image: zStrOpt,
-    view: z
-      .preprocess(
-        (val) => (typeof val === "string" ? parseInt(val, 10) : val),
-        z.nativeEnum(ServiceView).nullable()
-      )
-      .optional() as unknown as number,
     file: z
       .any()
       // .refine((f) => f.size > 0, { message: "Файл заавал оруулна" })
       .nullable(),
-    icon: zStrOpt,
   })
-  .refine((data) => data.isAll, {
-    message: "Салбар сонгоно уу",
-  })
+
   .refine(
     (data) =>
       data.max_price === null || data.max_price === undefined
@@ -108,30 +89,31 @@ const formSchema = z
   );
 
 const defaultValues: ServiceType = {
-  branch_id: "",
+  category_id: undefined,
   name: "",
-  max_price: null,
+  max_price: undefined,
   min_price: 0,
-  pre: 0,
   duration: 0,
+  image: undefined,
+  icon: undefined,
+  description: undefined,
+  parallel: undefined,
+  pre: 0,
+  view: ServiceView.DEFAULT,
+  index: undefined,
   edit: undefined,
-  icon: null,
-  image: null,
-  file: null,
-  isAll: true,
-  description: null,
-  view: null,
+  file: undefined,
 };
 type FilterType = {
-  branch?: string;
+  category?: string;
 };
 type ServiceType = z.infer<typeof formSchema>;
 export const ServicePage = ({
   data,
-  branches,
+  serviceCategories,
 }: {
   data: ListType<Service>;
-  branches: ListType<Branch>;
+  serviceCategories: ListType<ServiceCategory>;
 }) => {
   const [action, setAction] = useState(ACTION.DEFAULT);
   const [open, setOpen] = useState<undefined | boolean>(false);
@@ -140,21 +122,20 @@ export const ServicePage = ({
     defaultValues,
   });
   const [services, setServices] = useState<ListType<Service> | null>(null);
-  const branchMap = useMemo(
-    () => new Map(branches.items.map((b) => [b.id, b])),
-    [branches.items]
+  const serviceCategoryMap = useMemo(
+    () => new Map(serviceCategories.items.map((b) => [b.id, b])),
+    [serviceCategories.items]
   );
 
   const serviceFormatter = (data: ListType<Service>) => {
     const items: Service[] = data.items.map((item) => {
-      const branch = branchMap.get(item.branch_id);
+      const category = serviceCategoryMap.get(item.category_id ?? "");
 
       return {
         ...item,
-        branch_name: branch?.name ?? "",
+        category_name: category?.name ?? "",
       };
     });
-
     setServices({ items, count: data.count });
   };
   useEffect(() => {
@@ -177,27 +158,24 @@ export const ServicePage = ({
 
   const refresh = async (pg: PG = DEFAULT_PG) => {
     setAction(ACTION.RUNNING);
-    console.log(pg);
     const { page, limit, sort } = pg;
-    const branch_id = filter?.branch;
+    const category_id = filter?.category;
     await fetcher<Service>(Api.service, {
       page: page ?? DEFAULT_PG.page,
       limit: limit ?? DEFAULT_PG.limit,
       sort: sort ?? DEFAULT_PG.sort,
-      branch_id,
+      category_id,
       ...pg,
     }).then((d) => {
       serviceFormatter(d);
-      console.log(d);
     });
     setAction(ACTION.DEFAULT);
   };
   const onSubmit = async <T,>(e: T) => {
     setAction(ACTION.RUNNING);
-
-    const { edit, file, ...body } = e as ServiceType;
+    const { edit, file, parallel, ...body } = e as ServiceType;
     const formData = new FormData();
-    let payload = { ...(body as unknown as IService) };
+    let payload = { ...(body as unknown as IService), parallel: parallel };
     if (file != null) {
       formData.append("files", file);
       const uploadResult = await imageUploader(formData);
@@ -209,11 +187,14 @@ export const ServicePage = ({
           edit ?? "",
           payload as unknown as Service
         )
-      : await create<Service>(Api.service, e as Service);
+      : await create<Service>(Api.service, payload as Service);
     if (res.success) {
       refresh();
       setOpen(false);
-      showToast("success", edit ? "Мэдээлэл засагдсан!" : "Ажилтан нэмэгдлээ!");
+      showToast(
+        "success",
+        edit ? "Мэдээлэл засагдсан!" : "Амжилттай нэмэгдлээ!"
+      );
       clear();
     } else {
       showToast("info", res.error ?? "Алдаа гарлаа");
@@ -221,7 +202,6 @@ export const ServicePage = ({
     setAction(ACTION.DEFAULT);
   };
   const onInvalid = async <T,>(e: T) => {
-    console.log(e);
     const error = Object.entries(e as any)
       .map(([er, v], i) => {
         if ((v as any)?.message) {
@@ -237,33 +217,30 @@ export const ServicePage = ({
   const changeFilter = (key: string, value: number | string) => {
     setFilter((prev) => ({ ...prev, [key]: value }));
   };
-  const firstRender = useRef(true);
+  const isFirstRender = useRef(true);
+
   useEffect(() => {
-    if (firstRender.current) {
-      firstRender.current = false;
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
       return;
     }
-
-    refresh(
-      objectCompact({
-        branch_id: filter?.branch,
-        page: 0,
-      })
-    );
+    refresh();
   }, [filter]);
   const groups: { key: keyof FilterType; label: string; items: Option[] }[] =
     useMemo(
       () => [
         {
-          key: "branch",
-          label: "Салбар",
-          items: branches.items.map((b) => ({ value: b.id, label: b.name })),
+          key: "category",
+          label: "Ангилал",
+          items: serviceCategories.items.map((b) => ({
+            value: b.id,
+            label: b.name,
+          })),
         },
       ],
-      [branches.items]
+      [serviceCategories.items]
     );
 
-  const isAll = form.watch("isAll");
   return (
     <div className="">
       <DynamicHeader />
@@ -321,15 +298,15 @@ export const ServicePage = ({
               <FormProvider {...form}>
                 <div className="double-col">
                   <FormItems
-                    label="Салбар"
+                    label="Ангилал"
                     control={form.control}
-                    name="branch_id"
+                    name="category_id"
                   >
                     {(field) => {
                       return (
                         <ComboBox
                           props={{ ...field }}
-                          items={branches.items.map((item) => {
+                          items={serviceCategories.items.map((item) => {
                             return {
                               value: item.id,
                               label: item.name,
@@ -343,7 +320,7 @@ export const ServicePage = ({
                     {
                       key: "name",
                       label: "Үйлчилгээний нэр",
-                      type: "text",
+                      type: INPUT_TYPE.TEXT,
                     },
                   ].map((item, i) => {
                     const name = item.key as keyof ServiceType;
@@ -368,28 +345,22 @@ export const ServicePage = ({
 
                 <div className="divide-x-gray"></div>
 
-                <div className="double-col mb-4">
+                <div className="grid grid-cols-12 gap-4 mb-4">
                   {[
                     {
                       key: "min_price",
-                      type: "money",
+                      type: INPUT_TYPE.MONEY,
                       label: "Үнэ",
                     },
-
                     {
                       key: "max_price",
-                      type: "money",
+                      type: INPUT_TYPE.MONEY,
                       label: "Их үнэ",
                     },
                     {
                       key: "pre",
-                      type: "money",
+                      type: INPUT_TYPE.MONEY,
                       label: "Урьдчилгаа",
-                    },
-                    {
-                      key: "duration",
-                      type: "number",
-                      label: "Хугацаа",
                     },
                   ].map((item, i) => {
                     const name = item.key as keyof ServiceType;
@@ -400,7 +371,7 @@ export const ServicePage = ({
                         control={form.control}
                         name={name}
                         key={i}
-                        className={item.key && "name"}
+                        className={item.key && "name col-span-4"}
                       >
                         {(field) => {
                           return (
@@ -411,11 +382,64 @@ export const ServicePage = ({
                     );
                   })}
                 </div>
-                <div className="double-col">
+                <div className="grid grid-cols-12 gap-4 mb-4">
+                  {[
+                    {
+                      key: "duration",
+                      type: INPUT_TYPE.NUMBER,
+                      label: "Хугацаа",
+                    },
+                    {
+                      key: "index",
+                      type: INPUT_TYPE.NUMBER,
+                      label: "Дараалал",
+                    },
+                  ].map((item, i) => {
+                    const name = item.key as keyof ServiceType;
+                    const label = item.label as keyof ServiceType;
+                    return (
+                      <FormItems
+                        label={label}
+                        control={form.control}
+                        name={name}
+                        key={i}
+                        className={item.key && "name col-span-4"}
+                      >
+                        {(field) => {
+                          return (
+                            <TextField props={{ ...field }} type={item.type} />
+                          );
+                        }}
+                      </FormItems>
+                    );
+                  })}
+                  <FormItems
+                    control={form.control}
+                    name={"view"}
+                    label="Төлөв"
+                    className={"col-span-4"}
+                  >
+                    {(field) => {
+                      return (
+                        <ComboBox
+                          props={{ ...field }}
+                          items={getEnumValues(ServiceView).map((item) => {
+                            return {
+                              value: item,
+                              label: getValueServiceView[item].name,
+                            };
+                          })}
+                        />
+                      );
+                    }}
+                  </FormItems>
+                </div>
+                <div className="flex gap-4">
                   <FormItems
                     control={form.control}
                     name="file"
                     label="Зураг өөрчлөх"
+                    className="flex-1"
                   >
                     {(field) => {
                       const image = form.getValues("image");
@@ -490,13 +514,13 @@ export const ServicePage = ({
                       );
                     }}
                   </FormItems>
-                  <div>
+                  <div className="flex-2">
                     <div className="flex gap-2">
                       <FormItems
                         control={form.control}
                         name={`icon`}
                         label="Icon сонгох"
-                        className="flex flex-col items-start"
+                        className="flex-1 items-start"
                       >
                         {(field) => {
                           const value = field.value;
@@ -510,18 +534,18 @@ export const ServicePage = ({
                       </FormItems>
                       <FormItems
                         control={form.control}
-                        name={"view"}
-                        label="Төлөв"
-                        className={"col-span-2"}
+                        name={"parallel"}
+                        label="Давхар эсэх"
+                        className={"flex-1"}
                       >
                         {(field) => {
                           return (
                             <ComboBox
                               props={{ ...field }}
-                              items={getEnumValues(ServiceView).map((item) => {
+                              items={[true, false].map((item) => {
                                 return {
                                   value: item.toString(),
-                                  label: getValueServiceView[item].name,
+                                  label: item ? "Тийм" : "Үгүй",
                                 };
                               })}
                             />
@@ -541,25 +565,12 @@ export const ServicePage = ({
                           <Textarea
                             className=""
                             onChange={field.onChange}
-                            value={value as string}
+                            value={value ?? ""}
                           />
                         );
                       }}
                     </FormItems>
                   </div>
-                </div>
-                <div className="flex items-center gap-2 mt-2 max-w-lg w-full">
-                  <Switch
-                    checked={isAll ?? false}
-                    onCheckedChange={(val) => form.setValue("isAll", val)}
-                    id="compare-switch"
-                  />
-                  <label
-                    htmlFor="compare-switch"
-                    className="text-sm text-muted-foreground"
-                  >
-                    Бүх салбарын үйлчилгээ эсэх
-                  </label>
                 </div>
               </FormProvider>
             </Modal>

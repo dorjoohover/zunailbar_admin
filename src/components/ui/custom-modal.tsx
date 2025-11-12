@@ -165,7 +165,7 @@ export default function CustomModal({
                 exit={{ scale: 0.9, opacity: 0 }}
                 transition={{ duration: 0.3 }}
                 className={clsx(
-                  "relative p-1 md:p-6 outline-none rounded-xl shadow-xl",
+                  "relative p-1 md:p-6 outline-none  rounded-xl shadow-xl",
                   contentClassName
                 )}
                 onClick={(e) => e.stopPropagation()}
@@ -196,7 +196,9 @@ export default function CustomModal({
         </AnimatePresence>
       ) : (
         <Dialog open={localOpen} onOpenChange={handleOpenChange}>
-          <DialogContent className={cn(contentClassName, 'max-h-[600px] overflow-auto')}>
+          <DialogContent
+            className={cn(contentClassName, "max-h-[90%] overflow-auto")}
+          >
             <DialogHeader className="py-2 text-left">
               <DialogTitle className="text-2xl font-bold">{title}</DialogTitle>
               {subheading && (

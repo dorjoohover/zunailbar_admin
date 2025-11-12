@@ -7,6 +7,7 @@ export interface ProductLog {
   total_amount: number;
   paid_amount: number;
   unit_price: number;
+  currency: string;
   product_log_status: number;
   date: Date;
   created_by: string;

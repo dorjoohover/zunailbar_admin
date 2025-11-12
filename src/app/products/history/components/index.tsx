@@ -13,6 +13,8 @@ import {
   VALUES,
   SearchType,
   ZValidator,
+  zNumOpt,
+  zStrOpt,
 } from "@/lib/constants";
 import { Modal } from "@/shared/components/modal";
 import z from "zod";
@@ -25,7 +27,7 @@ import { ComboBox } from "@/shared/components/combobox";
 import { TextField } from "@/shared/components/text.field";
 import { fetcher } from "@/hooks/fetcher";
 import { getColumns } from "./columns";
-import { CategoryType, ProductLogStatus } from "@/lib/enum";
+import { CategoryType, INPUT_TYPE, ProductLogStatus } from "@/lib/enum";
 import { DatePicker } from "@/shared/components/date.picker";
 import DynamicHeader from "@/components/dynamicHeader";
 import {
@@ -50,37 +52,43 @@ import { showToast } from "@/shared/components/showToast";
 
 const formSchema = z
   .object({
-    product_id: ZValidator.product,
+    product_id: zStrOpt({
+      allowNullable: false,
+      label: "Бүтээгдэхүүн",
+    }),
 
-    quantity: z.preprocess(
-      (val) => (typeof val === "string" ? parseFloat(val) : val),
-      z.number()
-    ) as unknown as number,
-    price: z.preprocess(
-      (val) => (typeof val === "string" ? parseFloat(val) : val),
-      z.number()
-    ) as unknown as number,
-    currency: ZValidator.currency,
-    total_amount: z.preprocess(
-      (val) => (typeof val === "string" ? parseFloat(val) : val),
-      z.number()
-    ) as unknown as number,
-    unit_price: z.preprocess(
-      (val) => (typeof val === "string" ? parseFloat(val) : val),
-      z.number()
-    ) as unknown as number,
-    paid_amount: z.preprocess(
-      (val) => (typeof val === "string" ? parseFloat(val) : val),
-      z.number()
-    ) as unknown as number,
-    cargo: z.preprocess(
-      (val) => (typeof val === "string" ? parseFloat(val) : val),
-      z.number()
-    ) as unknown as number,
-    currency_amount: z.preprocess(
-      (val) => (typeof val === "string" ? parseFloat(val) : val),
-      z.number()
-    ) as unknown as number,
+    quantity: zNumOpt({
+      label: "Тоо ширхэг",
+      allowNullable: false,
+    }),
+    price: zNumOpt({
+      label: "Үнэ(Тухайн вальютаар)",
+      allowNullable: false,
+    }),
+    currency: zStrOpt({
+      allowNullable: false,
+      label: "Ханш",
+    }),
+    total_amount: zNumOpt({
+      label: "Нийт үнэ",
+      allowNullable: false,
+    }),
+    unit_price: zNumOpt({
+      label: "Нэгж үнэ",
+      allowNullable: false,
+    }),
+    paid_amount: zNumOpt({
+      label: "Төлсөн үнэ",
+      allowNullable: false,
+    }),
+    cargo: zNumOpt({
+      label: "Карго",
+      allowNullable: false,
+    }),
+    currency_amount: zNumOpt({
+      label: "Валютын ханш",
+      allowNullable: false,
+    }),
     edit: z.string().nullable().optional(),
     date: z.preprocess(
       (val) => (typeof val === "string" ? new Date(val) : val),
@@ -208,21 +216,22 @@ export const ProductHistoryPage = ({
       unit_price: round(+(payload.unit_price ?? 0)),
       total_amount: round(+(payload.total_amount ?? 0)),
     };
+    console.log(e);
 
-    const res = edit
-      ? await updateOne<IProductLog>(Api.product_log, edit ?? "", {
-          ...payload,
-          cargo,
-        } as unknown as IProductLog)
-      : await create<IProductLog>(Api.product_log, {
-          ...payload,
-          cargo,
-        } as unknown as IProductLog);
-    if (res.success) {
-      refresh();
-      setOpen(false);
-      form.reset(defaultValues);
-    }
+    // const res = edit
+    //   ? await updateOne<IProductLog>(Api.product_log, edit ?? "", {
+    //       ...payload,
+    //       cargo,
+    //     } as unknown as IProductLog)
+    //   : await create<IProductLog>(Api.product_log, {
+    //       ...payload,
+    //       cargo,
+    //     } as unknown as IProductLog);
+    // if (res.success) {
+    //   refresh();
+    //   setOpen(false);
+    //   form.reset(defaultValues);
+    // }
     setAction(ACTION.DEFAULT);
   };
   const onInvalid = async <T,>(e: T) => {
@@ -483,40 +492,35 @@ export const ProductHistoryPage = ({
                     {[
                       {
                         key: "cargo",
-                        type: "money",
+                        type: INPUT_TYPE.MONEY,
                         label: "Kargo",
                       },
                       {
                         key: "quantity",
-                        type: "number",
+                        type: INPUT_TYPE.NUMBER,
                         label: "Тоо ширхэг",
                       },
 
                       {
                         key: "price",
-                        type: "number",
+                        type: INPUT_TYPE.NUMBER,
                         label: "Үнэ (Тухайн вальютаар)",
                       },
                       {
                         key: "unit_price",
-                        type: "money",
+                        type: INPUT_TYPE.MONEY,
                         label: "Нэгжийн үнэ",
                       },
                       {
                         key: "total_amount",
-                        type: "money",
+                        type: INPUT_TYPE.MONEY,
                         label: "Нийт дүн",
                       },
                       {
                         key: "paid_amount",
-                        type: "money",
+                        type: INPUT_TYPE.MONEY,
                         label: "Төлсөн дүн",
                       },
-                      // {
-                      //   key: "total_amount",
-                      //   type: "money",
-                      //   label: "Нийт үнэ",
-                      // },
                     ].map((item, i) => {
                       const name = item.key as keyof LogType;
                       const label = item.label as keyof LogType;
@@ -548,9 +552,14 @@ export const ProductHistoryPage = ({
                         {(field) => {
                           return (
                             <DatePicker
+                              props={{ ...field }}
+                              range={{
+                                from: field.value as Date,
+                                to: field.value as Date,
+                              }}
+                              setRange={(e) => field.onChange(e.from)}
                               name=""
                               pl="Огноо сонгох"
-                              props={{ ...field }}
                             />
                           );
                         }}

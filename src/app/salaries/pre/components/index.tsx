@@ -24,7 +24,7 @@ import { TextField } from "@/shared/components/text.field";
 import { fetcher } from "@/hooks/fetcher";
 import { getColumns } from "./columns";
 import DynamicHeader from "@/components/dynamicHeader";
-import { SalaryLogStatus } from "@/lib/enum";
+import { INPUT_TYPE, SalaryLogStatus } from "@/lib/enum";
 import { ISalaryLog, SalaryLog, User } from "@/models";
 import { firstLetterUpper, mnDate, usernameFormatter } from "@/lib/functions";
 import { DatePicker } from "@/shared/components/date.picker";
@@ -258,6 +258,11 @@ export const PrePage = ({
                           <DatePicker
                             name=""
                             pl="Огноо сонгох"
+                            range={{
+                              from: field.value as Date,
+                              to: field.value as Date,
+                            }}
+                            setRange={(e) => field.onChange(e)}
                             props={{ ...field }}
                           />
                         );
@@ -279,7 +284,7 @@ export const PrePage = ({
                               ref: () => {},
                               value: form.getValues("order_count"),
                             }}
-                            type={"number"}
+                            type={INPUT_TYPE.NUMBER}
                           />
                         );
                       }}

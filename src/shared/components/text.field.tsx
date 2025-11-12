@@ -5,12 +5,12 @@ import { Eye, EyeOff } from "lucide-react";
 import { ControllerRenderProps, type FieldValues } from "react-hook-form";
 import { mobileFormatter, money } from "@/lib/functions";
 import { cn } from "@/lib/utils";
-
+import { INPUT_TYPE } from "@/lib/enum";
 export const TextField = <T extends FieldValues>({
   props,
   label,
   pl,
-  type = "text",
+  type = INPUT_TYPE.TEXT,
   symbol = "₮",
   className = "bg-white h-10",
   max,
@@ -21,7 +21,7 @@ export const TextField = <T extends FieldValues>({
   pl?: string;
   pattern?: string;
   symbol?: string;
-  type?: string; // "money" бол форматлана
+  type?: INPUT_TYPE; // "money" бол форматлана
   label?: string;
   disabled?: boolean;
   max?: string;
@@ -39,7 +39,9 @@ export const TextField = <T extends FieldValues>({
     if (type === "money") {
       setDisplay(money(String(props.value ?? "0")));
     } else {
-      if (!props.value || props.value == null) setDisplay("");
+      props.value == undefined || props.value == null
+        ? setDisplay("")
+        : setDisplay(props.value.toString());
     }
   }, [props.value, type]);
 
@@ -76,6 +78,19 @@ export const TextField = <T extends FieldValues>({
           pattern={pattern}
           {...props}
           type={type}
+          onChange={(e) => {
+            const raw = e.target.value;
+            if (type && type == "number") {
+              let value = parseInt(raw.replace(/[^\d]/g, ""));
+              const v = isNaN(value) ? "0" : value.toString();
+              props.onChange(v);
+              setDisplay(v);
+            } else {
+              props.onChange(raw);
+              setDisplay(raw);
+            }
+          }}
+          value={display}
           id={id}
           placeholder={pl}
           className={cn("h-10", className)}

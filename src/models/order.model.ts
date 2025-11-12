@@ -1,5 +1,6 @@
 import { OrderStatus } from "@/lib/enum";
 import { UserService } from "./user.service.model";
+import { User } from "./user.model";
 
 export interface IOrder {
   user_id?: string;
@@ -22,6 +23,7 @@ export interface IOrder {
   duration?: number;
   is_pre_amount_paid?: boolean;
   phone?: string;
+  customer?: User;
   color?: number;
 }
 export interface Order {
@@ -41,6 +43,8 @@ export interface Order {
   total_amount: number;
   paid_amount: number;
   created_at?: Date;
+  customer?: User;
+
   updated_at?: Date;
 }
 

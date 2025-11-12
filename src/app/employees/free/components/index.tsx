@@ -24,7 +24,7 @@ import { fetcher } from "@/hooks/fetcher";
 import { getColumns } from "./columns";
 import { ISchedule, Schedule, User } from "@/models";
 import { firstLetterUpper, usernameFormatter } from "@/lib/functions";
-import { ScheduleStatus } from "@/lib/enum";
+import { ScheduleStatus, INPUT_TYPE } from "@/lib/enum";
 import ContainerHeader from "@/components/containerHeader";
 import DynamicHeader from "@/components/dynamicHeader";
 import { showToast } from "@/shared/components/showToast";
@@ -170,17 +170,17 @@ export const PendingSchedulePage = ({
                 {[
                   {
                     key: "min_price",
-                    type: "money",
+                    type: INPUT_TYPE.MONEY,
                     label: "Үнэ",
                   },
                   {
                     key: "max_price",
-                    type: "money",
+                    type: INPUT_TYPE.MONEY,
                     label: "Их үнэ",
                   },
                   {
                     key: "duration",
-                    type: "number",
+                    type: INPUT_TYPE.NUMBER,
                     label: "Хугацаа",
                   },
                 ].map((item, i) => {

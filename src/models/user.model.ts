@@ -32,6 +32,7 @@ export interface User {
   birthday?: Date;
   added_by: string;
   branch_id: string;
+
   branch_name?: string;
   user_status: number;
   experience?: number;

@@ -1,4 +1,4 @@
-"use client";;
+"use client";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 
@@ -8,11 +8,13 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { EventFormData, eventSchema } from "@/types/index";
 import { useScheduler } from "@/providers/schedular-provider";
 import { Branch, IOrder, Service, User } from "@/models";
-import { OrderStatus, ROLE } from "@/lib/enum";
+import { INPUT_TYPE, OrderStatus, ROLE } from "@/lib/enum";
 import { FormItems } from "@/shared/components/form.field";
 import { ComboBox } from "@/shared/components/combobox";
 import {
   getEnumValues,
+  ListDefault,
+  ListType,
   OrderStatusValues,
   SearchType,
   VALUES,
@@ -27,24 +29,33 @@ import {
 } from "@/lib/functions";
 import { TextField } from "@/shared/components/text.field";
 import { showToast } from "@/shared/components/showToast";
-import { Api } from "@/utils/api";
-import { search } from "@/app/(api)";
+import { API, Api } from "@/utils/api";
+import { find, search } from "@/app/(api)";
 import { Textarea } from "@/components/ui/textarea";
 import { FormItem, FormLabel } from "@/components/ui/form";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
+import { LoaderMini } from "@/components/loader";
 const defaultValues = {
-  branch_id: "",
-  user_id: "",
-  customer_desc: "",
+  branch_id: undefined,
+  user_id: undefined,
+  customer_desc: undefined,
   details: [],
   order_date: mnDateFormat(new Date()),
-  start_time: "",
+  start_time: undefined,
   edit: undefined,
   order_status: OrderStatus.Pending,
   total_amount: 0,
   pre_amount: 0,
   paid_amount: 0,
+};
+type ListFieldProps<T> = {
+  api: keyof typeof API;
+  value?: string;
+  key?: string;
+  edit?: boolean;
+  route?: string;
+  onChange: (data: ListType<T>) => void;
 };
 export default function AddEventModal({
   // CustomAddEventModal,
@@ -57,7 +68,7 @@ export default function AddEventModal({
     branch: SearchType<Branch>[];
     customer: SearchType<User>[];
     user: SearchType<User>[];
-    service: SearchType<Service>[];
+    service: ListType<Service>;
   };
   loading?: boolean;
   send: (order: IOrder) => void;
@@ -70,58 +81,118 @@ export default function AddEventModal({
 
   const { handlers } = useScheduler();
   const [allItems, setValues] = useState(items);
+  const [services, setServices] = useState<ListType<Service>>({
+    count: 0,
+    items: [],
+  });
+
+  const [loader, setLoader] = useState({
+    [Api.service]: false,
+  });
+
+  const listField = async <T,>({
+    api,
+    value,
+    key,
+    edit = false,
+    route,
+    onChange,
+  }: ListFieldProps<T>) => {
+    try {
+      setLoader((prev) => ({ ...prev, [api]: true }));
+      const payload: Record<string, any> = {
+        limit: -1,
+        page: 0,
+      };
+
+      // 🔍 Хэрвээ key ба value өгөгдсөн бол filter нэмнэ
+      if (key && value) {
+        payload[key] = value;
+      }
+
+      // 🧩 Хэрвээ edit горим бол зөвхөн value-тай item-г татахыг оролдоно
+      if (edit && value && key) {
+        payload.limit = 1; // зөвхөн 1 item
+      }
+
+      const res = await find<T>(api, payload, route);
+
+      // ✅ Response шалгах
+      if (!res || !res.data) {
+        console.warn(`[listField] ${String(api)} API-аас өгөгдөл олдсонгүй.`);
+        onChange([] as unknown as ListType<T>);
+        return;
+      }
+
+      onChange(res.data);
+      setLoader((prev) => ({ ...prev, [api]: false }));
+    } catch (error: any) {
+      console.error(
+        `[listField] ${String(api)} API дуудах үед алдаа гарлаа:`,
+        error
+      );
+      onChange([] as unknown as ListType<T>);
+      setLoader((prev) => ({ ...prev, [api]: false }));
+    }
+  };
 
   const searchField = async (v: string, key: Api, edit?: boolean) => {
-    if (edit && key === Api.customer) {
-      form.setValue("customer_id", values?.customer_id);
-    }
-
-    const value = v;
-    const details = form.watch("details") || [];
-    const branchId = form.watch("branch_id");
-
-    let payload: Record<string, any> = {};
-
-    if (key === Api.branch) {
-      payload = { name: value };
-    } else {
-      payload = {
-        role: key === Api.customer ? ROLE.CLIENT : ROLE.E_M,
-        services: details.map((d) => d.service_id).join(","),
-        branch_id: key === Api.customer ? undefined : branchId,
-        ...(edit === undefined ? { id: value } : { value }),
-      };
-    }
-
-    try {
-      const res = await search(key === Api.customer ? Api.user : key, {
-        ...payload,
-        limit: 100,
-        page: 0,
-      });
-
-      setValues((prev) => ({
-        ...prev,
-        [key]: res.data,
-      }));
-    } catch (error) {
-      console.error(`Search failed for ${key}:`, error);
-    }
+    // if (edit && key === Api.customer) {
+    //   form.setValue("customer_id", values?.customer_id);
+    // }
+    // const value = v;
+    // const details = form.watch("details") || [];
+    // const branchId = form.watch("branch_id");
+    // let payload: Record<string, any> = {};
+    // if (key === Api.branch) {
+    //   payload = { name: value };
+    // } else {
+    //   payload = {
+    //     role: key === Api.customer ? ROLE.CLIENT : ROLE.E_M,
+    //     services: details.map((d) => d.service_id).join(","),
+    //     branch_id: key === Api.customer ? undefined : branchId,
+    //     ...(edit === undefined ? { id: value } : { value }),
+    //   };
+    // }
+    // try {
+    //   const res = await search(key === Api.customer ? Api.user : key, {
+    //     ...payload,
+    //     limit: 100,
+    //     page: 0,
+    //   });
+    //   setValues((prev) => ({
+    //     ...prev,
+    //     [key]: res.data,
+    //   }));
+    // } catch (error) {
+    //   console.error(`Search failed for ${key}:`, error);
+    // }
   };
   const form = useForm<EventFormData>({
     resolver: zodResolver(eventSchema),
     defaultValues: values ?? defaultValues,
   });
-
+  const branchId = form.watch("branch_id");
   useEffect(() => {
-    const value = form.watch("branch_id");
-    if (value) {
-      form.setValue("details", []);
-      searchField("", Api.user);
-      searchField("", Api.service);
+    let cancelled = false;
+
+    if (branchId) {
+      listField<Service>({
+        api: Api.service,
+        onChange: (data) => {
+          if (!cancelled) setServices(data);
+        },
+        key: "branch_id",
+        value: branchId as string,
+      });
+    } else {
+      setServices(ListDefault);
     }
-  }, [form.watch("branch_id")]);
-  // Reset the form on initialization
+
+    return () => {
+      cancelled = true;
+    };
+  }, [branchId]);
   useEffect(() => {
     if (values) {
       form.reset({
@@ -132,9 +203,9 @@ export default function AddEventModal({
   }, [data, form.reset, values]);
 
   const onSubmit: SubmitHandler<EventFormData> = (formData) => {
-    const st = formData.start_time?.slice(0, 2);
+    const st = (formData.start_time as string)?.slice(0, 2);
 
-    const newEvent: IOrder = {
+    const newEvent = {
       branch_id: formData.branch_id,
       details: formData.details,
       order_date: formData.order_date as string,
@@ -146,7 +217,8 @@ export default function AddEventModal({
       paid_amount: +(formData.paid_amount ?? 0),
       pre_amount: +(formData.pre_amount ?? 0),
       edit: formData.edit ?? undefined,
-    };
+      parallel: formData.parallel,
+    } as IOrder;
     send(newEvent);
 
     setClose();
@@ -154,17 +226,23 @@ export default function AddEventModal({
   const onInvalid = async <T,>(e: T) => {
     const error = Object.entries(e as any)
       .map(([er, v], i) => {
+        if (er == "details")
+          return Object.values(v as any).map((a: any) => {
+            return Object.values(a).map((b: any) => b.message);
+          });
         if ((v as any)?.message) {
           return (v as any)?.message;
         }
-        const value = VALUES[er];
-        console.log(er, v);
+        let value = VALUES[er];
+
         return i == 0 ? firstLetterUpper(value ?? "") : value;
       })
       .join(", ");
+
     showToast("info", error);
   };
   const details = form.watch("details");
+  const parallel = form.watch("parallel");
   type DetailType = {
     service_id: string;
     service_name: string;
@@ -292,7 +370,9 @@ export default function AddEventModal({
               label="Нийт төлбөр"
             >
               {(field) => {
-                return <TextField type="money" props={{ ...field }} />;
+                return (
+                  <TextField type={INPUT_TYPE.MONEY} props={{ ...field }} />
+                );
               }}
             </FormItems>
             <FormItems
@@ -301,7 +381,9 @@ export default function AddEventModal({
               label="Урьдчилгаа төлбөр"
             >
               {(field) => {
-                return <TextField type="money" props={{ ...field }} />;
+                return (
+                  <TextField type={INPUT_TYPE.MONEY} props={{ ...field }} />
+                );
               }}
             </FormItems>
             <FormItems
@@ -310,7 +392,9 @@ export default function AddEventModal({
               label="Гүйцээж төлсөн төлбөр"
             >
               {(field) => {
-                return <TextField type="money" props={{ ...field }} />;
+                return (
+                  <TextField type={INPUT_TYPE.MONEY} props={{ ...field }} />
+                );
               }}
             </FormItems>
           </div>
@@ -321,7 +405,9 @@ export default function AddEventModal({
             <FormItems control={form.control} name="order_date" label="Огноо">
               {(field) => {
                 // field.value = mnDateFormat((field.value as Date) ?? new Date());
-                return <TextField type="date" props={{ ...field }} />;
+                return (
+                  <TextField type={INPUT_TYPE.DATE} props={{ ...field }} />
+                );
               }}
             </FormItems>
             <FormItems
@@ -353,41 +439,125 @@ export default function AddEventModal({
         <div className="border p-2 rounded-md">
           <p className="my-2 font-bold">Үйлчилгээ</p>
           <div className="grid grid-cols-2 gap-1 max-h-[220px] overflow-auto">
-            {allItems.service.map((service, i) => {
-              const [name, duration] = service.value?.split("__") ?? [""];
-              const selected = details?.findIndex(
-                (s) => s.service_id == service.id
-              );
-              return (
-                <div key={i} className="col-span-1 flex gap-2 items-center ">
-                  <Checkbox
-                    checked={details?.some((d) => d.service_id === service.id)}
-                    id={service.id}
-                    onCheckedChange={() => {
-                      updateDetail(selected, {
-                        service_id: service.id,
-                        service_name: name,
-                        duration: duration ? +duration : 0,
-                        description: "",
-                        price: 0,
-                        user_id: "",
-                      });
-                    }}
-                    aria-label="Select row"
-                  />
-                  <Label htmlFor={service.id} className="font-[600]">
-                    {name}
-                  </Label>
-                </div>
-              );
-            })}
+            {loader[Api.service] ? (
+              <div className="flex col-span-2 py-4 items-center justify-center">
+                <LoaderMini />
+              </div>
+            ) : (
+              <>
+                {services.count == 0 && (
+                  <div className="flex justify-center col-span-2 py-4 m-2 rounded-md bg-primary/10 border border-primary/50">
+                    <p className="text-sm">
+                      Салбар сонгоогүй эсвэл салбарын үйлчилгээ байхгүй байна.
+                    </p>
+                  </div>
+                )}
+                {services.items.map((service, i) => {
+                  const selected = details?.findIndex(
+                    (s) => s.service_id == service.id
+                  );
+
+                  return (
+                    <div
+                      key={i}
+                      className={`flex items-center justify-between w-full cursor-pointer rounded-lg border p-3 transition-all
+    ${
+      selected !== undefined && selected != -1
+        ? "bg-blue-50 border-blue-400"
+        : "hover:bg-muted border-border"
+    }`}
+                      onClick={() => {
+                        if (
+                          selected != undefined &&
+                          selected != -1 &&
+                          details.length == 2
+                        ) {
+                          showToast(
+                            "info",
+                            "2-с олон үйлчилгээ сонгох боломжгүй"
+                          );
+                          return;
+                        }
+                        const categorySelected = details?.some(
+                          (s) => s.category_id === service.category_id
+                        );
+                        if (categorySelected && selected == -1) {
+                          showToast(
+                            "info",
+                            "Өөр ангилалын үйлчилгээ сонгоно уу"
+                          );
+                          return;
+                        }
+
+                        updateDetail(selected, {
+                          service_id: service.id,
+                          service_name: service.name,
+                          duration: service.duration,
+                          parallel: service.parallel,
+                          category_id: service.category_id,
+                          description: "",
+                          price: 0,
+                          user_id: "",
+                        });
+                      }}
+                    >
+                      <div>
+                        <span className="block font-semibold block text-sm">
+                          {service.name}
+                        </span>
+                        {service.meta?.name && (
+                          <span className="text-xs  inline-flex py-0.5 px-2 bg-blue-100 text-muted-foreground px-1 rounded">
+                            {service.meta.name}
+                          </span>
+                        )}
+                      </div>
+
+                      {service.parallel && (
+                        <span className="text-[11px] px-2 py-[2px] rounded-full bg-blue-100 text-blue-700 font-medium">
+                          Хамт
+                        </span>
+                      )}
+                    </div>
+                  );
+                })}
+              </>
+            )}
           </div>
         </div>
         {details?.length > 0 && (
           <div className="border-t">
-            <p className="my-4">Үйлчилгээ</p>
+            <div className="flex justify-between items-center">
+              <p className="my-4">Үйлчилгээ</p>
+              {details.length == 2 && details.every((d) => d.parallel) && (
+                <FormItems control={form.control} name="parallel" label="">
+                  {(field) => {
+                    return (
+                      <div className="col-span-1 flex gap-2 cursor-pointer items-center ">
+                        <Checkbox
+                          id="parallel"
+                          checked={field.value as boolean}
+                          onCheckedChange={(e) => {
+                            form.setValue("parallel", e as boolean);
+                            updateDetail(0, undefined, "user_id");
+                            updateDetail(1, undefined, "user_id");
+                          }}
+                          className="w-5 h-5"
+                          aria-label="Select row"
+                        />
+                        <label
+                          htmlFor="parallel"
+                          className="flex items-center gap-2 font-semibold text-lg"
+                        >
+                          Давхар эсэх
+                        </label>
+                      </div>
+                    );
+                  }}
+                </FormItems>
+              )}
+            </div>
             <div>
-              {details?.map((detail, i) => {
+              {details.map((detail, i) => {
                 const users = allItems.user;
                 const user = users.filter((u) => detail?.user_id == u.id)?.[0];
                 const [mobile, nickname] = user?.value?.split("__") ?? [
@@ -421,7 +591,12 @@ export default function AddEventModal({
                               props={{
                                 onChange: (v: string) => {
                                   console.log(details, v);
-                                  updateDetail(i, v, "user_id");
+                                  if (parallel) {
+                                    updateDetail(i, v, "user_id");
+                                  } else {
+                                    updateDetail(0, v, "user_id");
+                                    updateDetail(1, v, "user_id");
+                                  }
                                 },
                                 name: "",
                                 onBlur: () => {},
@@ -431,11 +606,10 @@ export default function AddEventModal({
                             />
                             {/* {message && <FormMessage />} */}
                           </FormItem>
-
                           <FormItem>
                             <FormLabel>Төлбөр</FormLabel>
                             <TextField
-                              type={"money"}
+                              type={INPUT_TYPE.MONEY}
                               props={{
                                 onChange: (v: string) => {
                                   const value = parseInt(v);
@@ -459,7 +633,7 @@ export default function AddEventModal({
                             onChange={(e) => {
                               updateDetail(i, e.target.value, "description");
                             }}
-                            value={detail.description ?? ""}
+                            value={(detail.description as string) ?? ""}
                           />
                         </FormItem>
                       </div>

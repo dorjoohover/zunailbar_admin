@@ -31,7 +31,12 @@ import { ComboBox } from "@/shared/components/combobox";
 import { TextField } from "@/shared/components/text.field";
 import { fetcher } from "@/hooks/fetcher";
 import { getColumns } from "./columns";
-import { CategoryType, ProductTransactionStatus, ROLE } from "@/lib/enum";
+import {
+  CategoryType,
+  INPUT_TYPE,
+  ProductTransactionStatus,
+  ROLE,
+} from "@/lib/enum";
 import {
   firstLetterUpper,
   objectCompact,
@@ -438,7 +443,7 @@ export const ProductTransactionPage = ({
                     {[
                       {
                         key: "quantity",
-                        type: "number",
+                        type: INPUT_TYPE.NUMBER,
                         label: "Тоо ширхэг",
                       },
                       // {

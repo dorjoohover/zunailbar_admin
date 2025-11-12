@@ -2,17 +2,16 @@ import { Api } from "@/utils/api";
 import { find } from "../(api)";
 import { Service } from "@/models/service.model";
 import { ServicePage } from "./components";
-import { Branch } from "@/models";
-import ContainerHeader from "@/components/containerHeader";
+import { Branch, ServiceCategory } from "@/models";
 
 export default async function Page() {
-  const [res, branch] = await Promise.all([
+  const [res, serviceCategory] = await Promise.all([
     find<Service>(Api.service),
-    find<Branch>(Api.branch, { limit: -1 }),
+    find<ServiceCategory>(Api.service_category, { limit: -1 }),
   ]);
   return (
     <section>
-        <ServicePage data={res.data} branches={branch.data} />
+      <ServicePage data={res.data} serviceCategories={serviceCategory.data} />
     </section>
   );
 }

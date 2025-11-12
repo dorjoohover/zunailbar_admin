@@ -89,52 +89,69 @@ export type Variant = (typeof variants)[number];
 const detail = z.object({
   service_id: z.string(),
   service_name: z.string(),
-  duration: z
-    .preprocess(
-      (val) => (typeof val === "string" ? parseFloat(val) : val),
-      z.number()
-    )
-    .nullable()
-    .optional() as unknown as number,
-  description: zStrOpt,
-  price: z.preprocess((val) => {
-    if (val === "" || val === null || val === undefined) return 0;
-    if (typeof val === "string") return parseFloat(val);
-    return val;
-  }, z.number()) as unknown as number,
-  user_id: zStrOpt,
+  category_id: zStrOpt({
+    label: "Ангилал",
+  }),
+  duration: zNumOpt({
+    label: "Хугацаа",
+    value: 0,
+  }),
+  description: zStrOpt(),
+  parallel: z.boolean().nullable().optional(),
+  price: zNumOpt({
+    value: 0,
+    label: "Үнэ",
+  }),
+  user_id: zStrOpt({
+    allowNullable: false,
+    label: "Артист",
+  }),
 });
 
 export const eventSchema = z.object({
-  branch_id: ZValidator.branch.optional(),
+  branch_id: zStrOpt({
+    label: "Салбар",
+    allowNullable: false,
+  }) as string,
 
-  customer_id: ZValidator.customer.optional(),
+  customer_id: zStrOpt({
+    allowNullable: false,
+    label: "Хэрэглэгч",
+  }),
   details: z.array(detail),
-  description: z.string().nullable().optional(),
-  order_date: z.string(),
-  start_time: z.string(),
-  end_time: z.string().nullable().optional(),
+  description: zStrOpt({
+    label: "Тайлбар",
+  }),
+  order_date: zStrOpt({
+    label: "Захиалгын огноо",
+    allowNullable: false,
+  }),
+  start_time: zStrOpt({
+    allowNullable: false,
+    label: "Цаг",
+  }),
+  end_time: zStrOpt({
+    label: "Дуусах цаг",
+  }),
   order_status: z
     .preprocess(
       (val) => (typeof val === "string" ? parseInt(val, 10) : val),
       z.nativeEnum(OrderStatus).nullable()
     )
     .optional() as unknown as number,
-  total_amount: z.preprocess((val) => {
-    if (val === "" || val === null || val === undefined) return 0;
-    if (typeof val === "string") return parseFloat(val);
-    return val;
-  }, z.number()) as unknown as number,
-  pre_amount: z.preprocess((val) => {
-    if (val === "" || val === null || val === undefined) return 0;
-    if (typeof val === "string") return parseFloat(val);
-    return val;
-  }, z.number()) as unknown as number,
-  paid_amount: z.preprocess((val) => {
-    if (val === "" || val === null || val === undefined) return 0;
-    if (typeof val === "string") return parseFloat(val);
-    return val;
-  }, z.number()) as unknown as number,
+  total_amount: zNumOpt({
+    label: "Нийт үнэ",
+    value: 0,
+  }),
+  pre_amount: zNumOpt({
+    value: 0,
+    label: "Урьдчилгаа",
+  }),
+  paid_amount: zNumOpt({
+    value: 0,
+    label: "Гүйцээж төлсөн төлбөр",
+  }),
+  parallel: z.boolean().nullable().optional(),
   edit: z.string().nullable().optional(),
 });
 

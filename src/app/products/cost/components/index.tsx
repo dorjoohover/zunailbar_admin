@@ -26,7 +26,7 @@ import { FormItems } from "@/shared/components/form.field";
 import { ComboBox } from "@/shared/components/combobox";
 import { TextField } from "@/shared/components/text.field";
 import { fetcher } from "@/hooks/fetcher";
-import { CategoryType, CostStatus } from "@/lib/enum";
+import { CategoryType, CostStatus, INPUT_TYPE } from "@/lib/enum";
 import {
   dateOnly,
   firstLetterUpper,
@@ -430,17 +430,17 @@ export const CostPage = ({
                       {
                         key: "price",
                         label: "Нийт төлбөр",
-                        type: "money",
+                        type: INPUT_TYPE.MONEY,
                       },
                       {
                         key: "paid_amount",
                         label: "Төлсөн төлбөр",
-                        type: "money",
+                        type: INPUT_TYPE.MONEY,
                       },
                       {
                         key: "date",
                         label: "Огноо",
-                        type: "date",
+                        type: INPUT_TYPE.DATE,
                       },
                     ].map((item, i) => {
                       const name = item.key as keyof CostType;

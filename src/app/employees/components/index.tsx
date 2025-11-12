@@ -3,6 +3,7 @@ import { DataTable } from "@/components/data-table";
 import {
   ACTION,
   DEFAULT_PG,
+  EmployeeStatusValue,
   getEnumValues,
   ListType,
   Option,
@@ -10,25 +11,22 @@ import {
   RoleValue,
   UserStatusValue,
   VALUES,
+  zNumOpt,
+  zStrOpt,
 } from "@/lib/constants";
 import { Branch, IUser, User } from "@/models";
 import { getColumns } from "./columns";
 import { Modal } from "@/shared/components/modal";
 import { ComboBox } from "@/shared/components/combobox";
-import { useEffect, useMemo, useState } from "react";
-import { EmployeeStatus, ROLE, UserStatus } from "@/lib/enum";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { EmployeeStatus, INPUT_TYPE, ROLE, UserStatus } from "@/lib/enum";
 import { PasswordField } from "@/shared/components/password.field";
 import z from "zod";
-import { FormProvider, useForm, useFormContext } from "react-hook-form";
+import { FormProvider, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import { TextField } from "@/shared/components/text.field";
-import {
-  firstLetterUpper,
-  numberArray,
-  objectCompact,
-  textValue,
-} from "@/lib/functions";
+import { firstLetterUpper, objectCompact, textValue } from "@/lib/functions";
 import { DatePicker } from "@/shared/components/date.picker";
 import { create, deleteOne, updateOne } from "@/app/(api)";
 import { Api } from "@/utils/api";
@@ -39,46 +37,50 @@ import { imageUploader } from "@/app/(api)/base";
 import { Pencil, UploadCloud, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import DynamicHeader from "@/components/dynamicHeader";
-import { FilterPopover } from "@/components/layout/popover";
-import { Checkbox } from "@radix-ui/react-checkbox";
 import { toast } from "sonner";
 import { showToast } from "@/shared/components/showToast";
 import { ACCEPT_ATTR, validateImageFile } from "@/lib/image.validator";
 import { COLOR_HEX } from "@/lib/colors";
 
 const formSchema = z.object({
-  firstname: z.string().min(1, "Нэр оруулна уу"),
-  lastname: z.string().min(1, "Овог оруулна уу"),
-  branch_id: z.string().min(1, "Салбар сонгоно уу"),
-  mobile: z
-    .string()
-    .min(1, "Утасны дугаар оруулна уу")
-    .length(8, "Утасны дугаар буруу байна"),
+  firstname: zStrOpt({
+    allowNullable: false,
+    label: "Нэр",
+  }),
+  lastname: zStrOpt({
+    allowNullable: false,
+    label: "Овог",
+  }),
+  branch_id: zStrOpt({
+    allowNullable: false,
+    label: "Салбар",
+  }),
+  mobile: zStrOpt({
+    allowNullable: false,
+    label: "Утасны дугаар",
+  }),
   birthday: z.preprocess(
     (val) => (typeof val === "string" ? new Date(val) : val),
     z.date()
   ) as unknown as Date,
-  experience: z.preprocess(
-    (val) => (typeof val === "string" ? parseFloat(val) : val),
-    z.number()
-  ) as unknown as number,
-  percent: z.preprocess(
-    (val) => (typeof val === "string" ? parseFloat(val) : val),
-    z.number()
-  ) as unknown as number,
-  password: z.string().nullable().optional(),
-  nickname: z.string().min(1, "Хоч оруулна уу"),
-  profile_img: z.string().nullable().optional(),
-  color: z.preprocess(
-    (val) => {
-      if (val === null || val === undefined || val === "") return NaN; // алдаа гэж үзнэ
-      if (typeof val === "string") return parseFloat(val);
-      return val;
-    },
-    z.number().refine((v) => !isNaN(v), {
-      message: "Өнгө заавал сонгоно уу",
-    })
-  ) as unknown as number,
+  experience: zNumOpt({
+    label: "Туршлага",
+  }),
+  percent: zNumOpt({
+    label: "Цалингийн хувь",
+  }),
+  password: zStrOpt({
+    label: "Нууц үг",
+  }),
+  nickname: zStrOpt({
+    allowNullable: false,
+    label: "Хоч",
+  }),
+  profile_img: zStrOpt(),
+  color: zNumOpt({
+    allowNullable: false,
+    label: "Өнгө",
+  }),
   role: z
     .preprocess(
       (val) => (typeof val === "string" ? parseInt(val, 10) : val),
@@ -101,16 +103,16 @@ interface FilterType {
 }
 const defaultValues = {
   role: ROLE.EMPLOYEE,
-  firstname: "",
-  lastname: "",
-  branch_id: "",
-  nickname: "",
-  mobile: "",
+  firstname: undefined,
+  lastname: undefined,
+  branch_id: undefined,
+  nickname: undefined,
+  mobile: undefined,
   birthday: new Date(),
   percent: 30,
   // color: 0,
   experience: 0,
-  password: "string",
+  password: undefined,
 };
 export const EmployeePage = ({
   data,
@@ -133,6 +135,7 @@ export const EmployeePage = ({
     const { file, password, ...body } = form.getValues();
     if (editingUser == null && password == null) {
       toast("Нууц үг оруулна уу", {});
+      setAction(ACTION.DEFAULT);
       return;
     }
     const formData = new FormData();
@@ -150,10 +153,15 @@ export const EmployeePage = ({
       };
     }
     const res = editingUser
-      ? await updateOne<IUser>(Api.user, editingUser?.id as string, payload)
+      ? await updateOne<IUser>(
+          Api.user,
+          editingUser?.id as string,
+          payload,
+          "update"
+        )
       : await create<IUser>(Api.user, {
           ...payload,
-          password: password ?? undefined,
+          password: password as string,
         });
 
     if (res.success) {
@@ -237,17 +245,16 @@ export const EmployeePage = ({
   const changeFilter = (key: string, value: number | string) => {
     setFilter((prev) => ({ ...prev, [key]: value }));
   };
+  const isFirstRender = useRef(true);
 
   useEffect(() => {
-    refresh(
-      objectCompact({
-        branch_id: filter?.branch,
-        role: filter?.role,
-        user_status: filter?.status,
-        page: 0,
-      })
-    );
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
+    refresh();
   }, [filter]);
+
   const groups: { key: keyof FilterType; label: string; items: Option[] }[] =
     useMemo(
       () => [
@@ -267,9 +274,9 @@ export const EmployeePage = ({
         {
           key: "status",
           label: textValue("status"),
-          items: getEnumValues(UserStatus).map((s) => ({
+          items: getEnumValues(EmployeeStatus).map((s) => ({
             value: s,
-            label: UserStatusValue[s].name,
+            label: EmployeeStatusValue[s].name,
           })),
         },
       ],
@@ -352,7 +359,7 @@ export const EmployeePage = ({
                           return (
                             <div className="relative w-32 h-32">
                               {fileUrl ? (
-                                <>
+                                <div>
                                   {/* Preview */}
                                   <img
                                     src={fileUrl}
@@ -374,7 +381,7 @@ export const EmployeePage = ({
                                   >
                                     <X className="text-white size-3" />
                                   </button>
-                                </>
+                                </div>
                               ) : (
                                 <label
                                   htmlFor="file-upload"
@@ -409,8 +416,8 @@ export const EmployeePage = ({
                           );
                         }}
                       </FormItems>
-                      {/* odoogiin */}
-                      {form.getValues("profile_img") && (
+
+                      {(form.getValues("profile_img") as string) && (
                         <FormItems
                           control={form.control}
                           name="profile_img"
@@ -418,7 +425,7 @@ export const EmployeePage = ({
                         >
                           {(field) => {
                             return (
-                              <>
+                              <div>
                                 {field.value && (
                                   <div className="relative w-32 h-32 bg-white">
                                     <img
@@ -428,7 +435,7 @@ export const EmployeePage = ({
                                     />
                                   </div>
                                 )}
-                              </>
+                              </div>
                             );
                           }}
                         </FormItems>
@@ -518,25 +525,25 @@ export const EmployeePage = ({
                         >
                           {(field) => {
                             return (
-                              <>
-                                <TextField
-                                  type={item === "mobile" ? "number" : "text"}
-                                  props={{
-                                    ...field,
-                                    ...(item === "mobile"
-                                      ? {
-                                          inputMode: "numeric",
-                                          pattern: "[0-9]*",
-                                        }
-                                      : {}),
-                                  }}
-                                  className={cn(
-                                    item === "mobile"
-                                      ? "hide-number-arrows"
-                                      : ""
-                                  )}
-                                />
-                              </>
+                              <TextField
+                                type={
+                                  item === "mobile"
+                                    ? INPUT_TYPE.NUMBER
+                                    : INPUT_TYPE.TEXT
+                                }
+                                props={{
+                                  ...field,
+                                  ...(item === "mobile"
+                                    ? {
+                                        inputMode: "numeric",
+                                        pattern: "[0-9]*",
+                                      }
+                                    : {}),
+                                }}
+                                className={cn(
+                                  item === "mobile" ? "hide-number-arrows" : ""
+                                )}
+                              />
                             );
                           }}
                         </FormItems>
@@ -553,6 +560,10 @@ export const EmployeePage = ({
                             name=""
                             pl="Огноо сонгох"
                             props={{ ...field }}
+                            range={{ from: field.value, to: field.value }}
+                            setRange={(v) => {
+                              field.onChange(v.from);
+                            }}
                           />
                         );
                       }}

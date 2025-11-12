@@ -1,39 +1,56 @@
+import { STATUS } from "@/lib/enum";
+
 interface Discounted {
   discountedAmount: number;
   discount: number;
   discountValue: string;
   discountType: number;
 }
+export interface ServiceCategoryMeta {
+  name: string;
+}
 
 export interface IService {
   id?: string;
-  branch_id?: string;
+  merchant_id?: string;
+  category_id?: string;
   name?: string;
   max_price?: number;
   min_price?: number;
   duration?: number;
-  description: string;
-  created_by?: string;
-  pre?: number;
   image?: string;
   icon?: string;
+  description?: string;
+  parallel?: boolean;
+  pre?: number;
+  status?: STATUS;
+  created_by?: string;
   created_at?: Date;
+  view?: number;
+  index?: number;
+  meta?: ServiceCategoryMeta;
   min: Discounted;
   max?: Discounted;
 }
 export interface Service {
   id: string;
-  branch_id: string;
-  description: string;
+  merchant_id: string;
+  category_id?: string;
   name: string;
   max_price: number;
   min_price: number;
+  duration: number;
   image: string;
   icon: string;
-  duration: number;
-  pre: number;
+  description: string;
+  parallel?: boolean;
+  pre?: number;
+  status: STATUS;
   created_by: string;
-  created_at?: Date;
+  created_at: Date;
+  view?: number;
+  index?: number;
+  meta?: ServiceCategoryMeta;
   min: Discounted;
   max?: Discounted;
 }

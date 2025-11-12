@@ -16,4 +16,6 @@ export * from "./voucher.model";
 export * from "./service.model";
 export * from "./warehouse";
 export * from "./product.warehouse.model";
+export * from "./service.category.model";
+export * from "./branch.service.model";
 export * from "./user.salary.model";

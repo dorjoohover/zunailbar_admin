@@ -34,21 +34,22 @@ export function getColumns(
     },
     {
       accessorKey: "product_name",
-      header: ({ column }) => (
-        <Button
-          variant="table_header"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          className="font-bold"
-        >
-          Бүтээгдэхүүн <ArrowUpDown className="w-4 h-4 ml-2" />
-        </Button>
-      ),
+      header: "Бүтээгдэхүүн",
+    },
+    {
+      accessorKey: "currency",
+      header: "",
+      cell: ({ row }) => "",
     },
     {
       accessorKey: "price",
       header: "Үнэ",
 
-      cell: ({ row }) => money(row.getValue("price"), row.getValue("currency")),
+      cell: ({ row }) =>
+        money(
+          row.getValue("price"),
+          (row.getValue("currency") as string)?.toUpperCase()
+        ),
     },
     {
       accessorKey: "unit_price",
@@ -58,15 +59,7 @@ export function getColumns(
     },
     {
       accessorKey: "quantity",
-      header: ({ column }) => (
-        <Button
-          variant="table_header"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          className="font-bold"
-        >
-          Тоо ширхэг <ArrowUpDown className="w-4 h-4 ml-2" />
-        </Button>
-      ),
+      header: "Тоо ширхэг",
     },
     {
       accessorKey: "total_amount",
@@ -96,15 +89,7 @@ export function getColumns(
     },
     {
       accessorKey: "created_at",
-      header: ({ column }) => (
-        <Button
-          variant="table_header"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          className="font-bold"
-        >
-          Үүсгэсэн <ArrowUpDown className="w-4 h-4 ml-2" />
-        </Button>
-      ),
+      header: "Үүсгэсэн",
       cell: ({ row }) => {
         const date = parseDate(new Date(row.getValue("created_at")), false);
         return date;

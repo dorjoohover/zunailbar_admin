@@ -75,6 +75,7 @@ interface DataTableProps<TData, TValue> {
     filter?: T;
   }) => void;
   clear?: () => void;
+  filterRight?: ReactNode;
   search?: boolean;
 }
 
@@ -89,6 +90,7 @@ export function DataTable<TData, TValue>({
   modalAdd,
   clear,
   filter,
+  filterRight,
   search = true,
 }: DataTableProps<TData, TValue>) {
   const [globalFilter, setGlobalFilter] = useState("");
@@ -105,25 +107,24 @@ export function DataTable<TData, TValue>({
   };
   const mounted = useRef(false);
   useEffect(() => {
-    mounted.current
-      ? refresh({
-          page: pagination.pageIndex,
-          limit: pagination.pageSize,
-          filter: globalFilter,
-        })
-      : (mounted.current = true);
-  }, [pagination.pageIndex, pagination.pageSize]);
-  useEffect(() => {
-    mounted.current
-      ? globalFilter.length > 1 || globalFilter.length == 0
-        ? refresh({
-            page: pagination.pageIndex,
-            limit: pagination.pageSize,
-            filter: globalFilter,
-          })
-        : null
-      : (mounted.current = true);
-  }, [globalFilter]);
+    if (mounted.current) {
+      refresh({
+        page: pagination.pageIndex,
+        limit: pagination.pageSize,
+        filter: globalFilter,
+      });
+    } else {
+      mounted.current = true;
+    }
+    // mounted.current
+    //   ? globalFilter.length > 1 || globalFilter.length == 0 refresh({
+    //       page: pagination.pageIndex,
+    //       limit: pagination.pageSize,
+    //       filter: globalFilter,
+    //     })
+    //   : (mounted.current = true);
+  }, [pagination.pageIndex, pagination.pageSize, globalFilter]);
+
   const table = useReactTable({
     data,
     columns,
@@ -226,9 +227,9 @@ export function DataTable<TData, TValue>({
       )}
     >
       {/* Table filter */}
-      {filter && (
-        <div className="flex flex-wrap bg-white p-3 rounded-2xl shadow-light items-end gap-1 border-light">
-          <>
+      <div className="flex justify-between bg-white rounded-2xl  items-center shadow-light border-light p-3">
+        {filter && (
+          <div className="flex flex-wrap  items-end gap-1 ">
             {filter}
             <Button
               variant="ghost"
@@ -237,9 +238,10 @@ export function DataTable<TData, TValue>({
             >
               <CircleX />
             </Button>
-          </>
-        </div>
-      )}
+          </div>
+        )}
+        {filterRight && filterRight}
+      </div>
 
       {/* Filterees dooshig */}
       <div className="bg-white rounded-xl shadow-light border-light p-5 pt-0">

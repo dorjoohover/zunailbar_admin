@@ -154,7 +154,7 @@ export const FeaturePage = ({ data }: { data: ListType<Feature> }) => {
                       </FormItems>
                       <FormItems control={form.control} name={`icon`}>
                         {(field) => {
-                          const value = field.value;
+                          const value = field.value as any;
                           return (
                             <IconPicker
                               value={value ? value : undefined}

@@ -42,6 +42,7 @@ import {
 import ContainerHeader from "@/components/containerHeader";
 import DynamicHeader from "@/components/dynamicHeader";
 import { showToast } from "@/shared/components/showToast";
+import { INPUT_TYPE } from "@/lib/enum";
 
 const formSchema = z.object({
   branch_id: ZValidator.branch,
@@ -235,17 +236,17 @@ export const VoucherPage = ({
                   {[
                     {
                       key: "min_price",
-                      type: "money",
+                      type: INPUT_TYPE.MONEY,
                       label: "Үнэ",
                     },
                     {
                       key: "max_price",
-                      type: "money",
+                      type: INPUT_TYPE.MONEY,
                       label: "Их үнэ",
                     },
                     {
                       key: "duration",
-                      type: "number",
+                      type: INPUT_TYPE.NUMBER,
                       label: "Хугацаа",
                     },
                   ].map((item, i) => {

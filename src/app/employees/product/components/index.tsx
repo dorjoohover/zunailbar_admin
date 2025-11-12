@@ -10,21 +10,16 @@ import {
   PG,
   SearchType,
   VALUES,
+  zNumOpt,
+  zStrOpt,
 } from "@/lib/constants";
-import { useEffect, useMemo, useState } from "react";
-import { CategoryType, ROLE, UserProductStatus } from "@/lib/enum";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { CategoryType, INPUT_TYPE, ROLE, UserProductStatus } from "@/lib/enum";
 import z from "zod";
 
 import { Api } from "@/utils/api";
 import { fetcher } from "@/hooks/fetcher";
-import {
-  Branch,
-  Brand,
-  IUserProduct,
-  Product,
-  User,
-  UserProduct,
-} from "@/models";
+import { Branch, IUserProduct, Product, User, UserProduct } from "@/models";
 import { getColumns } from "./columns";
 import DynamicHeader from "@/components/dynamicHeader";
 import { create, deleteOne, search, updateOne } from "@/app/(api)";
@@ -33,7 +28,6 @@ import {
   objectCompact,
   searchProductFormatter,
   searchUsernameFormatter,
-  usernameFormatter,
 } from "@/lib/functions";
 import { FormItems } from "@/shared/components/form.field";
 import { Modal } from "@/shared/components/modal";
@@ -51,14 +45,21 @@ type FilterType = {
 };
 
 const formSchema = z.object({
-  user_id: z.string().min(1, 'Арчист сонгоно уу'),
-  product_id: z.string().min(1, 'Бүтээгдэхүүн сонгоно уу'),
-  product_name: z.string().nullable().optional(),
-  user_name: z.string().nullable().optional(),
-  quantity: z.preprocess(
-    (val) => (typeof val === "string" ? parseFloat(val) : val),
-    z.number()
-  ) as unknown as number,
+  user_id: zStrOpt({
+    allowNullable: false,
+    label: "Артист",
+  }),
+
+  product_id: zStrOpt({
+    allowNullable: false,
+    label: "Бүтээгдэхүүн",
+  }),
+  product_name: zStrOpt(),
+  user_name: zStrOpt(),
+  quantity: zNumOpt({
+    allowNullable: false,
+    label: "Тоо ширхэг",
+  }),
   user_product_status: z
     .preprocess(
       (val) => (typeof val === "string" ? parseInt(val, 10) : val),
@@ -68,10 +69,10 @@ const formSchema = z.object({
   edit: z.string().nullable().optional(),
 });
 const defaultValues: UserProductType = {
-  user_id: "",
-  product_id: "",
-  product_name: "",
-  user_name: "",
+  user_id: undefined,
+  product_id: undefined,
+  product_name: undefined,
+  user_name: undefined,
   quantity: 0,
   user_product_status: UserProductStatus.Active,
   edit: undefined,
@@ -201,21 +202,22 @@ export const EmployeeProductPage = ({
     return res.success;
   };
   const columns = getColumns(edit, setStatus, deleteUserProduct);
-  const [filter, setFilter] = useState<FilterType>();
+  const [filter, setFilter] = useState<FilterType>({
+    status: UserProductStatus.Active,
+  });
+
   const changeFilter = (key: string, value: number | string) => {
     setFilter((prev) => ({ ...prev, [key]: value }));
   };
 
+  const isFirstRender = useRef(true);
+
   useEffect(() => {
-    refresh(
-      objectCompact({
-        branch_id: filter?.branch,
-        user_id: filter?.user,
-        product_id: filter?.product,
-        user_product_status: filter?.status,
-        page: 0,
-      })
-    );
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
+    refresh();
   }, [filter]);
   const groups: { key: keyof FilterType; label: string; items: Option[] }[] =
     useMemo(
@@ -281,29 +283,24 @@ export const EmployeeProductPage = ({
       }));
     });
   };
+
+  const filterClear = () => {
+    setFilter({
+      status: UserProductStatus.Active,
+    });
+  };
   return (
     <div className="relative w-full">
       <DynamicHeader count={data.count} />
 
       <div className="admin-container">
         <DataTable
-          clear={() => setFilter(undefined)}
+          clear={filterClear}
           filter={
             <>
               {groups.map((item, i) => {
                 const { key } = item;
                 return (
-                  // <FilterPopover
-                  //   key={i}
-                  //   content={item.items.map((it, index) => (
-                  //     <label key={index} className="checkbox-label">
-                  //       <Checkbox checked={filter?.[key] == it.value} onCheckedChange={() => changeFilter(key, it.value)} />
-                  //       <span className="">{it.label as string}</span>
-                  //     </label>
-                  //   ))}
-                  //   value={filter?.[key] ? item.items.filter((item) => item.value == filter[key])[0].label : undefined}
-                  //   label={item.label}
-                  // />
                   <label key={i}>
                     <span className="filter-label">{item.label as string}</span>
                     <ComboBox
@@ -397,7 +394,7 @@ export const EmployeeProductPage = ({
                       return (
                         <TextField
                           props={{ ...field }}
-                          type={"number"}
+                          type={INPUT_TYPE.NUMBER}
                           label={"Тоо ширхэг"}
                         />
                       );

@@ -245,11 +245,11 @@ export const usernameFormatter = (user: User) => {
 };
 export const money = (value: string, currency = "") => {
   let v = round(+(value ?? "0"));
-  return `${currency}${v
+  return `${v
     .toString()
     .replaceAll(",", "")
     .toString()
-    .replace(/\B(?=(\d{3})+(?!\d))/g, ",")}`;
+    .replace(/\B(?=(\d{3})+(?!\d))/g, ",")} ${currency}`;
 };
 
 export function paginationToQuery(

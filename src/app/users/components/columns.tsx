@@ -1,13 +1,33 @@
 import { ColumnDef } from "@tanstack/react-table";
-import { ArrowUpDown } from "lucide-react";
+import { ArrowUpDown, Gem, Trash2, UserRoundCog } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { parseDate } from "@/lib/functions";
+import { mobileFormatter, parseDate } from "@/lib/functions";
 import { IUser } from "@/models";
 import { TableActionButtons } from "@/components/tableActionButtons";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import TooltipWrapper from "@/components/tooltipWrapper";
+import {
+  getEnumValues,
+  getUserLevelValue,
+  UserStatusValue,
+} from "@/lib/constants";
+import { UserLevel, UserStatus } from "@/lib/enum";
+import { cn } from "@/lib/utils";
+import { toast } from "sonner";
+import { AppAlertDialog } from "@/components/AlertDialog";
 
 export function getColumns(
   onEdit: (product: IUser) => void,
-  remove: (index: number) => Promise<boolean>
+  remove: (index: number) => Promise<boolean>,
+  setStatus: (index: number, status: UserStatus) => void,
+  setLevel: (index: number, status: UserLevel) => void
 ): ColumnDef<IUser>[] {
   return [
     {
@@ -15,66 +35,47 @@ export function getColumns(
       header: ({ table }) => <span>№</span>,
       cell: ({ row }) => <span className="">{row.index + 1}</span>,
     },
-    // {
-    //   accessorKey: "branch_name",
-    //   header: ({ column }) => (
-    //     <Button
-    //       variant="ghost"
-    //       onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-    //       className="font-bold"
-    //     >
-    //       Branch <ArrowUpDown className="w-4 h-4 ml-2" />
-    //     </Button>
-    //   ),
-    //   cell: ({ row }) => {
-    //     const date = row.getValue("branch_name");
-    //     return date;
-    //   },
-    // },
+
     {
       accessorKey: "nickname",
-      header: ({ column }) => (
-        <Button
-          variant="table_header"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          className="font-bold"
-        >
-          Нэр <ArrowUpDown className="w-4 h-4 ml-2" />
-        </Button>
-      ),
+      header: ({ column }) => "Нэр",
       cell: ({ row }) => {
-        const date = row.getValue("nickname") ?? "-";
-        return date;
+        const value = row.getValue("nickname") ?? "-";
+        return value;
       },
     },
     {
       accessorKey: "mobile",
-      header: ({ column }) => (
-        <Button
-          variant="table_header"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          className="font-bold"
-        >
-          Утас <ArrowUpDown className="w-4 h-4 ml-2" />
-        </Button>
-      ),
+      header: ({ column }) => "Утас",
       cell: ({ row }) => {
-        const date = row.getValue("mobile") ?? "-";
-        return date;
+        const res = row.getValue("mobile");
+        const value = res ? mobileFormatter(res as string) : "-";
+        return value;
+      },
+    },
+    {
+      accessorKey: "level",
+      header: ({ column }) => "Эрэмбэ",
+      cell: ({ row }) => {
+        const value = row.getValue("level") as UserLevel;
+
+        if (value != undefined && value != null) {
+          const level = getUserLevelValue[value];
+          const { Icon, textColor } = level;
+          return (
+            <div>
+              <Icon color={textColor} />
+            </div>
+          );
+        } else {
+          return <div>-</div>;
+        }
       },
     },
 
     {
       accessorKey: "created_at",
-      header: ({ column }) => (
-        <Button
-          variant="table_header"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          className="font-bold"
-        >
-          Үүсгэсэн <ArrowUpDown className="w-4 h-4 ml-2" />
-        </Button>
-      ),
+      header: () => "Үүсгэсэн",
       cell: ({ row }) => {
         const date = parseDate(new Date(row.getValue("created_at")), false);
         return date;
@@ -88,14 +89,13 @@ export function getColumns(
     {
       id: "actions",
       header: "Үйлдэл",
-      cell: ({ row }) => (
-        // Bagasgasan
-        <TableActionButtons
-          rowData={row.original}
-          onEdit={(data) => onEdit(data)}
-          onRemove={(data) => remove(row.index)}
-        >
-          {/* <DropdownMenu>
+      cell: ({ row }) => {
+        return (
+          <TableActionButtons
+            rowData={row.original}
+            onEdit={(data) => onEdit(data)}
+          >
+            <DropdownMenu>
               <TooltipWrapper tooltip="Статус солих">
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" size="icon">
@@ -112,39 +112,66 @@ export function getColumns(
                   .map((item, i) => {
                     const status = UserStatusValue[item];
                     return (
-                      <DropdownMenuItem key={i} onClick={() => setStatus(row.index, item)}>
-                        <span className={cn(status.color)}>{status.name}</span>
+                      <DropdownMenuItem
+                        key={i}
+                        onClick={() => setStatus(row.index, item)}
+                      >
+                        <span
+                          className={cn(status.color, "w-full text-center")}
+                        >
+                          {status.name}
+                        </span>
                       </DropdownMenuItem>
                     );
                   })}
               </DropdownMenuContent>
-            </DropdownMenu> */}
-        </TableActionButtons>
-        // <div className="flex items-center gap-2">
-        //   <Button
-        //     variant="ghost"
-        //     size="icon"
-        //     onClick={() => onEdit(row.original)}
-        //   >
-        //     <Pencil className="w-4 h-4" />
-        //   </Button>
+            </DropdownMenu>
+            <DropdownMenu>
+              <TooltipWrapper tooltip="Эрэмбэ солих">
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon">
+                    <Gem className="size-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+              </TooltipWrapper>
 
-        //   <AppAlertDialog
-        //     title="Итгэлтэй байна уу?"
-        //     description="Бүр устгана шүү."
-        //     onConfirm={async () => {
-        //       const res = await remove(row.index);
-        //       console.log(res);
-        //       toast("Амжилттай устгалаа!" + res, {});
-        //     }}
-        //     trigger={
-        //       <Button variant="ghost" size="icon">
-        //         <Trash2 className="w-4 h-4 text-red-500" />
-        //       </Button>
-        //     }
-        //   />
-        // </div>
-      ),
+              <DropdownMenuContent>
+                <DropdownMenuLabel>Эрэмбэ солих</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                {getEnumValues(UserLevel).map((item, i) => {
+                  const status = getUserLevelValue[item];
+                  return (
+                    <DropdownMenuItem
+                      key={i}
+                      onClick={() => setLevel(row.index, item)}
+                    >
+                      <span className={cn(status.color, "w-full text-center")}>
+                        {status.name}
+                      </span>
+                    </DropdownMenuItem>
+                  );
+                })}
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+            <TooltipWrapper tooltip="Устгах">
+              <AppAlertDialog
+                title="Итгэлтэй байна уу?"
+                description="Бүр устгана шүү."
+                onConfirm={async () => {
+                  const res = await remove(row.index);
+                  toast("Амжилттай устгалаа!", {});
+                }}
+                trigger={
+                  <Button variant="ghost" size="icon">
+                    <Trash2 className="w-4 h-4 text-red-500" />
+                  </Button>
+                }
+              />
+            </TooltipWrapper>
+          </TableActionButtons>
+        );
+      },
     },
   ];
 }

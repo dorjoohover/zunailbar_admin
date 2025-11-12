@@ -1,4 +1,5 @@
 import {
+  Award,
   Brush,
   BrushCleaning,
   Bubbles,
@@ -7,10 +8,12 @@ import {
   Eraser,
   Footprints,
   Hand,
+  Medal,
   Scissors,
   Shield,
   Smartphone,
   Sparkles,
+  Star,
   User2,
 } from "lucide-react";
 import {
@@ -25,10 +28,11 @@ import {
   SalaryLogStatus,
   ScheduleStatus,
   STATUS,
+  UserLevel,
   UserProductStatus,
   UserStatus,
 } from "./enum";
-import z from "zod";
+import z, { nullable } from "zod";
 import { showToast } from "@/shared/components/showToast";
 import { firstLetterUpper } from "./functions";
 
@@ -50,9 +54,61 @@ export const RoleValue = {
   [ROLE.ANY]: "ANY",
   [ROLE.E_M]: "ANY",
 };
-export const zStrOpt = z.string().nullable().optional();
-export const zNumOpt = z.number().nullable().optional();
+export const zBoolOpt = z.preprocess((val) => {
+  if (val === undefined || val === null || val === "") return undefined;
+  return typeof val == "boolean" ? val : val === "true";
+}, z.boolean().optional().nullable()) as unknown as boolean;
 
+export const zStrOpt = ({
+  allowNullable = true,
+  label,
+  length,
+}: {
+  label?: string;
+  allowNullable?: boolean;
+  length?: number;
+} = {}) => {
+  // console.log('asdf')
+  if (allowNullable)
+    return z.string().nullable().optional() as unknown as string;
+  if (length)
+    return z
+      .string({
+        error: `${length} оронтой байх ёстой`,
+      })
+      .length(length)
+      .nonoptional() as unknown as string;
+  return z
+    .string({
+      error: `${label} оруулна уу`,
+    })
+    .nonoptional() as unknown as string;
+};
+export const zNumOpt = ({
+  allowNullable,
+  label,
+  value,
+}: {
+  label?: string;
+  allowNullable?: boolean;
+  value?: number;
+} = {}) => {
+  return z
+    .preprocess(
+      (val) => {
+        if (val === "" || val === undefined || val === null)
+          return allowNullable && value ? value : undefined;
+        return typeof val === "string" ? parseFloat(val) : val;
+      },
+      z
+        .number({ error: `${label} оруулна уу` })
+        .refine((v) => allowNullable || v != undefined, {
+          message: `${label} оруулна уу`,
+        })
+        .nonoptional()
+    )
+    .optional() as unknown as number;
+};
 export const EmployeeStatusValue = {
   [EmployeeStatus.ACTIVE]: { name: "Идэвхтэй", color: "green-badge badge" },
   [EmployeeStatus.FIRED]: { name: "Ажлаас гарсан", color: "slate-badge badge" },
@@ -163,6 +219,26 @@ export const getValuesStatus = {
   [STATUS.Active]: { name: "Идэвхтэй", color: "green-badge badge" },
   [STATUS.Hidden]: { name: "Цуцлах", color: "red-badge badge" },
   [STATUS.Pending]: { name: "Хүлээгдэж байна", color: "yellow-badge badge" },
+};
+export const getUserLevelValue = {
+  [UserLevel.BRONZE]: {
+    name: "Bronze",
+    textColor: "#CD7F32",
+    color: "bronze-badge badge",
+    Icon: Medal, // хүрэн өнгө
+  },
+  [UserLevel.SILVER]: {
+    name: "Silver",
+    textColor: "#C0C0C0",
+    color: "silver-badge badge",
+    Icon: Star, // мөнгөлөг саарал
+  },
+  [UserLevel.GOLD]: {
+    name: "Gold",
+    textColor: "#FFD700",
+    color: "gold-badge badge",
+    Icon: Award, // алтлаг шар
+  },
 };
 
 export const ErrorMessage = {
@@ -281,6 +357,7 @@ export const VALUES = {
   date: "огноо",
   product_id: "бүтээгдэхүүн",
   role: "хэрэглэгчийн түвшин",
+  user_id: "Артист",
   percent: "Цалингийн хувь",
 } as const as any;
 

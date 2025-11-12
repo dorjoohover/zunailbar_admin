@@ -29,10 +29,21 @@ export enum UserStatus {
   ACTIVE = 10,
   BANNED = 50,
 }
-
+export enum UserLevel {
+  BRONZE = 0,
+  SILVER = 10,
+  GOLD = 20,
+}
 export enum SalaryLogStatus {
   Pending = 10,
   Paid = 20,
+}
+
+export enum INPUT_TYPE {
+  TEXT = "text",
+  NUMBER = "number",
+  DATE = "date",
+  MONEY = "money",
 }
 export enum OrderStatus {
   // uridchilgaa toloogui

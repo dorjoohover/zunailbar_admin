@@ -45,7 +45,17 @@
 @utility neutral-badge {
   @apply text-neutral-700 bg-neutral-300;
 }
+@utility bronze-badge {
+  @apply text-amber-800 bg-amber-200; /* хүрэн-бор */
+}
 
+@utility silver-badge {
+  @apply text-gray-700 bg-gray-200; /* мөнгөлөг саарал */
+}
+
+@utility gold-badge {
+  @apply text-yellow-800 bg-yellow-200; /* алтлаг шар */
+}
 /* Label */
 @utility checkbox-label {
   @apply flex items-center gap-2 p-1 rounded text-sm cursor-pointer hover:bg-gray-100;
