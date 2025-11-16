@@ -1,12 +1,18 @@
 "use client";
 
-import React from "react";
+import React, { useMemo } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useModal } from "@/providers/modal-context";
 import AddEventModal from "@/components/schedule/_modals/add-event-modal";
 import { CustomEventModal } from "@/types";
-import { TrashIcon, CalendarIcon, ClockIcon, Trash2 } from "lucide-react";
+import {
+  TrashIcon,
+  CalendarIcon,
+  ClockIcon,
+  Trash2,
+  Clock,
+} from "lucide-react";
 import { useScheduler } from "@/providers/schedular-provider";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
@@ -154,6 +160,8 @@ export default function EventStyled({
 
     return uniqueArtists;
   })();
+  const color = event?.details?.[0]?.user?.color;
+  const secondColor = event?.details?.[1]?.user?.color;
   return (
     <div
       key={event?.id}
@@ -190,27 +198,6 @@ export default function EventStyled({
         }}
       />
 
-      {/* <AppDialog
-        trigger={
-          <Button variant="destructive" size="icon" className={cn("absolute z-[100] right-1 top-[-8px] h-6 w-6 p-0 shadow-md hover:bg-destructive/90 transition-all duration-200", event?.minmized ? "opacity-0 group-hover:opacity-100" : "opacity-100")}>
-            <Trash2 size={14} className="text-destructive-foreground" />
-          </Button>
-        }
-        title="Захиалгыг устгах уу?"
-        description="Энэ үйлдлийг хийсний дараа захиалга бүрмөсөн устах бөгөөд буцаах боломжгүй гэдгийг анхаарна уу!"
-        confirmTrigger={
-          <Button
-            onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
-              e.stopPropagation();
-              handlers.handleDeleteEvent(event?.id);
-              onDelete(event?.id);
-              showToast("success", "Амжилттай устгагдлаа!");
-            }}
-          >
-            Тийм
-          </Button>
-        }
-      /> */}
       {event.CustomEventComponent ? (
         <div
           onClick={(e: React.MouseEvent<HTMLDivElement>) => {
@@ -250,28 +237,40 @@ export default function EventStyled({
             });
           }}
           className={cn(
-            "w-full p-2 text-white rounded-lg",
+            "w-full p-2 text-gray-500 rounded-lg border-t-4 border-l border-r border-b max-w-[350px]",
 
             event?.minmized ? "flex-grow overflow-hidden" : "min-h-fit"
           )}
           style={{
-            backgroundColor: getBackgroundColor(
-              event?.details?.[0]?.user?.color
-            ),
+            borderColor: secondColor
+              ? getBackgroundColor(secondColor)
+              : getBackgroundColor(color),
+            borderTopColor: getBackgroundColor(color),
           }}
         >
-          <div className="flex flex-col h-full">
-            <div className="font-semibold text-xs truncate mb-1">
+          <div className="flex flex-col h-full " style={{}}>
+            <div className="font-semibold text-xs truncate mb-1 ">
               {event?.details?.map((e, i) => {
                 return (
-                  <div key={i}>
-                    Үйлчилгээ: <b>{e.service_name ?? "-"} |</b> Артист:
-                    <b>{e.user.nickname}</b>
+                  <div key={i} className="flex gap-2">
+                    <div className="flex gap-1">
+                      <div
+                        className="w-3 rounded-full h-3"
+                        style={{
+                          backgroundColor: getBackgroundColor(e.user.color),
+                        }}
+                      ></div>
+                      <p>{e.user.nickname}</p>
+                    </div>
+                    {"/"}
+                    <div className="flex gap-1">
+                      <p>{e.service_name ?? "-"}</p>
+                    </div>
                   </div>
                 );
               })}
             </div>
-            <div className="font-semibold text-xs truncate mb-1">
+            <div className="font-semibold text-xs truncate">
               Хэрэглэгчийн дугаар:{" "}
               <b>{mobileFormatter(event?.customer?.mobile ?? "")}</b> Эрэмбэ:{" "}
               <b
@@ -288,11 +287,16 @@ export default function EventStyled({
                 }
               </b>
             </div>
+            {event.description && (
+              <div className="my-2 text-xs max-w-[350px]">
+                <b>Tip massage:</b> {event?.description}{" "}
+              </div>
+            )}
             {event?.minmized && (
               <div className="flex flex-col">
                 <div className="text-[10px] flex justify-between">
-                  <div>
-                    <span>Цаг: </span>
+                  <div className="flex text-xs items-center gap-1">
+                    <Clock size={12} />{" "}
                     <span> {event?.start_time?.slice(0, 5)} - </span>
                     <span> {event?.end_time?.slice(0, 5)} </span>
                   </div>
@@ -301,12 +305,6 @@ export default function EventStyled({
                       OrderStatusValues[event?.order_status as OrderStatus]}
                   </span>
                 </div>
-
-                {event.description && (
-                  <div className="my-2 text-sm">
-                    Tip massage: {event?.description}{" "}
-                  </div>
-                )}
               </div>
             )}
             {!event?.minmized && event?.description && (

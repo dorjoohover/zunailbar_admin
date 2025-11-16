@@ -43,6 +43,7 @@ import { TextField } from "@/shared/components/text.field";
 import { PasswordField } from "@/shared/components/password.field";
 import { ComboBox } from "@/shared/components/combobox";
 import { FilterType } from "@/app/orders/components";
+import { getUserColor } from "@/lib/colors";
 
 // Animation settings for Framer Motion
 const animationConfig = {
@@ -468,35 +469,59 @@ export default function SchedulerViewFilteration({
             onValueChange={setActiveView}
             className={cn("w-full gap-0", classNames?.tabs)}
           >
-            {viewsSelector?.includes("day") && (
-              <TabsContent value="day">
-                <AnimatePresence mode="wait">
-                  <motion.div {...(animationConfig as any)}>
-                    <DailyView
-                      deleteOrder={deleteOrder}
-                      loading={loading}
-                      filter={filter}
-                      setFilter={setFilter}
-                      values={values}
-                      events={orders.items}
-                      send={send}
-                      stopDayEventSummary={stopDayEventSummary}
-                      classNames={classNames?.buttons}
-                      prevButton={
-                        CustomComponents?.customButtons?.CustomPrevButton
-                      }
-                      nextButton={
-                        CustomComponents?.customButtons?.CustomNextButton
-                      }
-                      CustomEventComponent={
-                        CustomComponents?.CustomEventComponent
-                      }
-                      CustomEventModal={CustomComponents?.CustomEventModal}
-                    />
-                  </motion.div>
-                </AnimatePresence>
-              </TabsContent>
-            )}
+            <>
+              <div className="grid grid-cols-6 gap-1 mb-4">
+                {values.user.map((user) => {
+                  const [mobile, nickname, branch, color] =
+                    user.value?.split("__");
+                  return (
+                    <div className="flex gap-1 items-center">
+                      <div
+                        className={cn("rounded-full w-4 h-4")}
+                        style={{
+                          backgroundColor: color
+                            ? `${getUserColor(+color)}`
+                            : "",
+                        }}
+                      />
+                      <span className="text-xs">
+                        {mobileFormatter(mobile)}{" "}
+                        {firstLetterUpper(nickname ?? "")}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+              {viewsSelector?.includes("day") && (
+                <TabsContent value="day">
+                  <AnimatePresence mode="wait">
+                    <motion.div {...(animationConfig as any)}>
+                      <DailyView
+                        deleteOrder={deleteOrder}
+                        loading={loading}
+                        filter={filter}
+                        setFilter={setFilter}
+                        values={values}
+                        events={orders.items}
+                        send={send}
+                        stopDayEventSummary={stopDayEventSummary}
+                        classNames={classNames?.buttons}
+                        prevButton={
+                          CustomComponents?.customButtons?.CustomPrevButton
+                        }
+                        nextButton={
+                          CustomComponents?.customButtons?.CustomNextButton
+                        }
+                        CustomEventComponent={
+                          CustomComponents?.CustomEventComponent
+                        }
+                        CustomEventModal={CustomComponents?.CustomEventModal}
+                      />
+                    </motion.div>
+                  </AnimatePresence>
+                </TabsContent>
+              )}
+            </>
           </Tabs>
         )}
       </div>

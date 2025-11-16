@@ -36,6 +36,11 @@ export function getColumns(
       },
     },
     {
+      header: "Ангилал",
+      accessorFn: (row) => row.meta?.name ?? "-",
+      cell: ({ getValue }) => getValue(),
+    },
+    {
       accessorKey: "image",
       header: "Зураг",
       cell: ({ row }) => (
@@ -76,19 +81,6 @@ export function getColumns(
       accessorKey: "pre",
       header: "Урьдчилгаа",
       cell: ({ row }) => money(row.getValue("pre") ?? "0", "₮"),
-    },
-    {
-      accessorKey: "parallel",
-      header: "Давхар эсэх",
-      cell: ({ row }) => (
-        <div className="flex ">
-          {row.getValue("parallel") == true ? (
-            <Check color="green" strokeWidth={4} />
-          ) : (
-            <X color="red" strokeWidth={4} />
-          )}
-        </div>
-      ),
     },
 
     {

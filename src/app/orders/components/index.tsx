@@ -56,7 +56,6 @@ export const OrderPage = ({
   };
   const isFirstRender = useRef(true);
   useEffect(() => {
-    console.log("asdf");
     if (isFirstRender.current) {
       isFirstRender.current = false;
       return;
@@ -86,7 +85,6 @@ export const OrderPage = ({
     return `${y}-${m}-${day}`;
   };
   const refresh = async (pg: PG = DEFAULT_PG) => {
-    console.log(new Date(), pg);
     setAction(ACTION.RUNNING);
     const { page, limit, sort } = pg;
     const d = mnDate(filter?.date?.from);

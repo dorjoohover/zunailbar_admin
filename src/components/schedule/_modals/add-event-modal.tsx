@@ -317,6 +317,8 @@ export default function AddEventModal({
               label="Хэрэглэгчийн тайлбар"
             >
               {(field) => {
+                let value = field.value;
+                if (value == null) value = undefined;
                 return (
                   <Textarea
                     onChange={field.onChange}
@@ -468,8 +470,7 @@ export default function AddEventModal({
     }`}
                       onClick={() => {
                         if (
-                          selected != undefined &&
-                          selected != -1 &&
+                          (selected == undefined || selected == -1) &&
                           details.length == 2
                         ) {
                           showToast(
@@ -493,7 +494,6 @@ export default function AddEventModal({
                           service_id: service.id,
                           service_name: service.name,
                           duration: service.duration,
-                          parallel: service.parallel,
                           category_id: service.category_id,
                           description: "",
                           price: 0,
@@ -505,16 +505,11 @@ export default function AddEventModal({
                         <span className="block font-semibold block text-sm">
                           {service.name}
                         </span>
-                        {service.meta?.name && (
-                          <span className="text-xs  inline-flex py-0.5 px-2 bg-blue-100 text-muted-foreground px-1 rounded">
-                            {service.meta.name}
-                          </span>
-                        )}
                       </div>
 
-                      {service.parallel && (
-                        <span className="text-[11px] px-2 py-[2px] rounded-full bg-blue-100 text-blue-700 font-medium">
-                          Хамт
+                      {service.meta?.name && (
+                        <span className="text-xs  inline-flex py-0.5 px-2 bg-blue-100 text-muted-foreground px-1 rounded">
+                          {service.meta.name}
                         </span>
                       )}
                     </div>
@@ -527,34 +522,37 @@ export default function AddEventModal({
         {details?.length > 0 && (
           <div className="border-t">
             <div className="flex justify-between items-center">
-              <p className="my-4">Үйлчилгээ</p>
-              {details.length == 2 && details.every((d) => d.parallel) && (
-                <FormItems control={form.control} name="parallel" label="">
-                  {(field) => {
-                    return (
-                      <div className="col-span-1 flex gap-2 cursor-pointer items-center ">
-                        <Checkbox
-                          id="parallel"
-                          checked={field.value as boolean}
-                          onCheckedChange={(e) => {
-                            form.setValue("parallel", e as boolean);
-                            updateDetail(0, undefined, "user_id");
-                            updateDetail(1, undefined, "user_id");
-                          }}
-                          className="w-5 h-5"
-                          aria-label="Select row"
-                        />
-                        <label
-                          htmlFor="parallel"
-                          className="flex items-center gap-2 font-semibold text-lg"
-                        >
-                          Давхар эсэх
-                        </label>
-                      </div>
-                    );
-                  }}
-                </FormItems>
-              )}
+              <p className="my-4">
+                Үйлчилгээ{details.some((d) => d.category_id)}
+              </p>
+              {details.length == 2 &&
+                details?.[0].category_id != details?.[1].category_id && (
+                  <FormItems control={form.control} name="parallel" label="">
+                    {(field) => {
+                      return (
+                        <div className="col-span-1 flex gap-2 cursor-pointer items-center ">
+                          <Checkbox
+                            id="parallel"
+                            checked={field.value as boolean}
+                            onCheckedChange={(e) => {
+                              form.setValue("parallel", e as boolean);
+                              updateDetail(0, undefined, "user_id");
+                              updateDetail(1, undefined, "user_id");
+                            }}
+                            className="w-5 h-5"
+                            aria-label="Select row"
+                          />
+                          <label
+                            htmlFor="parallel"
+                            className="flex items-center gap-2 font-semibold text-lg"
+                          >
+                            Давхар эсэх
+                          </label>
+                        </div>
+                      );
+                    }}
+                  </FormItems>
+                )}
             </div>
             <div>
               {details.map((detail, i) => {

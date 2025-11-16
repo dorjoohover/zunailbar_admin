@@ -248,7 +248,6 @@ export default function DailyView({
   function handleAddEvent(event?: IOrder) {
     // Create the modal content with the provided event data or defaults
     const orderDate = event?.order_date || new Date();
-    console.log(event);
     // Open the modal with the content
     setOpen(
       <CustomModal title="Захиалга нэмэх" contentClass="max-w-3xl">
@@ -476,7 +475,6 @@ export default function DailyView({
                           periodIndex,
                           adjustForPeriod: true,
                         });
-                        console.log(event);
                         return (
                           <motion.div
                             key={event.id}

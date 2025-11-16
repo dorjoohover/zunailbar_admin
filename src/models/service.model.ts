@@ -21,7 +21,6 @@ export interface IService {
   image?: string;
   icon?: string;
   description?: string;
-  parallel?: boolean;
   pre?: number;
   status?: STATUS;
   created_by?: string;
@@ -43,7 +42,6 @@ export interface Service {
   image: string;
   icon: string;
   description: string;
-  parallel?: boolean;
   pre?: number;
   status: STATUS;
   created_by: string;
