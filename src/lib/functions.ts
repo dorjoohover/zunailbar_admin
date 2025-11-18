@@ -249,7 +249,7 @@ export const money = (value: string, currency = "") => {
     .toString()
     .replaceAll(",", "")
     .toString()
-    .replace(/\B(?=(\d{3})+(?!\d))/g, ",")} ${currency}`;
+    .replace(/\B(?=(\d{3})+(?!\d))/g, ",")}${currency && ' '}${currency}`;
 };
 
 export function paginationToQuery(

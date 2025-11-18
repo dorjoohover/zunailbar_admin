@@ -137,36 +137,36 @@ export default function AddEventModal({
   };
 
   const searchField = async (v: string, key: Api, edit?: boolean) => {
-    // if (edit && key === Api.customer) {
-    //   form.setValue("customer_id", values?.customer_id);
-    // }
-    // const value = v;
-    // const details = form.watch("details") || [];
-    // const branchId = form.watch("branch_id");
-    // let payload: Record<string, any> = {};
-    // if (key === Api.branch) {
-    //   payload = { name: value };
-    // } else {
-    //   payload = {
-    //     role: key === Api.customer ? ROLE.CLIENT : ROLE.E_M,
-    //     services: details.map((d) => d.service_id).join(","),
-    //     branch_id: key === Api.customer ? undefined : branchId,
-    //     ...(edit === undefined ? { id: value } : { value }),
-    //   };
-    // }
-    // try {
-    //   const res = await search(key === Api.customer ? Api.user : key, {
-    //     ...payload,
-    //     limit: 100,
-    //     page: 0,
-    //   });
-    //   setValues((prev) => ({
-    //     ...prev,
-    //     [key]: res.data,
-    //   }));
-    // } catch (error) {
-    //   console.error(`Search failed for ${key}:`, error);
-    // }
+    if (edit && key === Api.customer) {
+      form.setValue("customer_id", values?.customer_id);
+    }
+    const value = v;
+    const details = form.watch("details") || [];
+    const branchId = form.watch("branch_id");
+    let payload: Record<string, any> = {};
+    if (key === Api.branch) {
+      payload = { name: value };
+    } else {
+      payload = {
+        role: key === Api.customer ? ROLE.CLIENT : ROLE.E_M,
+        services: details.map((d) => d.service_id).join(","),
+        branch_id: key === Api.customer ? undefined : branchId,
+        ...(edit === undefined ? { id: value } : { value }),
+      };
+    }
+    try {
+      const res = await search(key === Api.customer ? Api.user : key, {
+        ...payload,
+        limit: 100,
+        page: 0,
+      });
+      setValues((prev) => ({
+        ...prev,
+        [key]: res.data,
+      }));
+    } catch (error) {
+      console.error(`Search failed for ${key}:`, error);
+    }
   };
   const form = useForm<EventFormData>({
     resolver: zodResolver(eventSchema),
@@ -471,7 +471,7 @@ export default function AddEventModal({
                       onClick={() => {
                         if (
                           (selected == undefined || selected == -1) &&
-                          details.length == 2
+                          details?.length == 2
                         ) {
                           showToast(
                             "info",

@@ -163,56 +163,6 @@ export default function SchedulerViewFilteration({
     return () => window && window.removeEventListener("resize", handleResize);
   }, [clientSide]);
 
-  function handleAddEvent(selectedDay?: number) {
-    // Create the modal content with proper data
-    const startDate = new Date(
-      new Date().getFullYear(),
-      new Date().getMonth(),
-      selectedDay ?? new Date().getDate(),
-      0,
-      0,
-      0,
-      0
-    );
-
-    const endDate = new Date(
-      new Date().getFullYear(),
-      new Date().getMonth(),
-      selectedDay ?? new Date().getDate(),
-      23,
-      59,
-      59,
-      999
-    );
-
-    // Create a wrapper component to handle data passing
-    const ModalWrapper = () => {
-      const title =
-        CustomComponents?.CustomEventModal?.CustomAddEventModal?.title ||
-        "Захиалга нэмэх";
-
-      return (
-        <div>
-          <h2 className="text-xl font-semibold mb-4">{title}</h2>
-        </div>
-      );
-    };
-
-    // Open the modal with the content
-    setOpen(
-      <CustomModal title="Захиалга нэмэх">
-        <AddEventModal
-          items={values}
-          send={send}
-          loading={loading}
-          // CustomAddEventModal={
-          //   CustomComponents?.CustomEventModal?.CustomAddEventModal?.CustomForm
-          // }
-        />
-      </CustomModal>
-    );
-  }
-
   const viewsSelector = isMobile ? views?.mobileViews : views?.views;
 
   // Set initial active view
