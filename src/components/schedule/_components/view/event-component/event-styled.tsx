@@ -127,6 +127,7 @@ export default function EventStyled({
 
   // Handler function
   function handleEditEvent(event: IOrder) {
+    console.log(event);
     // Open the modal with the content
     setOpen(
       <CustomModal title="Захиалга засах">

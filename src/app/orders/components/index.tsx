@@ -46,7 +46,6 @@ export const OrderPage = ({
 }) => {
   const [action, setAction] = useState(ACTION.DEFAULT);
   const [orders, setOrders] = useState<ListType<Order>>(ListDefault);
-
   const [filter, setFilter] = useState<FilterType>();
   const changeFilter = (
     key: string,
@@ -108,6 +107,7 @@ export const OrderPage = ({
     });
     setAction(ACTION.DEFAULT);
   };
+
   const onSubmit = async <T,>(e: T) => {
     setAction(ACTION.RUNNING);
     const { edit, ...body } = e as any;

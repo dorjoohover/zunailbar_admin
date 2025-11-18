@@ -139,6 +139,7 @@ export default function SchedulerViewFilteration({
     resolver: zodResolver(formSchema),
     defaultValues,
   });
+
   useEffect(() => {
     setClientSide(true);
   }, []);

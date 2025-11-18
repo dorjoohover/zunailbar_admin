@@ -6,12 +6,14 @@ import { Branch, User } from "@/models";
 import { ROLE } from "@/lib/enum";
 
 export default async function Page() {
-  const [branch, user, client, services] = await Promise.all([
+  const [branch, user, services] = await Promise.all([
     search<Branch>(Api.branch, { limit: -1 }),
     search<User>(Api.user, { limit: 20, role: ROLE.E_M }),
-    search<User>(Api.user, { limit: 20, role: ROLE.CLIENT }),
+
     find<Service>(Api.service, { limit: 20 }),
   ]);
+  const client = await search<User>(Api.user, { limit: 20, role: ROLE.CLIENT });
+
   return (
     <section>
       {/* <div className="admin-container"> */}

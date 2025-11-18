@@ -76,7 +76,6 @@ export default function AddEventModal({
   // CustomAddEventModal?: React.FC<{ register: any; errors: any }>;
 }) {
   const { setClose, data } = useModal();
-
   const typedData = data as { default: IOrder };
 
   const { handlers } = useScheduler();
@@ -173,6 +172,28 @@ export default function AddEventModal({
     defaultValues: values ?? defaultValues,
   });
   const branchId = form.watch("branch_id");
+  const customerId = form.watch("customer_id");
+  useEffect(() => {
+    let cancelled = false;
+    async function syncCustomer() {
+      if (!customerId) return;
+
+      // 1. Хэрвээ items дотор байхгүй бол API-аар ганцаараа авч нэмнэ
+      const exists = allItems.customer.some((v) => v.id == customerId);
+
+      if (!exists) {
+        try {
+          searchField(customerId as string, Api.customer, true);
+        } catch (_) {}
+      }
+    }
+
+    syncCustomer();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [customerId]);
   useEffect(() => {
     let cancelled = false;
 
@@ -301,9 +322,10 @@ export default function AddEventModal({
                         "",
                         "",
                       ];
+                      const name = nickname == "null" ? "" : nickname ?? "";
                       return {
                         value: item.id,
-                        label: `${mobileFormatter(mobile)} ${nickname}`,
+                        label: `${mobileFormatter(mobile)} ${name}`,
                       };
                     })}
                   />
