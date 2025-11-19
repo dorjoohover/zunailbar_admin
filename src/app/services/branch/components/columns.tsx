@@ -31,6 +31,11 @@ export function getColumns(
       accessorFn: (row) => row.meta?.serviceName ?? "-",
       cell: ({ getValue }) => getValue(),
     },
+    {
+      header: "Дараалал",
+      accessorKey: "index",
+      cell: ({ row }) => row.getValue("index"),
+    },
 
     {
       accessorKey: "min_price",
