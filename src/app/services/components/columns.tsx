@@ -63,6 +63,11 @@ export function getColumns(
     },
 
     {
+      accessorKey: "index",
+      header: ({ column }) => "Дараалал",
+      cell: ({ row }) => `${row.getValue("index")}`,
+    },
+    {
       accessorKey: "duration",
       header: ({ column }) => "Хугацаа",
       cell: ({ row }) => `${row.getValue("duration")}мин`,
