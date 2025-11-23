@@ -1,20 +1,15 @@
 "use client";
-
-import React, { useMemo } from "react";
-import { Badge } from "@/components/ui/badge";
+import React, { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useModal } from "@/providers/modal-context";
 import AddEventModal from "@/components/schedule/_modals/add-event-modal";
-import { CustomEventModal } from "@/types";
 import {
-  TrashIcon,
   CalendarIcon,
   ClockIcon,
   Trash2,
   Clock,
+  User as IUser,
 } from "lucide-react";
-import { useScheduler } from "@/providers/schedular-provider";
-import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import CustomModal from "@/components/ui/custom-modal";
 import { getUserColor } from "@/lib/colors";
@@ -25,34 +20,12 @@ import {
   SearchType,
 } from "@/lib/constants";
 import { OrderStatus, UserLevel } from "@/lib/enum";
-import { Branch, IOrder, Order, Service, User } from "@/models";
+import { Branch, IOrder, Service, User } from "@/models";
 import { showToast } from "@/shared/components/showToast";
-import { Api } from "@/utils/api";
 import AppDialog from "@/shared/components/appDialog";
-import { mnDateStr, mobileFormatter } from "@/lib/functions";
+import { mobileFormatter } from "@/lib/functions";
+import { CustomEventModal } from "@/types";
 
-// Function to format date
-const formatDate = (date: Date) => {
-  return date.toLocaleString("en-US", {
-    weekday: "short",
-    month: "short",
-    day: "numeric",
-    hour: "numeric",
-    minute: "numeric",
-    hour12: true,
-  });
-};
-
-// Function to format time only
-const formatTime = (date: Date) => {
-  return date.toLocaleString("en-US", {
-    hour: "numeric",
-    minute: "numeric",
-    hour12: true,
-  });
-};
-
-// Color variants based on event type
 const FAMILIES = [
   "blue",
   "red",
@@ -104,8 +77,10 @@ export default function EventStyled({
   CustomEventModal,
   values,
   send,
+  width,
   index = 1,
 }: {
+  width: string;
   values: {
     branch: SearchType<Branch>[];
     customer: SearchType<User>[];
@@ -119,16 +94,8 @@ export default function EventStyled({
   onDelete: (id: string) => void;
 }) {
   const { setOpen } = useModal();
-  const { handlers } = useScheduler();
 
-  // Determine if delete button should be shown
-  // Hide it for minimized events to save space, show on hover instead
-  const shouldShowDeleteButton = !event?.minmized;
-
-  // Handler function
   function handleEditEvent(event: IOrder) {
-    console.log(event);
-    // Open the modal with the content
     setOpen(
       <CustomModal title="Захиалга засах">
         <AddEventModal
@@ -145,46 +112,42 @@ export default function EventStyled({
     );
   }
 
-  // Get background color class based on variant
   const getBackgroundColor = (color: number | undefined) => {
     const userColor = getUserColor(color ? color : 0);
     return userColor;
   };
-  const artists = (() => {
-    const uniqueArtists = [
-      ...new Map(
-        event.details
-          ?.filter((e) => e.user_id) // зөвхөн user_id байгаа мөрүүд
-          .map((e) => [e.user_id, e.user]) // user_id -> user
-      ).values(),
-    ];
 
-    return uniqueArtists;
-  })();
   const color = event?.details?.[0]?.user?.color;
   const secondColor = event?.details?.[1]?.user?.color;
+  const level =
+    getUserLevelValue[(event.customer?.level as UserLevel) ?? UserLevel.BRONZE];
+  const ref = useRef(null);
+  const [hovered, setHovered] = useState(false);
+  const hour = +(event.start_time?.slice(0, 2) ?? "0");
+  const baseZ = 50 * hour;
+  const maw = +width.replace("%", "") < 20 ? "280px" : "350px";
   return (
     <div
       key={event?.id}
+      ref={ref}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
       className={cn(
-        `w-full z-${
-          50 * index
-        } relative cursor-pointer border group rounded-lg flex flex-col flex-grow hover:shadow-md transition-shadow duration-200 bg-white`,
+        `w-full transaction-all duration-300 relative cursor-pointer border group rounded-lg flex flex-col flex-grow hover:shadow-md transition-shadow duration-200 bg-white max-w-[350px]`,
         event?.minmized ? "border-white" : "border-default-400/60"
       )}
+      style={{
+        zIndex: hovered ? 100000 : baseZ,
+      }}
     >
-      {/* Delete button - shown by default for non-minimized, or on hover for minimized */}
-
       <AppDialog
         trigger={
           <Button
             variant="destructive"
             size="icon"
             className={cn(
-              "absolute z-[100] right-1 top-[-8px] h-6 w-6 p-0 shadow-md hover:bg-destructive/90 transition-all duration-200",
-              event?.minmized
-                ? "opacity-0 group-hover:opacity-100"
-                : "opacity-100"
+              "absolute z-[100]  right-0  top-[-8px] h-6 w-6 p-0 shadow-md hover:bg-destructive/90 transition-all duration-200",
+              "opacity-0 group-hover:opacity-100"
             )}
           >
             <Trash2 size={14} className="text-destructive-foreground" />
@@ -198,135 +161,198 @@ export default function EventStyled({
           showToast("deleted", "Захиалга устгагдлаа!");
         }}
       />
-
-      {event.CustomEventComponent ? (
-        <div
-          onClick={(e: React.MouseEvent<HTMLDivElement>) => {
-            e.stopPropagation();
-            // handleEditEvent({
-            //   id: event?.id,
-            //   title: event?.title,
-            //   startDate: event?.startDate,
-            //   endDate: event?.endDate,
-            //   description: event?.description,
-            //   color: event?.color,
-            // });
-          }}
-        >
-          <event.CustomEventComponent {...event} />
-        </div>
-      ) : (
-        <div
-          onClick={(e: React.MouseEvent<HTMLDivElement>) => {
-            e.stopPropagation();
-            handleEditEvent({
-              id: event?.id,
-              branch_id: event.branch_id,
-              customer_id: event.customer_id,
-              user_id: event.user_id,
-              description: event.description,
-              order_status: event.order_status,
-              total_amount: event.total_amount ?? 0,
-              order_date: event.order_date,
-              start_time: event.start_time,
-              end_time: event.end_time,
-              details: event.details,
-              paid_amount: event.paid_amount,
-              pre_amount: event.pre_amount,
-              duration: event.duration,
-              is_pre_amount_paid: event.is_pre_amount_paid,
-            });
-          }}
-          className={cn(
-            "w-full p-2 text-gray-500 rounded-lg border-t-4 border-l border-r border-b max-w-[350px]",
-
-            event?.minmized ? "flex-grow overflow-hidden" : "min-h-fit"
-          )}
-          style={{
-            borderColor: secondColor
-              ? getBackgroundColor(secondColor)
-              : getBackgroundColor(color),
-            borderTopColor: getBackgroundColor(color),
-          }}
-        >
-          <div className="flex flex-col h-full " style={{}}>
-            <div className="font-semibold text-xs truncate mb-1 ">
-              {event?.details?.map((e, i) => {
-                return (
-                  <div key={i} className="flex gap-2">
-                    <div className="flex gap-1">
-                      <div
-                        className="w-3 rounded-full h-3"
-                        style={{
-                          backgroundColor: getBackgroundColor(e.user.color),
-                        }}
-                      ></div>
-                      <p>{e.user.nickname}</p>
-                    </div>
-                    {"/"}
-                    <div className="flex gap-1">
-                      <p>{e.service_name ?? "-"}</p>
-                    </div>
-                  </div>
-                );
-              })}
+      <div
+        className={cn(
+          "absolute   right-0 top-[100%] min-w-[250px]   px-3 py-4 shadow-md  transition-all duration-200 bg-white",
+          hovered ? "block" : "hidden"
+        )}
+        style={{
+          maxWidth: maw,
+        }}
+      >
+        <div className="flex w-full " style={{ maxWidth: maw }}>
+          <div className="font-semibold w-full text-xs truncate">
+            <div className="w-full">
+              <div className="flex justify-between ">
+                <div className="flex items-center gap-2">
+                  <p>Хэрэглэгчийн нэр:</p>{" "}
+                  <p className="font-bold">
+                    {event?.customer?.nickname ?? "-"}{" "}
+                  </p>
+                </div>
+                {event?.order_status &&
+                  OrderStatusValues[event?.order_status as OrderStatus]}
+              </div>
+              <div className="flex items-center gap-2">
+                <p>Хэрэглэгчийн дугаар:</p>{" "}
+                <p className="font-bold">
+                  {mobileFormatter(event?.customer?.mobile ?? "")}{" "}
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <p>Хэрэглэгчийн эрэмбэ:</p>{" "}
+                <p className={cn("font-bold flex gap-1", level.color)}>
+                  {" "}
+                  <level.Icon size={16} />
+                  {level.name}
+                </p>
+              </div>
             </div>
-            <div className="font-semibold text-xs truncate">
-              Хэрэглэгчийн дугаар:{" "}
-              <b>{mobileFormatter(event?.customer?.mobile ?? "")}</b> Эрэмбэ:{" "}
-              <b
-                className={`text-[${
-                  getUserLevelValue[
-                    (event.customer?.level as UserLevel) ?? UserLevel.BRONZE
-                  ].textColor
-                }]`}
-              >
-                {
-                  getUserLevelValue[
-                    (event.customer?.level as UserLevel) ?? UserLevel.BRONZE
-                  ].name
-                }
-              </b>
-            </div>
-            {event.description && (
-              <div className="my-2 text-xs max-w-[350px]">
-                <b>Tip massage:</b> {event?.description}{" "}
-              </div>
-            )}
-            {event?.minmized && (
-              <div className="flex flex-col">
-                <div className="text-[10px] flex justify-between">
-                  <div className="flex text-xs items-center gap-1">
-                    <Clock size={12} />{" "}
-                    <span> {event?.start_time?.slice(0, 5)} - </span>
-                    <span> {event?.end_time?.slice(0, 5)} </span>
-                  </div>
-                  <span className="opacity-80">
-                    {event?.order_status &&
-                      OrderStatusValues[event?.order_status as OrderStatus]}
-                  </span>
-                </div>
-              </div>
-            )}
-            {!event?.minmized && event?.description && (
-              <div className="my-2 text-sm">{event?.description} </div>
-            )}
-
-            {!event?.minmized && (
-              <div className="text-xs space-y-1 mt-2">
-                <div className="flex items-center">
-                  <CalendarIcon className="mr-1 h-3 w-3" />
-                  {event.start_time}
-                </div>
-                <div className="flex items-center">
-                  <ClockIcon className="mr-1 h-3 w-3" />
-                  {event?.end_time}
-                </div>
-              </div>
-            )}
           </div>
         </div>
-      )}
+
+        <div className="font-semibold text-xs truncate my-1 w-full">
+          {event?.details?.map((e, i) => {
+            return (
+              <div key={i} className=" my-1">
+                <div className="flex items-center gap-1">
+                  <div
+                    className="w-3 rounded-full h-3"
+                    style={{
+                      backgroundColor: getBackgroundColor(e.user.color),
+                    }}
+                  ></div>
+                  <div className="flex gap-2">
+                    <p>Артист:</p>
+                    <p className="font-bold">{e.user.nickname}</p>
+                  </div>
+                </div>
+                <div className="flex gap-2">
+                  <p>Салбар:</p>
+                  <p className="font-bold">{e.user.branch_name}</p>
+                </div>
+                <div className="flex gap-2 ">
+                  <p>Үйлчилгээний нэр:</p>
+                  <p className="font-bold text-wrap">{e.service_name ?? "-"}</p>
+                </div>
+                <div className="flex">
+                  <div className="flex text-xs items-center gap-1">
+                    <Clock size={12} />{" "}
+                    <span> {e?.start_time?.slice(0, 5)} - </span>
+                    <span> {e?.end_time?.slice(0, 5)} </span>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+        {event.description && (
+          <div className="my-2 text-xs ">
+            <b>Tip massage:</b> {event?.description}{" "}
+          </div>
+        )}
+      </div>
+
+      <div
+        onClick={(e: React.MouseEvent<HTMLDivElement>) => {
+          e.stopPropagation();
+          handleEditEvent({
+            id: event?.id,
+            branch_id: event.branch_id,
+            customer_id: event.customer_id,
+            user_id: event.user_id,
+            description: event.description,
+            order_status: event.order_status,
+            total_amount: event.total_amount ?? 0,
+            order_date: event.order_date,
+            start_time: event.start_time,
+            end_time: event.end_time,
+            details: event.details,
+            paid_amount: event.paid_amount,
+            pre_amount: event.pre_amount,
+            duration: event.duration,
+            is_pre_amount_paid: event.is_pre_amount_paid,
+          });
+        }}
+        className={cn(
+          "w-full p-2 text-gray-500 rounded-lg border-t-4 border-l border-r border-b ",
+
+          event?.minmized ? "flex-grow overflow-hidden" : "min-h-fit"
+        )}
+        style={{
+          borderColor: secondColor
+            ? getBackgroundColor(secondColor)
+            : getBackgroundColor(color),
+          borderTopColor: getBackgroundColor(color),
+        }}
+      >
+        <div className="flex flex-col h-full ">
+          <div className="flex">
+            <div className="font-semibold w-full text-xs truncate">
+              <div className="flex justify-between w-full">
+                <div className="flex items-center gap-2">
+                  <p>
+                    {event?.customer?.nickname}{" "}
+                    {mobileFormatter(event?.customer?.mobile ?? "")}
+                  </p>
+                  <level.Icon color={`${level.textColor}`} size={14} />
+                </div>
+                {event?.order_status &&
+                  OrderStatusValues[event?.order_status as OrderStatus]}
+              </div>
+            </div>
+          </div>
+          <div className="font-semibold text-xs truncate mb-1 ">
+            {event?.details?.map((e, i) => {
+              return (
+                <div key={i} className="flex justify-between my-1">
+                  <div className="flex items-center gap-1">
+                    <div
+                      className="w-3 rounded-full h-3"
+                      style={{
+                        backgroundColor: getBackgroundColor(e.user.color),
+                      }}
+                    ></div>
+                    {/* <p>{e.user.nickname}</p> */}
+                    <p>{e.service_name ?? "-"}</p>
+                  </div>
+                  <div className="flex">
+                    <div className="flex text-xs items-center gap-1">
+                      <Clock size={12} />{" "}
+                      <span> {e?.start_time?.slice(0, 5)} - </span>
+                      <span> {e?.end_time?.slice(0, 5)} </span>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {event.description && (
+            <div className="my-2 text-xs ">
+              <b>Tip massage:</b> {event?.description}{" "}
+            </div>
+          )}
+          {event?.minmized && (
+            <div className="flex flex-col">
+              <div className="text-[10px] flex justify-between">
+                <div className="flex text-xs items-center gap-1">
+                  <Clock size={12} />{" "}
+                  <span> {event?.start_time?.slice(0, 5)} - </span>
+                  <span> {event?.end_time?.slice(0, 5)} </span>
+                </div>
+                <span className="opacity-80"></span>
+              </div>
+            </div>
+          )}
+          {!event?.minmized && event?.description && (
+            <div className="my-2 text-sm">{event?.description} </div>
+          )}
+
+          {!event?.minmized && (
+            <div className="text-xs space-y-1 mt-2">
+              <div className="flex items-center">
+                <CalendarIcon className="mr-1 h-3 w-3" />
+                {event.start_time}
+              </div>
+              <div className="flex items-center">
+                <ClockIcon className="mr-1 h-3 w-3" />
+                {event?.end_time}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 }

@@ -33,6 +33,11 @@ import { ListType, SearchType } from "@/lib/constants";
 import { Api } from "@/utils/api";
 import { DatePicker } from "@/shared/components/date.picker";
 import { FilterType } from "@/app/orders/components";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 // Generate hours in 12-hour format
 const hours = Array.from({ length: totalHours }, (_, i) => {
@@ -339,7 +344,7 @@ export default function DailyView({
 
   return (
     <>
-      <div className="flex justify-between gap-3 flex-wrap mb-5">
+      <div className="flex justify-between gap-3  mb-5">
         <h1 className="text-3xl font-semibold mb-4">
           {/* title */}
           {getFormattedDayTitle()}
@@ -376,55 +381,11 @@ export default function DailyView({
         <motion.div
           key={currentDate.toISOString()}
           custom={direction}
-          // variants={pageTransitionVariants as any}
-          // initial="enter"
-          // animate="center"
-          // exit="exit"
-          // transition={{
-          //   x: { type: "spring", stiffness: 300, damping: 30 },
-          //   opacity: { duration: 0.2 },
-          // }}
           className="flex flex-col gap-4"
         >
-          {!stopDayEventSummary && (
-            <div className="all-day-events">
-              <AnimatePresence initial={false}>
-                {dayEvents && dayEvents?.length
-                  ? dayEvents?.map((event, eventIndex) => {
-                      return (
-                        <motion.div
-                          key={event.id}
-                          // initial={{ opacity: 0, y: -10 }}
-                          // animate={{ opacity: 1, y: 0 }}
-                          // exit={{ opacity: 0, y: -10 }}
-                          // transition={{ duration: 0.2 }}
-                          className="mb-2"
-                        >
-                          <EventStyled
-                            onDelete={deleteOrder}
-                            values={values}
-                            send={send}
-                            event={{
-                              ...event,
-                              minmized: false,
-                            }}
-                            CustomEventModal={CustomEventModal}
-                          />
-                        </motion.div>
-                      );
-                    })
-                  : "No events for today"}
-              </AnimatePresence>
-            </div>
-          )}
-
           <div className="relative rounded-md bg-default-50 hover:bg-default-100 transition duration-400">
             <motion.div
               className="relative rounded-xl flex ease-in-out"
-              ref={hoursColumnRef}
-              // variants={containerVariants}
-              // initial="hidden" // Ensure initial state is hidden
-              // animate="visible" // Trigger animation to visible state
               onMouseMove={handleMouseMove}
               onMouseLeave={() => setDetailedHour(null)}
             >
@@ -484,11 +445,10 @@ export default function DailyView({
                               left: left,
                               maxWidth: maxWidth,
                               minWidth: minWidth,
-                              zIndex: zIndex,
                               padding: "0 0px",
                               boxSizing: "border-box",
                             }}
-                            className="flex transition-all duration-1000 flex-grow flex-col z-50 absolute"
+                            className="flex transition-all duration-1000 flex-grow flex-col absolute"
                             // initial={{ opacity: 0, scale: 0.95 }}
                             // animate={{ opacity: 1, scale: 1 }}
                             // exit={{ opacity: 0, scale: 0.95 }}
@@ -499,6 +459,7 @@ export default function DailyView({
                               send={send}
                               values={values}
                               index={zIndex}
+                              width={maxWidth}
                               event={{
                                 ...event,
                                 minmized: true,
@@ -512,20 +473,6 @@ export default function DailyView({
                 </AnimatePresence>
               </div>
             </motion.div>
-
-            {detailedHour && (
-              <div
-                className="absolute left-[50px] w-[calc(100%-53px)] h-[2px] bg-primary/40 rounded-full pointer-events-none"
-                style={{ top: `${timelinePosition}px` }}
-              >
-                <Badge
-                  variant="outline"
-                  className="absolute -translate-y-1/2 bg-white z-50 left-[-20px] text-xs"
-                >
-                  {detailedHour}
-                </Badge>
-              </div>
-            )}
           </div>
         </motion.div>
       </AnimatePresence>

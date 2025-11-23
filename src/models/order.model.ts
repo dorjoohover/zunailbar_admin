@@ -57,6 +57,8 @@ export interface IOrderDetail {
   min_price?: number;
   service_name?: string;
   user_id?: string;
+  start_time?: string
+  end_time?: string
   duration?: number;
   duplicated?: boolean;
   category?: number | null;

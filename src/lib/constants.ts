@@ -304,7 +304,7 @@ export const OrderStatusValues = {
   // [OrderStatus.Started]: "Эхэлсэн",
   [OrderStatus.Cancelled]: "Цуцалсан",
   [OrderStatus.Finished]: "Дууссан",
-  [OrderStatus.Pending]: "Хүлээгдэж байна",
+  [OrderStatus.Pending]: "Хүлээгдэж",
   [OrderStatus.ABSENT]: "Ирээгүй",
   [OrderStatus.Friend]: "Танил",
 };
