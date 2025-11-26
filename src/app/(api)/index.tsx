@@ -135,7 +135,6 @@ export const deleteOne = async (
     const url = `${API[uri as keyof typeof API]}${
       route ? `/${route}/` : "/"
     }${id}`;
-    console.log(url)
     const res = await fetch(url, {
       cache: "no-store",
       method: METHOD.delete,
