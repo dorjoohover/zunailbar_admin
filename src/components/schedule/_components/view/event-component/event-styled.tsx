@@ -124,7 +124,7 @@ export default function EventStyled({
   const ref = useRef(null);
   const [hovered, setHovered] = useState(false);
   const hour = +(event.start_time?.slice(0, 2) ?? "0");
-  const baseZ = 50 * hour;
+  const baseZ = Math.ceil(0.1 * hour);
   const maw = +width.replace("%", "") < 20 ? "280px" : "350px";
   return (
     <div

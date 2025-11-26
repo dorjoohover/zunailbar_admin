@@ -15,9 +15,12 @@ import CustomModal from "@/components/ui/custom-modal";
 import {
   ACTION,
   getEnumValues,
+  getUserLevelValue,
   ListType,
   OrderStatusValues,
   SearchType,
+  zNumOpt,
+  zStrOpt,
 } from "@/lib/constants";
 import { Branch, IOrder, Order, Service, User } from "@/models";
 import { Api } from "@/utils/api";
@@ -36,7 +39,7 @@ import { FormProvider, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Modal } from "@/shared/components/modal";
 import { create } from "@/app/(api)";
-import { OrderStatus, ROLE } from "@/lib/enum";
+import { OrderStatus, ROLE, UserLevel } from "@/lib/enum";
 import { showToast } from "@/shared/components/showToast";
 import { FormItems } from "@/shared/components/form.field";
 import { TextField } from "@/shared/components/text.field";
@@ -54,10 +57,13 @@ const animationConfig = {
 };
 const formSchema = z.object({
   mobile: z.string().length(8),
-  nickname: z
-    .string()
-    .min(1)
-    .regex(/^[\p{L}\s\-']+$/u, "Зөвхөн үсэг, зай, -, '"),
+  level: zNumOpt({
+    label: "Эрэмбэ",
+  }),
+  nickname: zStrOpt({
+    label: "Хоч",
+    allowNullable: false,
+  }),
   password: z.string().nullable().optional(),
 });
 
@@ -65,6 +71,7 @@ const defaultValues: UserType = {
   mobile: "",
   nickname: "",
   password: "",
+  level: UserLevel.BRONZE,
 };
 type UserType = z.infer<typeof formSchema>;
 
@@ -132,7 +139,6 @@ export default function SchedulerViewFilteration({
     filter?: T;
   }) => void;
 }) {
-  const { setOpen } = useModal();
   const [activeView, setActiveView] = useState<string>("day");
   const [clientSide, setClientSide] = useState(false);
   const form = useForm<UserType>({
@@ -181,6 +187,11 @@ export default function SchedulerViewFilteration({
   const onSubmit = async <T,>(e: T) => {
     const body = e as UserType;
 
+    console.log({
+      ...body,
+      role: ROLE.CLIENT,
+      birthday: null,
+    });
     const res = await create<User>(Api.user, {
       ...body,
       role: ROLE.CLIENT,
@@ -346,9 +357,8 @@ export default function SchedulerViewFilteration({
                             HTMLInputElement
                           > = (e) => {
                             if (blockRe) {
-                              const raw = e.target.value ?? "";
+                              const raw = e.target?.value ?? "";
                               const cleaned = raw.replace(blockRe, "");
-                              console.log(cleaned);
                               // RHF-д value-гаар нь дамжуулна
                               (field.onChange as (v: string) => void)(cleaned);
                             } else {
@@ -365,6 +375,21 @@ export default function SchedulerViewFilteration({
                       </FormItems>
                     );
                   })}
+                  <FormItems label="Эрэмбэ" control={form.control} name="level">
+                    {(field) => {
+                      return (
+                        <ComboBox
+                          props={{ ...field }}
+                          items={getEnumValues(UserLevel).map((item) => {
+                            return {
+                              value: item.toString(),
+                              label: getUserLevelValue[item].name,
+                            };
+                          })}
+                        />
+                      );
+                    }}
+                  </FormItems>
                   <FormItems
                     control={form.control}
                     name="password"
@@ -422,11 +447,11 @@ export default function SchedulerViewFilteration({
           >
             <>
               <div className="grid grid-cols-6 gap-1 mb-4">
-                {values.user.map((user) => {
+                {values.user.map((user, i) => {
                   const [mobile, nickname, branch, color] =
                     user.value?.split("__");
                   return (
-                    <div className="flex gap-1 items-center">
+                    <div className="flex gap-1 items-center" key={i}>
                       <div
                         className={cn("rounded-full w-4 h-4")}
                         style={{

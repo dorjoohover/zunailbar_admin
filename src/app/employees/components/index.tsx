@@ -225,7 +225,7 @@ export const EmployeePage = ({
   const setStatus = async (index: number, status: number) => {
     await updateOne(Api.user, users.items[index].id, {
       user_status: status,
-    });
+    }, 'status');
     refresh();
   };
   const giveProduct = (index: number) => {

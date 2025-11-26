@@ -109,11 +109,29 @@ export const BookingPage = ({
         times.length == 0 ? undefined : times.map((time) => time.slice(0, 2)),
       branch_id: selectedBranch.id,
     };
+    console.log(payload);
 
     const id = bookings?.items?.filter((b) => b.index == index)?.[0]?.id;
     const res = isAdd
       ? await create<IBooking>(Api.booking, payload)
       : await updateOne<IBooking>(Api.booking, id!, payload);
+    if (res.success) {
+      refresh();
+      showToast("success", "Амжилттай шинэчиллээ.");
+    } else {
+      showToast("error", res.error ?? "");
+    }
+    setAction(ACTION.DEFAULT);
+  };
+
+  const remove = async (index: number) => {
+    setAction(ACTION.RUNNING);
+
+    const res = await deleteOne(
+      Api.booking,
+      selectedBranch.id + `/${index}`,
+      "index"
+    );
     if (res.success) {
       refresh();
       showToast("success", "Амжилттай шинэчиллээ.");
@@ -144,6 +162,7 @@ export const BookingPage = ({
     times: string[],
     action: number
   ) => {
+    if (action == 4) await remove(dayIndex);
     if (action == 0) await add(dayIndex, times, !scheduleData[dayIndex]);
     if (action == 2)
       await add(

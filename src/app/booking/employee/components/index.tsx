@@ -157,12 +157,28 @@ export const SchedulePage = ({
     mounted.current ? refresh() : (mounted.current = true);
   }, [selectedUser]);
   const [isList, setList] = useState(true);
+  const remove = async (index: number) => {
+    setAction(ACTION.RUNNING);
 
+    const res = await deleteOne(
+      Api.schedule,
+      selectedUser.id + `/${index}`,
+      "index"
+    );
+    if (res.success) {
+      refresh();
+      showToast("success", "Амжилттай шинэчиллээ.");
+    } else {
+      showToast("error", res.error ?? "");
+    }
+    setAction(ACTION.DEFAULT);
+  };
   const updateSchedule = async (
     dayIndex: number,
     times: string[],
     action: number
   ) => {
+    if (action == 4) await remove(dayIndex);
     if (action == 0) await add(dayIndex, times, !scheduleData[dayIndex]);
     if (action == 2)
       await add(

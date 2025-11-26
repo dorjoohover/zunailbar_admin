@@ -51,7 +51,7 @@ export function DayScheduleColumn({
   };
 
   const resetDay = () => {
-    onUpdateTimes([], 0);
+    onUpdateTimes([], 4);
   };
 
   const availableTimesToAdd = allAvailableTimes.filter(

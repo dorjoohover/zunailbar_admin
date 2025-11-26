@@ -32,7 +32,7 @@ import DynamicHeader from "@/components/dynamicHeader";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { showToast } from "@/shared/components/showToast";
-import { CategoryType, ROLE, STATUS , INPUT_TYPE} from "@/lib/enum";
+import { CategoryType, ROLE, STATUS, INPUT_TYPE } from "@/lib/enum";
 import { TextField } from "@/shared/components/text.field";
 
 const formSchema = z.object({
@@ -331,7 +331,7 @@ export const EmployeeUserSalaryPage = ({
                         <TextField
                           props={{ ...field }}
                           type={INPUT_TYPE.NUMBER}
-                          label={"Хугацаа"}
+                          label={"Цалин олгох өдөр"}
                         />
                       );
                     }}

@@ -48,7 +48,7 @@ export function getColumns(
     },
     {
       accessorKey: "duration",
-      header: ({ column }) => <span>Хугацаа</span>,
+      header: ({ column }) => <span>Цалин олгох өдөр</span>,
       cell: ({ row }) => (
         <div className="font-bold text-brand-blue">
           {add15Days(row.getValue("duration"))}

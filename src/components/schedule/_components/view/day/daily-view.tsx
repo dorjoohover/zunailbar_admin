@@ -205,7 +205,6 @@ export default function DailyView({
   classNames?: { prev?: string; next?: string; addEvent?: string };
 }) {
   const hoursColumnRef = useRef<HTMLDivElement>(null);
-  const [detailedHour, setDetailedHour] = useState<string | null>(null);
   const [timelinePosition, setTimelinePosition] = useState<number>(0);
   const nextDate = filter?.date?.to ?? new Date();
   const currentDate = filter?.date?.from ?? new Date();
@@ -221,21 +220,6 @@ export default function DailyView({
     });
     return map;
   }, [events]);
-  const handleMouseMove = useCallback(
-    (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-      if (!hoursColumnRef.current) return;
-      const rect = hoursColumnRef.current.getBoundingClientRect();
-      const y = e.clientY - rect.top;
-      const hourHeight = Math.ceil(rect.height / totalHours);
-      const hour = Math.max(0, Math.min(23, Math.floor(y / hourHeight))) + 7;
-      const hour12 = hour;
-      setDetailedHour(`${hour12}:00`);
-
-      const position = Math.max(0, Math.min(rect.height, Math.round(y)));
-      setTimelinePosition(position);
-    },
-    []
-  );
 
   const getFormattedDayTitle = useCallback(
     () => mnDateFormatTitle(mnDateFormat(currentDate)),
@@ -278,24 +262,14 @@ export default function DailyView({
     );
   }
 
-  function handleAddEventDay(detailedHour: string) {
+  function handleAddEventDay(detailedHour: number) {
     if (!detailedHour) {
       console.error("Detailed hour not provided.");
       return;
     }
 
     // Parse the 12-hour format time
-    const [timePart, ampm] = detailedHour.split(" ");
-    const [hourStr, minuteStr] = timePart.split(":");
-    let hours = parseInt(hourStr);
-    const minutes = parseInt(minuteStr);
-
-    // Convert to 24-hour format for Date object
-    if (ampm === "PM" && hours < 12) {
-      hours += 12;
-    } else if (ampm === "AM" && hours === 12) {
-      hours = 0;
-    }
+    let hours = detailedHour;
 
     const chosenDay = currentDate.getDate();
 
@@ -310,7 +284,7 @@ export default function DailyView({
       currentDate.getMonth(),
       chosenDay,
       hours,
-      minutes
+      0
     );
 
     handleAddEvent({
@@ -384,11 +358,7 @@ export default function DailyView({
           className="flex flex-col gap-4"
         >
           <div className="relative rounded-md bg-default-50 hover:bg-default-100 transition duration-400">
-            <motion.div
-              className="relative rounded-xl flex ease-in-out"
-              onMouseMove={handleMouseMove}
-              onMouseLeave={() => setDetailedHour(null)}
-            >
+            <motion.div className="relative rounded-xl flex ease-in-out">
               <div className="flex  flex-col">
                 {hours.map((hour, index) => (
                   <motion.div
@@ -401,19 +371,21 @@ export default function DailyView({
                 ))}
               </div>
               <div className="flex relative flex-grow flex-col ">
-                {Array.from({ length: totalHours }).map((_, index) => (
-                  <div
-                    onClick={() => {
-                      handleAddEventDay(detailedHour as string);
-                    }}
-                    key={`hour-${index}`}
-                    className="cursor-pointer w-full relative border-b  hover:bg-default-200/50  transition duration-300  p-4 h-[64px] text-left text-sm text-muted-foreground border-default-200"
-                  >
-                    <div className="absolute bg-accent flex items-center justify-center text-xs opacity-0 transition left-0 top-0 duration-250 hover:opacity-100 w-full h-full">
-                      Захиалга нэмэх
+                {Array.from({ length: totalHours }, (_, i) => i + 7).map(
+                  (_, index) => (
+                    <div
+                      onClick={() => {
+                        handleAddEventDay(_);
+                      }}
+                      key={`hour-${index}`}
+                      className="cursor-pointer w-full relative border-b  hover:bg-default-200/50  transition duration-300  p-4 h-[64px] text-left text-sm text-muted-foreground border-default-200"
+                    >
+                      <div className="absolute bg-accent flex items-center justify-center text-xs opacity-0 transition left-0 top-0 duration-250 hover:opacity-100 w-full h-full">
+                        Захиалга нэмэх
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  )
+                )}
 
                 <AnimatePresence initial={false}>
                   {events && events?.length
