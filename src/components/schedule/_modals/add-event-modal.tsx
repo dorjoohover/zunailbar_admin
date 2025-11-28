@@ -249,6 +249,7 @@ export default function AddEventModal({
       .map(([er, v], i) => {
         if (er == "details")
           return Object.values(v as any).map((a: any) => {
+            console.log(a);
             return Object.values(a).map((b: any) => b.message);
           });
         if ((v as any)?.message) {

@@ -90,14 +90,14 @@ export const OrderPage = ({
     const end_date = mnDate(filter?.date?.to);
 
     const date = dateFormat(d);
-
+    console.log(filter);
     await fetcher<Order>(Api.order, {
       page: page ?? DEFAULT_PG.page,
       limit: limit ?? DEFAULT_PG.limit,
       sort: sort ?? DEFAULT_PG.sort,
       date: date,
       end_date: filter?.list ? dateFormat(end_date) : undefined,
-      order_status: pg.filter?.status,
+      order_status: filter?.status,
       user_id: filter?.artist,
       branch_id: filter?.branch,
       friend: pg.filter?.status != OrderStatus.Friend ? undefined : 0,
@@ -172,11 +172,10 @@ export const OrderPage = ({
     setAction(ACTION.DEFAULT);
   };
   const deleteOrders = async (index: number) => {
-    // const id = costs?.items?.[index]?.id ?? "";
-    // const res = await deleteOne(Api.cost, id);
-    // refresh();
-    // return res.success;
-    return false;
+    const id = orders?.items?.[index]?.id ?? "";
+    const res = await deleteOne(Api.order, id);
+    refresh();
+    return res.success;
   };
   const edit = async (e: IOrder) => {
     // setOpen(true);

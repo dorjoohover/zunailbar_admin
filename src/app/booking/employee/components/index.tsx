@@ -178,20 +178,23 @@ export const SchedulePage = ({
     times: string[],
     action: number
   ) => {
-    if (action == 4) await remove(dayIndex);
-    if (action == 0) await add(dayIndex, times, !scheduleData[dayIndex]);
-    if (action == 2)
-      await add(
-        dayIndex,
-        scheduleData[dayIndex],
-        !(schedules?.items || []).reduce<Record<number, string[]>>(
-          (acc, b: Schedule) => {
-            acc[b.index] = b.times?.split("|");
-            return acc;
-          },
-          {}
-        )[dayIndex]
-      );
+    if (action == 4 || times.length == 0) {
+      await remove(dayIndex);
+    } else {
+      if (action == 0) await add(dayIndex, times, !scheduleData[dayIndex]);
+      if (action == 2)
+        await add(
+          dayIndex,
+          scheduleData[dayIndex],
+          !(schedules?.items || []).reduce<Record<number, string[]>>(
+            (acc, b: Schedule) => {
+              acc[b.index] = b.times?.split("|");
+              return acc;
+            },
+            {}
+          )[dayIndex]
+        );
+    }
     setScheduleData((prev) => ({
       ...prev,
       [dayIndex]: times,

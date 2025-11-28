@@ -35,7 +35,7 @@ export function TableActionButtons<T>({
       {onRemove && (
         <AppAlertDialog
           title="Итгэлтэй байна уу?"
-          description="Бүр устгана шүү."
+          description=""
           onConfirm={async () => {
             try {
               const res = await onRemove(rowData);

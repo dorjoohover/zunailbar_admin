@@ -302,10 +302,10 @@ export const SalaryLogValues = {
 export const OrderStatusValues = {
   [OrderStatus.Active]: "Бэлэн",
   // [OrderStatus.Started]: "Эхэлсэн",
-  [OrderStatus.Cancelled]: "Цуцалсан",
+  [OrderStatus.Cancelled]: "Баталгаажуулаагүй",
   [OrderStatus.Finished]: "Дууссан",
   [OrderStatus.Pending]: "Хүлээгдэж",
-  [OrderStatus.ABSENT]: "Ирээгүй",
+  [OrderStatus.ABSENT]: "Цуцалсан",
   [OrderStatus.Friend]: "Танил",
 };
 export const icons = {
