@@ -124,7 +124,7 @@ export default function EventStyled({
   const ref = useRef(null);
   const [hovered, setHovered] = useState(false);
   const hour = +(event.start_time?.slice(0, 2) ?? "0");
-  const baseZ = Math.ceil(0.1 * hour);
+  const baseZ = Math.ceil(1 * hour);
   const maw = +width.replace("%", "") < 20 ? "280px" : "350px";
   return (
     <div
@@ -133,11 +133,11 @@ export default function EventStyled({
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       className={cn(
-        `w-full transaction-all duration-300 relative cursor-pointer border group rounded-lg flex flex-col flex-grow hover:shadow-md transition-shadow duration-200 bg-white max-w-[350px]`,
+        `w-full transaction-all duration-300 relative cursor-pointer  group rounded-lg flex flex-col flex-grow hover:shadow-md transition-shadow duration-200 bg-transparent max-w-[350px]`,
         event?.minmized ? "border-white" : "border-default-400/60"
       )}
       style={{
-        zIndex: hovered ? 100000 : baseZ,
+        zIndex: hovered ? 50 : baseZ,
       }}
     >
       <AppDialog
@@ -264,95 +264,153 @@ export default function EventStyled({
             is_pre_amount_paid: event.is_pre_amount_paid,
           });
         }}
-        className={cn(
-          "w-full p-2 text-gray-500 rounded-lg border-t-4 border-l border-r border-b ",
-
-          event?.minmized ? "flex-grow overflow-hidden" : "min-h-fit"
-        )}
-        style={{
-          borderColor: secondColor
-            ? getBackgroundColor(secondColor)
-            : getBackgroundColor(color),
-          borderTopColor: getBackgroundColor(color),
-        }}
       >
-        <div className="flex flex-col h-full ">
-          <div className="flex">
-            <div className="font-semibold w-full text-xs truncate">
-              <div className="flex justify-between w-full">
-                <div className="flex items-center gap-2">
-                  <p>
-                    {event?.customer?.nickname}{" "}
-                    {mobileFormatter(event?.customer?.mobile ?? "")}
-                  </p>
-                  <level.Icon color={`${level.textColor}`} size={14} />
-                </div>
-                {event?.order_status &&
-                  OrderStatusValues[event?.order_status as OrderStatus]}
-              </div>
+        {[...new Set(event.details?.map((d) => d.user_id))].length > 1 ? (
+          <div className="flex bg-transparent">
+            <div
+              className={cn(
+                "w-full p-2 text-white rounded-lg  ",
+                event?.minmized ? "flex-grow overflow-hidden" : "min-h-fit"
+              )}
+              style={{
+                background: getBackgroundColor(color),
+                boxShadow: `0 1px 3px 0px ${getBackgroundColor(color)}`,
+              }}
+            >
+              <EventItem
+                color={getBackgroundColor(color)}
+                event={{ ...event, details: [event.details?.[0]] }}
+                level={level}
+                parallel={true}
+              />
+            </div>
+            <div
+              className={cn(
+                "w-full p-2 text-white rounded-lg  ",
+                event?.minmized ? "flex-grow overflow-hidden" : "min-h-fit"
+              )}
+              style={{
+                background: getBackgroundColor(secondColor),
+                boxShadow: `0 1px 3px 0px ${getBackgroundColor(secondColor)}`,
+              }}
+            >
+              <EventItem
+                color={getBackgroundColor(secondColor)}
+                event={{ ...event, details: [event.details?.[1]] }}
+                level={level}
+                parallel={true}
+              />
             </div>
           </div>
-          <div className="font-semibold text-xs truncate mb-1 ">
-            {event?.details?.map((e, i) => {
-              return (
-                <div key={i} className="flex justify-between my-1">
-                  <div className="flex items-center gap-1">
-                    <div
-                      className="w-3 rounded-full h-3"
-                      style={{
-                        backgroundColor: getBackgroundColor(e.user.color),
-                      }}
-                    ></div>
-                    {/* <p>{e.user.nickname}</p> */}
-                    <p>{e.service_name ?? "-"}</p>
-                  </div>
-                  <div className="flex">
-                    <div className="flex text-xs items-center gap-1">
-                      <Clock size={12} />{" "}
-                      <span> {e?.start_time?.slice(0, 5)} - </span>
-                      <span> {e?.end_time?.slice(0, 5)} </span>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
+        ) : (
+          <div
+            className={cn(
+              "w-full p-2 text-white rounded-lg  ",
+              event?.minmized ? "flex-grow overflow-hidden" : "min-h-fit"
+            )}
+            style={{
+              background: getBackgroundColor(color),
+              boxShadow: `0 1px 3px 0px ${getBackgroundColor(color)}`,
+            }}
+          >
+            <EventItem
+              color={getBackgroundColor(color)}
+              event={event}
+              level={level}
+            />
           </div>
-
-          {event.description && (
-            <div className="my-2 text-xs ">
-              <b>Tip massage:</b> {event?.description}{" "}
-            </div>
-          )}
-          {event?.minmized && (
-            <div className="flex flex-col">
-              <div className="text-[10px] flex justify-between">
-                <div className="flex text-xs items-center gap-1">
-                  <Clock size={12} />{" "}
-                  <span> {event?.start_time?.slice(0, 5)} - </span>
-                  <span> {event?.end_time?.slice(0, 5)} </span>
-                </div>
-                <span className="opacity-80"></span>
-              </div>
-            </div>
-          )}
-          {!event?.minmized && event?.description && (
-            <div className="my-2 text-sm">{event?.description} </div>
-          )}
-
-          {!event?.minmized && (
-            <div className="text-xs space-y-1 mt-2">
-              <div className="flex items-center">
-                <CalendarIcon className="mr-1 h-3 w-3" />
-                {event.start_time}
-              </div>
-              <div className="flex items-center">
-                <ClockIcon className="mr-1 h-3 w-3" />
-                {event?.end_time}
-              </div>
-            </div>
-          )}
-        </div>
+        )}
       </div>
     </div>
   );
 }
+
+const EventItem = ({
+  event,
+  level,
+  color,
+  parallel = false,
+}: {
+  event: EventStyledProps;
+  level: any;
+  color: string;
+  parallel?: boolean;
+}) => {
+  return (
+    <div className="flex flex-col h-full ">
+      <div className="flex">
+        <div className="font-semibold w-full text-xs truncate">
+          <div className="flex justify-between w-full">
+            <div className="flex items-center gap-2">
+              <p>
+                {event?.customer?.nickname}{" "}
+                {mobileFormatter(event?.customer?.mobile ?? "")}
+              </p>
+              <level.Icon color={`${level.textColor}`} size={14} />
+            </div>
+            {event?.order_status &&
+              OrderStatusValues[event?.order_status as OrderStatus]}
+          </div>
+        </div>
+      </div>
+      <div className="font-semibold text-xs truncate mb-1 ">
+        {event?.details?.map((e, i) => {
+          return (
+            <div
+              key={i}
+              className={cn(
+                "flex justify-between gap-2 my-1",
+                parallel && "flex-col "
+              )}
+            >
+              <div className="flex items-center gap-1">
+                <p className="text-wrap">{e.service_name ?? "-"}</p>
+              </div>
+              <div className="flex">
+                <div className="flex text-xs items-center gap-1">
+                  <Clock size={12} />{" "}
+                  <span> {e?.start_time?.slice(0, 5)} - </span>
+                  <span> {e?.end_time?.slice(0, 5)} </span>
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {event.description && (
+        <div className="my-2 text-xs ">
+          <b>Tip massage:</b> {event?.description}{" "}
+        </div>
+      )}
+      {event?.minmized && !parallel && (
+        <div className="flex flex-col">
+          <div className="text-[10px] flex justify-between">
+            <div className="flex text-xs items-center gap-1">
+              <Clock size={12} />{" "}
+              <span> {event?.start_time?.slice(0, 5)} - </span>
+              <span> {event?.end_time?.slice(0, 5)} </span>
+            </div>
+            <span className="opacity-80"></span>
+          </div>
+        </div>
+      )}
+      {!event?.minmized && event?.description && (
+        <div className="my-2 text-sm">{event?.description} </div>
+      )}
+
+      {!event?.minmized && (
+        <div className="text-xs space-y-1 mt-2">
+          <div className="flex items-center">
+            <CalendarIcon className="mr-1 h-3 w-3" />
+            {event.start_time}
+          </div>
+          <div className="flex items-center">
+            <ClockIcon className="mr-1 h-3 w-3" />
+            {event?.end_time}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};

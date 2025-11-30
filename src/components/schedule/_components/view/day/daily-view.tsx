@@ -426,6 +426,12 @@ export default function DailyView({
                             // exit={{ opacity: 0, scale: 0.95 }}
                             // transition={{ duration: 0.2 }}
                           >
+                            {/* {event.details &&
+                            event.details?.length > 1 &&
+                            [...new Set(event.details.map((d) => d.user_id))]
+                              .length > 1 ? (
+                              <>{}</>
+                            ) : ( */}
                             <EventStyled
                               onDelete={deleteOrder}
                               send={send}
@@ -438,6 +444,7 @@ export default function DailyView({
                               }}
                               CustomEventModal={CustomEventModal}
                             />
+                            {/* )} */}
                           </motion.div>
                         );
                       })

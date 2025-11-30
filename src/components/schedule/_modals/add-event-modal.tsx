@@ -249,7 +249,6 @@ export default function AddEventModal({
       .map(([er, v], i) => {
         if (er == "details")
           return Object.values(v as any).map((a: any) => {
-            console.log(a);
             return Object.values(a).map((b: any) => b.message);
           });
         if ((v as any)?.message) {
@@ -291,7 +290,6 @@ export default function AddEventModal({
     const updated = current.map((item, i) =>
       i === index ? { ...item, [key]: value } : item
     );
-
     form.setValue("details", updated);
   };
 
@@ -616,7 +614,8 @@ export default function AddEventModal({
                                     updateDetail(i, v, "user_id");
                                   } else {
                                     updateDetail(0, v, "user_id");
-                                    updateDetail(1, v, "user_id");
+                                    if (details.length == 2)
+                                      updateDetail(1, v, "user_id");
                                   }
                                 },
                                 name: "",

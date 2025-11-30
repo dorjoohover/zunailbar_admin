@@ -44,7 +44,7 @@ export interface Order {
   paid_amount: number;
   created_at?: Date;
   customer?: User;
-
+  details?: IOrderDetail[];
   updated_at?: Date;
 }
 
@@ -57,8 +57,8 @@ export interface IOrderDetail {
   min_price?: number;
   service_name?: string;
   user_id?: string;
-  start_time?: string
-  end_time?: string
+  start_time?: string;
+  end_time?: string;
   duration?: number;
   duplicated?: boolean;
   category?: number | null;
