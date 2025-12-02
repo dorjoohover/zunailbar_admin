@@ -216,9 +216,9 @@ export default function SchedulerViewFilteration({
   return (
     <div className="flex w-full flex-col">
       <div className="daily-weekly-monthly-selection relative w-full">
-        <div className="flex items-center justify-between space-x-2 mb-0">
-          <div className="flex gap-2 items-end">
-            <label>
+        <div className="flex items-center justify-between w-full gap-4 mb-0">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 w-full gap-2">
+            <label className="min-w-[150px]">
               <span className="filter-label">Огноо</span>
 
               <DatePicker
@@ -238,7 +238,7 @@ export default function SchedulerViewFilteration({
                 }}
               />
             </label>
-            <label className="w-full maw-[300px]">
+            <label className="w-full maw-[300px] min-w-[150px]">
               <span className="filter-label">Салбар</span>
               <ComboBox
                 props={{
@@ -257,7 +257,7 @@ export default function SchedulerViewFilteration({
                 })}
               />
             </label>
-            <label className="w-full maw-[300px]">
+            <label className="w-full maw-[300px] min-w-[150px]">
               <span className="filter-label">Артист</span>
               <ComboBox
                 props={{
@@ -284,7 +284,7 @@ export default function SchedulerViewFilteration({
               />
             </label>
 
-            <label className="w-full maw-[300px]">
+            <label className="w-full maw-[300px] min-w-[150px]">
               <span className="filter-label">Төлөв</span>
               <ComboBox
                 props={{
@@ -302,6 +302,8 @@ export default function SchedulerViewFilteration({
                 })}
               />
             </label>
+          </div>
+          <div className="grid grid-cols-1 md:flex gap-2 items-end">
             <Button
               variant="ghost"
               onClick={() => {
@@ -413,19 +415,19 @@ export default function SchedulerViewFilteration({
                 Excel
               </Button>
             )}
-          </div>
-          <div className="flex items-center justify-end gap-2 mt-2 max-w-lg w-full">
-            <Switch
-              checked={filter?.list}
-              onCheckedChange={(val) => setFilter("list", val)}
-              id="compare-switch"
-            />
-            <label
-              htmlFor="compare-switch"
-              className="text-sm text-muted-foreground"
-            >
-              Жагсаалтаар харах
-            </label>
+            <div className="flex items-center justify-center sm:justify-end gap-2 mt-2 max-w-md md:max-w-lg w-full">
+              <Switch
+                checked={filter?.list}
+                onCheckedChange={(val) => setFilter("list", val)}
+                id="compare-switch"
+              />
+              <label
+                htmlFor="compare-switch"
+                className="text-sm text-muted-foreground hidden sm:block"
+              >
+                Жагсаалтаар харах
+              </label>
+            </div>
           </div>
         </div>
         <div className="divide-x-gray"></div>
@@ -446,7 +448,7 @@ export default function SchedulerViewFilteration({
             className={cn("w-full gap-0", classNames?.tabs)}
           >
             <>
-              <div className="grid grid-cols-6 gap-1 mb-4">
+              <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-1 mb-4">
                 {values.user.map((user, i) => {
                   const [mobile, nickname, branch, color] =
                     user.value?.split("__");

@@ -259,3 +259,8 @@
     @apply bg-background text-foreground;
   }
 }
+
+.scrollarea table {
+  display: block;
+  width: 100%;
+}

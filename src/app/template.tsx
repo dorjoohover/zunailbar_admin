@@ -52,7 +52,7 @@ export default function Template({
   }, [token]);
 
   return (
-    <div className="w-full">
+    <div className="w-full max-w-screen">
       {pathname != "/login" && <SidebarTrigger />}
 
       {children}
