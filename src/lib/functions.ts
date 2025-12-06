@@ -249,7 +249,7 @@ export const money = (value: string, currency = "") => {
     .toString()
     .replaceAll(",", "")
     .toString()
-    .replace(/\B(?=(\d{3})+(?!\d))/g, ",")}${currency && ' '}${currency}`;
+    .replace(/\B(?=(\d{3})+(?!\d))/g, ",")}${currency && " "}${currency}`;
 };
 
 export function paginationToQuery(
@@ -289,6 +289,12 @@ export const firstLetterUpper = (value: string) => {
   if (value.length == 0) return value;
   return `${value.substring(0, 1).toUpperCase()}${value.substring(1)}`;
 };
+export function toYMD(d: Date) {
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
 
 export const textValue = (value: string) => {
   return firstLetterUpper(VALUES[value]);

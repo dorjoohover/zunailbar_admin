@@ -7,67 +7,63 @@ import {
   DEFAULT_PG,
   ListDefault,
   Option,
-  getEnumValues,
   EmployeeStatusValue,
 } from "@/lib/constants";
 import { Api } from "@/utils/api";
-import { create, deleteOne, updateOne } from "@/app/(api)";
+import { create, updateOne } from "@/app/(api)";
 import { ComboBox } from "@/shared/components/combobox";
 import { fetcher } from "@/hooks/fetcher";
-import { User } from "@/models";
+import { Branch } from "@/models";
 import { mobileFormatter, toYMD, usernameFormatter } from "@/lib/functions";
-import { ScheduleStatus, EmployeeStatus } from "@/lib/enum";
+import { EmployeeStatus } from "@/lib/enum";
 import DynamicHeader from "@/components/dynamicHeader";
-import { ArtistLeave, IArtistLeave } from "@/models/artist.leaves.model";
+import { BranchLeave, IBranchLeave } from "@/models/branch.leaves.model";
 import { FilterType } from "@/app/orders/components";
 import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
-import { isAfter, isBefore, isSameDay } from "date-fns";
+import { isSameDay } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { showToast } from "@/shared/components/showToast";
 
-export const ArtistLeavePage = ({
+export const BranchLeavePage = ({
   data,
-  users,
+  branches,
 }: {
-  data: ListType<ArtistLeave>;
-  users: ListType<User>;
+  data: ListType<BranchLeave>;
+  branches: ListType<Branch>;
 }) => {
-  const [artistLeaves, setArtistLeaves] =
-    useState<ListType<ArtistLeave>>(ListDefault);
-  const userMap = useMemo(
-    () => new Map(users.items.map((b) => [b.id, b])),
-    [users.items]
+  const [branchLeaves, setBranchLeaves] =
+    useState<ListType<BranchLeave>>(ListDefault);
+  const branchMap = useMemo(
+    () => new Map(branches.items.map((b) => [b.id, b])),
+    [branches.items]
   );
   const [action, setAction] = useState(ACTION.DEFAULT);
 
-  const pendingScheduleFormatter = (data: ListType<ArtistLeave>) => {
-    const items: ArtistLeave[] = data.items.map((item) => {
-      const user = userMap.get(item.artist_id);
+  const pendingScheduleFormatter = (data: ListType<BranchLeave>) => {
+    const items: BranchLeave[] = data.items.map((item) => {
+      const branch = branchMap.get(item.branch_id);
 
       return {
         ...item,
-        user_name: user ? usernameFormatter(user) : "",
+        branch_name: branch?.name ?? "",
       };
     });
 
-    setArtistLeaves({ items, count: data.count });
+    setBranchLeaves({ items, count: data.count });
   };
   useEffect(() => {
     pendingScheduleFormatter(data);
   }, [data]);
 
   const [selectedDate, setSelectedDate] = useState<Date[]>([]);
-  const [selectedStatus, setSelectedStatus] = useState<EmployeeStatus>(
-    EmployeeStatus.VACATION
-  );
 
   const refresh = async (pg: PG = DEFAULT_PG) => {
     setAction(ACTION.RUNNING);
     setSelectedDate([]);
     const { page, limit, sort } = pg;
-    await fetcher<ArtistLeave>(Api.artist_leaves, {
-      artist_id: filter.artist,
+    await fetcher<BranchLeave>(Api.branch_leaves, {
+      branch_id: filter.branch,
       //   name: pg.filter,
     }).then((d) => {
       pendingScheduleFormatter(d);
@@ -76,28 +72,23 @@ export const ArtistLeavePage = ({
     setAction(ACTION.DEFAULT);
   };
   const onSubmit = async (edit = false) => {
-    if (selectedStatus == null || !selectedStatus) {
-      showToast("info", "Статус сонгоно уу");
-      return;
-    }
     setAction(ACTION.RUNNING);
     const formatted = selectedDate.map(toYMD);
     const body = {
-      artist_id: filter.artist,
+      branch_id: filter.branch,
       dates: formatted,
-      status: selectedStatus,
-    } as IArtistLeave;
+    } as IBranchLeave;
     const { ...payload } = body;
     const res = edit
-      ? await updateOne<ArtistLeave>(
-          Api.artist_leaves,
-          filter.artist ?? "",
-          payload as unknown as ArtistLeave,
-          "artist"
+      ? await updateOne<BranchLeave>(
+          Api.branch_leaves,
+          filter.branch ?? "",
+          payload as unknown as BranchLeave,
+          "branch"
         )
-      : await create<ArtistLeave>(
-          Api.artist_leaves,
-          payload as unknown as ArtistLeave
+      : await create<BranchLeave>(
+          Api.branch_leaves,
+          payload as unknown as BranchLeave
         );
     if (res.success) {
       showToast("info", "Амжилттай");
@@ -108,7 +99,7 @@ export const ArtistLeavePage = ({
   };
 
   const [filter, setFilter] = useState<FilterType>({
-    artist: users.items[0].id,
+    branch: branches.items[0].id,
   });
   const changeFilter = (key: string, value: number | string) => {
     setFilter((prev) => ({ ...prev, [key]: value }));
@@ -126,18 +117,18 @@ export const ArtistLeavePage = ({
     useMemo(
       () => [
         {
-          key: "artist",
-          label: "Артист",
-          items: users.items.map((b) => ({
+          key: "branch",
+          label: "Салбар",
+          items: branches.items.map((b) => ({
             value: b.id,
-            label: `${usernameFormatter(b)} ${mobileFormatter(b.mobile ?? "")}`,
+            label: b.name ?? "-",
           })),
         },
       ],
-      [users.items]
+      [branches.items]
     );
 
-  const statusList = [EmployeeStatus.VACATION, EmployeeStatus.DEKIRIT] as const;
+  const statusList = [EmployeeStatus.VACATION] as const;
 
   const modifiers: Record<string, (date: Date) => boolean> = {
     today: (date: Date) => isSameDay(date, new Date()),
@@ -146,26 +137,21 @@ export const ArtistLeavePage = ({
 
   statusList.forEach((status) => {
     modifiers[status] = (date: Date) =>
-      artistLeaves.items.some((al) => {
+      branchLeaves.items.some((al) => {
         return (
-          isSameDay(date, al?.date ?? "") &&
-          isSameDay(date, al?.date ?? "") &&
-          al.status === status
+          isSameDay(date, al?.date ?? "") && isSameDay(date, al?.date ?? "")
         );
       });
   });
   const modifiersStyles = {
-    ...[EmployeeStatus.DEKIRIT, EmployeeStatus.VACATION].reduce(
-      (acc, status) => {
-        const { bg, text } = EmployeeStatusValue[status];
-        acc[status] = {
-          backgroundColor: bg,
-          color: text,
-        };
-        return acc;
-      },
-      {} as Record<string, { backgroundColor: string; color: string }>
-    ),
+    ...[EmployeeStatus.VACATION].reduce((acc, status) => {
+      const { bg, text } = EmployeeStatusValue[status];
+      acc[status] = {
+        backgroundColor: bg,
+        color: text,
+      };
+      return acc;
+    }, {} as Record<string, { backgroundColor: string; color: string }>),
     selected: {
       // backgroundColor: "#000",
       color: "#f1f",
@@ -186,7 +172,7 @@ export const ArtistLeavePage = ({
 
   return (
     <div className="">
-      <DynamicHeader count={artistLeaves?.count} />
+      <DynamicHeader count={branchLeaves?.count} />
 
       <div className="admin-container">
         {groups.map((item, i) => {
@@ -215,7 +201,7 @@ export const ArtistLeavePage = ({
           );
         })}
         <div className="grid gap-2 grid-cols-12 mt-10 mb-6">
-          {[EmployeeStatus.DEKIRIT, EmployeeStatus.VACATION].map((status) => {
+          {[EmployeeStatus.VACATION].map((status) => {
             const { color, name, bg } = EmployeeStatusValue[status];
             return (
               <div key={status} className="flex gap-2 items-center">
@@ -237,31 +223,7 @@ export const ArtistLeavePage = ({
           />
           {selectedDate?.length > 0 && (
             <div className="flex justify-between max-w-147 items-center mt-8">
-              <label>
-                <span className="filter-label">{"Статус"}</span>
-                <ComboBox
-                  pl={"Статус"}
-                  name={"Статус"}
-                  className="min-w-50 max-w-50 w-full text-xs!"
-                  value={selectedStatus?.toString()}
-                  items={[EmployeeStatus.VACATION, EmployeeStatus.DEKIRIT].map(
-                    (status) => {
-                      const { name } = EmployeeStatusValue[status];
-                      return {
-                        label: name,
-                        value: status,
-                      };
-                    }
-                  )}
-                  props={{
-                    value: selectedStatus?.toString(),
-                    onChange: (val: string) => setSelectedStatus(+val),
-                    onBlur: () => {},
-                    name: "status",
-                    ref: () => {},
-                  }}
-                />
-              </label>
+              <label></label>
               <div className="flex gap-2">
                 <Button onClick={() => onSubmit(true)} className="bg-red-500">
                   Устгах

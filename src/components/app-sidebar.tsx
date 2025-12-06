@@ -93,11 +93,11 @@ export const sidebar_items = [
             icon: SquareUserRound,
             url: "/employees/salary",
           },
-          // {
-          //   title: "Ажилтны чөлөө авах хүсэлт",
-          //   icon: SquareUserRound,
-          //   url: "/employees/free",
-          // },
+          {
+            title: "Ажилтны амралт",
+            icon: SquareUserRound,
+            url: "/employees/free",
+          },
         ],
       },
       {
@@ -199,6 +199,11 @@ export const sidebar_items = [
             url: "/booking/employee",
             // icon: Milk,
           },
+          {
+            title: "Салбарын амралт",
+            url: "/booking/free",
+            // icon: Milk,
+          },
         ],
       },
 
@@ -284,34 +289,34 @@ export const sidebar_items = [
           },
         ],
       },
-      {
-        label: "Ажилчин",
-        triggerLabel: "Ажилчин",
-        url: "/",
-        icon: UserRound,
-        children: [
-          // {
-          //   title: "Хянах самбар",
-          //   url: "/employee",
-          //   icon: Milk,
-          // },
-          {
-            title: "Цагийн хуваарь",
-            url: "/employee",
-            // icon: Milk,
-          },
-          {
-            title: "Цалин",
-            url: "/employee/salary",
-            // icon: Milk,
-          },
-          // {
-          //   title: "Чөлөөний хүсэлт",
-          //   url: "/employee/leave-request",
-          //   // icon: Milk,
-          // },
-        ],
-      },
+      // {
+      //   label: "Ажилчин",
+      //   triggerLabel: "Ажилчин",
+      //   url: "/",
+      //   icon: UserRound,
+      //   children: [
+      //     // {
+      //     //   title: "Хянах самбар",
+      //     //   url: "/employee",
+      //     //   icon: Milk,
+      //     // },
+      //     {
+      //       title: "Цагийн хуваарь",
+      //       url: "/employee",
+      //       // icon: Milk,
+      //     },
+      //     {
+      //       title: "Цалин",
+      //       url: "/employee/salary",
+      //       // icon: Milk,
+      //     },
+      //     // {
+      //     //   title: "Чөлөөний хүсэлт",
+      //     //   url: "/employee/leave-request",
+      //     //   // icon: Milk,
+      //     // },
+      //   ],
+      // },
     ],
   },
 ];

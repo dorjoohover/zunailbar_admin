@@ -26,6 +26,7 @@ import {
   numberArray,
   totalHours,
   toTimeString,
+  toYMD,
 } from "@/lib/functions";
 import { TextField } from "@/shared/components/text.field";
 import { showToast } from "@/shared/components/showToast";
@@ -36,6 +37,7 @@ import { FormItem, FormLabel } from "@/components/ui/form";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { LoaderMini } from "@/components/loader";
+import { Slot } from "@/models/slot.model";
 const defaultValues = {
   branch_id: undefined,
   user_id: undefined,
@@ -171,6 +173,9 @@ export default function AddEventModal({
     resolver: zodResolver(eventSchema),
     defaultValues: values ?? defaultValues,
   });
+  const [slots, setSlots] = useState<Slot[]>([]);
+
+  const [artists, setArtists] = useState(allItems.user);
   const branchId = form.watch("branch_id");
   const customerId = form.watch("customer_id");
   useEffect(() => {
@@ -194,10 +199,25 @@ export default function AddEventModal({
       cancelled = true;
     };
   }, [customerId]);
+  const getAvailableSlot = async () => {
+    const res = await find<Slot>(Api.slots, {
+      branch_id: branchId,
+      // artist_id: ,
+      // artists
+    });
+    const { items } = res.data;
+    setSlots(items);
+    const users = allItems.user.filter((u) =>
+      items.some((slot) => slot.artist_id === u.id)
+    );
+
+    setArtists(users);
+  };
   useEffect(() => {
     let cancelled = false;
 
     if (branchId) {
+      getAvailableSlot();
       listField<Service>({
         api: Api.service,
         onChange: (data) => {
@@ -225,7 +245,6 @@ export default function AddEventModal({
 
   const onSubmit: SubmitHandler<EventFormData> = (formData) => {
     const st = (formData.start_time as string)?.slice(0, 2);
-
     const newEvent = {
       branch_id: formData.branch_id,
       details: formData.details,
@@ -242,7 +261,7 @@ export default function AddEventModal({
     } as IOrder;
     send(newEvent);
 
-    setClose();
+    // setClose();
   };
   const onInvalid = async <T,>(e: T) => {
     const error = Object.entries(e as any)
@@ -433,30 +452,32 @@ export default function AddEventModal({
                 );
               }}
             </FormItems>
-            <FormItems
-              control={form.control}
-              name="start_time"
-              label="Эхлэх цаг"
-            >
-              {(field) => {
-                field.value = field.value
-                  ? +field.value?.toString().slice(0, 2)
-                  : field.value;
-                return (
-                  <ComboBox
-                    props={{ ...field }}
-                    items={numberArray(totalHours).map((item) => {
-                      const value = item + 6;
+            {slots.length > 0 && (
+              <FormItems
+                control={form.control}
+                name="start_time"
+                label="Эхлэх цаг"
+              >
+                {(field) => {
+                  field.value = field.value
+                    ? +field.value?.toString().slice(0, 2)
+                    : field.value;
+                  return (
+                    <ComboBox
+                      props={{ ...field }}
+                      items={numberArray(totalHours).map((item) => {
+                        const value = item + 6;
 
-                      return {
-                        value: value.toString(),
-                        label: toTimeString(value),
-                      };
-                    })}
-                  />
-                );
-              }}
-            </FormItems>
+                        return {
+                          value: value.toString(),
+                          label: toTimeString(value),
+                        };
+                      })}
+                    />
+                  );
+                }}
+              </FormItems>
+            )}
           </div>
         </div>
         <div className="border p-2 rounded-md">
@@ -540,6 +561,11 @@ export default function AddEventModal({
             )}
           </div>
         </div>
+        {slots.length == 0 && (
+          <div className="flex justify-center col-span-2 py-4 m-2 rounded-md bg-primary/10 border border-primary/50">
+            <p className="text-sm">Цаг байхгүй.</p>
+          </div>
+        )}
         {details?.length > 0 && (
           <div className="border-t">
             <div className="flex justify-between items-center">
@@ -577,14 +603,6 @@ export default function AddEventModal({
             </div>
             <div>
               {details.map((detail, i) => {
-                const users = allItems.user;
-                const user = users.filter((u) => detail?.user_id == u.id)?.[0];
-                const [mobile, nickname] = user?.value?.split("__") ?? [
-                  "",
-                  "",
-                  "",
-                  "",
-                ];
                 return (
                   <div key={i} className="border rounded-md px-3 py-3">
                     <p className="mb-3">{detail.service_name}</p>
@@ -596,10 +614,10 @@ export default function AddEventModal({
                             <FormLabel>Артист</FormLabel>
                             <ComboBox
                               className="max-w-xs"
-                              items={users.map((b, i) => {
-                                const [mobile, nickname] = b?.value?.split(
-                                  "__"
-                                ) ?? ["", "", "", ""];
+                              items={artists.map((b, i) => {
+                                const [mobile, nickname, branch] =
+                                  b?.value?.split("__") ?? ["", "", "", ""];
+
                                 return {
                                   label: `${firstLetterUpper(
                                     nickname

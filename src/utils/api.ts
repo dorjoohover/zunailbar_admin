@@ -9,7 +9,7 @@ const BASE = process.env.API
   ? process.env.API?.endsWith("/")
     ? process.env.API
     : process.env.API + "/"
-  : // : "http://localhost:4000/api/v1/";
+  : // : "http://localhost:5000/api/v1/";
     "https://api.zunailbar.mn/api/v1/";
 
 export enum Api {
@@ -28,6 +28,9 @@ export enum Api {
   salary_log = "salary_log",
   service = "service",
   schedule = "schedule",
+  artist_leaves = "artist_leaves",
+  branch_leaves = "branch_leaves",
+  slots = "slots",
   booking = "booking",
   branch_service = "branch_service",
   voucher = "voucher",
@@ -51,6 +54,9 @@ export const API = {
   [Api.discount]: BASE + "discount",
   [Api.register]: BASE + "register",
   [Api.warehouse]: BASE + "warehouse",
+  [Api.artist_leaves]: BASE + "artist_leaves",
+  [Api.branch_leaves]: BASE + "branch_leaves",
+  [Api.slots]: BASE + "slots",
   [Api.salary_log]: BASE + "salary_log",
   [Api.product_warehouse]: BASE + "product_warehouse",
   [Api.cost]: BASE + "cost",

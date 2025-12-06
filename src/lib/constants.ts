@@ -110,11 +110,36 @@ export const zNumOpt = ({
     .optional() as unknown as number;
 };
 export const EmployeeStatusValue = {
-  [EmployeeStatus.ACTIVE]: { name: "Идэвхтэй", color: "green-badge badge" },
-  [EmployeeStatus.FIRED]: { name: "Ажлаас гарсан", color: "slate-badge badge" },
-  [EmployeeStatus.DEKIRIT]: { name: "Декирит", color: "red-badge badge" },
-  [EmployeeStatus.VACATION]: { name: "Амарсан", color: "yellow-badge badge" },
-  [EmployeeStatus.BANNED]: { name: "Идэвхгүй", color: "red-badge badge" },
+  [EmployeeStatus.ACTIVE]: {
+    name: "Идэвхтэй",
+    color: "green-badge badge",
+    bg: "oklch(92.5% 0.084 155.995)",
+    text: "oklch(52.7% 0.154 150.069)",
+  },
+  [EmployeeStatus.FIRED]: {
+    name: "Ажлаас гарсан",
+    color: "slate-badge badge",
+    bg: "oklch(92.9% 0.013 255.508)",
+    text: "oklch(37.2% 0.044 257.287)",
+  },
+  [EmployeeStatus.DEKIRIT]: {
+    name: "Декирит",
+    color: "red-badge badge",
+    bg: "oklch(88.5% 0.062 18.334)",
+    text: "oklch(50.5% 0.213 27.518)",
+  },
+  [EmployeeStatus.VACATION]: {
+    name: "Амарсан",
+    color: "yellow-badge badge",
+    bg: "oklch(92.4% 0.12 95.746)",
+    text: "oklch(42.1% 0.095 57.708)",
+  },
+  [EmployeeStatus.BANNED]: {
+    name: "Идэвхгүй",
+    color: "red-badge badge",
+    bg: "oklch(88.5% 0.062 18.334)",
+    text: "oklch(50.5% 0.213 27.518)",
+  },
 };
 export type Option<T = string | number> = { value: T; label: string };
 

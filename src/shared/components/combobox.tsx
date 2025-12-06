@@ -79,8 +79,8 @@ export function ComboBox<T extends FieldValues>({
           role="combobox"
           aria-expanded={open}
           className={cn(
-            className,
-            "min-w-32 lg:min-h-10 justify-between bg-white text-xs w-full lg:text-sm"
+            "min-w-32 lg:min-h-10 justify-between bg-white text-xs w-full lg:text-sm",
+            className
           )}
         >
           {selectedValue
@@ -104,7 +104,7 @@ export function ComboBox<T extends FieldValues>({
               className="h-9"
             />
           )}
-          <CommandList className="max-h-60">
+          <CommandList className="max-h-60 min-w-60">
             <CommandEmpty>Хайлт олдсонгүй</CommandEmpty>
             <CommandGroup>
               {items.map((framework) => {

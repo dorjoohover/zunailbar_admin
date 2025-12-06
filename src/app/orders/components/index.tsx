@@ -24,6 +24,7 @@ import { Button } from "@/components/ui/button";
 import { Check } from "lucide-react";
 import { AppAlertDialog } from "@/components/AlertDialog";
 import { DateRange } from "react-day-picker";
+import { Slot } from "@/models/slot.model";
 
 export type FilterType = {
   status?: OrderStatus;
@@ -46,7 +47,7 @@ export const OrderPage = ({
 }) => {
   const [action, setAction] = useState(ACTION.DEFAULT);
   const [orders, setOrders] = useState<ListType<Order>>(ListDefault);
-  const [filter, setFilter] = useState<FilterType>();
+  const [filter, setFilter] = useState<FilterType>({});
   const changeFilter = (
     key: string,
     value: number | string | undefined | boolean
@@ -113,19 +114,21 @@ export const OrderPage = ({
     const { edit, ...body } = e as any;
 
     const payload = { ...body };
+    console.log(body.start_time);
     const res = edit
       ? await updateOne<Order>(
           Api.order,
           edit ?? "",
           {
             ...payload,
-            start_time: toTimeString(payload.start_time),
+            start_time: +payload.start_time,
             // order_date: mnDate(payload.order_date),
           } as unknown as Order,
           "update"
         )
       : await create(Api.order, {
           ...payload,
+          start_time: +body.start_time,
         } as unknown as Order);
     if (res.success) {
       refresh();
