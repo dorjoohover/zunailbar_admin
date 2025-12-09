@@ -1,10 +1,10 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
-  // reactStrictMode: false,
+  // eslint: {
+  //   ignoreDuringBuilds: true,
+  // },
+  reactStrictMode: false,
   images: {
     domains: ["api.zunailbar.mn", "localhost"],
   },
