@@ -339,6 +339,7 @@ export const EmployeePage = ({
               setOpen={(v) => {
                 setOpen(v);
                 setEditingUser(null);
+                if(!editingUser) form.reset(defaultValues)
               }}
               loading={action == ACTION.RUNNING}
             >

@@ -77,10 +77,8 @@ export default function EventStyled({
   CustomEventModal,
   values,
   send,
-  width,
   index = 1,
 }: {
-  width: string;
   values: {
     branch: SearchType<Branch>[];
     customer: SearchType<User>[];
@@ -101,7 +99,11 @@ export default function EventStyled({
         <AddEventModal
           send={send}
           items={values}
-          values={{ ...event, edit: event.id }}
+          values={{
+            ...event,
+            start_time: event.start_time?.slice(0, 2),
+            edit: event.id,
+          }}
         />
       </CustomModal>,
       async () => {
@@ -124,8 +126,7 @@ export default function EventStyled({
   const ref = useRef(null);
   const [hovered, setHovered] = useState(false);
   const hour = +(event.start_time?.slice(0, 2) ?? "0");
-  const baseZ = Math.ceil(1 * hour);
-  const maw = +width.replace("%", "") < 20 ? "280px" : "350px";
+  const baseZ = Math.ceil(1 * hour) + index;
   return (
     <div
       key={event?.id}
@@ -133,11 +134,15 @@ export default function EventStyled({
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       className={cn(
-        `w-full transaction-all duration-300 relative cursor-pointer  group rounded-lg flex flex-col flex-grow hover:shadow-md transition-shadow duration-200 bg-transparent max-w-[350px]`,
-        event?.minmized ? "border-white" : "border-default-400/60"
+        `w-full transaction-all duration-300 relative h-full cursor-pointer  group rounded-lg flex flex-col flex-grow hover:shadow-md transition-shadow duration-200  `
+        // max-w-[350px]
       )}
       style={{
         zIndex: hovered ? 50 : baseZ,
+        borderTop: "2px #fff solid",
+        borderBottom: "2px #fff solid",
+        borderLeft: "1px #fff solid",
+        borderRight: "1px #fff solid",
       }}
     >
       <AppDialog
@@ -163,14 +168,17 @@ export default function EventStyled({
       />
       <div
         className={cn(
-          "absolute   right-0 top-[100%] min-w-[250px]   px-3 py-4 shadow-md  transition-all duration-200 bg-white",
+          "absolute   right-0 top-[115%] min-w-[250px] left-0   px-3 py-4 shadow-md  transition-all duration-200 bg-white",
           hovered ? "block" : "hidden"
         )}
-        style={{
-          maxWidth: maw,
-        }}
+        // style={{
+        //   maxWidth: maw,
+        // }}
       >
-        <div className="flex w-full " style={{ maxWidth: maw }}>
+        <div
+          className="flex w-full "
+          // style={{ maxWidth: maw }}
+        >
           <div className="font-semibold w-full text-xs truncate">
             <div className="w-full">
               <div className="flex justify-between ">
@@ -264,6 +272,7 @@ export default function EventStyled({
             is_pre_amount_paid: event.is_pre_amount_paid,
           });
         }}
+        className="h-full"
       >
         {[...new Set(event.details?.map((d) => d.user_id))].length > 1 ? (
           <div className="flex bg-transparent">
@@ -337,7 +346,7 @@ const EventItem = ({
   parallel?: boolean;
 }) => {
   return (
-    <div className="flex flex-col h-full ">
+    <div className="flex flex-col h-full">
       <div className="flex">
         <div className="font-semibold w-full text-xs truncate">
           <div className="flex justify-between w-full">

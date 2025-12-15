@@ -1,5 +1,5 @@
 import { zNumOpt, zStrOpt, ZValidator } from "@/lib/constants";
-import { OrderStatus } from "@/lib/enum";
+import { OrderStatus, PaymentMethod } from "@/lib/enum";
 import { IOrder, Order } from "@/models";
 import { Dispatch, SVGProps } from "react";
 import { z } from "zod";
@@ -37,8 +37,6 @@ export interface Handlers {
   ) => {
     height: string;
     left: string;
-    maxWidth: string;
-    minWidth: string;
     top: string;
     zIndex: number;
   };
@@ -127,7 +125,7 @@ export const eventSchema = z.object({
     label: "Захиалгын огноо",
     allowNullable: false,
   }),
-  start_time: zStrOpt({
+  start_time: zNumOpt({
     allowNullable: false,
     label: "Цаг",
   }),
@@ -138,6 +136,12 @@ export const eventSchema = z.object({
     .preprocess(
       (val) => (typeof val === "string" ? parseInt(val, 10) : val),
       z.nativeEnum(OrderStatus).nullable()
+    )
+    .optional() as unknown as number,
+  method: z
+    .preprocess(
+      (val) => (typeof val === "string" ? parseInt(val, 10) : val),
+      z.nativeEnum(PaymentMethod).nullable()
     )
     .optional() as unknown as number,
   total_amount: zNumOpt({

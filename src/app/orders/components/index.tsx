@@ -114,21 +114,20 @@ export const OrderPage = ({
     const { edit, ...body } = e as any;
 
     const payload = { ...body };
-    console.log(body.start_time);
     const res = edit
       ? await updateOne<Order>(
           Api.order,
           edit ?? "",
           {
             ...payload,
-            start_time: +payload.start_time,
+            start_time: toTimeString(payload.start_time),
             // order_date: mnDate(payload.order_date),
           } as unknown as Order,
           "update"
         )
       : await create(Api.order, {
           ...payload,
-          start_time: +body.start_time,
+          start_time: toTimeString(body.start_time),
         } as unknown as Order);
     if (res.success) {
       refresh();
@@ -203,7 +202,7 @@ export const OrderPage = ({
       <DynamicHeader count={orders?.count} />
 
       <div className="admin-container relative">
-        <div className="bg-white rounded-xl shadow-light border-light p-5">
+        <div className="bg-white rounded-xl shadow-light border-light p-0 md:p-5">
           <SchedulerProvider weekStartsOn="monday">
             <SchedulerViewFilteration
               loading={action == ACTION.RUNNING}

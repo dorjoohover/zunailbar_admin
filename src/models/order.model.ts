@@ -1,4 +1,4 @@
-import { OrderStatus } from "@/lib/enum";
+import { OrderStatus, PaymentMethod } from "@/lib/enum";
 import { UserService } from "./user.service.model";
 import { User } from "./user.model";
 
@@ -46,6 +46,7 @@ export interface Order {
   customer?: User;
   details?: IOrderDetail[];
   updated_at?: Date;
+  method?: PaymentMethod;
 }
 
 export interface IOrderDetail {

@@ -1,6 +1,12 @@
-"use client";;
+"use client";
 // SchedulerContext.tsx
-import { createContext, useContext, useReducer, ReactNode, useEffect } from "react";
+import {
+  createContext,
+  useContext,
+  useReducer,
+  ReactNode,
+  useEffect,
+} from "react";
 
 import {
   Action,
@@ -274,10 +280,10 @@ export const SchedulerProvider = ({
     } else {
       console.error("Invalid event or missing start/end dates.");
     }
-
     // Improved width and position calculation
     // Use a smaller width if we have multiple overlapping events
     const widthPercentage = Math.min(100 / Math.max(numEventsOnHour, 1), 100);
+    // const widthPercentage = 5;
 
     // Calculate left position with a small gap between events
     // const leftPosition = indexOnHour * (widthPercentage + 1);
@@ -298,11 +304,9 @@ export const SchedulerProvider = ({
           ? Math.round(maxHeight)
           : Math.round(eventHeight)
       }px`,
-      top: `${Math.round(eventTop)}px`,
+      top: `${Math.round(eventTop) + indexOnHour * 5}px`,
       zIndex: index + 1,
-      left: `${Math.round(safeLeftPosition)}%`,
-      maxWidth: `${Math.round(widthPercentage)}%`,
-      minWidth: `${Math.round(widthPercentage)}%`,
+      left: `${Math.round(safeLeftPosition)}`,
     };
   }
 

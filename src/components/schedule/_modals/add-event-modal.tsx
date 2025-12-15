@@ -8,11 +8,12 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { EventFormData, eventSchema } from "@/types/index";
 import { useScheduler } from "@/providers/schedular-provider";
 import { Branch, IOrder, Service, User } from "@/models";
-import { INPUT_TYPE, OrderStatus, ROLE } from "@/lib/enum";
+import { INPUT_TYPE, OrderStatus, PaymentMethod, ROLE } from "@/lib/enum";
 import { FormItems } from "@/shared/components/form.field";
 import { ComboBox } from "@/shared/components/combobox";
 import {
   getEnumValues,
+  getMethodValue,
   ListDefault,
   ListType,
   OrderStatusValues,
@@ -38,6 +39,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { LoaderMini } from "@/components/loader";
 import { Slot } from "@/models/slot.model";
+import { isSameDay } from "date-fns";
 const defaultValues = {
   branch_id: undefined,
   user_id: undefined,
@@ -136,14 +138,13 @@ export default function AddEventModal({
       setLoader((prev) => ({ ...prev, [api]: false }));
     }
   };
-
   const searchField = async (v: string, key: Api, edit?: boolean) => {
     if (edit && key === Api.customer) {
       form.setValue("customer_id", values?.customer_id);
     }
     const value = v;
     const details = form.watch("details") || [];
-    const branchId = form.watch("branch_id");
+
     let payload: Record<string, any> = {};
     if (key === Api.branch) {
       payload = { name: value };
@@ -244,7 +245,7 @@ export default function AddEventModal({
   }, [data, form.reset, values]);
 
   const onSubmit: SubmitHandler<EventFormData> = (formData) => {
-    const st = (formData.start_time as string)?.slice(0, 2);
+    const st = formData.start_time;
     const newEvent = {
       branch_id: formData.branch_id,
       details: formData.details,
@@ -261,9 +262,10 @@ export default function AddEventModal({
     } as IOrder;
     send(newEvent);
 
-    // setClose();
+    setClose();
   };
   const onInvalid = async <T,>(e: T) => {
+    console.log(e);
     const error = Object.entries(e as any)
       .map(([er, v], i) => {
         if (er == "details")
@@ -439,6 +441,32 @@ export default function AddEventModal({
                 );
               }}
             </FormItems>
+            <FormItems
+              control={form.control}
+              name="method"
+              label="Төлбөрийн хэлбэр"
+            >
+              {(field) => {
+                field.value = field.value
+                  ? +field.value?.toString().slice(0, 2)
+                  : field.value;
+                return (
+                  <ComboBox
+                    props={{ ...field }}
+                    items={[
+                      PaymentMethod.BANK,
+                      PaymentMethod.CARD,
+                      PaymentMethod.CASH,
+                    ].map((item) => {
+                      return {
+                        value: item.toString(),
+                        label: getMethodValue[item],
+                      };
+                    })}
+                  />
+                );
+              }}
+            </FormItems>
           </div>
         </div>
         <div className="border-t ">
@@ -459,18 +487,43 @@ export default function AddEventModal({
                 label="Эхлэх цаг"
               >
                 {(field) => {
+                  let slot = [...slots];
+
+                  // 1️⃣ Branch filter
+                  if (branchId) {
+                    slot = slot.filter(
+                      (s) =>
+                        s.branch_id === branchId &&
+                        isSameDay(s.date, form.getValues("order_date") as any)
+                    );
+                  }
+
+                  // 2️⃣ Artist filter
+                  const artistIds = details
+                    ?.map((d) => d.user_id)
+                    .filter(Boolean);
+                  if (artistIds?.length) {
+                    slot = slot.filter(
+                      (s) =>
+                        artistIds.includes(s.artist_id) &&
+                        isSameDay(s.date, form.getValues("order_date") as any)
+                    );
+                  }
+                  const availableSlots = new Set(
+                    [...slot.flatMap((s) => s.slots), field.value].filter(
+                      Boolean
+                    )
+                  );
                   field.value = field.value
                     ? +field.value?.toString().slice(0, 2)
                     : field.value;
                   return (
                     <ComboBox
                       props={{ ...field }}
-                      items={numberArray(totalHours).map((item) => {
-                        const value = item + 6;
-
+                      items={[...availableSlots].sort().map((item) => {
                         return {
-                          value: value.toString(),
-                          label: toTimeString(value),
+                          value: item?.toString(),
+                          label: toTimeString(item),
                         };
                       })}
                     />

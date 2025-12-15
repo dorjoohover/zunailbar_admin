@@ -172,9 +172,7 @@ const groupEventsByTimePeriod = (events: Order[] | undefined) => {
 export default function DailyView({
   prevButton,
   nextButton,
-  CustomEventComponent,
   CustomEventModal,
-  stopDayEventSummary,
   loading,
   events,
   deleteOrder,
@@ -204,13 +202,11 @@ export default function DailyView({
   stopDayEventSummary?: boolean;
   classNames?: { prev?: string; next?: string; addEvent?: string };
 }) {
-  const hoursColumnRef = useRef<HTMLDivElement>(null);
-  const [timelinePosition, setTimelinePosition] = useState<number>(0);
   const nextDate = filter?.date?.to ?? new Date();
   const currentDate = filter?.date?.from ?? new Date();
   const [direction, setDirection] = useState<number>(0);
   const { setOpen } = useModal();
-  const { getters, handlers } = useScheduler();
+  const { handlers } = useScheduler();
   const orderMap = useMemo(() => {
     const map = new Map<string, Order[]>();
     events.forEach((ev) => {
@@ -226,31 +222,18 @@ export default function DailyView({
     [currentDate]
   );
 
-  const dayEvents = getters.getEventsForDay(
-    currentDate?.getDate() || 0,
-    currentDate
-  );
-
-  // Calculate time groups once for all events
-  const timeGroups = groupEventsByTimePeriod(dayEvents);
-
   function handleAddEvent(event?: IOrder) {
-    // Create the modal content with the provided event data or defaults
     const orderDate = event?.order_date || new Date();
-    // Open the modal with the content
     setOpen(
       <CustomModal title="Захиалга нэмэх" contentClass="max-w-3xl">
         <AddEventModal
           items={values}
           values={{
             order_date: event?.order_date,
-            start_time: event?.start_time,
+            start_time: event?.start_time?.slice(0, 2),
           }}
           send={send}
           loading={loading}
-          // CustomAddEventModal={
-          //   CustomEventModal?.CustomAddEventModal?.CustomForm
-          // }
         />
       </CustomModal>,
       async () => {
@@ -289,8 +272,6 @@ export default function DailyView({
 
     handleAddEvent({
       order_date: mnDateFormat(date),
-      start_time: toTimeString(hours),
-      end_time: toTimeString(hours + 1),
       branch_id: "",
       user_id: "",
     });
@@ -319,36 +300,43 @@ export default function DailyView({
   return (
     <>
       <div className="flex justify-between gap-3  mb-5">
-        <h1 className="text-3xl font-semibold mb-4">
+        <h1 className="text-xl md:text-3xl font-semibold mb-4">
           {/* title */}
           {getFormattedDayTitle()}
         </h1>
 
-        <div className="flex ml-auto gap-1">
-          {prevButton ? (
-            <div onClick={handlePrevDay}>{prevButton}</div>
-          ) : (
-            <Button
-              variant={"outline"}
-              className={classNames?.prev}
-              onClick={handlePrevDay}
-            >
-              <ChevronLeft />
-              Өмнөх
+        <div className="flex flex-col gap-2 sm:gap-4">
+          <div className="flex ml-auto gap-1">
+            {prevButton ? (
+              <div onClick={handlePrevDay}>{prevButton}</div>
+            ) : (
+              <Button
+                variant={"outline"}
+                className={classNames?.prev}
+                onClick={handlePrevDay}
+              >
+                <ChevronLeft />
+                Өмнөх
+              </Button>
+            )}
+            {nextButton ? (
+              <div onClick={handleNextDay}>{nextButton}</div>
+            ) : (
+              <Button
+                variant={"outline"}
+                className={classNames?.next}
+                onClick={handleNextDay}
+              >
+                Дараах
+                <ChevronRight />
+              </Button>
+            )}
+          </div>
+          <div className="flex justify-end">
+            <Button onClick={() => handleAddEvent()} className="w-full ">
+              Захиалга нэмэх
             </Button>
-          )}
-          {nextButton ? (
-            <div onClick={handleNextDay}>{nextButton}</div>
-          ) : (
-            <Button
-              variant={"outline"}
-              className={classNames?.next}
-              onClick={handleNextDay}
-            >
-              Дараах
-              <ChevronRight />
-            </Button>
-          )}
+          </div>
         </div>
       </div>
       <AnimatePresence initial={false} custom={direction} mode="wait">
@@ -364,13 +352,13 @@ export default function DailyView({
                   <motion.div
                     key={`hour-${index}`}
                     variants={itemVariants}
-                    className="cursor-pointer   transition duration-300  p-4 h-[64px] text-left text-sm text-muted-foreground border-default-200"
+                    className="cursor-pointer   transition duration-300 pl-1 pr-2 md:p-4 h-[64px] text-left text-xs md:text-sm  text-muted-foreground border-default-200"
                   >
                     {hour}
                   </motion.div>
                 ))}
               </div>
-              <div className="flex relative flex-grow flex-col ">
+              <div className="flex relative flex-grow flex-col overflow-auto">
                 {Array.from({ length: totalHours }, (_, i) => i + 7).map(
                   (_, index) => (
                     <div
@@ -396,48 +384,31 @@ export default function DailyView({
                           (e) => e.id === event.id
                         );
 
-                        const {
-                          height,
-                          left,
-                          maxWidth,
-                          minWidth,
-                          top,
-                          zIndex,
-                        } = handlers.handleEventStyling(event, events, {
-                          eventsInSamePeriod,
-                          periodIndex,
-                          adjustForPeriod: true,
-                        });
+                        const { height, left, top, zIndex } =
+                          handlers.handleEventStyling(event, events, {
+                            eventsInSamePeriod,
+                            periodIndex,
+                            adjustForPeriod: true,
+                          });
+
                         return (
                           <motion.div
                             key={event.id}
                             style={{
-                              minHeight: height,
                               top: top,
-                              left: left,
-                              maxWidth: maxWidth,
-                              minWidth: minWidth,
-                              padding: "0 0px",
+                              width: `${100 - +left}%`,
+                              left: `${left}%`,
+                              padding: "0px 0px",
+                              height: height,
                               boxSizing: "border-box",
                             }}
-                            className="flex transition-all duration-1000 flex-grow flex-col absolute"
-                            // initial={{ opacity: 0, scale: 0.95 }}
-                            // animate={{ opacity: 1, scale: 1 }}
-                            // exit={{ opacity: 0, scale: 0.95 }}
-                            // transition={{ duration: 0.2 }}
+                            className={` flex transition-all duration-1000 flex-grow flex-col absolute`}
                           >
-                            {/* {event.details &&
-                            event.details?.length > 1 &&
-                            [...new Set(event.details.map((d) => d.user_id))]
-                              .length > 1 ? (
-                              <>{}</>
-                            ) : ( */}
                             <EventStyled
                               onDelete={deleteOrder}
                               send={send}
                               values={values}
                               index={zIndex}
-                              width={maxWidth}
                               event={{
                                 ...event,
                                 minmized: true,

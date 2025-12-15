@@ -22,6 +22,7 @@ import {
   DISCOUNT,
   EmployeeStatus,
   OrderStatus,
+  PaymentMethod,
   ProductLogStatus,
   ProductTransactionStatus,
   ROLE,
@@ -238,6 +239,13 @@ export const getValuesUserProductStatus = {
     name: "Буцаасан",
     color: "neutral-badge badge",
   },
+};
+
+export const getMethodValue = {
+  [PaymentMethod.BANK]: "Bank",
+  [PaymentMethod.CARD]: "Card",
+  [PaymentMethod.CASH]: "Cash",
+  [PaymentMethod.P2P]: "Qpay",
 };
 
 export const getValuesStatus = {

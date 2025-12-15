@@ -111,3 +111,26 @@ export enum CostStatus {
   Paid = 10,
   Remainder = 20,
 }
+
+export enum PaymentMethod {
+  P2P = 1,
+  CASH = 2,
+  BANK = 3,
+  CARD = 4,
+}
+
+
+export enum PAYMENT_STATUS {
+  // uridchilgaa toloogui
+  Pending = 10,
+  // uridchilgaa tolson
+  Active = 20,
+
+  // duussan
+  Finished = 40,
+  // tsutsalsan
+  Cancelled = 50,
+  // tsutsalsan
+  Absent = 60,
+  Friend = 70,
+}
