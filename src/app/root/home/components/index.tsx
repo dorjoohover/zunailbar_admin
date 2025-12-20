@@ -17,6 +17,7 @@ import { firstLetterUpper, numberArray } from "@/lib/functions";
 import { Button } from "@/components/ui/button";
 import { imageUploader } from "@/app/(api)/base";
 import { showToast } from "@/shared/components/showToast";
+import { ImagePreview } from "@/components/image_preview";
 
 const homeSchema = z.object({
   image: z.string().nullable().optional(),
@@ -229,52 +230,29 @@ export const HomePage = ({ data }: { data: ListType<Home> }) => {
                       // UNIQUE input id per card
                       const inputId = `file-upload-${index}`;
 
-                      // Preview URL: File -> objectURL, else string URL
-                      const objectUrl =
-                        typeof window !== "undefined" && value?.file
-                          ? URL.createObjectURL(value.file)
-                          : null;
-
-                      const fileUrl =
-                        objectUrl ??
-                        (typeof value?.image === "string" ? value.image : null);
-
-                      // cleanup objectURL
-                      useEffect(() => {
-                        return () => {
-                          if (objectUrl) URL.revokeObjectURL(objectUrl);
-                        };
-                      }, [objectUrl]);
-
                       return (
                         <div className="flex gap-4">
                           <div className="relative h-36 aspect-[5/7]">
-                            {fileUrl ? (
+                            {value?.file || value?.image ? (
                               <>
-                                {/* Preview */}
-                                <img
-                                  src={
-                                    value?.image && !value.file
-                                      ? `/api/file/${fileUrl}`
-                                      : fileUrl
+                                <ImagePreview
+                                  file={value?.file}
+                                  image={
+                                    typeof value?.image === "string"
+                                      ? value.image
+                                      : null
                                   }
-                                  alt="preview"
-                                  className="size-full object-cover rounded bg-white overflow-hidden"
                                 />
-
-                                {/* Change */}
                                 <label
-                                  htmlFor={inputId} // ✅ зөв input руу заана
-                                  className="absolute top-1 right-7 bg-primary p-1 rounded cursor-pointer hover:bg-slate-600"
+                                  htmlFor={inputId}
+                                  className="absolute top-1 right-7 bg-primary p-1 rounded cursor-pointer"
                                 >
                                   <Pencil className="size-3 text-white" />
                                 </label>
-
-                                {/* Remove */}
                                 <button
                                   type="button"
-                                  onClick={handleRemove(index)} // ✅ index “түгжсэн”
-                                  className="absolute top-1 right-1 bg-primary p-1 rounded cursor-pointer hover:bg-slate-600"
+                                  onClick={handleRemove(index)}
+                                  className="absolute top-1 right-1 bg-primary p-1 rounded"
                                 >
                                   <X className="size-3 text-white" />
                                 </button>
