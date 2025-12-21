@@ -1,12 +1,27 @@
 import type { NextConfig } from "next";
 
-const nextConfig: NextConfig = {
+const nextConfig: NextConfig & { swcMinify?: boolean } = {
   // eslint: {
   //   ignoreDuringBuilds: true,
   // },
+
   reactStrictMode: false,
+  swcMinify: false,
   images: {
-    domains: ["api.zunailbar.mn", "localhost"],
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "api.zunailbar.mn",
+        port: "",
+        pathname: "/**",
+      },
+      {
+        protocol: "http",
+        hostname: "localhost",
+        port: "",
+        pathname: "/**",
+      },
+    ],
   },
   experimental: {
     serverActions: {
