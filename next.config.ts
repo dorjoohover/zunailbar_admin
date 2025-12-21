@@ -1,12 +1,7 @@
 import type { NextConfig } from "next";
 
-const nextConfig: NextConfig & { swcMinify?: boolean } = {
-  // eslint: {
-  //   ignoreDuringBuilds: true,
-  // },
-
+const nextConfig: NextConfig = {
   reactStrictMode: false,
-  swcMinify: false,
   images: {
     remotePatterns: [
       {
