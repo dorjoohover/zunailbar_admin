@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useId, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Eye, EyeOff } from "lucide-react";
@@ -29,12 +29,13 @@ export const TextField = <T extends FieldValues>({
   className?: string;
   props: ControllerRenderProps<T>;
 }) => {
-  const id = `${label}_${Math.round(Math.random() * 10)}`;
-  const [display, setDisplay] = useState(
-    type === "money"
+  const [display, setDisplay] = useState(() => {
+    if (typeof window === "undefined") return ""; // SSR
+    return type === "money"
       ? money(String(props.value ?? ""))
-      : String(props.value ?? "")
-  );
+      : String(props.value ?? "");
+  });
+  const id = useId();
   useEffect(() => {
     if (type === "money") {
       setDisplay(money(String(props.value ?? "0")));
@@ -115,7 +116,7 @@ export const TextField = <T extends FieldValues>({
             props.onChange(raw); // form-д тоо хадгална
             setDisplay(raw); // фокус дотор raw тоо харагдана
           }}
-          onBlur={() => setDisplay(money(String(props.value ?? "")))} // blur үед money формат
+          onBlur={() => setDisplay(money(String(props.value ?? "")))}
           onFocus={() => setDisplay(String(props.value ?? ""))} // focus үед raw утга
         />
         {type === "money" && (

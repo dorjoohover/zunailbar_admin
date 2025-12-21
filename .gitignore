@@ -6,6 +6,7 @@
 .pnp.*
 .yarn/*
 /package-lock.json
+.next.config.ts
 !.yarn/patches
 !.yarn/plugins
 !.yarn/releases
