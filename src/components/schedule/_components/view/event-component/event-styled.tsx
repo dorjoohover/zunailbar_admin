@@ -168,7 +168,7 @@ export default function EventStyled({
       />
       <div
         className={cn(
-          "absolute   right-0 top-[115%] min-w-[250px] left-0   px-3 py-4 shadow-md  transition-all duration-200 bg-white",
+          "absolute   right-0 top-[100%] min-w-[250px] left-0   px-3 py-4 shadow-md  transition-all duration-200 bg-white",
           hovered ? "block" : "hidden"
         )}
         // style={{
@@ -275,12 +275,9 @@ export default function EventStyled({
         className="h-full"
       >
         {[...new Set(event.details?.map((d) => d.user_id))].length > 1 ? (
-          <div className="flex bg-transparent">
+          <div className="flex bg-transparent h-full">
             <div
-              className={cn(
-                "w-full p-2 text-white rounded-lg  ",
-                event?.minmized ? "flex-grow overflow-hidden" : "min-h-fit"
-              )}
+              className={cn("w-full p-2 text-white rounded-lg h-full  ")}
               style={{
                 background: getBackgroundColor(color),
                 boxShadow: `0 1px 3px 0px ${getBackgroundColor(color)}`,
@@ -295,7 +292,7 @@ export default function EventStyled({
             </div>
             <div
               className={cn(
-                "w-full p-2 text-white rounded-lg  ",
+                "w-full p-2 text-white rounded-lg h-full  ",
                 event?.minmized ? "flex-grow overflow-hidden" : "min-h-fit"
               )}
               style={{
@@ -314,7 +311,7 @@ export default function EventStyled({
         ) : (
           <div
             className={cn(
-              "w-full p-2 text-white rounded-lg  ",
+              "w-full p-2 text-white rounded-lg  h-full",
               event?.minmized ? "flex-grow overflow-hidden" : "min-h-fit"
             )}
             style={{

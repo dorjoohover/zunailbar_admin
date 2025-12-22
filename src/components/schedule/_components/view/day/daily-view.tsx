@@ -231,6 +231,9 @@ export default function DailyView({
           values={{
             order_date: event?.order_date,
             start_time: event?.start_time?.slice(0, 2),
+            paid_amount: 0,
+            total_amount: 0,
+            pre_amount: 0,
           }}
           send={send}
           loading={loading}

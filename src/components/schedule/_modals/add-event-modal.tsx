@@ -314,6 +314,15 @@ export default function AddEventModal({
     form.setValue("details", updated);
   };
 
+  const paid_amount = (form.watch("paid_amount") as number) ?? 0;
+  const pre_amount = (form.watch("pre_amount") as number) ?? 0;
+
+  useEffect(() => {
+    form.setValue("total_amount", +paid_amount + +pre_amount, {
+      shouldDirty: true,
+    });
+  }, [paid_amount, pre_amount]);
+
   return (
     <form
       className="space-y-4 "
@@ -469,70 +478,7 @@ export default function AddEventModal({
             </FormItems>
           </div>
         </div>
-        <div className="border-t ">
-          <p className="my-4">Цагийн хуваарь</p>
-          <div className="double-col">
-            <FormItems control={form.control} name="order_date" label="Огноо">
-              {(field) => {
-                // field.value = mnDateFormat((field.value as Date) ?? new Date());
-                return (
-                  <TextField type={INPUT_TYPE.DATE} props={{ ...field }} />
-                );
-              }}
-            </FormItems>
-            {slots.length > 0 && (
-              <FormItems
-                control={form.control}
-                name="start_time"
-                label="Эхлэх цаг"
-              >
-                {(field) => {
-                  let slot = [...slots];
 
-                  // 1️⃣ Branch filter
-                  if (branchId) {
-                    slot = slot.filter(
-                      (s) =>
-                        s.branch_id === branchId &&
-                        isSameDay(s.date, form.getValues("order_date") as any)
-                    );
-                  }
-
-                  // 2️⃣ Artist filter
-                  const artistIds = details
-                    ?.map((d) => d.user_id)
-                    .filter(Boolean);
-                  if (artistIds?.length) {
-                    slot = slot.filter(
-                      (s) =>
-                        artistIds.includes(s.artist_id) &&
-                        isSameDay(s.date, form.getValues("order_date") as any)
-                    );
-                  }
-                  const availableSlots = new Set(
-                    [...slot.flatMap((s) => s.slots), field.value].filter(
-                      Boolean
-                    )
-                  );
-                  field.value = field.value
-                    ? +field.value?.toString().slice(0, 2)
-                    : field.value;
-                  return (
-                    <ComboBox
-                      props={{ ...field }}
-                      items={[...availableSlots].sort().map((item) => {
-                        return {
-                          value: item?.toString(),
-                          label: toTimeString(item),
-                        };
-                      })}
-                    />
-                  );
-                }}
-              </FormItems>
-            )}
-          </div>
-        </div>
         <div className="border p-2 rounded-md">
           <p className="my-2 font-bold">Үйлчилгээ</p>
           <div className="grid grid-cols-2 gap-1 max-h-[220px] overflow-auto">
@@ -611,6 +557,70 @@ export default function AddEventModal({
                   );
                 })}
               </>
+            )}
+          </div>
+        </div>
+        <div className="border-t ">
+          <p className="my-4">Цагийн хуваарь</p>
+          <div className="double-col">
+            <FormItems control={form.control} name="order_date" label="Огноо">
+              {(field) => {
+                // field.value = mnDateFormat((field.value as Date) ?? new Date());
+                return (
+                  <TextField type={INPUT_TYPE.DATE} props={{ ...field }} />
+                );
+              }}
+            </FormItems>
+            {slots.length > 0 && (
+              <FormItems
+                control={form.control}
+                name="start_time"
+                label="Эхлэх цаг"
+              >
+                {(field) => {
+                  let slot = [...slots];
+
+                  // 1️⃣ Branch filter
+                  if (branchId) {
+                    slot = slot.filter(
+                      (s) =>
+                        s.branch_id === branchId &&
+                        isSameDay(s.date, form.getValues("order_date") as any)
+                    );
+                  }
+
+                  // 2️⃣ Artist filter
+                  const artistIds = details
+                    ?.map((d) => d.user_id)
+                    .filter(Boolean);
+                  if (artistIds?.length) {
+                    slot = slot.filter(
+                      (s) =>
+                        artistIds.includes(s.artist_id) &&
+                        isSameDay(s.date, form.getValues("order_date") as any)
+                    );
+                  }
+                  const availableSlots = new Set(
+                    [...slot.flatMap((s) => s.slots), field.value].filter(
+                      Boolean
+                    )
+                  );
+                  field.value = field.value
+                    ? +field.value?.toString().slice(0, 2)
+                    : field.value;
+                  return (
+                    <ComboBox
+                      props={{ ...field }}
+                      items={[...availableSlots].sort().map((item) => {
+                        return {
+                          value: item?.toString(),
+                          label: toTimeString(item),
+                        };
+                      })}
+                    />
+                  );
+                }}
+              </FormItems>
             )}
           </div>
         </div>

@@ -114,6 +114,15 @@ export const OrderPage = ({
     const { edit, ...body } = e as any;
 
     const payload = { ...body };
+    const details = payload.details;
+    if (details.length == 1) {
+      payload.details = details.map((d: any) => {
+        return {
+          price: body.total_amount,
+          ...d,
+        };
+      });
+    }
     const res = edit
       ? await updateOne<Order>(
           Api.order,
