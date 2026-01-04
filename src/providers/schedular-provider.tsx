@@ -295,16 +295,17 @@ export const SchedulerProvider = ({
 
     // Minimum height for visibility
     const minimumHeight = 20;
-
+    const height =
+      eventHeight < minimumHeight
+        ? Math.round(minimumHeight)
+        : eventHeight > maxHeight
+        ? Math.round(maxHeight)
+        : Math.round(eventHeight) ;
+    let top = Math.round(eventTop) + indexOnHour * 5;
+    if (event.start_time?.slice(3, 4) != "0") top += 40;
     return {
-      height: `${
-        eventHeight < minimumHeight
-          ? Math.round(minimumHeight)
-          : eventHeight > maxHeight
-          ? Math.round(maxHeight)
-          : Math.round(eventHeight)
-      }px`,
-      top: `${Math.round(eventTop) + indexOnHour * 5}px`,
+      height: `${height}px`,
+      top: `${top}px`,
       zIndex: index + 1,
       left: `${Math.round(safeLeftPosition)}`,
     };

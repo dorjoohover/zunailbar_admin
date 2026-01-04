@@ -393,7 +393,6 @@ export default function DailyView({
                             periodIndex,
                             adjustForPeriod: true,
                           });
-
                         return (
                           <motion.div
                             key={event.id}
@@ -403,6 +402,7 @@ export default function DailyView({
                               left: `${left}%`,
                               padding: "0px 0px",
                               height: height,
+                              minHeight: "100px",
                               boxSizing: "border-box",
                             }}
                             className={` flex transition-all duration-1000 flex-grow flex-col absolute`}

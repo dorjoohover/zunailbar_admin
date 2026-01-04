@@ -113,8 +113,8 @@ export function mnDateFormatTitle(d: Date | string | number = new Date()) {
   return `${weekday}, ${yearMonthDay}`;
 }
 export function toTimeString(hour: number | string, slice?: boolean): string {
-  const h = String(hour).padStart(2, "0");
-  const value = `${h}:00:00`;
+  const h = String(Math.floor(Number(hour))).padStart(2, "0");
+  const value = `${h}:${Number(hour) % 1 != 0 ? '30' : '00'}:00`;
   return slice ? value.slice(0, 5) : value;
 }
 

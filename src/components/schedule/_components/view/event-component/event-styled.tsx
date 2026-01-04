@@ -126,7 +126,10 @@ export default function EventStyled({
   const ref = useRef(null);
   const [hovered, setHovered] = useState(false);
   const hour = +(event.start_time?.slice(0, 2) ?? "0");
-  const baseZ = Math.ceil(1 * hour) + index;
+  const baseZ =
+    Math.ceil(1 * hour) +
+    index +
+    ((event?.start_time?.slice(3, 4) ?? "0") == "0" ? 0 : 1);
   return (
     <div
       key={event?.id}
@@ -179,6 +182,7 @@ export default function EventStyled({
           className="flex w-full "
           // style={{ maxWidth: maw }}
         >
+
           <div className="font-semibold w-full text-xs truncate">
             <div className="w-full">
               <div className="flex justify-between ">

@@ -265,7 +265,6 @@ export default function AddEventModal({
     setClose();
   };
   const onInvalid = async <T,>(e: T) => {
-    console.log(e);
     const error = Object.entries(e as any)
       .map(([er, v], i) => {
         if (er == "details")
@@ -495,67 +494,75 @@ export default function AddEventModal({
                     </p>
                   </div>
                 )}
-                {services.items.map((service, i) => {
-                  const selected = details?.findIndex(
-                    (s) => s.service_id == service.id
-                  );
+                {services.items
+                  .sort((a, b) => {
+                    if (a.index == null && b.index == null) return 0;
+                    if (a.index == null) return 1; // a-г сүүлд
+                    if (b.index == null) return -1; // b-г сүүлд
+                    return a.index - b.index;
+                  })
+                  .map((service, i) => {
+                    const selected = details?.findIndex(
+                      (s) => s.service_id == service.id
+                    );
+                    console.log(service);
 
-                  return (
-                    <div
-                      key={i}
-                      className={`flex items-center justify-between w-full cursor-pointer rounded-lg border p-3 transition-all
+                    return (
+                      <div
+                        key={i}
+                        className={`flex items-center justify-between w-full cursor-pointer rounded-lg border p-3 transition-all
     ${
       selected !== undefined && selected != -1
         ? "bg-blue-50 border-blue-400"
         : "hover:bg-muted border-border"
     }`}
-                      onClick={() => {
-                        if (
-                          (selected == undefined || selected == -1) &&
-                          details?.length == 2
-                        ) {
-                          showToast(
-                            "info",
-                            "2-с олон үйлчилгээ сонгох боломжгүй"
+                        onClick={() => {
+                          if (
+                            (selected == undefined || selected == -1) &&
+                            details?.length == 2
+                          ) {
+                            showToast(
+                              "info",
+                              "2-с олон үйлчилгээ сонгох боломжгүй"
+                            );
+                            return;
+                          }
+                          const categorySelected = details?.some(
+                            (s) => s.category_id === service.category_id
                           );
-                          return;
-                        }
-                        const categorySelected = details?.some(
-                          (s) => s.category_id === service.category_id
-                        );
-                        if (categorySelected && selected == -1) {
-                          showToast(
-                            "info",
-                            "Өөр ангилалын үйлчилгээ сонгоно уу"
-                          );
-                          return;
-                        }
+                          if (categorySelected && selected == -1) {
+                            showToast(
+                              "info",
+                              "Өөр ангилалын үйлчилгээ сонгоно уу"
+                            );
+                            return;
+                          }
 
-                        updateDetail(selected, {
-                          service_id: service.id,
-                          service_name: service.name,
-                          duration: service.duration,
-                          category_id: service.category_id,
-                          description: "",
-                          price: 0,
-                          user_id: "",
-                        });
-                      }}
-                    >
-                      <div>
-                        <span className="block font-semibold block text-sm">
-                          {service.name}
-                        </span>
+                          updateDetail(selected, {
+                            service_id: service.id,
+                            service_name: service.name,
+                            duration: service.duration,
+                            category_id: service.category_id,
+                            description: "",
+                            price: 0,
+                            user_id: "",
+                          });
+                        }}
+                      >
+                        <div>
+                          <span className="block font-semibold block text-sm">
+                            {service.index}.{service.name}
+                          </span>
+                        </div>
+
+                        {service.meta?.name && (
+                          <span className="text-xs  inline-flex py-0.5 px-2 bg-blue-100 text-muted-foreground px-1 rounded">
+                            {service.meta.name}
+                          </span>
+                        )}
                       </div>
-
-                      {service.meta?.name && (
-                        <span className="text-xs  inline-flex py-0.5 px-2 bg-blue-100 text-muted-foreground px-1 rounded">
-                          {service.meta.name}
-                        </span>
-                      )}
-                    </div>
-                  );
-                })}
+                    );
+                  })}
               </>
             )}
           </div>
@@ -600,18 +607,24 @@ export default function AddEventModal({
                         isSameDay(s.date, form.getValues("order_date") as any)
                     );
                   }
-                  const availableSlots = new Set(
-                    [...slot.flatMap((s) => s.slots), field.value].filter(
-                      Boolean
-                    )
-                  );
+
                   field.value = field.value
                     ? +field.value?.toString().slice(0, 2)
                     : field.value;
+                  const availableSlots = Array.from(
+                    new Set(
+                      slot.flatMap((s) =>
+                        s.slots.flatMap((v) => {
+                          const n = Number(v);
+                          return Number.isFinite(n) ? [n, n + 0.5] : [];
+                        })
+                      )
+                    )
+                  ).sort((a, b) => a - b);
                   return (
                     <ComboBox
                       props={{ ...field }}
-                      items={[...availableSlots].sort().map((item) => {
+                      items={[...availableSlots].map((item) => {
                         return {
                           value: item?.toString(),
                           label: toTimeString(item),
