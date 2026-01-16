@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 
 import { useModal } from "@/providers/modal-context";
@@ -12,6 +12,7 @@ import { INPUT_TYPE, OrderStatus, PaymentMethod, ROLE } from "@/lib/enum";
 import { FormItems } from "@/shared/components/form.field";
 import { ComboBox } from "@/shared/components/combobox";
 import {
+  allTimes,
   getEnumValues,
   getMethodValue,
   ListDefault,
@@ -21,25 +22,26 @@ import {
   VALUES,
 } from "@/lib/constants";
 import {
+  addMinutes,
   firstLetterUpper,
   mnDateFormat,
   mobileFormatter,
-  numberArray,
-  totalHours,
   toTimeString,
   toYMD,
+  usernameFormatter,
 } from "@/lib/functions";
 import { TextField } from "@/shared/components/text.field";
 import { showToast } from "@/shared/components/showToast";
 import { API, Api } from "@/utils/api";
-import { find, search } from "@/app/(api)";
+import { create, find, search } from "@/app/(api)";
 import { Textarea } from "@/components/ui/textarea";
 import { FormItem, FormLabel } from "@/components/ui/form";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Label } from "@/components/ui/label";
 import { LoaderMini } from "@/components/loader";
-import { Slot } from "@/models/slot.model";
+import { OrderSlot, Slot } from "@/models/slot.model";
 import { isSameDay } from "date-fns";
+import { Switch } from "@/components/ui/switch";
+import { toast } from "sonner";
 const defaultValues = {
   branch_id: undefined,
   user_id: undefined,
@@ -81,13 +83,19 @@ export default function AddEventModal({
 }) {
   const { setClose, data } = useModal();
   const typedData = data as { default: IOrder };
-
   const { handlers } = useScheduler();
   const [allItems, setValues] = useState(items);
   const [services, setServices] = useState<ListType<Service>>({
     count: 0,
     items: [],
   });
+  const form = useForm<EventFormData>({
+    resolver: zodResolver(eventSchema),
+    defaultValues: values ?? defaultValues,
+  });
+  const [isTimeSlotsEnabled, setTimeSlotsEnabled] = useState(
+    form.getValues("edit") == undefined
+  );
 
   const [loader, setLoader] = useState({
     [Api.service]: false,
@@ -170,11 +178,6 @@ export default function AddEventModal({
       console.error(`Search failed for ${key}:`, error);
     }
   };
-  const form = useForm<EventFormData>({
-    resolver: zodResolver(eventSchema),
-    defaultValues: values ?? defaultValues,
-  });
-  const [slots, setSlots] = useState<Slot[]>([]);
 
   const [artists, setArtists] = useState(allItems.user);
   const branchId = form.watch("branch_id");
@@ -200,40 +203,21 @@ export default function AddEventModal({
       cancelled = true;
     };
   }, [customerId]);
-  const getAvailableSlot = async () => {
-    const res = await find<Slot>(Api.slots, {
-      branch_id: branchId,
-      // artist_id: ,
-      // artists
-    });
-    const { items } = res.data;
-    setSlots(items);
-    const users = allItems.user.filter((u) =>
-      items.some((slot) => slot.artist_id === u.id)
-    );
-
-    setArtists(users);
-  };
   useEffect(() => {
-    let cancelled = false;
-
     if (branchId) {
-      getAvailableSlot();
       listField<Service>({
         api: Api.service,
         onChange: (data) => {
-          if (!cancelled) setServices(data);
+          setServices(data);
         },
         key: "branch_id",
         value: branchId as string,
       });
+      getSlots();
     } else {
       setServices(ListDefault);
+      return;
     }
-
-    return () => {
-      cancelled = true;
-    };
   }, [branchId]);
   useEffect(() => {
     if (values) {
@@ -243,14 +227,45 @@ export default function AddEventModal({
       });
     }
   }, [data, form.reset, values]);
+  console.log(values);
+  const getSuitableArtists = (
+    artists: SearchType<User>[],
+    service_id?: string
+  ) => {
+    let result = artists;
+    // 🟢 Service чадвартай artist
+    if (service_id) {
+      const serviceArtistIds = new Set(userService[service_id]);
+      result = result.filter((a) => serviceArtistIds.has(a.id));
+    }
 
+    // 🟢 Сонгосон цагт боломжтой artist
+    if (order_date && start_time && slots?.[order_date]) {
+      const availableArtistIds = new Set(
+        slots[order_date]
+          .filter((s) => s.start_time.toString() === start_time)
+          .map((s) => s.artist_id)
+      );
+
+      result = result.filter((a) => availableArtistIds.has(a.id));
+    }
+
+    return result;
+  };
+  useEffect(() => {
+    if (isTimeSlotsEnabled) {
+    } else {
+      setArtists(allItems.user);
+    }
+  }, [isTimeSlotsEnabled]);
   const onSubmit: SubmitHandler<EventFormData> = (formData) => {
-    const st = formData.start_time;
     const newEvent = {
       branch_id: formData.branch_id,
       details: formData.details,
       order_date: formData.order_date as string,
-      start_time: st,
+      start_time: formData.start_time,
+      end_time: formData.end_time,
+      duration: formData.duration,
       description: formData.description ?? undefined,
       customer_id: formData.customer_id,
       order_status: formData.order_status as OrderStatus | undefined,
@@ -315,18 +330,103 @@ export default function AddEventModal({
 
   const paid_amount = (form.watch("paid_amount") as number) ?? 0;
   const pre_amount = (form.watch("pre_amount") as number) ?? 0;
-
+  const order_date = form.watch("order_date") as string;
+  const start_time = form.watch("start_time") as string;
+  const duration = form.watch("duration") as string;
   useEffect(() => {
     form.setValue("total_amount", +paid_amount + +pre_amount, {
       shouldDirty: true,
     });
   }, [paid_amount, pre_amount]);
+  const isFirstRun = useRef(true);
+
+  useEffect(() => {
+    if (!details?.length) return;
+
+    if (isFirstRun.current && values.duration > 0) {
+      isFirstRun.current = false;
+      return;
+    }
+
+    isFirstRun.current = false;
+
+    const defaultValue = values.duration ?? 0;
+
+    getArtists();
+    console.log(parallel);
+    const calculatedDuration =
+      parallel && details.length > 1
+        ? Math.max(...details.map((d) => Number(d.duration || defaultValue)))
+        : details.reduce(
+            (sum, d) => sum + Number(d.duration || defaultValue),
+            0
+          );
+
+    form.setValue("duration", calculatedDuration);
+  }, [details, parallel]);
+  useEffect(() => {
+    if (!start_time || !duration) return;
+
+    const endTime = addMinutes(start_time, +duration);
+    form.setValue("end_time", endTime);
+  }, [start_time, duration]);
+  const [userService, setUserService] = useState<OrderSlot>({});
+  const [slots, setSlots] = useState<Record<string, Slot[]>>({});
+  const getSlots = async () => {
+    const body = {
+      branch_id: branchId,
+      services: details?.map((s) => s.service_id),
+      parallel: parallel,
+    };
+    const res = await find<Slot>(Api.order, body, "slots");
+    const data: Record<string, Slot[]> = (res.data as unknown as Slot[]).reduce(
+      (acc, item) => {
+        const key = toYMD(new Date(item.date));
+
+        if (!acc[key]) {
+          acc[key] = [];
+        }
+
+        acc[key].push({ ...item, key });
+        return acc;
+      },
+      {} as Record<string, Slot[]>
+    );
+
+    setSlots(data);
+  };
+  const getArtists = async () => {
+    const services = details?.map((d) => d.service_id) ?? [];
+    if (!services || services.length == 0 || !branchId) return;
+
+    const userServices = await create(
+      Api.user_service,
+      {
+        branch_id: branchId,
+        services: services,
+      },
+      "client"
+    );
+    // serviceId: artists
+    const data: OrderSlot = userServices.data.payload;
+
+    setUserService(data);
+  };
 
   return (
     <form
       className="space-y-4 "
       onSubmit={form.handleSubmit(onSubmit, onInvalid)}
     >
+      {values.created_by && (
+        <div className="flex justify-between">
+          <span>Үүсгэсэн</span>
+          <div className="flex gap-4">
+            <p>{usernameFormatter(values.created_by)}</p>
+            <p>{mobileFormatter(values.created_by.mobile)}</p>
+          </div>
+        </div>
+      )}
       <FormProvider {...form}>
         <div className="double-col">
           <div className="flex gap-4 items-start col-span-2">
@@ -385,7 +485,9 @@ export default function AddEventModal({
                   search={(e) => {
                     if (e.length > 1) searchField(e, Api.branch);
                   }}
-                  props={{ ...field }}
+                  props={{
+                    ...field,
+                  }}
                   items={allItems.branch.map((item) => {
                     const [name] = item.value?.split("__") ?? [""];
                     return {
@@ -505,7 +607,6 @@ export default function AddEventModal({
                     const selected = details?.findIndex(
                       (s) => s.service_id == service.id
                     );
-                    console.log(service);
 
                     return (
                       <div
@@ -568,7 +669,22 @@ export default function AddEventModal({
           </div>
         </div>
         <div className="border-t ">
-          <p className="my-4">Цагийн хуваарь</p>
+          <div className="flex justify-between items-center">
+            <p className="my-4">Цагийн хуваарь</p>
+            <div className="flex items-center justify-end gap-2 mt-2 max-w-lg w-full">
+              <Switch
+                checked={isTimeSlotsEnabled}
+                onCheckedChange={(val) => setTimeSlotsEnabled(val)}
+                id="compare-switch"
+              />
+              <label
+                htmlFor="compare-switch"
+                className="text-sm text-muted-foreground"
+              >
+                Цаг заавал мөрдөнө
+              </label>
+            </div>
+          </div>
           <div className="double-col">
             <FormItems control={form.control} name="order_date" label="Огноо">
               {(field) => {
@@ -578,56 +694,45 @@ export default function AddEventModal({
                 );
               }}
             </FormItems>
-            {slots.length > 0 && (
+            {details?.length > 0 && (
+              <FormItems control={form.control} name="duration" label="Хугацаа">
+                {(field) => {
+                  return (
+                    <TextField
+                      type={INPUT_TYPE.NUMBER}
+                      props={{
+                        ...field,
+                      }}
+                    />
+                  );
+                }}
+              </FormItems>
+            )}
+            {((order_date && slots?.[order_date]) || !isTimeSlotsEnabled) && (
               <FormItems
                 control={form.control}
                 name="start_time"
                 label="Эхлэх цаг"
               >
                 {(field) => {
-                  let slot = [...slots];
-
-                  // 1️⃣ Branch filter
-                  if (branchId) {
-                    slot = slot.filter(
-                      (s) =>
-                        s.branch_id === branchId &&
-                        isSameDay(s.date, form.getValues("order_date") as any)
-                    );
-                  }
-
-                  // 2️⃣ Artist filter
+                  let slot = isTimeSlotsEnabled ? slots?.[order_date] : [];
                   const artistIds = details
                     ?.map((d) => d.user_id)
                     .filter(Boolean);
-                  if (artistIds?.length) {
-                    slot = slot.filter(
-                      (s) =>
-                        artistIds.includes(s.artist_id) &&
-                        isSameDay(s.date, form.getValues("order_date") as any)
-                    );
+                  if (artistIds?.length && isTimeSlotsEnabled) {
+                    slot = slot.filter((s) => artistIds.includes(s.artist_id));
                   }
 
-                  field.value = field.value
-                    ? +field.value?.toString().slice(0, 2)
-                    : field.value;
-                  const availableSlots = Array.from(
-                    new Set(
-                      slot.flatMap((s) =>
-                        s.slots.flatMap((v) => {
-                          const n = Number(v);
-                          return Number.isFinite(n) ? [n, n + 0.5] : [];
-                        })
-                      )
-                    )
-                  ).sort((a, b) => a - b);
+                  const availableSlots = isTimeSlotsEnabled
+                    ? Array.from(new Set(slot.map((s) => s.start_time))).sort()
+                    : allTimes.map((i) => toTimeString(i));
                   return (
                     <ComboBox
                       props={{ ...field }}
                       items={[...availableSlots].map((item) => {
                         return {
                           value: item?.toString(),
-                          label: toTimeString(item),
+                          label: item.toString(),
                         };
                       })}
                     />
@@ -635,19 +740,31 @@ export default function AddEventModal({
                 }}
               </FormItems>
             )}
+
+            {start_time && (
+              <FormItems
+                control={form.control}
+                name="end_time"
+                label="Дуусах цаг"
+              >
+                {(field) => <TextField props={{ ...field, disabled: true }} />}
+              </FormItems>
+            )}
           </div>
         </div>
-        {slots.length == 0 && (
-          <div className="flex justify-center col-span-2 py-4 m-2 rounded-md bg-primary/10 border border-primary/50">
-            <p className="text-sm">Цаг байхгүй.</p>
-          </div>
-        )}
+        {!order_date ||
+          (!slots?.[order_date] && (
+            <div className="flex justify-center col-span-2 py-4 m-2 rounded-md bg-primary/10 border border-primary/50">
+              <p className="text-sm">Цаг байхгүй.</p>
+            </div>
+          ))}
         {details?.length > 0 && (
           <div className="border-t">
             <div className="flex justify-between items-center">
               <p className="my-4">
                 Үйлчилгээ{details.some((d) => d.category_id)}
               </p>
+
               {details.length == 2 &&
                 details?.[0].category_id != details?.[1].category_id && (
                   <FormItems control={form.control} name="parallel" label="">
@@ -690,7 +807,10 @@ export default function AddEventModal({
                             <FormLabel>Артист</FormLabel>
                             <ComboBox
                               className="max-w-xs"
-                              items={artists.map((b, i) => {
+                              items={(isTimeSlotsEnabled
+                                ? getSuitableArtists(artists, detail.service_id)
+                                : artists
+                              ).map((b, i) => {
                                 const [mobile, nickname, branch] =
                                   b?.value?.split("__") ?? ["", "", "", ""];
 
@@ -703,9 +823,14 @@ export default function AddEventModal({
                               })}
                               props={{
                                 onChange: (v: string) => {
-                                  console.log(details, v);
                                   if (parallel) {
-                                    updateDetail(i, v, "user_id");
+                                    if (details.find((d) => d.user_id == v)) {
+                                      toast.warning("Дахин сонгох боломжгүй ");
+                                      form.setValue("parallel", false);
+                                      return;
+                                    } else {
+                                      updateDetail(i, v, "user_id");
+                                    }
                                   } else {
                                     updateDetail(0, v, "user_id");
                                     if (details.length == 2)

@@ -22,6 +22,12 @@ const formSchema = z.object({
   name: z.string().refine((data) => data.length > 0, {
     message: "Нэр оруулна уу",
   }),
+  address: z.string().refine((data) => data.length > 0, {
+    message: "Хаяг оруулна уу",
+  }),
+  url: z.string().refine((data) => data.length > 0, {
+    message: "Байршил оруулна уу",
+  }),
   order_days: z
     .preprocess(
       (val) => (typeof val === "string" ? parseFloat(val) : val),
@@ -143,7 +149,7 @@ export const BranchPage = ({ data }: { data: ListType<Branch> }) => {
                       label={"Захиалга авах хоног"}
                       control={form.control}
                       name={"order_days"}
-                      className={"col-span-1"}
+                      className={"col-span-1 mb-4"}
                     >
                       {(field) => {
                         return (
@@ -152,6 +158,26 @@ export const BranchPage = ({ data }: { data: ListType<Branch> }) => {
                             type={INPUT_TYPE.NUMBER}
                           />
                         );
+                      }}
+                    </FormItems>
+                    <FormItems
+                      label={"Салбарын хаяг"}
+                      control={form.control}
+                      name={"address"}
+                      className={"col-span-1 mb-4"}
+                    >
+                      {(field) => {
+                        return <TextField props={{ ...field }} />;
+                      }}
+                    </FormItems>
+                    <FormItems
+                      label={"Салбарын байршлын линк"}
+                      control={form.control}
+                      name={"url"}
+                      className={"col-span-1 "}
+                    >
+                      {(field) => {
+                        return <TextField props={{ ...field }} />;
                       }}
                     </FormItems>
                   </div>

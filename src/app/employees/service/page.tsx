@@ -4,13 +4,17 @@ import { User, UserService } from "@/models";
 import ContainerHeader from "@/components/containerHeader";
 import { find, search } from "@/app/(api)";
 import { EmployeeUserServicePage } from "./components";
-import { ROLE } from "@/lib/enum";
+import { ROLE, UserStatus } from "@/lib/enum";
 
 export default async function Page() {
   const [res, service, user] = await Promise.all([
     find<UserService>(Api.user_service, {}, "employee"),
-    find<Service>(Api.service, { limit: -1 }),
-    search<User>(Api.user, { limit: 20, role: ROLE.E_M }),
+    find<Service>(Api.service, { limit: -1, sort: false }),
+    search<User>(Api.user, {
+      limit: 20,
+      role: ROLE.E_M,
+      user_status: UserStatus.ACTIVE,
+    }),
   ]);
   return (
     <section>

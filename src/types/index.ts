@@ -117,6 +117,10 @@ export const eventSchema = z.object({
     allowNullable: false,
     label: "Хэрэглэгч",
   }),
+  duration: zNumOpt({
+    allowNullable: true,
+    label: "Хугацаа",
+  }),
   details: z.array(detail),
   description: zStrOpt({
     label: "Тайлбар",
@@ -125,7 +129,7 @@ export const eventSchema = z.object({
     label: "Захиалгын огноо",
     allowNullable: false,
   }),
-  start_time: zNumOpt({
+  start_time: zStrOpt({
     allowNullable: false,
     label: "Цаг",
   }),

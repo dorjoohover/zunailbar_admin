@@ -32,7 +32,7 @@ import DynamicHeader from "@/components/dynamicHeader";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { showToast } from "@/shared/components/showToast";
-import { CategoryType, ROLE, STATUS, INPUT_TYPE } from "@/lib/enum";
+import { CategoryType, ROLE, STATUS, INPUT_TYPE, UserStatus } from "@/lib/enum";
 import { TextField } from "@/shared/components/text.field";
 
 const formSchema = z.object({
@@ -226,9 +226,11 @@ export const EmployeeUserSalaryPage = ({
         ? {
             id: value,
             role: ROLE.E_M,
+            user_status: UserStatus.ACTIVE,
           }
         : {
             role: ROLE.E_M,
+            user_status: UserStatus.ACTIVE,
 
             value: v,
           };

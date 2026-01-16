@@ -114,9 +114,20 @@ export function mnDateFormatTitle(d: Date | string | number = new Date()) {
 }
 export function toTimeString(hour: number | string, slice?: boolean): string {
   const h = String(Math.floor(Number(hour))).padStart(2, "0");
-  const value = `${h}:${Number(hour) % 1 != 0 ? '30' : '00'}:00`;
+  const value = `${h}:${Number(hour) % 1 != 0 ? "30" : "00"}:00`;
   return slice ? value.slice(0, 5) : value;
 }
+export const addMinutes = (time: string, minutes: number) => {
+  const [h, m, s = "0"] = time.split(":").map(Number);
+
+  const total = h * 60 + m + minutes;
+  const hh = Math.floor(total / 60) % 24;
+  const mm = total % 60;
+
+  return `${hh.toString().padStart(2, "0")}:${mm
+    .toString()
+    .padStart(2, "0")}:00`;
+};
 
 export function add15Days(day: number) {
   const today = new Date();

@@ -9,7 +9,7 @@ export default async function Page() {
   const [res, branch, service] = await Promise.all([
     find<Discount>(Api.discount),
     find<Branch>(Api.branch, { limit: -1 }),
-    search<Service>(Api.service, { limit: 20 }),
+    search<Service>(Api.service, { limit: 20, sort: false, }),
   ]);
   return (
     <section>

@@ -9,7 +9,7 @@ import {
 } from "@/models";
 import { find, search } from "@/app/(api)";
 import { ProductTransactionPage } from "./components";
-import { CategoryType, ROLE } from "@/lib/enum";
+import { CategoryType, ROLE, UserStatus } from "@/lib/enum";
 import ContainerHeader from "@/components/containerHeader";
 
 export default async function Page() {
@@ -17,7 +17,11 @@ export default async function Page() {
     find<ProductTransaction>(Api.product_transaction_admin, {}),
     find<Branch>(Api.branch, { limit: -1 }),
     search<Product>(Api.product, { type: CategoryType.DEFAULT, limit: 20 }),
-    search<User>(Api.user, { limit: 20, role: ROLE.E_M }),
+    search<User>(Api.user, {
+      limit: 20,
+      role: ROLE.E_M,
+      user_status: UserStatus.ACTIVE,
+    }),
   ]);
   return (
     <section>

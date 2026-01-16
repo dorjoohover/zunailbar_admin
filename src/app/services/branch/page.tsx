@@ -12,7 +12,7 @@ export default async function Page() {
       status: STATUS.Active
     }),
 
-    find<Service>(Api.service, { limit: -1 }),
+    find<Service>(Api.service, { limit: -1, sort: false, }),
   ]);
   return (
     <section>

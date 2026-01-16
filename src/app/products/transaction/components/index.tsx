@@ -36,6 +36,7 @@ import {
   INPUT_TYPE,
   ProductTransactionStatus,
   ROLE,
+  UserStatus,
 } from "@/lib/enum";
 import {
   firstLetterUpper,
@@ -264,10 +265,11 @@ export const ProductTransactionPage = ({
         ? {
             id: value,
             role: ROLE.E_M,
+            user_status: UserStatus.ACTIVE,
           }
         : {
             role: ROLE.E_M,
-
+            user_status: UserStatus.ACTIVE,
             value: v,
           };
     await search(key as any, {

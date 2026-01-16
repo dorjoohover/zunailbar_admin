@@ -7,7 +7,7 @@ import { VoucherPage } from "./components";
 export default async function Page() {
   const [res, service] = await Promise.all([
     find<Voucher>(Api.voucher),
-    search<Service>(Api.service, { limit: 20 }),
+    search<Service>(Api.service, { limit: 20, sort: false, }),
   ]);
   return (
     <section>

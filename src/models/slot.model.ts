@@ -1,16 +1,11 @@
-export interface Slot {
-  id: string;
-  date: Date;
-  artist_id: string
-  slots:string[]
-  branch_id: string
-  created_at?: Date;
+export interface OrderSlot {
+  [service: string]: string[];
 }
-export interface ISlot {
-  id?: string;
-  date?: Date;
-  artist_id?: string
-  slots?:string[]
-  branch_id?: string
-  created_at?: Date;
+export interface Slot {
+  branch_id: string;
+  artist_id: string;
+  date: Date;
+  start_time: Date;
+  end_time: Date;
+  key: string;
 }

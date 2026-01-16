@@ -25,10 +25,12 @@ export interface IOrder {
   phone?: string;
   customer?: User;
   color?: number;
+  created_by?: string | User;
 }
 export interface Order {
   id: string;
   description?: string;
+  created_by?: string | User;
   artist_name?: string;
   user_id: string;
   customer_id: string;

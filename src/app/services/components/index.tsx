@@ -163,7 +163,7 @@ export const ServicePage = ({
     await fetcher<Service>(Api.service, {
       page: page ?? DEFAULT_PG.page,
       limit: limit ?? DEFAULT_PG.limit,
-      sort: sort ?? DEFAULT_PG.sort,
+      sort: false,
       category_id,
       ...pg,
     }).then((d) => {

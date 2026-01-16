@@ -224,6 +224,7 @@ export default function DailyView({
 
   function handleAddEvent(event?: IOrder) {
     const orderDate = event?.order_date || new Date();
+    
     setOpen(
       <CustomModal title="Захиалга нэмэх" contentClass="max-w-3xl">
         <AddEventModal
@@ -398,7 +399,7 @@ export default function DailyView({
                             key={event.id}
                             style={{
                               top: top,
-                              width: `${100 - +left}%`,
+                              width: `${Math.ceil(100 / group.length)}%`,
                               left: `${left}%`,
                               padding: "0px 0px",
                               height: height,

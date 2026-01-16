@@ -307,7 +307,7 @@ export const SchedulerProvider = ({
       height: `${height}px`,
       top: `${top}px`,
       zIndex: index + 1,
-      left: `${Math.round(safeLeftPosition)}`,
+      left: `${Math.floor(safeLeftPosition)}`,
     };
   }
 

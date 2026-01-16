@@ -1,11 +1,12 @@
 import { ColumnDef } from "@tanstack/react-table";
 
-import { ArrowUpDown } from "lucide-react";
+import { ArrowUpDown, Link as LLink, Map, MapPin, Pin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { parseDate } from "@/lib/functions";
 import { IBranch } from "@/models";
 import { TableActionButtons } from "@/components/tableActionButtons";
+import Link from "next/link";
 
 export function getColumns(
   onEdit: (product: IBranch) => void,
@@ -24,6 +25,40 @@ export function getColumns(
     {
       accessorKey: "order_days",
       header: () => <div>Захиалга авах хоног</div>,
+    },
+    {
+      accessorKey: "address",
+      header: () => <div>Хаяг</div>,
+      cell: ({ row }) => {
+        const address = row.getValue("address") as string;
+
+        return (
+          <p
+            style={{
+              maxWidth: 120,
+              minWidth: 80,
+              whiteSpace: "nowrap",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+            }}
+            title={address} // hover дээр бүтнээрээ харагдана
+          >
+            {address ?? ""}
+          </p>
+        );
+      },
+    },
+    {
+      accessorKey: "url",
+      header: () => <div>Линк</div>,
+      cell: ({ row }) => {
+        const url = row.getValue("url");
+        return (
+          <Link href={url ?? "/"} target="_blank">
+            <MapPin />
+          </Link>
+        );
+      },
     },
 
     {

@@ -101,7 +101,7 @@ export default function EventStyled({
           items={values}
           values={{
             ...event,
-            start_time: event.start_time?.slice(0, 2),
+            parallel: new Set(event.details?.map((d) => d.user_id)).size > 1,
             edit: event.id,
           }}
         />
@@ -182,7 +182,6 @@ export default function EventStyled({
           className="flex w-full "
           // style={{ maxWidth: maw }}
         >
-
           <div className="font-semibold w-full text-xs truncate">
             <div className="w-full">
               <div className="flex justify-between ">
@@ -259,6 +258,7 @@ export default function EventStyled({
         onClick={(e: React.MouseEvent<HTMLDivElement>) => {
           e.stopPropagation();
           handleEditEvent({
+            ...event,
             id: event?.id,
             branch_id: event.branch_id,
             customer_id: event.customer_id,
@@ -279,18 +279,27 @@ export default function EventStyled({
         className="h-full"
       >
         {[...new Set(event.details?.map((d) => d.user_id))].length > 1 ? (
-          <div className="flex bg-transparent h-full">
-            <div
-              className={cn("w-full p-2 text-white rounded-lg h-full  ")}
-              style={{
-                background: getBackgroundColor(color),
-                boxShadow: `0 1px 3px 0px ${getBackgroundColor(color)}`,
-              }}
-            >
+          <div
+            className="flex bg-transparent h-full"
+            style={{
+              background: `linear-gradient(
+    100deg,
+    ${getBackgroundColor(color)} 50%,
+    ${getBackgroundColor(secondColor)} 50%
+  )`,
+              borderRadius: 10,
+              boxShadow: `0 1px 3px ${getBackgroundColor(secondColor)}`,
+            }}
+          >
+            <div className={cn("w-full p-2 text-white rounded-lg h-full  ")}>
               <EventItem
                 color={getBackgroundColor(color)}
                 event={{ ...event, details: [event.details?.[0]] }}
                 level={level}
+                disableView={{
+                  lvl: true,
+                  status: true,
+                }}
                 parallel={true}
               />
             </div>
@@ -299,15 +308,14 @@ export default function EventStyled({
                 "w-full p-2 text-white rounded-lg h-full  ",
                 event?.minmized ? "flex-grow overflow-hidden" : "min-h-fit"
               )}
-              style={{
-                background: getBackgroundColor(secondColor),
-                boxShadow: `0 1px 3px 0px ${getBackgroundColor(secondColor)}`,
-              }}
             >
               <EventItem
                 color={getBackgroundColor(secondColor)}
                 event={{ ...event, details: [event.details?.[1]] }}
                 level={level}
+                disableView={{
+                  name: true,
+                }}
                 parallel={true}
               />
             </div>
@@ -340,25 +348,37 @@ const EventItem = ({
   level,
   color,
   parallel = false,
+  disableView,
 }: {
   event: EventStyledProps;
   level: any;
   color: string;
+  disableView?: {
+    name?: boolean;
+    lvl?: boolean;
+    status?: boolean;
+  };
   parallel?: boolean;
 }) => {
+  const { name, lvl, status } = disableView ?? {};
   return (
     <div className="flex flex-col h-full">
       <div className="flex">
         <div className="font-semibold w-full text-xs truncate">
           <div className="flex justify-between w-full">
-            <div className="flex items-center gap-2">
-              <p>
-                {event?.customer?.nickname}{" "}
-                {mobileFormatter(event?.customer?.mobile ?? "")}
-              </p>
-              <level.Icon color={`${level.textColor}`} size={14} />
-            </div>
-            {event?.order_status &&
+            {!name ? (
+              <div className="flex items-center gap-2">
+                <p>
+                  {event?.customer?.nickname}{" "}
+                  {mobileFormatter(event?.customer?.mobile ?? "")}
+                </p>
+                <level.Icon color={`${level.textColor}`} size={14} />
+              </div>
+            ) : (
+              <div></div>
+            )}
+            {!status &&
+              event?.order_status &&
               OrderStatusValues[event?.order_status as OrderStatus]}
           </div>
         </div>

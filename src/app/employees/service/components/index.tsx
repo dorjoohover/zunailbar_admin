@@ -31,7 +31,7 @@ import DynamicHeader from "@/components/dynamicHeader";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { showToast } from "@/shared/components/showToast";
-import { CategoryType, ROLE } from "@/lib/enum";
+import { CategoryType, ROLE, UserStatus } from "@/lib/enum";
 
 const formSchema = z.object({
   user_id: z.string().min(1, "Артист сонгоно уу"),
@@ -247,9 +247,11 @@ export const EmployeeUserServicePage = ({
         ? {
             id: value,
             role: ROLE.E_M,
+            user_status: UserStatus.ACTIVE,
           }
         : {
             role: ROLE.E_M,
+            user_status: UserStatus.ACTIVE,
 
             value: v,
           };

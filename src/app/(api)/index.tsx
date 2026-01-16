@@ -237,6 +237,7 @@ export const create = async <T,>(
 
     return {
       success: true,
+      data,
     };
   } catch (error) {
     console.log(error);

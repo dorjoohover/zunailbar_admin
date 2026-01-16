@@ -14,7 +14,13 @@ import {
   zStrOpt,
 } from "@/lib/constants";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { CategoryType, INPUT_TYPE, ROLE, UserProductStatus } from "@/lib/enum";
+import {
+  CategoryType,
+  INPUT_TYPE,
+  ROLE,
+  UserProductStatus,
+  UserStatus,
+} from "@/lib/enum";
 import z from "zod";
 
 import { Api } from "@/utils/api";
@@ -266,9 +272,11 @@ export const EmployeeProductPage = ({
         ? {
             id: value,
             role: ROLE.E_M,
+            user_status: UserStatus.ACTIVE,
           }
         : {
             role: ROLE.E_M,
+            user_status: UserStatus.ACTIVE,
 
             value: v,
           };

@@ -205,7 +205,7 @@ export const ListDefault = {
 // });
 
 // patch put delete type
-export type PPDT = { success: boolean; error?: string };
+export type PPDT = { success: boolean; error?: string; data?: any };
 
 export const MODAL_ACTION = {
   add_emp: "add_emp",
@@ -407,3 +407,5 @@ export const ZValidator = {
   name: z.string().min(1, "Нэр оруулна уу"),
   warehouse: z.string().min(1, "Агуулах сонгоно уу"),
 };
+
+export const allTimes = Array.from({ length: 32 }, (_, i) => i * 0.5 + 7);

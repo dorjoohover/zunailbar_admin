@@ -69,7 +69,7 @@ export const OrderPage = ({
         ...item,
       };
     });
-
+    
     setOrders({ items, count: data.count });
   };
 
@@ -129,14 +129,12 @@ export const OrderPage = ({
           edit ?? "",
           {
             ...payload,
-            start_time: toTimeString(payload.start_time),
             // order_date: mnDate(payload.order_date),
           } as unknown as Order,
           "update"
         )
       : await create(Api.order, {
           ...payload,
-          start_time: toTimeString(body.start_time),
         } as unknown as Order);
     if (res.success) {
       refresh();

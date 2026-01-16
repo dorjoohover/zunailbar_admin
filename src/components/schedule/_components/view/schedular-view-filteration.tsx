@@ -1,17 +1,13 @@
 "use client";
-
-import { Dispatch, SetStateAction, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { FileText, CircleX } from "lucide-react";
 
-import AddEventModal from "../../_modals/add-event-modal";
 import DailyView from "./day/daily-view";
-import { useModal } from "@/providers/modal-context";
-import { ClassNames, CustomComponents, Views } from "@/types/index";
+import { ClassNames, Views } from "@/types/index";
 import { cn } from "@/lib/utils";
-import CustomModal from "@/components/ui/custom-modal";
 import {
   ACTION,
   getEnumValues,
@@ -25,12 +21,7 @@ import {
 import { Branch, IOrder, Order, Service, User } from "@/models";
 import { Api } from "@/utils/api";
 import { DatePicker } from "@/shared/components/date.picker";
-import {
-  firstLetterUpper,
-  mnDate,
-  mobileFormatter,
-  usernameFormatter,
-} from "@/lib/functions";
+import { firstLetterUpper, mobileFormatter } from "@/lib/functions";
 import { Switch } from "@/components/ui/switch";
 import { DataTable } from "@/components/data-table";
 import { ColumnDef } from "@tanstack/react-table";
@@ -111,7 +102,7 @@ export default function SchedulerViewFilteration({
   };
   views?: Views;
   stopDayEventSummary?: boolean;
-  CustomComponents?: CustomComponents;
+  CustomComponents?: any;
   classNames?: ClassNames;
   send: (order: IOrder) => void;
   action: ACTION;
