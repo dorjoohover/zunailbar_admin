@@ -83,7 +83,6 @@ export const SchedulePage = ({
         user_name: user ? usernameFormatter(user) : "",
       };
     });
-
     setSchedules({ items, count: data.count });
   };
   useEffect(() => {
@@ -124,7 +123,7 @@ export const SchedulePage = ({
     setScheduleData(
       (schedules?.items || []).reduce<Record<number, string[]>>(
         (acc, b: Schedule) => {
-          acc[b.index] = b.times?.split("|")?.map((b) => toTimeString(b, true));
+          acc[b.index] = b.times?.split("|");
           return acc;
         },
         {}
@@ -135,7 +134,7 @@ export const SchedulePage = ({
     setAction(ACTION.RUNNING);
     const payload = {
       index: index,
-      times: times.length == 0 ? null : times.map((time) => time.slice(0, 2)),
+      times: times.length == 0 ? null : times,
       user_id: selectedUser.id,
     };
 

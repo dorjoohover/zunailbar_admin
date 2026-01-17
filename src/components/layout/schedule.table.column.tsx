@@ -25,9 +25,12 @@ export function DayScheduleColumn({
   const [showAddTime, setShowAddTime] = useState(false);
 
   // All possible full-hour times from 07:00 to 22:00
-  const allAvailableTimes = Array.from({ length: 16 }, (_, i) => {
-    const hour = i + 7;
-    return `${hour.toString().padStart(2, "0")}:00`;
+  const allAvailableTimes = Array.from({ length: 32 }, (_, i) => {
+    const index = i * 0.5;
+    const hour = index + 7;
+    return `${Math.floor(hour).toString().padStart(2, "0")}:${
+      hour % 1 == 0 ? "00" : "30"
+    }`;
   });
 
   const toggleTime = (time: string) => {

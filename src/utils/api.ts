@@ -8,8 +8,8 @@ export enum METHOD {
 const BASE = process.env.API
   ? process.env.API?.endsWith("/")
     ? process.env.API
-    : process.env.API + "/"
-  : // : "http://localhost:5000/api/v1/";
+    : process.env.API + "/" :
+  // : "http://localhost:5000/api/v1/";
     "https://api.zunailbar.mn/api/v1/";
 
 export enum Api {

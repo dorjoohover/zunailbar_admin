@@ -6,28 +6,17 @@ import {
   ACTION,
   PG,
   DEFAULT_PG,
-  ScheduleEdit,
-  VALUES,
   ScheduleData,
 } from "@/lib/constants";
 import z from "zod";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { Api } from "@/utils/api";
 import { create, deleteOne, updateOne } from "@/app/(api)";
 import { fetcher } from "@/hooks/fetcher";
 import { AdminScheduleManager } from "@/components/layout/schedule.table";
-import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/components/ui/pagination";
 import DynamicHeader from "@/components/dynamicHeader";
-import { firstLetterUpper, numberArray, toTimeString } from "@/lib/functions";
+import { toTimeString } from "@/lib/functions";
 import { showToast } from "@/shared/components/showToast";
-import { Copy, MapPin } from "lucide-react";
+import { MapPin } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -105,8 +94,7 @@ export const BookingPage = ({
     setAction(ACTION.RUNNING);
     const payload = {
       index: index,
-      times:
-        times.length == 0 ? undefined : times.map((time) => time.slice(0, 2)),
+      times: times.length == 0 ? undefined : times.map((time) => time),
       branch_id: selectedBranch.id,
     };
     console.log(payload);
@@ -147,15 +135,15 @@ export const BookingPage = ({
   }, [selectedBranch]);
   const [scheduleData, setScheduleData] = useState<ScheduleData>({});
   useEffect(() => {
-    setScheduleData(
+    const data =
       (bookings?.items || []).reduce<Record<number, string[]>>(
         (acc, b: Booking) => {
-          acc[b.index] = b.times?.split("|")?.map((b) => toTimeString(b, true));
+          acc[b.index] = b.times?.split("|");
           return acc;
         },
         {}
-      ) ?? {}
-    );
+      ) ?? {};
+    setScheduleData(data);
   }, [bookings?.items]);
   const updateBranchSchedule = async (
     dayIndex: number,
