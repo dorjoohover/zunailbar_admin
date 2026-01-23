@@ -42,6 +42,7 @@ import { OrderSlot, Slot } from "@/models/slot.model";
 import { isSameDay } from "date-fns";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
+import { Phone, User as LUser, UserCircle } from "lucide-react";
 const defaultValues = {
   branch_id: undefined,
   user_id: undefined,
@@ -94,7 +95,7 @@ export default function AddEventModal({
     defaultValues: values ?? defaultValues,
   });
   const [isTimeSlotsEnabled, setTimeSlotsEnabled] = useState(
-    form.getValues("edit") == undefined
+    form.getValues("edit") == undefined,
   );
 
   const [loader, setLoader] = useState({
@@ -140,7 +141,7 @@ export default function AddEventModal({
     } catch (error: any) {
       console.error(
         `[listField] ${String(api)} API дуудах үед алдаа гарлаа:`,
-        error
+        error,
       );
       onChange([] as unknown as ListType<T>);
       setLoader((prev) => ({ ...prev, [api]: false }));
@@ -230,7 +231,7 @@ export default function AddEventModal({
   console.log(values);
   const getSuitableArtists = (
     artists: SearchType<User>[],
-    service_id?: string
+    service_id?: string,
   ) => {
     let result = artists;
     // 🟢 Service чадвартай artist
@@ -244,7 +245,7 @@ export default function AddEventModal({
       const availableArtistIds = new Set(
         slots[order_date]
           .filter((s) => s.start_time.toString() === start_time)
-          .map((s) => s.artist_id)
+          .map((s) => s.artist_id),
       );
 
       result = result.filter((a) => availableArtistIds.has(a.id));
@@ -323,7 +324,7 @@ export default function AddEventModal({
     }
 
     const updated = current.map((item, i) =>
-      i === index ? { ...item, [key]: value } : item
+      i === index ? { ...item, [key]: value } : item,
     );
     form.setValue("details", updated);
   };
@@ -359,7 +360,7 @@ export default function AddEventModal({
         ? Math.max(...details.map((d) => Number(d.duration || defaultValue)))
         : details.reduce(
             (sum, d) => sum + Number(d.duration || defaultValue),
-            0
+            0,
           );
 
     form.setValue("duration", calculatedDuration);
@@ -390,7 +391,7 @@ export default function AddEventModal({
         acc[key].push({ ...item, key });
         return acc;
       },
-      {} as Record<string, Slot[]>
+      {} as Record<string, Slot[]>,
     );
 
     setSlots(data);
@@ -405,7 +406,7 @@ export default function AddEventModal({
         branch_id: branchId,
         services: services,
       },
-      "client"
+      "client",
     );
     // serviceId: artists
     const data: OrderSlot = userServices.data.payload;
@@ -419,11 +420,22 @@ export default function AddEventModal({
       onSubmit={form.handleSubmit(onSubmit, onInvalid)}
     >
       {values.created_by && (
-        <div className="flex justify-between">
-          <span>Үүсгэсэн</span>
-          <div className="flex gap-4">
-            <p>{usernameFormatter(values.created_by)}</p>
-            <p>{mobileFormatter(values.created_by.mobile)}</p>
+        <div className="flex items-center border rounded-md px-4 justify-between py-2">
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <LUser className="w-4 h-4 text-rose-500" />
+            <span>Үүсгэсэн</span>
+          </div>
+
+          <div className="flex flex-col items-end gap-1">
+            <div className="flex items-center gap-2 text-sm text-gray-900">
+              <UserCircle className="w-4 h-4 text-gray-400" />
+              <span>{usernameFormatter(values.created_by)}</span>
+            </div>
+
+            <div className="flex items-center gap-2 text-xs text-gray-500">
+              <Phone className="w-4 h-4" />
+              <span>{mobileFormatter(values.created_by.mobile)}</span>
+            </div>
           </div>
         </div>
       )}
@@ -450,7 +462,7 @@ export default function AddEventModal({
                         "",
                         "",
                       ];
-                      const name = nickname == "null" ? "" : nickname ?? "";
+                      const name = nickname == "null" ? "" : (nickname ?? "");
                       return {
                         value: item.id,
                         label: `${mobileFormatter(mobile)} ${name}`,
@@ -605,7 +617,7 @@ export default function AddEventModal({
                   })
                   .map((service, i) => {
                     const selected = details?.findIndex(
-                      (s) => s.service_id == service.id
+                      (s) => s.service_id == service.id,
                     );
 
                     return (
@@ -624,17 +636,17 @@ export default function AddEventModal({
                           ) {
                             showToast(
                               "info",
-                              "2-с олон үйлчилгээ сонгох боломжгүй"
+                              "2-с олон үйлчилгээ сонгох боломжгүй",
                             );
                             return;
                           }
                           const categorySelected = details?.some(
-                            (s) => s.category_id === service.category_id
+                            (s) => s.category_id === service.category_id,
                           );
                           if (categorySelected && selected == -1) {
                             showToast(
                               "info",
-                              "Өөр ангилалын үйлчилгээ сонгоно уу"
+                              "Өөр ангилалын үйлчилгээ сонгоно уу",
                             );
                             return;
                           }
@@ -816,7 +828,7 @@ export default function AddEventModal({
 
                                 return {
                                   label: `${firstLetterUpper(
-                                    nickname
+                                    nickname,
                                   )} ${mobileFormatter(mobile)}`,
                                   value: b.id,
                                 };
@@ -855,7 +867,7 @@ export default function AddEventModal({
                                   updateDetail(
                                     i,
                                     isNaN(value) ? 0 : value,
-                                    "price"
+                                    "price",
                                   );
                                 },
                                 name: "",

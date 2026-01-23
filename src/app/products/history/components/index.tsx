@@ -216,22 +216,21 @@ export const ProductHistoryPage = ({
       unit_price: round(+(payload.unit_price ?? 0)),
       total_amount: round(+(payload.total_amount ?? 0)),
     };
-    console.log(e);
 
-    // const res = edit
-    //   ? await updateOne<IProductLog>(Api.product_log, edit ?? "", {
-    //       ...payload,
-    //       cargo,
-    //     } as unknown as IProductLog)
-    //   : await create<IProductLog>(Api.product_log, {
-    //       ...payload,
-    //       cargo,
-    //     } as unknown as IProductLog);
-    // if (res.success) {
-    //   refresh();
-    //   setOpen(false);
-    //   form.reset(defaultValues);
-    // }
+    const res = edit
+      ? await updateOne<IProductLog>(Api.product_log, edit ?? "", {
+          ...payload,
+          cargo,
+        } as unknown as IProductLog)
+      : await create<IProductLog>(Api.product_log, {
+          ...payload,
+          cargo,
+        } as unknown as IProductLog);
+    if (res.success) {
+      refresh();
+      setOpen(false);
+      form.reset(defaultValues);
+    }
     setAction(ACTION.DEFAULT);
   };
   const onInvalid = async <T,>(e: T) => {

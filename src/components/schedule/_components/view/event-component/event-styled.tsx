@@ -8,7 +8,9 @@ import {
   ClockIcon,
   Trash2,
   Clock,
-  User as IUser,
+  User as LUser,
+  UserCircle,
+  Phone,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import CustomModal from "@/components/ui/custom-modal";
@@ -23,7 +25,7 @@ import { OrderStatus, UserLevel } from "@/lib/enum";
 import { Branch, IOrder, Service, User } from "@/models";
 import { showToast } from "@/shared/components/showToast";
 import AppDialog from "@/shared/components/appDialog";
-import { mobileFormatter } from "@/lib/functions";
+import { mobileFormatter, usernameFormatter } from "@/lib/functions";
 import { CustomEventModal } from "@/types";
 
 const FAMILIES = [
@@ -63,7 +65,7 @@ export const PALETTE = FAMILIES.flatMap((c) =>
     bg: `bg-${c}-${s.bg}`,
     border: `border-${c}-${s.border}`,
     text: `text-${c}-${s.text}`,
-  }))
+  })),
 );
 
 interface EventStyledProps extends IOrder {
@@ -110,7 +112,7 @@ export default function EventStyled({
         return {
           ...event,
         };
-      }
+      },
     );
   }
 
@@ -137,7 +139,7 @@ export default function EventStyled({
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       className={cn(
-        `w-full transaction-all duration-300 relative h-full cursor-pointer  group rounded-lg flex flex-col flex-grow hover:shadow-md transition-shadow duration-200  `
+        `w-full transaction-all duration-300 relative h-full cursor-pointer  group rounded-lg flex flex-col flex-grow hover:shadow-md transition-shadow duration-200  `,
         // max-w-[350px]
       )}
       style={{
@@ -155,7 +157,7 @@ export default function EventStyled({
             size="icon"
             className={cn(
               "absolute z-[100]  right-0  top-[-8px] h-6 w-6 p-0 shadow-md hover:bg-destructive/90 transition-all duration-200",
-              "opacity-0 group-hover:opacity-100"
+              "opacity-0 group-hover:opacity-100",
             )}
           >
             <Trash2 size={14} className="text-destructive-foreground" />
@@ -172,7 +174,7 @@ export default function EventStyled({
       <div
         className={cn(
           "absolute   right-0 top-[100%] min-w-[250px] left-0   px-3 py-4 shadow-md  transition-all duration-200 bg-white",
-          hovered ? "block" : "hidden"
+          hovered ? "block" : "hidden",
         )}
         // style={{
         //   maxWidth: maw,
@@ -252,6 +254,28 @@ export default function EventStyled({
             <b>Tip massage:</b> {event?.description}{" "}
           </div>
         )}
+        {event.created_by && (
+          <div className="flex items-center justify-left gap-4">
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <LUser className="w-4 h-4 text-rose-500" />
+              <span>Үүсгэсэн</span>
+            </div>
+
+            <div className="flex flex-col items-start ">
+              <div className="flex items-center gap-2 text-sm text-gray-900">
+                <UserCircle className="w-4 h-4 text-gray-400" />
+                <span>{usernameFormatter(event.created_by as User)}</span>
+              </div>
+
+              <div className="flex items-center gap-2 text-xs text-gray-500">
+                <Phone className="w-4 h-4" />
+                <span>
+                  {mobileFormatter((event.created_by as User).mobile ?? "")}
+                </span>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       <div
@@ -306,7 +330,7 @@ export default function EventStyled({
             <div
               className={cn(
                 "w-full p-2 text-white rounded-lg h-full  ",
-                event?.minmized ? "flex-grow overflow-hidden" : "min-h-fit"
+                event?.minmized ? "flex-grow overflow-hidden" : "min-h-fit",
               )}
             >
               <EventItem
@@ -324,7 +348,7 @@ export default function EventStyled({
           <div
             className={cn(
               "w-full p-2 text-white rounded-lg  h-full",
-              event?.minmized ? "flex-grow overflow-hidden" : "min-h-fit"
+              event?.minmized ? "flex-grow overflow-hidden" : "min-h-fit",
             )}
             style={{
               background: getBackgroundColor(color),
@@ -390,7 +414,7 @@ const EventItem = ({
               key={i}
               className={cn(
                 "flex justify-between gap-2 my-1",
-                parallel && "flex-col "
+                parallel && "flex-col ",
               )}
             >
               <div className="flex items-center gap-1">

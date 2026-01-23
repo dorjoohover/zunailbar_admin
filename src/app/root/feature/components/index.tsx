@@ -20,11 +20,21 @@ import { IconPicker } from "@/components/icons/picker";
 import { Textarea } from "@/components/ui/textarea";
 
 const formSchema = z.object({
-  title: zStrOpt,
-  description: zStrOpt,
-  icon: zStrOpt,
-  index: zStrOpt,
-  edit: zStrOpt,
+  title: zStrOpt({
+    label: "Нэр",
+    allowNullable: false,
+  }),
+  description: zStrOpt({
+    label: "Тайлбар",
+  }),
+  icon: zStrOpt({
+    label: "Icon",
+    allowNullable: false,
+  }),
+  index: zNumOpt({
+    label: "Дараалал",
+  }),
+  edit: zStrOpt(),
 });
 export type RootType = z.infer<typeof formSchema>;
 type FormInput = z.input<typeof formSchema>; // optional тал
@@ -68,6 +78,7 @@ export const FeaturePage = ({ data }: { data: ListType<Feature> }) => {
     setAction(ACTION.DEFAULT);
   };
   const onSubmit = async <T,>(e: T) => {
+    console.log(e);
     setAction(ACTION.RUNNING);
     const body = e as RootType;
     const { edit, ...payload } = body;
@@ -77,12 +88,12 @@ export const FeaturePage = ({ data }: { data: ListType<Feature> }) => {
           Api.home,
           edit as string,
           { ...payload, index: +(payload.index ?? "0") } as IFeature,
-          "feature"
+          "feature",
         )
       : await create<IFeature>(
           Api.home,
           { ...payload, index: +(payload.index ?? "0") } as IFeature,
-          "feature"
+          "feature",
         );
 
     if (res?.success) {

@@ -42,7 +42,7 @@ const initialState: SchedulerState = {
 // Reducer function
 const schedulerReducer = (
   state: ISchedulerState | SchedulerState,
-  action: Action
+  action: Action,
 ): SchedulerState => {
   switch (action.type) {
     case "ADD_EVENT":
@@ -52,14 +52,14 @@ const schedulerReducer = (
       return {
         ...state,
         events: state.events.filter(
-          (event) => event.id !== action.payload.id
+          (event) => event.id !== action.payload.id,
         ) as any,
       };
     case "UPDATE_EVENT":
       return {
         ...state,
         events: state.events.map((event) =>
-          event.id === action.payload.id ? action.payload : event
+          event.id === action.payload.id ? action.payload : event,
         ) as any,
       };
     case "SET_EVENTS":
@@ -72,7 +72,7 @@ const schedulerReducer = (
 
 // Create the context with the correct type
 const SchedulerContext = createContext<SchedulerContextType | undefined>(
-  undefined
+  undefined,
 );
 
 // Provider component
@@ -93,7 +93,7 @@ export const SchedulerProvider = ({
 }) => {
   const [state, dispatch] = useReducer(
     schedulerReducer,
-    { events: initialState ?? [] } // Sets initialState or an empty array as the default
+    { events: initialState ?? [] }, // Sets initialState or an empty array as the default
   );
 
   useEffect(() => {
@@ -109,7 +109,7 @@ export const SchedulerProvider = ({
       (_, index) => ({
         day: index + 1,
         events: [],
-      })
+      }),
     );
   };
 
@@ -128,7 +128,7 @@ export const SchedulerProvider = ({
     weekStart.setDate(
       janFirst.getDate() +
         (week - 1) * 7 +
-        ((startDay - janFirstDayOfWeek + 7) % 7)
+        ((startDay - janFirstDayOfWeek + 7) % 7),
     );
 
     // Generate the week's days
@@ -144,12 +144,12 @@ export const SchedulerProvider = ({
 
   const getWeekNumber = (date: Date) => {
     const d = new Date(
-      Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())
+      Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()),
     );
     d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
     const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
     const weekNo = Math.ceil(
-      ((d?.getTime() - yearStart?.getTime()) / 86400000 + 1) / 7
+      ((d?.getTime() - yearStart?.getTime()) / 86400000 + 1) / 7,
     );
     return weekNo;
   };
@@ -193,7 +193,10 @@ export const SchedulerProvider = ({
     getWeekNumber,
     getDayName,
   };
-
+  const timeToMinutes = (time: string) => {
+    const [h, m] = time.split(":").map(Number);
+    return h * 60 + m;
+  };
   // handlers
   function handleEventStyling(
     event: Order,
@@ -202,7 +205,7 @@ export const SchedulerProvider = ({
       eventsInSamePeriod?: number;
       periodIndex?: number;
       adjustForPeriod?: boolean;
-    }
+    },
   ) {
     // More precise time-based overlap detection
     const eventsOnHour = dayEvents.filter((e) => {
@@ -254,8 +257,8 @@ export const SchedulerProvider = ({
 
     if (event.start_time && event.end_time) {
       // Normalize start and end dates to only include hours and minutes
-      const startTime = +event.start_time.slice(0, 2) * 60; // Convert to minutes
-      const endTime = +event.end_time.slice(0, 2) * 60; // Convert to minutes
+      const startTime = timeToMinutes(event.start_time);
+      const endTime = timeToMinutes(event.end_time);
 
       // Calculate the difference in minutes between start and end times
       const diffInMinutes = endTime - startTime;
@@ -266,7 +269,7 @@ export const SchedulerProvider = ({
       const eventStartHour = Math.abs(
         +event.start_time.slice(0, 2) - 7 < 0
           ? 0
-          : +event.start_time.slice(0, 2) - 7
+          : +event.start_time.slice(0, 2) - 7,
       );
       // Define the day-end hour (24.0 for midnight)
       const dayEndHour = 22;
@@ -294,13 +297,14 @@ export const SchedulerProvider = ({
     const safeLeftPosition = Math.min(leftPosition, 100 - widthPercentage);
 
     // Minimum height for visibility
-    const minimumHeight = 20;
+    const minimumHeight = 50;
+    console.log(eventHeight);
     const height =
       eventHeight < minimumHeight
         ? Math.round(minimumHeight)
         : eventHeight > maxHeight
-        ? Math.round(maxHeight)
-        : Math.round(eventHeight) ;
+          ? Math.round(maxHeight)
+          : Math.round(eventHeight);
     let top = Math.round(eventTop) + indexOnHour * 5;
     if (event.start_time?.slice(3, 4) != "0") top += 40;
     return {

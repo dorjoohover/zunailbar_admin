@@ -115,7 +115,7 @@ const groupEventsByTimePeriod = (events: Order[] | undefined) => {
   // Find connected components using DFS
   const findConnectedComponents = (
     graph: Record<string, string[]>,
-    events: IOrder[]
+    events: IOrder[],
   ) => {
     const visited: Record<string, boolean> = {};
     const components: IOrder[][] = [];
@@ -140,7 +140,7 @@ const groupEventsByTimePeriod = (events: Order[] | undefined) => {
 
         // Map IDs back to events
         const eventGroup = component.map(
-          (id) => events.find((e) => e.id === id)!
+          (id) => events.find((e) => e.id === id)!,
         );
 
         components.push(eventGroup);
@@ -165,7 +165,7 @@ const groupEventsByTimePeriod = (events: Order[] | undefined) => {
       start_date.setHours(b.start_time ? +b.start_time?.slice(0, 2) : 5);
 
       return start_date.getTime() - end_date.getTime();
-    })
+    }),
   );
 };
 
@@ -219,12 +219,12 @@ export default function DailyView({
 
   const getFormattedDayTitle = useCallback(
     () => mnDateFormatTitle(mnDateFormat(currentDate)),
-    [currentDate]
+    [currentDate],
   );
 
   function handleAddEvent(event?: IOrder) {
     const orderDate = event?.order_date || new Date();
-    
+
     setOpen(
       <CustomModal title="Захиалга нэмэх" contentClass="max-w-3xl">
         <AddEventModal
@@ -245,7 +245,7 @@ export default function DailyView({
           ...event,
           orderDate,
         };
-      }
+      },
     );
   }
 
@@ -271,7 +271,7 @@ export default function DailyView({
       currentDate.getMonth(),
       chosenDay,
       hours,
-      0
+      0,
     );
 
     handleAddEvent({
@@ -376,7 +376,7 @@ export default function DailyView({
                         Захиалга нэмэх
                       </div>
                     </div>
-                  )
+                  ),
                 )}
 
                 <AnimatePresence initial={false}>
@@ -385,7 +385,7 @@ export default function DailyView({
                         const group = orderMap.get(event.start_time) ?? []; // эсвэл orderMap[event.start_time]
                         const eventsInSamePeriod = group.length;
                         const periodIndex = group.findIndex(
-                          (e) => e.id === event.id
+                          (e) => e.id === event.id,
                         );
 
                         const { height, left, top, zIndex } =
@@ -403,7 +403,6 @@ export default function DailyView({
                               left: `${left}%`,
                               padding: "0px 0px",
                               height: height,
-                              minHeight: "100px",
                               boxSizing: "border-box",
                             }}
                             className={` flex transition-all duration-1000 flex-grow flex-col absolute`}
