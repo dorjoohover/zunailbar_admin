@@ -47,7 +47,7 @@ export function getColumns(
         <TableActionButtons
           rowData={row.original}
           onEdit={(data) => onEdit(data, 1)}
-          onRemove={(data) => remove(row.index, true)}
+          onRemove={(data) => remove(row.index, false)}
         ></TableActionButtons>
       ),
     },
