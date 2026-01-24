@@ -13,6 +13,8 @@ interface TableActionButtonsProps<T> {
   onEdit: (data: T) => void;
   onRemove?: (data: T) => Promise<any>;
   children?: ReactNode; // Дунд хэсэгт нэмэлт JSX оруулах боломж
+  title?: string;
+  description?: string;
 }
 
 export function TableActionButtons<T>({
@@ -20,6 +22,8 @@ export function TableActionButtons<T>({
   onEdit,
   onRemove,
   children,
+  title = "Итгэлтэй байна уу?",
+  description,
 }: TableActionButtonsProps<T>) {
   return (
     <div className="flex items-center gap-2">
@@ -34,8 +38,8 @@ export function TableActionButtons<T>({
 
       {onRemove && (
         <AppAlertDialog
-          title="Итгэлтэй байна уу?"
-          description=""
+          title={title}
+          description={description}
           onConfirm={async () => {
             try {
               const res = await onRemove(rowData);

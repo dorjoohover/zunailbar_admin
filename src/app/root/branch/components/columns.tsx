@@ -79,6 +79,7 @@ export function getColumns(
       header: "Үйлдэл",
       cell: ({ row }) => (
         <TableActionButtons
+          description="Тухайн салбарт харьяалагдах мэдээлэл бүгд устахыг анхаарна уу"
           rowData={row.original}
           onEdit={(data) => onEdit(data)}
           onRemove={(data) => remove(row.index)}

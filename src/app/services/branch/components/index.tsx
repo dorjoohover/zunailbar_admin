@@ -301,7 +301,7 @@ export const BranchServicePage = ({
             <Modal
               // w="2xl"
               maw="xl"
-              // name={"Үйлчилгээ нэмэх"}
+              name={"Үйлчилгээ нэмэх"}
               submit={() => form.handleSubmit(onSubmit, onInvalid)()}
               open={open == true}
               setOpen={(v) => {
