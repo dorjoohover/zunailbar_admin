@@ -34,7 +34,7 @@ const formSchema = z.object({
   index: zNumOpt({
     label: "Дараалал",
   }),
-  edit: zStrOpt(),
+  edit: zStrOpt({}),
 });
 export type RootType = z.infer<typeof formSchema>;
 type FormInput = z.input<typeof formSchema>; // optional тал

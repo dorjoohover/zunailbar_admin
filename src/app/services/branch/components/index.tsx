@@ -33,8 +33,8 @@ import { Textarea } from "@/components/ui/textarea";
 
 const formSchema = z
   .object({
-    branch_id: zStrOpt(),
-    service_id: zStrOpt(),
+    branch_id: zStrOpt({}),
+    service_id: zStrOpt({}),
     max_price: zNumOpt(),
     status: zNumOpt(),
     min_price: zNumOpt({
@@ -49,9 +49,9 @@ const formSchema = z
       allowNullable: false,
       label: "Хугацаа",
     }),
-    edit: zStrOpt(),
-    custom_name: zStrOpt(),
-    custom_description: zStrOpt(),
+    edit: zStrOpt({}),
+    custom_name: zStrOpt({}),
+    custom_description: zStrOpt({}),
     index: zNumOpt(),
     meta: z.any(),
   })

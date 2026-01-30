@@ -1,6 +1,6 @@
-"use client";
+"use client";;
 import { DataTable } from "@/components/data-table";
-import { Branch, IUser, User } from "@/models";
+import { IUser, User } from "@/models";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ListType,
@@ -20,7 +20,7 @@ import z from "zod";
 import { FormProvider, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Api } from "@/utils/api";
-import { create, deleteOne, search, updateOne } from "@/app/(api)";
+import { create, deleteOne, updateOne } from "@/app/(api)";
 import { FormItems } from "@/shared/components/form.field";
 import { ComboBox } from "@/shared/components/combobox";
 import { TextField } from "@/shared/components/text.field";
@@ -28,18 +28,14 @@ import { fetcher } from "@/hooks/fetcher";
 import { getColumns } from "./columns";
 import { ROLE, UserLevel, UserStatus } from "@/lib/enum";
 import DynamicHeader from "@/components/dynamicHeader";
-import { objectCompact } from "@/lib/functions";
-import { FilterPopover } from "@/components/layout/popover";
-import { Checkbox } from "@radix-ui/react-checkbox";
 import { PasswordField } from "@/shared/components/password.field";
 import { showToast } from "@/shared/components/showToast";
 import { Button } from "@/components/ui/button";
-import { FormLabel } from "@/components/ui/form";
 import { useRouter } from "next/navigation";
 
 const formSchema = z.object({
   mobile: z.string().length(8),
-  nickname: zStrOpt(),
+  nickname: zStrOpt({}),
   password: zStrOpt({
     allowNullable: false,
     label: "Нууц үг",

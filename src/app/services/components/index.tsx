@@ -41,7 +41,7 @@ import { INPUT_TYPE } from "@/lib/enum";
 
 const formSchema = z
   .object({
-    category_id: zStrOpt(),
+    category_id: zStrOpt({}),
     name: zStrOpt({
       allowNullable: false,
       label: "Үйлчилгээний нэр",
@@ -55,9 +55,9 @@ const formSchema = z
       allowNullable: false,
       label: "Хугацаа",
     }),
-    image: zStrOpt(),
-    icon: zStrOpt(),
-    description: zStrOpt(),
+    image: zStrOpt({}),
+    icon: zStrOpt({}),
+    description: zStrOpt({}),
     parallel: zBoolOpt,
     pre: zNumOpt(),
     view: zNumOpt(),

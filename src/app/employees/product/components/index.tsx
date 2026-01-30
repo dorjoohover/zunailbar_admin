@@ -60,8 +60,8 @@ const formSchema = z.object({
     allowNullable: false,
     label: "Бүтээгдэхүүн",
   }),
-  product_name: zStrOpt(),
-  user_name: zStrOpt(),
+  product_name: zStrOpt({}),
+  user_name: zStrOpt({}),
   quantity: zNumOpt({
     allowNullable: false,
     label: "Тоо ширхэг",

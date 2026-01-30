@@ -76,7 +76,7 @@ const formSchema = z.object({
     allowNullable: false,
     label: "Хоч",
   }),
-  profile_img: zStrOpt(),
+  profile_img: zStrOpt({}),
   color: zNumOpt({
     allowNullable: false,
     label: "Өнгө",
