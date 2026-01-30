@@ -60,6 +60,32 @@ export const zBoolOpt = z.preprocess((val) => {
   return typeof val == "boolean" ? val : val === "true";
 }, z.boolean().optional().nullable()) as unknown as boolean;
 
+// export const zStrOpt = ({
+//   allowNullable = true,
+//   label,
+//   length,
+// }: {
+//   label?: string;
+//   allowNullable?: boolean;
+//   length?: number;
+// }): string => {
+//   // console.log('asdf')
+//   if (allowNullable)
+//     return z.string().nullable().optional() as unknown as string;
+//   if (length)
+//     return z
+//       .string({
+//         error: `${length} оронтой байх ёстой`,
+//       })
+//       .length(length)
+//       .nonoptional() as unknown as string;
+//   return z
+//     .string({
+//       error: `${label} оруулна уу`,
+//     })
+//     .nonoptional() as unknown as string;
+// };
+
 export const zStrOpt = ({
   allowNullable = true,
   label,
@@ -68,22 +94,22 @@ export const zStrOpt = ({
   label?: string;
   allowNullable?: boolean;
   length?: number;
-} = {}) => {
-  // console.log('asdf')
-  if (allowNullable)
-    return z.string().nullable().optional() as unknown as string;
-  if (length)
+}) => {
+  if (allowNullable) {
+    return z.string().nullable().optional();
+  }
+
+  if (length) {
     return z
       .string({
-        error: `${length} оронтой байх ёстой`,
+        message: `${length} оронтой байх ёстой`,
       })
-      .length(length)
-      .nonoptional() as unknown as string;
-  return z
-    .string({
-      error: `${label} оруулна уу`,
-    })
-    .nonoptional() as unknown as string;
+      .length(length);
+  }
+
+  return z.string({
+    message: `${label ?? "Утга"} оруулна уу`,
+  });
 };
 export const zNumOpt = ({
   allowNullable,
@@ -106,7 +132,7 @@ export const zNumOpt = ({
         .refine((v) => allowNullable || v != undefined, {
           message: `${label} оруулна уу`,
         })
-        .nonoptional()
+        .nonoptional(),
     )
     .optional() as unknown as number;
 };
@@ -222,7 +248,7 @@ export const MODAL_ACTION = {
 };
 
 export function getEnumValues<T extends Record<string, string | number>>(
-  e: T
+  e: T,
 ): T[keyof T][] {
   return Object.values(e).filter((v) => typeof v !== "string") as T[keyof T][];
 }

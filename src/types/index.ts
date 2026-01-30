@@ -33,7 +33,7 @@ export interface Handlers {
       eventsInSamePeriod?: number;
       periodIndex?: number;
       adjustForPeriod?: boolean;
-    }
+    },
   ) => {
     height: string;
     left: string;
@@ -49,7 +49,7 @@ export interface Handlers {
 export interface Getters {
   getDaysInMonth: (
     month: number,
-    year: number
+    year: number,
   ) => { day: number; events: IOrder[] }[];
   getEventsForDay: (day: number, currentDate: Date) => Order[];
   getDaysInWeek: (week: number, year: number) => Date[];
@@ -94,7 +94,7 @@ const detail = z.object({
     label: "Хугацаа",
     value: 0,
   }),
-  description: zStrOpt(),
+  description: zStrOpt({}),
   parallel: z.boolean().nullable().optional(),
   price: zNumOpt({
     value: 0,
@@ -111,7 +111,7 @@ export const eventSchema = z.object({
   branch_id: zStrOpt({
     label: "Салбар",
     allowNullable: false,
-  }) as string,
+  }),
 
   customer_id: zStrOpt({
     allowNullable: false,
@@ -139,13 +139,13 @@ export const eventSchema = z.object({
   order_status: z
     .preprocess(
       (val) => (typeof val === "string" ? parseInt(val, 10) : val),
-      z.nativeEnum(OrderStatus).nullable()
+      z.nativeEnum(OrderStatus).nullable(),
     )
     .optional() as unknown as number,
   method: z
     .preprocess(
       (val) => (typeof val === "string" ? parseInt(val, 10) : val),
-      z.nativeEnum(PaymentMethod).nullable()
+      z.nativeEnum(PaymentMethod).nullable(),
     )
     .optional() as unknown as number,
   total_amount: zNumOpt({

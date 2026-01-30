@@ -3,7 +3,12 @@ import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 
 import { useModal } from "@/providers/modal-context";
-import { FormProvider, SubmitHandler, useForm } from "react-hook-form";
+import {
+  FormProvider,
+  SubmitHandler,
+  useForm,
+  useWatch,
+} from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { EventFormData, eventSchema } from "@/types/index";
 import { useScheduler } from "@/providers/schedular-provider";
@@ -64,6 +69,27 @@ type ListFieldProps<T> = {
   route?: string;
   onChange: (data: ListType<T>) => void;
 };
+const calculateDuration = (details: any[], parallel?: boolean | null) => {
+  if (!details?.length) return 0;
+  const durations = details.map((d) => Number(d.duration || 0));
+
+  if (parallel && details.length > 1) {
+    return Math.max(...durations);
+  }
+
+  return durations.reduce((a, b) => a + b, 0);
+};
+const sumPrices = (details: any[]) =>
+  details.reduce((sum, d) => sum + Number(d.price || 0), 0);
+
+type DetailType = {
+  service_id: string;
+  service_name: string;
+  duration: unknown;
+  description?: string | null | undefined;
+  price?: number | null | undefined;
+  user_id?: string | null | undefined;
+};
 export default function AddEventModal({
   // CustomAddEventModal,
   items,
@@ -82,26 +108,6 @@ export default function AddEventModal({
   values?: IOrder | any;
   // CustomAddEventModal?: React.FC<{ register: any; errors: any }>;
 }) {
-  const { setClose, data } = useModal();
-  const typedData = data as { default: IOrder };
-  const { handlers } = useScheduler();
-  const [allItems, setValues] = useState(items);
-  const [services, setServices] = useState<ListType<Service>>({
-    count: 0,
-    items: [],
-  });
-  const form = useForm<EventFormData>({
-    resolver: zodResolver(eventSchema),
-    defaultValues: values ?? defaultValues,
-  });
-  const [isTimeSlotsEnabled, setTimeSlotsEnabled] = useState(
-    form.getValues("edit") == undefined,
-  );
-
-  const [loader, setLoader] = useState({
-    [Api.service]: false,
-  });
-
   const listField = async <T,>({
     api,
     value,
@@ -180,55 +186,6 @@ export default function AddEventModal({
     }
   };
 
-  const [artists, setArtists] = useState(allItems.user);
-  const branchId = form.watch("branch_id");
-  const customerId = form.watch("customer_id");
-  useEffect(() => {
-    let cancelled = false;
-    async function syncCustomer() {
-      if (!customerId) return;
-
-      // 1. Хэрвээ items дотор байхгүй бол API-аар ганцаараа авч нэмнэ
-      const exists = allItems.customer.some((v) => v.id == customerId);
-
-      if (!exists) {
-        try {
-          searchField(customerId as string, Api.customer, true);
-        } catch (_) {}
-      }
-    }
-
-    syncCustomer();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [customerId]);
-  useEffect(() => {
-    if (branchId) {
-      listField<Service>({
-        api: Api.service,
-        onChange: (data) => {
-          setServices(data);
-        },
-        key: "branch_id",
-        value: branchId as string,
-      });
-      getSlots();
-    } else {
-      setServices(ListDefault);
-      return;
-    }
-  }, [branchId]);
-  useEffect(() => {
-    if (values) {
-      form.reset({
-        ...values,
-        edit: values.id,
-      });
-    }
-  }, [data, form.reset, values]);
-  console.log(values);
   const getSuitableArtists = (
     artists: SearchType<User>[],
     service_id?: string,
@@ -253,126 +210,6 @@ export default function AddEventModal({
 
     return result;
   };
-  useEffect(() => {
-    if (isTimeSlotsEnabled) {
-    } else {
-      setArtists(allItems.user);
-    }
-  }, [isTimeSlotsEnabled]);
-  const onSubmit: SubmitHandler<EventFormData> = (formData) => {
-    const newEvent = {
-      branch_id: formData.branch_id,
-      details: formData.details,
-      order_date: formData.order_date as string,
-      start_time: formData.start_time,
-      end_time: formData.end_time,
-      duration: formData.duration,
-      description: formData.description ?? undefined,
-      customer_id: formData.customer_id,
-      order_status: formData.order_status as OrderStatus | undefined,
-      total_amount: formData.total_amount as number | undefined,
-      paid_amount: +(formData.paid_amount ?? 0),
-      pre_amount: +(formData.pre_amount ?? 0),
-      edit: formData.edit ?? undefined,
-      parallel: formData.parallel,
-    } as IOrder;
-    send(newEvent);
-
-    setClose();
-  };
-  const onInvalid = async <T,>(e: T) => {
-    const error = Object.entries(e as any)
-      .map(([er, v], i) => {
-        if (er == "details")
-          return Object.values(v as any).map((a: any) => {
-            return Object.values(a).map((b: any) => b.message);
-          });
-        if ((v as any)?.message) {
-          return (v as any)?.message;
-        }
-        let value = VALUES[er];
-
-        return i == 0 ? firstLetterUpper(value ?? "") : value;
-      })
-      .join(", ");
-
-    showToast("info", error);
-  };
-  const details = form.watch("details");
-  const parallel = form.watch("parallel");
-  type DetailType = {
-    service_id: string;
-    service_name: string;
-    duration: unknown;
-    description?: string | null | undefined;
-    price?: number | null | undefined;
-    user_id?: string | null | undefined;
-  };
-  const updateDetail = (index: number, value: any, key?: keyof DetailType) => {
-    const current = form.getValues("details") || [];
-
-    // Хэрвээ detail байхгүй бол шинэ item нэмнэ
-    if (!current[index]) {
-      form.setValue("details", [...current, value]);
-      return;
-    }
-
-    if (!key) {
-      const updated = details.filter((_, i) => i != index);
-      form.setValue("details", updated);
-      return;
-    }
-
-    const updated = current.map((item, i) =>
-      i === index ? { ...item, [key]: value } : item,
-    );
-    form.setValue("details", updated);
-  };
-
-  const paid_amount = (form.watch("paid_amount") as number) ?? 0;
-  const pre_amount = (form.watch("pre_amount") as number) ?? 0;
-  const order_date = form.watch("order_date") as string;
-  const start_time = form.watch("start_time") as string;
-  const duration = form.watch("duration") as string;
-  useEffect(() => {
-    form.setValue("total_amount", +paid_amount + +pre_amount, {
-      shouldDirty: true,
-    });
-  }, [paid_amount, pre_amount]);
-  const isFirstRun = useRef(true);
-
-  useEffect(() => {
-    if (!details?.length) return;
-
-    if (isFirstRun.current && values.duration > 0) {
-      isFirstRun.current = false;
-      return;
-    }
-
-    isFirstRun.current = false;
-
-    const defaultValue = values.duration ?? 0;
-
-    getArtists();
-    console.log(parallel);
-    const calculatedDuration =
-      parallel && details.length > 1
-        ? Math.max(...details.map((d) => Number(d.duration || defaultValue)))
-        : details.reduce(
-            (sum, d) => sum + Number(d.duration || defaultValue),
-            0,
-          );
-
-    form.setValue("duration", calculatedDuration);
-  }, [details, parallel]);
-  useEffect(() => {
-    if (!start_time || !duration) return;
-
-    const endTime = addMinutes(start_time, +duration);
-    form.setValue("end_time", endTime);
-  }, [start_time, duration]);
-  const [userService, setUserService] = useState<OrderSlot>({});
-  const [slots, setSlots] = useState<Record<string, Slot[]>>({});
   const getSlots = async () => {
     const body = {
       branch_id: branchId,
@@ -413,6 +250,231 @@ export default function AddEventModal({
 
     setUserService(data);
   };
+
+  const { setClose, data } = useModal();
+  const [allItems, setValues] = useState(items);
+  const [artists, setArtists] = useState(allItems.user);
+  const [services, setServices] = useState<ListType<Service>>({
+    count: 0,
+    items: [],
+  });
+  const [userService, setUserService] = useState<OrderSlot>({});
+  const [slots, setSlots] = useState<Record<string, Slot[]>>({});
+  const form = useForm<EventFormData>({
+    resolver: zodResolver(eventSchema),
+    defaultValues,
+  });
+
+  const [isTimeSlotsEnabled, setTimeSlotsEnabled] = useState(
+    form.getValues("edit") == undefined,
+  );
+  const isEdit = Boolean(values?.id);
+
+  const [loader, setLoader] = useState({
+    [Api.service]: false,
+  });
+
+  const onSubmit: SubmitHandler<EventFormData> = (formData) => {
+    const newEvent = {
+      branch_id: formData.branch_id,
+      details: formData.details,
+      order_date: formData.order_date as string,
+      start_time: formData.start_time,
+      end_time: formData.end_time,
+      duration: formData.duration,
+      description: formData.description ?? undefined,
+      customer_id: formData.customer_id,
+      order_status: formData.order_status as OrderStatus | undefined,
+      total_amount: formData.total_amount as number | undefined,
+      paid_amount: +(formData.paid_amount ?? 0),
+      pre_amount: +(formData.pre_amount ?? 0),
+      edit: formData.edit ?? undefined,
+      parallel: formData.parallel,
+    } as IOrder;
+    send(newEvent);
+
+    setClose();
+  };
+  const onInvalid = async <T,>(e: T) => {
+    const error = Object.entries(e as any)
+      .map(([er, v], i) => {
+        if (er == "details")
+          return Object.values(v as any).map((a: any) => {
+            return Object.values(a).map((b: any) => b.message);
+          });
+        if ((v as any)?.message) {
+          return (v as any)?.message;
+        }
+        let value = VALUES[er];
+
+        return i == 0 ? firstLetterUpper(value ?? "") : value;
+      })
+      .join(", ");
+
+    showToast("info", error);
+  };
+  const updateDetail = (index: number, value: any, key?: keyof DetailType) => {
+    const current = form.getValues("details") || [];
+
+    // Хэрвээ detail байхгүй бол шинэ item нэмнэ
+    if (!current[index]) {
+      form.setValue("details", [...current, value]);
+      return;
+    }
+
+    if (!key) {
+      const updated = details.filter((_, i) => i != index) as any;
+      form.setValue("details", updated);
+      return;
+    }
+
+    const updated = current.map((item, i) =>
+      i === index ? { ...item, [key]: value } : item,
+    );
+    form.setValue("details", updated);
+  };
+  const {
+    branch_id: branchId,
+    customer_id: customerId,
+    details = [],
+    parallel,
+    paid_amount = 0,
+    total_amount = 0,
+    pre_amount = 0,
+    order_date,
+    start_time,
+    duration,
+  } = useWatch<EventFormData>({ control: form.control });
+  const isDurationInitialized = useRef(false);
+  useEffect(() => {
+    if (!values || !services.items.length) return;
+
+    const mappedDetails = values?.details?.map((v: any) => {
+      const service = services.items.find((s) => s.id === v.service_id);
+
+      return {
+        service_id: service?.id ?? "",
+        service_name: service?.name ?? "",
+        duration: Number(service?.duration ?? 0),
+        category_id: service?.category_id ?? "",
+        description: v.description ?? "",
+        price: v.price ?? 0,
+        user_id: v.user?.id ?? "",
+      };
+    });
+    console.log(mappedDetails);
+
+    form.reset({
+      ...values,
+      details: mappedDetails,
+      edit: values.id,
+    });
+  }, [values, services.items]);
+  useEffect(() => {
+    if (!details.length) return;
+
+    // ✅ Edit mode: анхны утгыг 1 удаа л хадгална
+    if (isEdit && !isDurationInitialized.current) {
+      isDurationInitialized.current = true;
+      return;
+    }
+
+    const calculated = calculateDuration(details, parallel);
+    getArtists();
+    const current = Number(duration ?? 0);
+    console.log(calculated, details.length);
+    if (current !== calculated) {
+      form.setValue("duration", calculated, {
+        shouldDirty: true,
+        shouldTouch: false,
+      });
+    }
+  }, [details, parallel, isEdit]);
+
+  useEffect(() => {
+    let cancelled = false;
+    async function syncCustomer() {
+      if (!customerId) return;
+
+      // 1. Хэрвээ items дотор байхгүй бол API-аар ганцаараа авч нэмнэ
+      const exists = allItems.customer.some((v) => v.id == customerId);
+
+      if (!exists) {
+        try {
+          searchField(customerId as string, Api.customer, true);
+        } catch (_) {}
+      }
+    }
+
+    syncCustomer();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [customerId]);
+  useEffect(() => {
+    if (branchId) {
+      listField<Service>({
+        api: Api.service,
+        onChange: (data) => {
+          setServices(data);
+        },
+        key: "branch_id",
+        value: branchId as string,
+      });
+      getSlots();
+    } else {
+      setServices(ListDefault);
+      return;
+    }
+  }, [branchId]);
+  useEffect(() => {
+    if (!values) return;
+
+    isDurationInitialized.current = false;
+
+    form.reset({
+      ...values,
+      edit: values.id,
+    });
+  }, [values, data]);
+
+  useEffect(() => {
+    if (isTimeSlotsEnabled) {
+    } else {
+      setArtists(allItems.user);
+    }
+  }, [isTimeSlotsEnabled]);
+
+  useEffect(() => {
+    const serviceTotal = sumPrices(details);
+    const total = serviceTotal + Number(pre_amount || 0);
+
+    const currentTotal = total_amount || 0;
+
+    // 🔥 Loop-оос хамгаална
+    if (currentTotal !== total) {
+      form.setValue("total_amount", total, {
+        shouldDirty: true,
+        shouldTouch: false,
+      });
+    }
+    if (paid_amount != serviceTotal) {
+      form.setValue("paid_amount", serviceTotal, {
+        shouldDirty: true,
+        shouldTouch: false,
+      });
+    }
+  }, [details, pre_amount]);
+  useEffect(() => {
+    if (!start_time || !duration) return;
+
+    const endTime = addMinutes(start_time, Number(duration));
+    form.setValue("end_time", endTime, {
+      shouldDirty: false,
+      shouldTouch: false,
+    });
+  }, [start_time, duration]);
 
   return (
     <form
@@ -537,7 +599,11 @@ export default function AddEventModal({
             >
               {(field) => {
                 return (
-                  <TextField type={INPUT_TYPE.MONEY} props={{ ...field }} />
+                  <TextField
+                    disabled={true}
+                    type={INPUT_TYPE.MONEY}
+                    props={{ ...field }}
+                  />
                 );
               }}
             </FormItems>
@@ -548,7 +614,11 @@ export default function AddEventModal({
             >
               {(field) => {
                 return (
-                  <TextField type={INPUT_TYPE.MONEY} props={{ ...field }} />
+                  <TextField
+                    type={INPUT_TYPE.MONEY}
+                    disabled={false}
+                    props={{ ...field }}
+                  />
                 );
               }}
             </FormItems>
@@ -559,7 +629,11 @@ export default function AddEventModal({
             >
               {(field) => {
                 return (
-                  <TextField type={INPUT_TYPE.MONEY} props={{ ...field }} />
+                  <TextField
+                    disabled={true}
+                    type={INPUT_TYPE.MONEY}
+                    props={{ ...field }}
+                  />
                 );
               }}
             </FormItems>
@@ -727,7 +801,8 @@ export default function AddEventModal({
                 label="Эхлэх цаг"
               >
                 {(field) => {
-                  let slot = isTimeSlotsEnabled ? slots?.[order_date] : [];
+                  let slot =
+                    isTimeSlotsEnabled && order_date ? slots?.[order_date] : [];
                   const artistIds = details
                     ?.map((d) => d.user_id)
                     .filter(Boolean);
@@ -759,7 +834,7 @@ export default function AddEventModal({
                 name="end_time"
                 label="Дуусах цаг"
               >
-                {(field) => <TextField props={{ ...field, disabled: true }} />}
+                {(field) => <TextField props={{ ...field }} disabled={true} />}
               </FormItems>
             )}
           </div>
@@ -825,7 +900,6 @@ export default function AddEventModal({
                               ).map((b, i) => {
                                 const [mobile, nickname, branch] =
                                   b?.value?.split("__") ?? ["", "", "", ""];
-
                                 return {
                                   label: `${firstLetterUpper(
                                     nickname,

@@ -148,6 +148,7 @@ export const TestHeroUploader = ({ data }: { data: ListType<Home> }) => {
         let res = await create<IHome>(Api.home, payload as IHome, "home");
 
         if (res?.success) {
+          showToast('success', 'Хадгаллаа.')
           refresh();
         }
       }

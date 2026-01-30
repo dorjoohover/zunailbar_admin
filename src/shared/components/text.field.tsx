@@ -33,7 +33,7 @@ export const TextField = <T extends FieldValues>({
   const [display, setDisplay] = useState(
     type === "money"
       ? money(String(props.value ?? ""))
-      : String(props.value ?? "")
+      : String(props.value ?? ""),
   );
   useEffect(() => {
     if (type === "money") {
@@ -77,6 +77,7 @@ export const TextField = <T extends FieldValues>({
         <Input
           pattern={pattern}
           {...props}
+          disabled={disabled}
           type={type}
           onChange={(e) => {
             const raw = e.target.value;
@@ -108,6 +109,7 @@ export const TextField = <T extends FieldValues>({
           placeholder={pl}
           className={className}
           type="text"
+          disabled={disabled}
           inputMode="decimal"
           value={display}
           onChange={(e) => {
