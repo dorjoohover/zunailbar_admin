@@ -266,7 +266,7 @@ export default function AddEventModal({
   });
 
   const [isTimeSlotsEnabled, setTimeSlotsEnabled] = useState(
-    form.getValues("edit") == undefined,
+    form.getValues("edit") == undefined || values?.id != undefined,
   );
   const isEdit = Boolean(values?.id);
 
