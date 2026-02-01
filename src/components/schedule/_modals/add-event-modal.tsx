@@ -347,7 +347,7 @@ export default function AddEventModal({
   } = useWatch<EventFormData>({ control: form.control });
   const isDurationInitialized = useRef(false);
   useEffect(() => {
-    if (!values || !services.items.length) return;
+    if (!values || !values?.id || !services.items.length) return;
 
     const mappedDetails = values?.details?.map((v: any) => {
       const service = services.items.find((s) => s.id === v.service_id);
@@ -362,7 +362,6 @@ export default function AddEventModal({
         user_id: v.user?.id ?? "",
       };
     });
-    console.log(mappedDetails);
 
     form.reset({
       ...values,
@@ -382,7 +381,6 @@ export default function AddEventModal({
     const calculated = calculateDuration(details, parallel);
     getArtists();
     const current = Number(duration ?? 0);
-    console.log(calculated, details.length);
     if (current !== calculated) {
       form.setValue("duration", calculated, {
         shouldDirty: true,
@@ -427,12 +425,13 @@ export default function AddEventModal({
       setServices(ListDefault);
       return;
     }
+    console.log('branch_id')
   }, [branchId]);
   useEffect(() => {
-    if (!values) return;
-
+    if (!values?.id) return;
     isDurationInitialized.current = false;
 
+    console.log('reset')
     form.reset({
       ...values,
       edit: values.id,
