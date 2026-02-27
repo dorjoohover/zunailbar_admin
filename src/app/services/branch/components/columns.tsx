@@ -59,6 +59,11 @@ export function getColumns(
     },
 
     {
+      accessorKey: "service_count",
+      header: "Тоо хэмжээ",
+      cell: ({ row }) => row.getValue("service_count") ?? "-",
+    },
+    {
       accessorKey: "custom_name",
       header: "Оноосон нэр",
       cell: ({ row }) => row.getValue("custom_name") ?? "-",

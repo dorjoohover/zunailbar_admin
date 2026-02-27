@@ -258,6 +258,7 @@ export default function AddEventModal({
     count: 0,
     items: [],
   });
+  const [orderDuration, setDuration] = useState(undefined);
   const [userService, setUserService] = useState<OrderSlot>({});
   const [slots, setSlots] = useState<Record<string, Slot[]>>({});
   const form = useForm<EventFormData>({
@@ -381,7 +382,11 @@ export default function AddEventModal({
     const calculated = calculateDuration(details, parallel);
     getArtists();
     const current = Number(duration ?? 0);
-    if (current !== calculated) {
+    console.log(current, calculated, current != calculated);
+    if(orderDuration != undefined) {
+      return
+    }
+    if (current != calculated) {
       form.setValue("duration", calculated, {
         shouldDirty: true,
         shouldTouch: false,
@@ -425,13 +430,13 @@ export default function AddEventModal({
       setServices(ListDefault);
       return;
     }
-    console.log('branch_id')
+    console.log("branch_id");
   }, [branchId]);
   useEffect(() => {
     if (!values?.id) return;
     isDurationInitialized.current = false;
 
-    console.log('reset')
+    console.log("reset");
     form.reset({
       ...values,
       edit: values.id,
@@ -474,7 +479,7 @@ export default function AddEventModal({
       shouldTouch: false,
     });
   }, [start_time, duration]);
-
+  console.log(orderDuration, 'duration');
   return (
     <form
       className="space-y-4 "
@@ -787,6 +792,10 @@ export default function AddEventModal({
                       type={INPUT_TYPE.NUMBER}
                       props={{
                         ...field,
+                        onChange: (e) => {
+                          field.onChange(e);
+                          setDuration(e);
+                        },
                       }}
                     />
                   );

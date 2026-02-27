@@ -52,6 +52,10 @@ const formSchema = z
     edit: zStrOpt({}),
     custom_name: zStrOpt({}),
     custom_description: zStrOpt({}),
+    service_count: zNumOpt({
+      allowNullable: false,
+      label: "Тоо хэмжээ",
+    }),
     index: zNumOpt(),
     meta: z.any(),
   })
@@ -63,14 +67,14 @@ const formSchema = z
     {
       message: "Их үнэ бага үнээс хямд байна байж болохгүй",
       path: ["max_price"],
-    }
+    },
   )
   .refine(
     (data) => (data?.pre ?? 0) <= (data?.max_price ?? data?.min_price ?? 0),
     {
       message: "Урьдчилгаа нийт дүнгээс хэтэрч болохгүй",
       path: ["pre"],
-    }
+    },
   );
 
 const defaultValues: BranchServiceType = {
@@ -85,6 +89,7 @@ const defaultValues: BranchServiceType = {
   custom_description: undefined,
   custom_name: undefined,
   index: undefined,
+  service_count: undefined,
   meta: undefined,
 };
 type FilterType = {
@@ -113,7 +118,7 @@ export const BranchServicePage = ({
     useState<ListType<BranchService> | null>(null);
   const branchMap = useMemo(
     () => new Map(branches.items.map((b) => [b.id, b])),
-    [branches.items]
+    [branches.items],
   );
 
   const branchServiceFormatter = (data: ListType<BranchService>) => {
@@ -169,13 +174,16 @@ export const BranchServicePage = ({
     setAction(ACTION.RUNNING);
 
     const { edit, meta, ...body } = e as BranchServiceType;
-    let payload = { ...(body as unknown as IBranchService) };
-
+    let payload = {
+      ...(body as unknown as IBranchService),
+      service_count:
+        body.service_count == 0 ? null : (body.service_count ?? null),
+    };
     const res = edit
       ? await updateOne<BranchService>(
           Api.branch_service,
           (edit as string) ?? "",
-          payload as unknown as BranchService
+          payload as unknown as BranchService,
         )
       : await create<BranchService>(Api.branch_service, e as BranchService);
     if (res.success) {
@@ -183,7 +191,7 @@ export const BranchServicePage = ({
       setOpen(false);
       showToast(
         "success",
-        edit ? "Мэдээлэл засагдсан!" : "Амжилттай нэмэгдлээ!"
+        edit ? "Мэдээлэл засагдсан!" : "Амжилттай нэмэгдлээ!",
       );
       clear();
     } else {
@@ -245,7 +253,7 @@ export const BranchServicePage = ({
           }),
         },
       ],
-      [branches.items, services.items]
+      [branches.items, services.items],
     );
   const resetFilter = () => {
     setFilter({
@@ -396,14 +404,13 @@ export const BranchServicePage = ({
 
                 <div className="divide-x-gray"></div>
 
-                <div className="double-col mb-4">
+                <div className="grid grid-cols-2 gap-4 mb-4">
                   {[
                     {
                       key: "min_price",
                       type: INPUT_TYPE.MONEY,
                       label: "Үнэ",
                     },
-
                     {
                       key: "max_price",
                       type: INPUT_TYPE.MONEY,
@@ -419,52 +426,50 @@ export const BranchServicePage = ({
                       type: INPUT_TYPE.NUMBER,
                       label: "Хугацаа",
                     },
+                    {
+                      key: "service_count",
+                      type: INPUT_TYPE.NUMBER,
+                      label: "Үйлчилгээний тоо хэмжээ",
+                    },
                   ].map((item, i) => {
                     const name = item.key as keyof BranchServiceType;
                     const label = item.label as keyof BranchServiceType;
+
                     return (
                       <FormItems
                         label={label}
                         control={form.control}
                         name={name}
                         key={i}
-                        className={item.key && "name"}
                       >
-                        {(field) => {
-                          return (
-                            <TextField props={{ ...field }} type={item.type} />
-                          );
-                        }}
+                        {(field) => (
+                          <TextField props={{ ...field }} type={item.type} />
+                        )}
                       </FormItems>
                     );
                   })}
-                </div>
-                <div className="grid grid-cols-12 gap-4">
+
+                 
                   <FormItems
                     control={form.control}
                     name={"status"}
                     label="Төлөв"
-                    className={"col-span-6"}
                   >
-                    {(field) => {
-                      return (
-                        <ComboBox
-                          props={{ ...field }}
-                          items={[STATUS.Active, STATUS.Hidden].map((item) => {
-                            return {
-                              value: item.toString(),
-                              label: getValuesStatus[item].name,
-                            };
-                          })}
-                        />
-                      );
-                    }}
+                    {(field) => (
+                      <ComboBox
+                        props={{ ...field }}
+                        items={[STATUS.Active, STATUS.Hidden].map((item) => ({
+                          value: item.toString(),
+                          label: getValuesStatus[item].name,
+                        }))}
+                      />
+                    )}
                   </FormItems>
+
                   <FormItems
                     control={form.control}
                     name={"meta"}
                     label="Үйлчилгээний нэр"
-                    className={"col-span-6"}
                   >
                     {(field) => {
                       const value = field.value;
@@ -472,22 +477,22 @@ export const BranchServicePage = ({
                         <TextField
                           props={{
                             name: "serviceName",
+                            disabled: true,
+                            value: value?.serviceName ?? "",
                             onBlur: () => {},
                             onChange: () => {},
-                            disabled: true,
                             ref: () => null,
-                            value: value?.serviceName ?? "",
                           }}
                           type={INPUT_TYPE.TEXT}
                         />
                       );
                     }}
                   </FormItems>
+
                   <FormItems
                     control={form.control}
                     name={"meta"}
                     label="Давхар эсэх"
-                    className={"col-span-6"}
                   >
                     {(field) => {
                       const value = field.value;
@@ -495,30 +500,32 @@ export const BranchServicePage = ({
                         <TextField
                           props={{
                             name: "parallel",
+                            disabled: true,
+                            value: value?.parallel ? "Тийм" : "Үгүй",
                             onBlur: () => {},
                             onChange: () => {},
-                            disabled: true,
                             ref: () => null,
-                            value: value?.parallel ?? "" ? "Тийм" : "Үгүй",
                           }}
                           type={INPUT_TYPE.TEXT}
                         />
                       );
                     }}
                   </FormItems>
+
+                  {/* Тайлбар бүтэн мөр эзэлнэ */}
                   <FormItems
                     control={form.control}
                     name={"meta"}
                     label="Тайлбар"
-                    className={"col-span-6"}
+                    className="col-span-2"
                   >
                     {(field) => {
                       const value = field.value;
                       return (
                         <Textarea
-                          disabled={true}
+                          disabled
+                          value={value?.description ?? ""}
                           onChange={() => {}}
-                          value={`${value?.description ?? ""}`}
                         />
                       );
                     }}

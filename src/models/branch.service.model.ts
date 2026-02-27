@@ -9,6 +9,7 @@ export interface BranchServiceMeta {
 export interface IBranchService {
   id?: string;
   branch_id?: string;
+  service_count?: number;
   service_id?: string;
   max_price?: number;
   min_price?: number;
@@ -30,6 +31,7 @@ export interface BranchService {
   max_price: number;
   min_price: number;
   pre: number;
+  service_count?: number;
   duration: number;
   custom_name?: string;
   custom_description?: string;
