@@ -128,6 +128,7 @@ export const EmployeeUserServicePage = ({
         limit: limit ?? DEFAULT_PG.limit,
         sort: sort ?? DEFAULT_PG.sort,
         service_id,
+        user_status: UserStatus.ACTIVE,
         user_id,
         ...pg,
         //   name: pg.filter,

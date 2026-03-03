@@ -61,7 +61,7 @@ const formSchema = z.object({
   }),
   birthday: z.preprocess(
     (val) => (typeof val === "string" ? new Date(val) : val),
-    z.date()
+    z.date(),
   ) as unknown as Date,
   experience: zNumOpt({
     label: "Туршлага",
@@ -71,6 +71,9 @@ const formSchema = z.object({
   }),
   password: zStrOpt({
     label: "Нууц үг",
+  }),
+  salary_day: zNumOpt({
+    label: "Цалин олгох огноо",
   }),
   nickname: zStrOpt({
     allowNullable: false,
@@ -86,7 +89,7 @@ const formSchema = z.object({
       (val) => (typeof val === "string" ? parseInt(val, 10) : val),
       z.number().refine((val) => [ROLE.EMPLOYEE, ROLE.MANAGER].includes(val), {
         message: "Зөвхөн EMPLOYEE эсвэл MANAGER сонгож болно",
-      })
+      }),
     )
     .optional() as unknown as number,
   file: z
@@ -113,6 +116,7 @@ const defaultValues = {
   // color: 0,
   experience: 0,
   password: undefined,
+  salary_date: undefined,
 };
 export const EmployeePage = ({
   data,
@@ -157,7 +161,7 @@ export const EmployeePage = ({
           Api.user,
           editingUser?.id as string,
           payload,
-          "update"
+          "update",
         )
       : await create<IUser>(Api.user, {
           ...payload,
@@ -171,7 +175,7 @@ export const EmployeePage = ({
         "success",
         editingUser?.id != undefined
           ? "Мэдээлэл засагдсан!"
-          : "Ажилтан нэмэгдлээ!"
+          : "Ажилтан нэмэгдлээ!",
       );
       form.reset(defaultValues);
     } else {
@@ -187,6 +191,7 @@ export const EmployeePage = ({
         if ((v as any)?.message) {
           return (v as any)?.message;
         }
+
         return i == 0 ? firstLetterUpper(value) : value;
       })
       .join(", ");
@@ -223,9 +228,14 @@ export const EmployeePage = ({
     form.reset(e);
   };
   const setStatus = async (index: number, status: number) => {
-    await updateOne(Api.user, users.items[index].id, {
-      user_status: status,
-    }, 'status');
+    await updateOne(
+      Api.user,
+      users.items[index].id,
+      {
+        user_status: status,
+      },
+      "status",
+    );
     refresh();
   };
   const giveProduct = (index: number) => {
@@ -280,7 +290,7 @@ export const EmployeePage = ({
           })),
         },
       ],
-      [branches.items]
+      [branches.items],
     );
   return (
     <div className="relative w-full">
@@ -339,7 +349,7 @@ export const EmployeePage = ({
               setOpen={(v) => {
                 setOpen(v);
                 setEditingUser(null);
-                if(!editingUser) form.reset(defaultValues)
+                if (!editingUser) form.reset(defaultValues);
               }}
               loading={action == ACTION.RUNNING}
             >
@@ -477,7 +487,7 @@ export const EmployeePage = ({
                                     label: RoleValue[role],
                                     value: role.toString(),
                                   };
-                                }
+                                },
                               )}
                               props={{
                                 ...field,
@@ -514,6 +524,7 @@ export const EmployeePage = ({
                       "nickname",
                       "percent",
                       "experience",
+                      "salary_day",
                     ].map((i, index) => {
                       const item = i as keyof UserType;
                       return (
@@ -542,7 +553,7 @@ export const EmployeePage = ({
                                     : {}),
                                 }}
                                 className={cn(
-                                  item === "mobile" ? "hide-number-arrows" : ""
+                                  item === "mobile" ? "hide-number-arrows" : "",
                                 )}
                               />
                             );
@@ -558,13 +569,10 @@ export const EmployeePage = ({
                       {(field) => {
                         return (
                           <DatePicker
-                            name=""
+                            mode="single"
                             pl="Огноо сонгох"
-                            props={{ ...field }}
-                            range={{ from: field.value, to: field.value }}
-                            setRange={(v) => {
-                              field.onChange(v.from);
-                            }}
+                            value={field.value as any}
+                            onChange={(date) => field.onChange(date)}
                           />
                         );
                       }}
@@ -581,7 +589,7 @@ export const EmployeePage = ({
                                   value: index.toString(),
                                   label: key,
                                 };
-                              }
+                              },
                             )}
                           />
                         );

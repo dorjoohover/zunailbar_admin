@@ -122,6 +122,14 @@ export const getColumns = (
     },
   },
   {
+    accessorKey: "salary_day",
+    header: "Цалин олгох огноо",
+    cell: ({ row }) => {
+      const value  = row.getValue("salary_day");
+      return `${value ? `${value} | ${Math.floor((+value + 15) % 30)}` : `-`} `;
+    },
+  },
+  {
     accessorKey: "profile_img",
     header: "Профайл",
     cell: ({ row }) => {

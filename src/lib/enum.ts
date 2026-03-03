@@ -29,6 +29,10 @@ export enum UserStatus {
   ACTIVE = 10,
   BANNED = 50,
 }
+export enum SalaryStatus {
+  ACTIVE = 10,
+  INACTIVE = 20,
+}
 export enum UserLevel {
   BRONZE = 0,
   SILVER = 10,
@@ -59,6 +63,10 @@ export enum OrderStatus {
   // ireegui
   ABSENT = 60,
   Friend = 70,
+}
+export enum PaymentType {
+  Salary = 10, 
+  Advance = 20,
 }
 // export enum EmployeeStatus {
 //   ACTIVE = 10,

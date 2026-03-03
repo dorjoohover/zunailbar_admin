@@ -89,7 +89,7 @@ export const sidebar_items = [
             url: "/employees/service",
           },
           {
-            title: "Ажилтны цалин",
+            title: "Ажилтны цалингийн түүх",
             icon: SquareUserRound,
             url: "/employees/salary",
           },
@@ -218,7 +218,7 @@ export const sidebar_items = [
             // icon: Milk,
           },
           {
-            title: "Урьдчилгаа",
+            title: "Цалингийн түүх",
             url: "/salaries/pre",
           },
           {
@@ -431,7 +431,7 @@ export function AppSidebar() {
                                           href={child.url}
                                           className={cn(
                                             isChildActive && "text-sky-600",
-                                            "w-full justify-between px-0"
+                                            "w-full justify-between px-0",
                                           )}
                                         >
                                           {child.title}

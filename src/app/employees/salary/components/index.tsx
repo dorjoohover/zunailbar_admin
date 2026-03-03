@@ -12,6 +12,7 @@ import {
   VALUES,
   getEnumValues,
   getValuesStatus,
+  SalaryStatusValue,
 } from "@/lib/constants";
 import { Modal } from "@/shared/components/modal";
 import z from "zod";
@@ -32,7 +33,14 @@ import DynamicHeader from "@/components/dynamicHeader";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { showToast } from "@/shared/components/showToast";
-import { CategoryType, ROLE, STATUS, INPUT_TYPE, UserStatus } from "@/lib/enum";
+import {
+  CategoryType,
+  ROLE,
+  STATUS,
+  INPUT_TYPE,
+  UserStatus,
+  SalaryStatus,
+} from "@/lib/enum";
 import { TextField } from "@/shared/components/text.field";
 
 const formSchema = z.object({
@@ -40,20 +48,20 @@ const formSchema = z.object({
 
   percent: z.preprocess(
     (val) => (typeof val === "string" ? parseFloat(val) : val),
-    z.number()
+    z.number(),
   ) as unknown as number,
   duration: z.preprocess(
     (val) => (typeof val === "string" ? parseFloat(val) : val),
-    z.number()
+    z.number(),
   ) as unknown as number,
   date: z.preprocess(
     (val) => (typeof val === "string" ? new Date(val) : val),
-    z.date()
+    z.date(),
   ) as unknown as Date,
   status: z
     .preprocess(
       (val) => (typeof val === "string" ? parseInt(val, 10) : val),
-      z.nativeEnum(STATUS).nullable()
+      z.nativeEnum(STATUS).nullable(),
     )
     .optional() as unknown as number,
   edit: z.string().nullable().optional(),
@@ -70,6 +78,7 @@ type UserSalaryType = z.infer<typeof formSchema>;
 type FilterType = {
   service?: string;
   user?: string;
+  salary_status?: SalaryStatus;
 };
 export const EmployeeUserSalaryPage = ({
   data,
@@ -85,12 +94,12 @@ export const EmployeeUserSalaryPage = ({
     defaultValues,
   });
   const [userSalaries, setUserSalarys] = useState<ListType<IUserSalary> | null>(
-    null
+    null,
   );
 
   const userMap = useMemo(
     () => new Map(users.map((b) => [b.id, b.value])),
-    [users]
+    [users],
   );
 
   const UserSalaryFormatter = (data: ListType<UserSalary>) => {
@@ -98,7 +107,7 @@ export const EmployeeUserSalaryPage = ({
       const user = userMap.get(item.user_id);
       return {
         ...item,
-        user_name: user ? searchUsernameFormatter(user) : "",
+        user_name: user ? searchUsernameFormatter(user) : item.user_id,
       };
     });
 
@@ -109,7 +118,6 @@ export const EmployeeUserSalaryPage = ({
   }, [data]);
   const clear = () => {
     form.reset(defaultValues);
-    console.log(form.getValues());
   };
   const deleteUserSalary = async (index: number) => {
     const id = userSalaries!.items[index]?.id;
@@ -139,6 +147,8 @@ export const EmployeeUserSalaryPage = ({
       limit: limit ?? DEFAULT_PG.limit,
       sort: sort ?? DEFAULT_PG.sort,
       user_id,
+      user_status: UserStatus.ACTIVE,
+      salary_status: filter?.salary_status,
       ...pg,
       //   name: pg.filter,
     }).then((d) => {
@@ -154,7 +164,7 @@ export const EmployeeUserSalaryPage = ({
       ? await updateOne<IUserSalary>(
           Api.user_salaries,
           edit as string,
-          payload as IUserSalary
+          payload as IUserSalary,
         )
       : await create<IUserSalary>(Api.user_salaries, e as IUserSalary);
     if (res.success) {
@@ -163,7 +173,7 @@ export const EmployeeUserSalaryPage = ({
       clear();
       showToast(
         "success",
-        edit ? "Мэдээлэл шинэчлэлээ." : "Амжилттай хадгаллаа."
+        edit ? "Мэдээлэл шинэчлэлээ." : "Амжилттай хадгаллаа.",
       );
     } else {
       showToast("error", res.error ?? "Алдаа гарлаа");
@@ -182,7 +192,9 @@ export const EmployeeUserSalaryPage = ({
       .join(", ");
     showToast("info", error);
   };
-  const [filter, setFilter] = useState<FilterType>();
+  const [filter, setFilter] = useState<FilterType | undefined>({
+    salary_status: SalaryStatus.ACTIVE,
+  });
   const changeFilter = (key: string, value: number | string) => {
     setFilter((prev) => ({ ...prev, [key]: value }));
   };
@@ -193,7 +205,7 @@ export const EmployeeUserSalaryPage = ({
         service_id: filter?.service,
         user_id: filter?.user,
         page: 0,
-      })
+      }),
     );
   }, [filter]);
   const groups: { key: keyof FilterType; label: string; items: Option[] }[] =
@@ -207,8 +219,16 @@ export const EmployeeUserSalaryPage = ({
             label: searchUsernameFormatter(b.value),
           })),
         },
+        {
+          key: "salary_status",
+          label: "Статус",
+          items: Object.entries(SalaryStatusValue).map(([key, value]) => ({
+            value: key,
+            label: value.name,
+          })),
+        },
       ],
-      [users]
+      [users],
     );
 
   const [items, setItems] = useState({
@@ -223,17 +243,17 @@ export const EmployeeUserSalaryPage = ({
       key === Api.product
         ? { id: value, type: CategoryType.DEFAULT }
         : edit === undefined
-        ? {
-            id: value,
-            role: ROLE.E_M,
-            user_status: UserStatus.ACTIVE,
-          }
-        : {
-            role: ROLE.E_M,
-            user_status: UserStatus.ACTIVE,
+          ? {
+              id: value,
+              role: ROLE.E_M,
+              user_status: UserStatus.ACTIVE,
+            }
+          : {
+              role: ROLE.E_M,
+              user_status: UserStatus.ACTIVE,
 
-            value: v,
-          };
+              value: v,
+            };
     await search(key as any, {
       ...payload,
       limit: 20,

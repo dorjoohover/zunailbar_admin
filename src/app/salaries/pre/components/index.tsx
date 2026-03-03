@@ -8,9 +8,9 @@ import {
   DEFAULT_PG,
   getEnumValues,
   ListDefault,
-  SalaryLogValues,
   VALUES,
   ZValidator,
+  PaymentTypeValues,
 } from "@/lib/constants";
 import { Modal } from "@/shared/components/modal";
 import z from "zod";
@@ -24,41 +24,39 @@ import { TextField } from "@/shared/components/text.field";
 import { fetcher } from "@/hooks/fetcher";
 import { getColumns } from "./columns";
 import DynamicHeader from "@/components/dynamicHeader";
-import { INPUT_TYPE, SalaryLogStatus } from "@/lib/enum";
-import { ISalaryLog, SalaryLog, User } from "@/models";
+import { INPUT_TYPE, PaymentType } from "@/lib/enum";
+import { IIntegrationPayment, IntegrationPayment, User } from "@/models";
 import { firstLetterUpper, mnDate, usernameFormatter } from "@/lib/functions";
 import { DatePicker } from "@/shared/components/date.picker";
 import { showToast } from "@/shared/components/showToast";
+import { fi } from "date-fns/locale";
 
 const formSchema = z.object({
-  date: z.preprocess(
+  paid_at: z.preprocess(
     (val) => (typeof val === "string" ? new Date(val) : val),
-    z.date()
+    z.date(),
   ) as unknown as Date,
-  salary_log_status: z
+  type: z
     .preprocess(
       (val) => (typeof val === "string" ? parseInt(val, 10) : val),
-      z.nativeEnum(SalaryLogStatus).nullable()
+      z.nativeEnum(PaymentType).nullable(),
     )
     .optional() as unknown as number,
   amount: z.preprocess(
     (val) => (typeof val === "string" ? parseFloat(val) : val),
-    z.number()
+    z.number(),
   ) as unknown as number,
-  order_count: z.preprocess(
-    (val) => (typeof val === "string" ? parseFloat(val) : val),
-    z.number()
-  ) as unknown as number,
-  user_id: ZValidator.user,
+
+  artist_id: ZValidator.user,
   user_name: z.string(),
   edit: z.string().nullable().optional(),
 });
 const defaultValues = {
-  date: new Date(),
-  salary_status: undefined,
+  paid_at: new Date(),
+  type: PaymentType.Salary,
   amount: 0,
   order_count: 0,
-  user_id: "",
+  artist_id: "",
   user_name: "",
   edit: undefined,
 };
@@ -67,7 +65,7 @@ export const PrePage = ({
   data,
   users,
 }: {
-  data: ListType<SalaryLog>;
+  data: ListType<IntegrationPayment>;
   users: ListType<User>;
 }) => {
   const [action, setAction] = useState(ACTION.DEFAULT);
@@ -76,25 +74,26 @@ export const PrePage = ({
     resolver: zodResolver(formSchema),
     defaultValues,
   });
-  const [salaries, setSalaries] = useState<ListType<SalaryLog>>(ListDefault);
+  const [salaries, setSalaries] =
+    useState<ListType<IntegrationPayment>>(ListDefault);
   const deleteLog = async (index: number) => {
     const id = salaries!.items[index].id;
-    const res = await deleteOne(Api.salary_log, id);
+    const res = await deleteOne(Api.integration_payment, id);
     refresh();
     return res.success;
   };
-  const edit = async (e: ISalaryLog) => {
+  const edit = async (e: IIntegrationPayment) => {
     setOpen(true);
     form.reset({ ...e, edit: e.id });
   };
   const userMap = useMemo(
     () => new Map(users.items.map((b) => [b.id, b])),
-    [users.items]
+    [users.items],
   );
 
-  const userFormatter = (data: ListType<SalaryLog>) => {
-    const items: SalaryLog[] = data.items.map((item) => {
-      const user = userMap.get(item.user_id);
+  const userFormatter = (data: ListType<IntegrationPayment>) => {
+    const items: IntegrationPayment[] = data.items.map((item) => {
+      const user = userMap.get(item.artist_id);
 
       return {
         ...item,
@@ -112,7 +111,7 @@ export const PrePage = ({
   const refresh = async (pg: PG = DEFAULT_PG) => {
     setAction(ACTION.RUNNING);
     const { page, limit, sort } = pg;
-    await fetcher<SalaryLog>(Api.salary_log, {
+    await fetcher<IntegrationPayment>(Api.integration_payment, {
       page: page ?? DEFAULT_PG.page,
       limit: limit ?? DEFAULT_PG.limit,
       sort: sort ?? DEFAULT_PG.sort,
@@ -128,16 +127,22 @@ export const PrePage = ({
     const { edit, ...payload } = body;
 
     const res = edit
-      ? await updateOne<ISalaryLog>(
-          Api.salary_log,
+      ? await updateOne<IIntegrationPayment>(
+          Api.integration_payment,
           edit ?? "",
-          payload as unknown as ISalaryLog
+          payload as unknown as IIntegrationPayment,
         )
-      : await create<ISalaryLog>(Api.salary_log, e as ISalaryLog);
+      : await create<IIntegrationPayment>(
+          Api.integration_payment,
+          e as IIntegrationPayment,
+        );
     if (res.success) {
       refresh();
       setOpen(false);
+      showToast("info", edit ? "Амжилттай засварлалаа" : "Амжилттай нэмлээ");
       form.reset({});
+    } else {
+      showToast("error", res.error ?? "Алдаа гарлаа");
     }
     setAction(ACTION.DEFAULT);
   };
@@ -156,7 +161,7 @@ export const PrePage = ({
   const downloadExcel = async (pg: PG = DEFAULT_PG) => {
     setAction(ACTION.RUNNING);
     const { page, limit, sort } = pg;
-    const res = await excel(Api.salary_log, {
+    const res = await excel(Api.integration_payment, {
       page: page ?? DEFAULT_PG.page,
       limit: -1,
       sort: sort ?? DEFAULT_PG.sort,
@@ -170,7 +175,7 @@ export const PrePage = ({
       link.href = url;
       link.setAttribute(
         "download",
-        `salary_${mnDate().toISOString().slice(0, 10)}.xlsx`
+        `salary_${mnDate().toISOString().slice(0, 10)}.xlsx`,
       );
       document.body.appendChild(link);
       link.click();
@@ -213,21 +218,19 @@ export const PrePage = ({
                     <FormItems
                       label="Статус"
                       control={form.control}
-                      name="salary_log_status"
+                      name="type"
                       className={"col-span-1"}
                     >
                       {(field) => {
                         return (
                           <ComboBox
                             props={{ ...field }}
-                            items={getEnumValues(SalaryLogStatus).map(
-                              (item) => {
-                                return {
-                                  value: item.toString(),
-                                  label: SalaryLogValues[item],
-                                };
-                              }
-                            )}
+                            items={getEnumValues(PaymentType).map((item) => {
+                              return {
+                                value: item.toString(),
+                                label: PaymentTypeValues[item],
+                              };
+                            })}
                           />
                         );
                       }}
@@ -235,7 +238,7 @@ export const PrePage = ({
                     <FormItems
                       label="Нэр"
                       control={form.control}
-                      name="user_id"
+                      name="artist_id"
                       className={"col-span-1"}
                     >
                       {(field) => {
@@ -252,39 +255,35 @@ export const PrePage = ({
                         );
                       }}
                     </FormItems>
-                    <FormItems label="Огноо" control={form.control} name="date">
+                    <FormItems
+                      label="Төлсөн огноо"
+                      control={form.control}
+                      name="paid_at"
+                    >
                       {(field) => {
                         return (
                           <DatePicker
                             name=""
+                            mode="single"
                             pl="Огноо сонгох"
-                            range={{
-                              from: field.value as Date,
-                              to: field.value as Date,
-                            }}
-                            setRange={(e) => field.onChange(e)}
-                            props={{ ...field }}
+                            value={field.value as any}
+                            onChange={(e) => field.onChange(e)}
                           />
                         );
                       }}
                     </FormItems>
                     <FormItems
+                      label="Төлсөн дүн"
                       control={form.control}
-                      name="order_count"
-                      label="Нийт хийсэн үйлчилгээ"
+                      name="amount"
                     >
                       {(field) => {
                         return (
                           <TextField
                             props={{
-                              name: "order_count",
-                              onBlur: () => {},
-                              onChange: () => {},
-                              disabled: true,
-                              ref: () => {},
-                              value: form.getValues("order_count"),
+                              ...field,
                             }}
-                            type={INPUT_TYPE.NUMBER}
+                            type={INPUT_TYPE.MONEY}
                           />
                         );
                       }}

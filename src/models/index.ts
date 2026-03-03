@@ -19,3 +19,4 @@ export * from "./product.warehouse.model";
 export * from "./service.category.model";
 export * from "./branch.service.model";
 export * from "./user.salary.model";
+export * from "./integration.payment.model";

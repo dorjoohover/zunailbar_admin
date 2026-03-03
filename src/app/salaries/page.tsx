@@ -6,7 +6,7 @@ import { ROLE, UserStatus } from "@/lib/enum";
 
 export default async function Page() {
   const [res, user] = await Promise.all([
-    find<SalaryLog>(Api.salary_log),
+    find<SalaryLog>(Api.integration),
     find<User>(Api.user, {
       role: ROLE.E_M,
       limit: -1,

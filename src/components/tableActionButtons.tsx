@@ -14,6 +14,7 @@ interface TableActionButtonsProps<T> {
   onRemove?: (data: T) => Promise<any>;
   children?: ReactNode; // Дунд хэсэгт нэмэлт JSX оруулах боломж
   title?: string;
+  edit?: boolean;
   description?: string;
 }
 
@@ -24,14 +25,17 @@ export function TableActionButtons<T>({
   children,
   title = "Итгэлтэй байна уу?",
   description,
+  edit = true,
 }: TableActionButtonsProps<T>) {
   return (
     <div className="flex items-center gap-2">
-      <TooltipWrapper tooltip="Засварлах">
-        <Button variant="ghost" size="icon" onClick={() => onEdit(rowData)}>
-          <Pencil className="w-4 h-4" />
-        </Button>
-      </TooltipWrapper>
+      {edit && (
+        <TooltipWrapper tooltip="Засварлах">
+          <Button variant="ghost" size="icon" onClick={() => onEdit(rowData)}>
+            <Pencil className="w-4 h-4" />
+          </Button>
+        </TooltipWrapper>
+      )}
 
       {/* Энд дунд хэсгийн JSX оруулна */}
       {children}

@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { format } from "date-fns";
 import { ChevronDownIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
@@ -10,72 +11,89 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { ControllerRenderProps, FieldValues } from "react-hook-form";
-import { format } from "date-fns";
 import { DateRange } from "react-day-picker";
 
-export function DatePicker<T extends FieldValues>({
-  pl = "Select",
-  name = "Choose",
-  props,
-  range,
-  setRange,
-}: {
+type Mode = "single" | "range";
+
+interface DatePickerProps {
   name?: string;
   pl?: string;
-  range?: DateRange;
-  setRange: (range: DateRange) => void;
-  props: ControllerRenderProps<T>;
-}) {
-  const [open, setOpen] = React.useState(false);
-  const { onChange } = props;
+  mode?: Mode;
+  value?: Date | DateRange;
+  onChange: (value: Date | DateRange | undefined) => void;
+}
 
-  // Сонгосон range-г форматлах функц
+export function DatePicker({
+  name,
+  pl = "Select date",
+  mode = "single",
+  value,
+  onChange,
+}: DatePickerProps) {
+  const [open, setOpen] = React.useState(false);
+
   const getDisplayText = () => {
-    if (range?.from && range?.to) {
-      return `${format(range.from, "yyyy/MM/dd")} - ${format(
-        range.to,
-        "yyyy/MM/dd"
-      )}`;
+    if (mode === "range") {
+      const range = value as DateRange | undefined;
+
+      if (range?.from && range?.to) {
+        return `${format(range.from, "yyyy/MM/dd")} - ${format(
+          range.to,
+          "yyyy/MM/dd",
+        )}`;
+      }
+
+      if (range?.from) {
+        return format(range.from, "yyyy/MM/dd");
+      }
+
+      return pl;
     }
-    if (range?.from) {
-      return format(range.from, "yyyy/MM/dd");
+
+    if (mode === "single" && value instanceof Date) {
+      return format(value, "yyyy/MM/dd");
     }
+
     return pl;
   };
 
   return (
     <div className="flex flex-col space-y-2">
-      {name && (
-        <Label htmlFor="date" className="px-1">
-          {name}
-        </Label>
-      )}
+      {name && <Label className="px-1">{name}</Label>}
 
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
           <Button
             variant="outline"
-            id="date"
             className="min-w-32 justify-between font-normal h-10 bg-white"
           >
             {getDisplayText()}
             <ChevronDownIcon />
           </Button>
         </PopoverTrigger>
+
         <PopoverContent className="w-auto overflow-hidden p-0" align="start">
           <Calendar
-            mode="range"
-            selected={range}
-            defaultMonth={range?.from}
+            mode={mode}
+            selected={value as any}
+            defaultMonth={
+              mode === "range" ? (value as DateRange)?.from : (value as Date)
+            }
             captionLayout="dropdown"
-            onSelect={(selected) => {
-              if (selected) {
-                setRange(selected);
-                onChange(selected);
-                if (selected?.from && selected?.to) {
-                  setOpen(false);
-                }
+            required={mode === "range"}
+            onSelect={(selected: Date | DateRange | undefined) => {
+              onChange(selected as any);
+
+              if (mode === "single") {
+                setOpen(false);
+              }
+
+              if (
+                mode === "range" &&
+                (selected as DateRange)?.from &&
+                (selected as DateRange)?.to
+              ) {
+                setOpen(false);
               }
             }}
           />

@@ -33,23 +33,23 @@ import { showToast } from "@/shared/components/showToast";
 const formSchema = z.object({
   date: z.preprocess(
     (val) => (typeof val === "string" ? new Date(val) : val),
-    z.date()
+    z.date(),
   ) as unknown as Date,
-  salary_log_status: z
+  salary_status: z
     .preprocess(
       (val) => (typeof val === "string" ? parseInt(val, 10) : val),
-      z.nativeEnum(SalaryLogStatus).nullable()
+      z.nativeEnum(SalaryLogStatus).nullable(),
     )
     .optional() as unknown as number,
   amount: z.preprocess(
     (val) => (typeof val === "string" ? parseFloat(val) : val),
-    z.number()
+    z.number(),
   ) as unknown as number,
   order_count: z.preprocess(
     (val) => (typeof val === "string" ? parseFloat(val) : val),
-    z.number()
+    z.number(),
   ) as unknown as number,
-  user_id: ZValidator.user,
+  artist_id: ZValidator.user,
   user_name: z.string(),
   edit: z.string().nullable().optional(),
 });
@@ -58,7 +58,7 @@ const defaultValues = {
   salary_status: undefined,
   amount: 0,
   order_count: 0,
-  user_id: "",
+  artist_id: "",
   user_name: "",
   edit: undefined,
 };
@@ -79,7 +79,7 @@ export const SalaryPage = ({
   const [salaries, setSalaries] = useState<ListType<SalaryLog>>(ListDefault);
   const deleteLog = async (index: number) => {
     const id = salaries!.items[index].id;
-    const res = await deleteOne(Api.salary_log, id);
+    const res = await deleteOne(Api.integration, id);
     refresh();
     return res.success;
   };
@@ -89,12 +89,12 @@ export const SalaryPage = ({
   };
   const userMap = useMemo(
     () => new Map(users.items.map((b) => [b.id, b])),
-    [users.items]
+    [users.items],
   );
 
   const userFormatter = (data: ListType<SalaryLog>) => {
     const items: SalaryLog[] = data.items.map((item) => {
-      const user = userMap.get(item.user_id);
+      const user = userMap.get(item.artist_id);
 
       return {
         ...item,
@@ -112,7 +112,7 @@ export const SalaryPage = ({
   const refresh = async (pg: PG = DEFAULT_PG) => {
     setAction(ACTION.RUNNING);
     const { page, limit, sort } = pg;
-    await fetcher<SalaryLog>(Api.salary_log, {
+    await fetcher<SalaryLog>(Api.integration, {
       page: page ?? DEFAULT_PG.page,
       limit: limit ?? DEFAULT_PG.limit,
       sort: sort ?? DEFAULT_PG.sort,
@@ -125,15 +125,15 @@ export const SalaryPage = ({
   const onSubmit = async <T,>(e: T) => {
     setAction(ACTION.RUNNING);
     const body = e as SalaryType;
-    const { edit, ...payload } = body;
+    const { edit, user_name, ...payload } = body;
 
     const res = edit
       ? await updateOne<ISalaryLog>(
-          Api.salary_log,
+          Api.integration,
           edit ?? "",
-          payload as unknown as ISalaryLog
+          payload as unknown as ISalaryLog,
         )
-      : await create<ISalaryLog>(Api.salary_log, e as ISalaryLog);
+      : await create<ISalaryLog>(Api.integration, e as ISalaryLog);
     if (res.success) {
       refresh();
       setOpen(false);
@@ -156,7 +156,7 @@ export const SalaryPage = ({
   const downloadExcel = async (pg: PG = DEFAULT_PG) => {
     setAction(ACTION.RUNNING);
     const { page, limit, sort } = pg;
-    const res = await excel(Api.salary_log, {
+    const res = await excel(Api.integration, {
       page: page ?? DEFAULT_PG.page,
       limit: -1,
       sort: sort ?? DEFAULT_PG.sort,
@@ -170,7 +170,7 @@ export const SalaryPage = ({
       link.href = url;
       link.setAttribute(
         "download",
-        `salary_${mnDate().toISOString().slice(0, 10)}.xlsx`
+        `salary_${mnDate().toISOString().slice(0, 10)}.xlsx`,
       );
       document.body.appendChild(link);
       link.click();
@@ -213,7 +213,7 @@ export const SalaryPage = ({
                     <FormItems
                       label="Статус"
                       control={form.control}
-                      name="salary_log_status"
+                      name="salary_status"
                       className={"col-span-1"}
                     >
                       {(field) => {
@@ -224,9 +224,9 @@ export const SalaryPage = ({
                               (item) => {
                                 return {
                                   value: item.toString(),
-                                  label: SalaryLogValues[item],
+                                  label: SalaryLogValues[item].name,
                                 };
-                              }
+                              },
                             )}
                           />
                         );
@@ -235,7 +235,7 @@ export const SalaryPage = ({
                     <FormItems
                       label="Нэр"
                       control={form.control}
-                      name="user_id"
+                      name="artist_id"
                       className={"col-span-1"}
                     >
                       {(field) => {
@@ -258,12 +258,8 @@ export const SalaryPage = ({
                           <DatePicker
                             name=""
                             pl="Огноо сонгох"
-                            range={{
-                              from: field.value as Date,
-                              to: field.value as Date,
-                            }}
-                            setRange={(e) => field.onChange(e)}
-                            props={{ ...field }}
+                            value={field.value as any}
+                            onChange={(e) => field.onChange(e)}
                           />
                         );
                       }}

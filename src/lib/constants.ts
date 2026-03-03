@@ -23,10 +23,12 @@ import {
   EmployeeStatus,
   OrderStatus,
   PaymentMethod,
+  PaymentType,
   ProductLogStatus,
   ProductTransactionStatus,
   ROLE,
   SalaryLogStatus,
+  SalaryStatus,
   ScheduleStatus,
   STATUS,
   UserLevel,
@@ -173,6 +175,10 @@ export type Option<T = string | number> = { value: T; label: string };
 export const UserStatusValue = {
   [UserStatus.ACTIVE]: { name: "Идэвхтэй", color: "green-badge badge" },
   [UserStatus.BANNED]: { name: "Идэвхгүй", color: "red-badge badge" },
+};
+export const SalaryStatusValue = {
+  [SalaryStatus.ACTIVE]: { name: "Идэвхтэй", color: "green-badge badge" },
+  [SalaryStatus.INACTIVE]: { name: "Идэвхгүй", color: "red-badge badge" },
 };
 export const ScheduleStatusValue = {
   [ScheduleStatus.Active]: { name: "Active", color: "green-badge badge" },
@@ -354,8 +360,14 @@ export const CategoryTypeValues = {
 };
 
 export const SalaryLogValues = {
-  [SalaryLogStatus.Paid]: "Paid",
-  [SalaryLogStatus.Pending]: "Pending",
+  [SalaryLogStatus.Paid]: {
+    name: "Paid",
+    color: "green-badge badge",
+  },
+  [SalaryLogStatus.Pending]: {
+    name: "Pending",
+    color: "yellow-badge badge",
+  },
 };
 
 export const OrderStatusValues = {
@@ -366,6 +378,10 @@ export const OrderStatusValues = {
   [OrderStatus.Pending]: "Хүлээгдэж",
   [OrderStatus.ABSENT]: "Цуцалсан",
   [OrderStatus.Friend]: "Танил",
+};
+export const PaymentTypeValues = {
+  [PaymentType.Salary]: "Цалин",
+  [PaymentType.Advance]: "Урьдчилгаа",
 };
 export const icons = {
   [Brush.displayName ?? "Brush"]: Brush,
@@ -418,6 +434,7 @@ export const VALUES = {
   role: "хэрэглэгчийн түвшин",
   user_id: "Артист",
   percent: "Цалингийн хувь",
+  salary_day: "Цалин олгох огноо",
 } as const as any;
 
 export const ZValidator = {

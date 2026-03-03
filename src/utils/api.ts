@@ -5,12 +5,14 @@ export enum METHOD {
   patch = "PATCH",
   delete = "DELETE",
 }
-const BASE = process.env.API
-  ? process.env.API?.endsWith("/")
-    ? process.env.API
-    : process.env.API + "/" 
-  // : "http://localhost:5000/api/v1/";
-    : "https://api.zunailbar.mn/api/v1/";
+const BASE = 
+// process.env.API
+  // ? process.env.API?.endsWith("/")
+  //   ? process.env.API
+  //   : process.env.API + "/" 
+  // :
+   "http://localhost:5000/api/v1/";
+    // : "https://api.zunailbar.mn/api/v1/";
 
 export enum Api {
   login = "login",
@@ -25,7 +27,8 @@ export enum Api {
   discount = "discount",
   file = "file",
   category = "category",
-  salary_log = "salary_log",
+  integration = "integration",
+  integration_payment = "integration_payment",
   service = "service",
   schedule = "schedule",
   artist_leaves = "artist_leaves",
@@ -57,7 +60,8 @@ export const API = {
   [Api.artist_leaves]: BASE + "artist_leaves",
   [Api.branch_leaves]: BASE + "branch_leaves",
   [Api.slots]: BASE + "slots",
-  [Api.salary_log]: BASE + "salary_log",
+  [Api.integration]: BASE + "integration",
+  [Api.integration_payment]: BASE + "integration_payment",
   [Api.product_warehouse]: BASE + "product_warehouse",
   [Api.cost]: BASE + "cost",
   [Api.user]: BASE + "user",

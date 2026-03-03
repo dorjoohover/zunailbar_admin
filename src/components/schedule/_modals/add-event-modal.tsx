@@ -332,6 +332,7 @@ export default function AddEventModal({
     const updated = current.map((item, i) =>
       i === index ? { ...item, [key]: value } : item,
     );
+
     form.setValue("details", updated);
   };
   const {
@@ -354,6 +355,7 @@ export default function AddEventModal({
       const service = services.items.find((s) => s.id === v.service_id);
 
       return {
+        id: v.id,
         service_id: service?.id ?? "",
         service_name: service?.name ?? "",
         duration: Number(service?.duration ?? 0),
@@ -383,8 +385,8 @@ export default function AddEventModal({
     getArtists();
     const current = Number(duration ?? 0);
     console.log(current, calculated, current != calculated);
-    if(orderDuration != undefined) {
-      return
+    if (orderDuration != undefined) {
+      return;
     }
     if (current != calculated) {
       form.setValue("duration", calculated, {
@@ -479,7 +481,7 @@ export default function AddEventModal({
       shouldTouch: false,
     });
   }, [start_time, duration]);
-  console.log(orderDuration, 'duration');
+  console.log(orderDuration, "duration");
   return (
     <form
       className="space-y-4 "

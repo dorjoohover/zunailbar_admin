@@ -39,6 +39,7 @@ import {
   firstLetterUpper,
   mnDate,
   objectCompact,
+  parseDate,
 } from "@/lib/functions";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import DynamicHeader from "@/components/dynamicHeader";
@@ -50,7 +51,7 @@ import { cn } from "@/lib/utils";
 const productItemSchema = z.object({
   quantity: z.preprocess(
     (val) => (typeof val === "string" ? parseFloat(val) : val),
-    z.number().nullable()
+    z.number().nullable(),
   ) as unknown as number,
   product_id: z.string().min(1, "Бүтээгдэхүүн заавал сонгоно").nullable(),
 });
@@ -94,7 +95,7 @@ export const ProductWarehousePage = ({
     useState<ListType<IProductWarehouse> | null>(null);
   const warehouseMap = useMemo(
     () => new Map(warehouses.items.map((p) => [p.id, p])),
-    [warehouses.items]
+    [warehouses.items],
   );
 
   const productWarehouseFormatter = (data: ListType<IProductWarehouse>) => {
@@ -171,11 +172,11 @@ export const ProductWarehousePage = ({
       ? await updateOne<IProductsWarehouse>(
           Api.product_warehouse,
           edit ?? "",
-          payload as IProductsWarehouse
+          payload as IProductsWarehouse,
         )
       : await create<IProductsWarehouse>(
           Api.product_warehouse,
-          e as IProductsWarehouse
+          e as IProductsWarehouse,
         );
     if (res.success) {
       refresh();
@@ -183,7 +184,7 @@ export const ProductWarehousePage = ({
       form.reset(defaultValues);
       showToast(
         "success",
-        edit ? "Мэдээлэл шинэчлэгдлээ!" : "Амжилттай нэмлээ!"
+        edit ? "Мэдээлэл шинэчлэгдлээ!" : "Амжилттай нэмлээ!",
       );
     } else {
       showToast("error", res.error ?? "");
@@ -237,7 +238,7 @@ export const ProductWarehousePage = ({
   const handleProductQuantityChange = (
     productId: string,
     change: number,
-    qty: number
+    qty: number,
   ) => {
     const products = form.getValues("products");
     const index = products.findIndex((p) => p.product_id === productId);
@@ -272,20 +273,27 @@ export const ProductWarehousePage = ({
   };
 
   const [filter, setFilter] = useState<FilterType>();
+  const [searchState, setSearchState] = useState<
+    Partial<Record<keyof FilterType, string>>
+  >({});
   const changeFilter = (key: string, value: number | string) => {
     setFilter((prev) => ({ ...prev, [key]: value }));
   };
 
   useEffect(() => {
-    refresh(
-      objectCompact({
-        warehouse_id: filter?.warehouse,
-        product_id: filter?.product,
-        start_date: filter?.start ? dateOnly(filter?.start) : undefined,
-        end_date: filter?.end ? dateOnly(filter?.end) : undefined,
-        page: 0,
-      })
-    );
+    const timeout = setTimeout(() => {
+      refresh(
+        objectCompact({
+          warehouse_id: filter?.warehouse,
+          product_id: filter?.product,
+          start_date: filter?.start ? dateOnly(filter.start) : undefined,
+          end_date: filter?.end ? dateOnly(filter.end) : undefined,
+          page: 0,
+        }),
+      );
+    }, 300);
+
+    return () => clearTimeout(timeout);
   }, [filter]);
   const toKey = (id: number | string) => String(id);
   const qtyByProduct = useMemo(() => {
@@ -300,23 +308,28 @@ export const ProductWarehousePage = ({
   }, [productWarehouse?.items]);
   type ProductWithQty = SearchType<number> & { quantity?: number };
 
-  const groups: { key: keyof FilterType; label: string; items: Option[] }[] =
-    useMemo(
-      () => [
-        {
-          key: "warehouse",
-          label: "Агуулах",
-          items: warehouses.items.map((b) => ({ value: b.id, label: b.name })),
-        },
+  const groups: {
+    key: keyof FilterType;
+    label: string;
+    items: Option[];
+    search?: boolean;
+  }[] = useMemo(
+    () => [
+      {
+        key: "warehouse",
+        label: "Агуулах",
+        items: warehouses.items.map((b) => ({ value: b.id, label: b.name })),
+      },
 
-        {
-          key: "product",
-          label: "Бүтээгдэхүүн",
-          items: productData.items.map((b) => ({ value: b.id, label: b.name })),
-        },
-      ],
-      [productData.items, warehouses.items]
-    );
+      {
+        key: "product",
+        label: "Бүтээгдэхүүн",
+        search: true,
+        items: productData.items.map((b) => ({ value: b.id, label: b.name })),
+      },
+    ],
+    [productData.items, warehouses.items],
+  );
 
   const downloadExcel = async (pg: PG = DEFAULT_PG) => {
     setAction(ACTION.RUNNING);
@@ -335,7 +348,7 @@ export const ProductWarehousePage = ({
       link.href = url;
       link.setAttribute(
         "download",
-        `product_warehouse_${mnDate().toISOString().slice(0, 10)}.xlsx`
+        `product_warehouse_${mnDate().toISOString().slice(0, 10)}.xlsx`,
       );
       document.body.appendChild(link);
       link.click();
@@ -356,8 +369,7 @@ export const ProductWarehousePage = ({
       <DynamicHeader count={productWarehouse?.count} />
 
       <div className="admin-container py-2">
-        <div className="flex bg-white shadow-light border-light rounded-lg px-4">
-          {/* Tab trigger */}
+        {/* <div className="flex bg-white shadow-light border-light rounded-lg px-4">
           <Button
             variant="ghost"
             className={cn(
@@ -378,7 +390,7 @@ export const ProductWarehousePage = ({
           >
             Агуулах дэлгэрэнгүй
           </Button>
-        </div>
+        </div> */}
         {tab === "1" && (
           <DataTable
             clear={() => setFilter(undefined)}
@@ -386,18 +398,35 @@ export const ProductWarehousePage = ({
               <>
                 {groups.map((item, i) => {
                   const { key } = item;
+                  const filteredItems = item.search
+                    ? item.items.filter((it) =>
+                        it.label
+                          .toLowerCase()
+                          .includes((searchState[key] || "").toLowerCase()),
+                      )
+                    : item.items;
                   return (
                     <label key={i}>
                       <span className="filter-label">
                         {item.label as string}
                       </span>
                       <ComboBox
+                        search={
+                          item.search
+                            ? (searchValue: string) => {
+                                setSearchState((prev) => ({
+                                  ...prev,
+                                  [key]: searchValue,
+                                }));
+                              }
+                            : undefined
+                        }
                         pl={item.label}
                         className="max-w-36 text-xs!"
-                        value={filter?.[key] ? String(filter[key]) : ""} //
-                        items={item.items.map((it) => ({
+                        value={filter?.[key] ? String(filter[key]) : ""}
+                        items={filteredItems.map((it) => ({
                           value: String(it.value),
-                          label: it.label as string,
+                          label: it.label,
                         }))}
                         props={{
                           value: filter?.[key] ? String(filter[key]) : "",
@@ -422,7 +451,7 @@ export const ProductWarehousePage = ({
                       />
                     </div>
                   }
-                  value={filter?.start?.toString()}
+                  value={filter?.start ? parseDate(filter.start, false) : undefined}
                   label={"Эхлэх огноо"}
                 />
                 <FilterPopover
@@ -437,7 +466,7 @@ export const ProductWarehousePage = ({
                       />
                     </div>
                   }
-                  value={filter?.end?.toString()}
+                  value={filter?.end ? parseDate(filter.end, false) : undefined}
                   label={"Дуусах огноо"}
                 />
               </>
@@ -542,7 +571,7 @@ export const ProductWarehousePage = ({
                                         handleProductQuantityChange(
                                           product.id,
                                           -1,
-                                          +quantity
+                                          +quantity,
                                         )
                                       }
                                     >
@@ -557,27 +586,28 @@ export const ProductWarehousePage = ({
                                           form
                                             .watch("products")
                                             ?.find(
-                                              (p) => p.product_id === product.id
+                                              (p) =>
+                                                p.product_id === product.id,
                                             )?.quantity ??
                                             product.quantity ??
-                                            0
-                                        )
+                                            0,
+                                        ),
                                       )}
                                       onClick={() =>
                                         handleProductClickOnce(
                                           product.id,
-                                          +quantity
+                                          +quantity,
                                         )
                                       }
                                       onChange={(e) => {
                                         const val = parseInt(
                                           e.target.value || "0",
-                                          10
+                                          10,
                                         );
                                         const existing =
                                           form.getValues("products");
                                         const index = existing.findIndex(
-                                          (p) => p.product_id === product.id
+                                          (p) => p.product_id === product.id,
                                         );
                                         const updated = [...existing];
                                         if (val > +quantity) {
@@ -609,7 +639,7 @@ export const ProductWarehousePage = ({
                                         handleProductQuantityChange(
                                           product.id,
                                           1,
-                                          +quantity
+                                          +quantity,
                                         )
                                       }
                                     >

@@ -34,6 +34,7 @@ import {
   dateOnly,
   firstLetterUpper,
   objectCompact,
+  parseDate,
   round,
   searchProductFormatter,
 } from "@/lib/functions";
@@ -92,7 +93,7 @@ const formSchema = z
     edit: z.string().nullable().optional(),
     date: z.preprocess(
       (val) => (typeof val === "string" ? new Date(val) : val),
-      z.date()
+      z.date(),
     ) as unknown as Date,
   })
   .refine((data) => (data?.paid_amount ?? 0) <= (data?.total_amount ?? 0), {
@@ -137,7 +138,7 @@ export const ProductHistoryPage = ({
 
   const productMap = useMemo(
     () => new Map(products.map((p) => [p.id, p.value])),
-    [products]
+    [products],
   );
 
   const logFormatter = (data: ListType<ProductLog>) => {
@@ -201,7 +202,6 @@ export const ProductHistoryPage = ({
       ...pg,
       //   name: pg.filter,
     }).then((d) => {
-      console.log(d);
       logFormatter(d);
     });
     setAction(ACTION.DEFAULT);
@@ -279,7 +279,7 @@ export const ProductHistoryPage = ({
         end_date: filter?.end ? dateOnly(filter?.end) : undefined,
 
         page: 0,
-      })
+      }),
     );
   }, [filter]);
   const groups: { key: keyof FilterType; label: string; items: Option[] }[] =
@@ -303,7 +303,7 @@ export const ProductHistoryPage = ({
           })),
         },
       ],
-      [products]
+      [products],
     );
   const [items, setItems] = useState({
     [Api.product]: products,
@@ -373,7 +373,9 @@ export const ProductHistoryPage = ({
                     />
                   </div>
                 }
-                value={filter?.start?.toString()}
+                value={
+                  filter?.start ? parseDate(filter.start, false) : undefined
+                }
                 label={"Эхлэх огноо"}
               />
               <FilterPopover
@@ -388,7 +390,7 @@ export const ProductHistoryPage = ({
                     />
                   </div>
                 }
-                value={filter?.end?.toString()}
+                value={filter?.end ? parseDate(filter.end, false) : undefined}
                 label={"Дуусах огноо"}
               />
             </>
@@ -551,14 +553,9 @@ export const ProductHistoryPage = ({
                         {(field) => {
                           return (
                             <DatePicker
-                              props={{ ...field }}
-                              range={{
-                                from: field.value as Date,
-                                to: field.value as Date,
-                              }}
-                              setRange={(e) => field.onChange(e.from)}
-                              name=""
-                              pl="Огноо сонгох"
+                              mode="single"
+                              value={field.value as any}
+                              onChange={(date) => field.onChange(date)}
                             />
                           );
                         }}

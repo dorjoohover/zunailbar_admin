@@ -2,15 +2,15 @@ import { ColumnDef } from "@tanstack/react-table";
 import { ArrowUpDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { parseDate } from "@/lib/functions";
-import { ISalaryLog } from "@/models";
+import { IntegrationPayment, ISalaryLog } from "@/models";
 import { TableActionButtons } from "@/components/tableActionButtons";
-import { SalaryLogValues } from "@/lib/constants";
-import { SalaryLogStatus } from "@/lib/enum";
+import { PaymentTypeValues, SalaryLogValues } from "@/lib/constants";
+import { PaymentType, SalaryLogStatus } from "@/lib/enum";
 
 export function getColumns(
-  onEdit: (product: ISalaryLog) => void,
-  remove: (index: number) => Promise<boolean>
-): ColumnDef<ISalaryLog>[] {
+  onEdit: (product: IntegrationPayment) => void,
+  remove: (index: number) => Promise<boolean>,
+): ColumnDef<IntegrationPayment>[] {
   return [
     {
       id: "select",
@@ -31,29 +31,28 @@ export function getColumns(
     },
 
     {
-      accessorKey: "salary_log_status",
+      accessorKey: "type",
       header: "Статус",
       cell: ({ row }) => {
         const status =
-          SalaryLogValues[
-            row.getValue<number>("salary_log_status") as SalaryLogStatus
-          ];
+          PaymentTypeValues[row.getValue<number>("type") as PaymentType];
         return <span>{status}</span>;
       },
     },
+
     {
-      accessorKey: "order_count",
-      header: "Захиалгын тоо",
+      accessorKey: "amount",
+      header: "Төлсөн дүн",
       cell: ({ row }) => {
-        const res = row.getValue<string>("order_count");
-        return <span>{res}</span>;
+        const date = row.getValue("amount")
+        return `${date}₮`;
       },
     },
     {
-      accessorKey: "date",
-      header: "Огноо",
+      accessorKey: "paid_at",
+      header: "Төлсөн огноо",
       cell: ({ row }) => {
-        const date = parseDate(new Date(row.getValue("date")), false);
+        const date = parseDate(new Date(row.getValue("paid_at")), false);
         return date;
       },
     },

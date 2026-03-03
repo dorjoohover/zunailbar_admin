@@ -91,7 +91,7 @@ export default function SchedulerViewFilteration({
   orders: ListType<Order>;
   setFilter: (
     key: string,
-    value: string | number | undefined | boolean
+    value: string | number | undefined | boolean,
   ) => void;
   filter?: FilterType;
   values: {
@@ -142,7 +142,7 @@ export default function SchedulerViewFilteration({
   }, []);
 
   const [isMobile, setIsMobile] = useState(
-    clientSide ? window.innerWidth <= 768 : false
+    clientSide ? window.innerWidth <= 768 : false,
   );
 
   useEffect(() => {
@@ -213,20 +213,11 @@ export default function SchedulerViewFilteration({
               <span className="filter-label">Огноо</span>
 
               <DatePicker
-                range={filter?.date}
-                setRange={() => {}}
+                value={filter?.date}
+                mode="single"
+                onChange={(date) => setFilter("date", date as any)}
                 name=""
                 pl="Огноо сонгох"
-                props={{
-                  name: "",
-                  onBlur: () => {},
-                  onChange: (e) => {
-                    // setCurrentDate(e);
-                    setFilter("date", e);
-                  },
-                  ref: () => null,
-                  value: filter?.date,
-                }}
               />
             </label>
             <label className="w-full maw-[300px] min-w-[150px]">
@@ -268,7 +259,7 @@ export default function SchedulerViewFilteration({
                   return {
                     value: item.id,
                     label: `${firstLetterUpper(
-                      nickname ?? ""
+                      nickname ?? "",
                     )} - ${mobileFormatter(mobile ?? "")}`,
                   };
                 })}

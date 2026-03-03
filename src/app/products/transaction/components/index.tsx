@@ -55,14 +55,14 @@ const formSchema = z.object({
   user_id: z.string().nullable().optional(),
   quantity: z.preprocess(
     (val) => (typeof val === "string" ? parseFloat(val) : val),
-    z.number()
+    z.number(),
   ) as unknown as number,
 
   edit: z.string().nullable().optional(),
   product_transaction_status: z
     .preprocess(
       (val) => (typeof val === "string" ? parseInt(val, 10) : val),
-      z.nativeEnum(ProductTransactionStatus).nullable()
+      z.nativeEnum(ProductTransactionStatus).nullable(),
     )
     .optional() as unknown as number,
 });
@@ -102,15 +102,15 @@ export const ProductTransactionPage = ({
     useState<ListType<IProductTransaction> | null>(null);
   const branchMap = useMemo(
     () => new Map(branches.items.map((b) => [b.id, b])),
-    [branches.items]
+    [branches.items],
   );
   const userMap = useMemo(
     () => new Map(users.map((u) => [u.id, u.value])),
-    [users]
+    [users],
   );
   const productMap = useMemo(
     () => new Map(products.map((p) => [p.id, p.value])),
-    [products]
+    [products],
   );
   const transactionFormatter = (data: ListType<ProductTransaction>) => {
     const items: IProductTransaction[] = data.items.map((item) => {
@@ -172,11 +172,11 @@ export const ProductTransactionPage = ({
       ? await updateOne<IProductTransaction>(
           Api.product_transaction,
           edit ?? "",
-          payload as IProductTransaction
+          payload as IProductTransaction,
         )
       : await create<IProductTransaction>(
           Api.product_transaction,
-          e as IProductTransaction
+          e as IProductTransaction,
         );
     if (res.success) {
       refresh();
@@ -199,6 +199,9 @@ export const ProductTransactionPage = ({
   };
 
   const [filter, setFilter] = useState<FilterType>();
+  const [searchState, setSearchState] = useState<
+    Partial<Record<keyof FilterType, string>>
+  >({});
   const changeFilter = (key: string, value: number | string) => {
     setFilter((prev) => ({ ...prev, [key]: value }));
   };
@@ -211,44 +214,49 @@ export const ProductTransactionPage = ({
         product_id: filter?.product,
         product_transaction_status: filter?.status,
         page: 0,
-      })
+      }),
     );
   }, [filter]);
-  const groups: { key: keyof FilterType; label: string; items: Option[] }[] =
-    useMemo(
-      () => [
-        {
-          key: "branch",
-          label: "Салбар",
-          items: branches.items.map((b) => ({ value: b.id, label: b.name })),
-        },
-        {
-          key: "user",
-          label: "Артист",
-          items: users.map((b) => ({
-            value: b.id,
-            label: searchUsernameFormatter(b.value),
-          })),
-        },
-        {
-          key: "product",
-          label: "Бүтээгдэхүүн",
-          items: products.map((b) => ({
-            value: b.id,
-            label: searchProductFormatter(b.value) ?? "",
-          })),
-        },
-        {
-          key: "status",
-          label: "Статус",
-          items: getEnumValues(ProductTransactionStatus).map((s) => ({
-            value: s,
-            label: getValuesProductTransactionStatus[s].name,
-          })),
-        },
-      ],
-      [branches.items]
-    );
+  const groups: {
+    key: keyof FilterType;
+    label: string;
+    items: Option[];
+    search?: boolean;
+  }[] = useMemo(
+    () => [
+      {
+        key: "branch",
+        label: "Салбар",
+        items: branches.items.map((b) => ({ value: b.id, label: b.name })),
+      },
+      {
+        key: "user",
+        label: "Артист",
+        items: users.map((b) => ({
+          value: b.id,
+          label: searchUsernameFormatter(b.value),
+        })),
+      },
+      {
+        key: "product",
+        label: "Бүтээгдэхүүн",
+        search: true,
+        items: products.map((b) => ({
+          value: b.id,
+          label: searchProductFormatter(b.value) ?? "",
+        })),
+      },
+      {
+        key: "status",
+        label: "Статус",
+        items: getEnumValues(ProductTransactionStatus).map((s) => ({
+          value: s,
+          label: getValuesProductTransactionStatus[s].name,
+        })),
+      },
+    ],
+    [branches.items],
+  );
   const [items, setItems] = useState({
     [Api.product]: products,
     [Api.user]: users,
@@ -262,16 +270,16 @@ export const ProductTransactionPage = ({
       key === Api.product
         ? { id: value, type: CategoryType.DEFAULT }
         : edit === undefined
-        ? {
-            id: value,
-            role: ROLE.E_M,
-            user_status: UserStatus.ACTIVE,
-          }
-        : {
-            role: ROLE.E_M,
-            user_status: UserStatus.ACTIVE,
-            value: v,
-          };
+          ? {
+              id: value,
+              role: ROLE.E_M,
+              user_status: UserStatus.ACTIVE,
+            }
+          : {
+              role: ROLE.E_M,
+              user_status: UserStatus.ACTIVE,
+              value: v,
+            };
     await search(key as any, {
       ...payload,
       limit: 20,
@@ -296,18 +304,14 @@ export const ProductTransactionPage = ({
             <>
               {groups.map((item, i) => {
                 const { key } = item;
+                const filteredItems = item.search
+                  ? item.items.filter((it) =>
+                      it.label
+                        .toLowerCase()
+                        .includes((searchState[key] || "").toLowerCase()),
+                    )
+                  : item.items;
                 return (
-                  // <FilterPopover
-                  //   key={i}
-                  //   content={item.items.map((it, index) => (
-                  //     <label key={index} className="checkbox-label">
-                  //       <Checkbox checked={filter?.[key] == it.value} onCheckedChange={() => changeFilter(key, it.value)} />
-                  //       <span>{it.label as string}</span>
-                  //     </label>
-                  //   ))}
-                  //   value={filter?.[key] ? item.items.filter((item) => item.value == filter[key])[0].label : undefined}
-                  //   label={item.label}
-                  // />
                   <label key={i}>
                     <span className="filter-label">{item.label as string}</span>
                     <ComboBox
@@ -315,10 +319,20 @@ export const ProductTransactionPage = ({
                       name={item.label}
                       className="max-w-36 text-xs!"
                       value={filter?.[key] ? String(filter[key]) : ""} //
-                      items={item.items.map((it) => ({
+                      items={filteredItems.map((it) => ({
                         value: String(it.value),
                         label: it.label as string,
                       }))}
+                      search={
+                        item.search
+                          ? (searchValue: string) => {
+                              setSearchState((prev) => ({
+                                ...prev,
+                                [key]: searchValue,
+                              }));
+                            }
+                          : undefined
+                      }
                       props={{
                         value: filter?.[key] ? String(filter[key]) : "",
                         onChange: (val: string) => changeFilter(key, val),
@@ -436,7 +450,7 @@ export const ProductTransactionPage = ({
                                     getValuesProductTransactionStatus[item]
                                       .name,
                                 };
-                              }
+                              },
                             )}
                           />
                         );

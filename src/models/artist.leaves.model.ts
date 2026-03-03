@@ -22,4 +22,5 @@ export interface ArtistLeave {
   description?: string;
   created_at?: Date;
   created_by?: string;
+  creater_name?: string;
 }

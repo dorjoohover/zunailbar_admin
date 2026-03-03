@@ -4,6 +4,9 @@ import { Button } from "@/components/ui/button";
 import { IUserService } from "@/models";
 import { TableActionButtons } from "@/components/tableActionButtons";
 import { add15Days, parseDate } from "@/lib/functions";
+import { SalaryStatus } from "@/lib/enum";
+import { SalaryStatusValue } from "@/lib/constants";
+import { cn } from "@/lib/utils";
 
 // Generate service badge color
 function stringToNiceColor(str: string) {
@@ -21,7 +24,7 @@ function stringToNiceColor(str: string) {
 
 export function getColumns(
   onEdit: (product: IUserService) => void,
-  remove: (index: number) => Promise<boolean>
+  remove: (index: number) => Promise<boolean>,
 ): ColumnDef<IUserService>[] {
   return [
     {
@@ -65,11 +68,16 @@ export function getColumns(
       ),
     },
     {
-      accessorKey: "date",
-      header: "Огноо",
+      accessorKey: "salary_status",
+      header: "Статус",
       cell: ({ row }) => {
-        const date = parseDate(new Date(row.getValue("date")), false);
-        return date;
+        const status =
+          SalaryStatusValue[
+            row.getValue<number>("salary_status") as SalaryStatus
+          ];
+        return (
+          <span className={cn(`${status.color} badge`)}>{status.name}</span>
+        );
       },
     },
     {

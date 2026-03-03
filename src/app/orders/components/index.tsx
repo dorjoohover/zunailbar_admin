@@ -91,7 +91,6 @@ export const OrderPage = ({
     const end_date = mnDate(filter?.date?.to);
 
     const date = dateFormat(d);
-    console.log(filter);
     await fetcher<Order>(Api.order, {
       page: page ?? DEFAULT_PG.page,
       limit: limit ?? DEFAULT_PG.limit,
@@ -202,7 +201,6 @@ export const OrderPage = ({
       success ? `${res.data.count} захиалга баталгаажлаа` : "Захиалга олдсонгүй"
     );
   };
-
   const columns = getColumns(edit, deleteOrders);
   return (
     <div className="relative">

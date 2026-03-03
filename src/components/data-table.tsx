@@ -161,7 +161,7 @@ export function DataTable<TData, TValue>({
   const [selectedRoles, setSelectedRoles] = useState<string[]>([]);
   const toggleRole = (role: string) => {
     setSelectedRoles((prev) =>
-      prev.includes(role) ? prev.filter((r) => r !== role) : [...prev, role]
+      prev.includes(role) ? prev.filter((r) => r !== role) : [...prev, role],
     );
   };
   const [date, setDate] = React.useState<Date | undefined>(new Date());
@@ -223,25 +223,27 @@ export function DataTable<TData, TValue>({
         "space-y-4 w-full transition-all duration-300",
         open
           ? "lg:w-[calc(100vw-20rem-3rem)] w-[calc(100vw-2rem)]"
-          : "lg:w-[calc(100vw-8rem)] w-[calc(100vw-2rem)]"
+          : "lg:w-[calc(100vw-8rem)] w-[calc(100vw-2rem)]",
       )}
     >
       {/* Table filter */}
-      <div className="flex justify-between bg-white rounded-2xl  items-center shadow-light border-light p-3">
-        {filter && (
-          <div className="flex flex-wrap  items-end gap-1 ">
-            {filter}
-            <Button
-              variant="ghost"
-              onClick={clear}
-              className="text-xs text-red-500 hover:text-red-500 bg-red-50 hover:bg-red-100  lg:h-10"
-            >
-              <CircleX />
-            </Button>
-          </div>
-        )}
-        {filterRight && filterRight}
-      </div>
+      {(filter || filterRight) && (
+        <div className="flex justify-between bg-white rounded-2xl  items-center shadow-light border-light p-3">
+          {filter && (
+            <div className="flex flex-wrap  items-end gap-1 ">
+              {filter}
+              <Button
+                variant="ghost"
+                onClick={clear}
+                className="text-xs text-red-500 hover:text-red-500 bg-red-50 hover:bg-red-100  lg:h-10"
+              >
+                <CircleX />
+              </Button>
+            </div>
+          )}
+          {filterRight && filterRight}
+        </div>
+      )}
 
       {/* Filterees dooshig */}
       <div className="bg-white rounded-xl shadow-light border-light p-5 pt-0">
@@ -297,7 +299,7 @@ export function DataTable<TData, TValue>({
                             ? null
                             : flexRender(
                                 header.column.columnDef.header,
-                                header.getContext()
+                                header.getContext(),
                               )}
                         </TableHead>
                       ))}
@@ -327,7 +329,7 @@ export function DataTable<TData, TValue>({
                           <TableCell key={cell.id} className={cn()}>
                             {flexRender(
                               cell.column.columnDef.cell,
-                              cell.getContext()
+                              cell.getContext(),
                             )}
                           </TableCell>
                         ))}
@@ -380,7 +382,7 @@ export function DataTable<TData, TValue>({
                         <SelectItem key={page} value={page.toString()}>
                           {page}
                         </SelectItem>
-                      )
+                      ),
                     )}
                   </SelectContent>
                 </Select>

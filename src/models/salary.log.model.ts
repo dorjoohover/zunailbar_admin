@@ -1,6 +1,6 @@
 export interface ISalaryLog {
   id: string;
-  user_id: string;
+  artist_id: string;
   approved_by: string;
   date: Date;
   amount: number;
@@ -12,7 +12,7 @@ export interface ISalaryLog {
 
 export interface SalaryLog {
   id: string;
-  user_id: string;
+  artist_id: string;
   approved_by: string;
   date: Date;
   amount: number;

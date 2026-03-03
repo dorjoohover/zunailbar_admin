@@ -6,10 +6,11 @@ import { ISalaryLog } from "@/models";
 import { TableActionButtons } from "@/components/tableActionButtons";
 import { SalaryLogValues } from "@/lib/constants";
 import { SalaryLogStatus } from "@/lib/enum";
+import { cn } from "@/lib/utils";
 
 export function getColumns(
   onEdit: (product: ISalaryLog) => void,
-  remove: (index: number) => Promise<boolean>
+  remove: (index: number) => Promise<boolean>,
 ): ColumnDef<ISalaryLog>[] {
   return [
     {
@@ -31,14 +32,16 @@ export function getColumns(
     },
 
     {
-      accessorKey: "salary_log_status",
+      accessorKey: "salary_status",
       header: "Статус",
       cell: ({ row }) => {
         const status =
           SalaryLogValues[
-            row.getValue<number>("salary_log_status") as SalaryLogStatus
+            row.getValue<number>("salary_status") as SalaryLogStatus
           ];
-        return <span>{status}</span>;
+        return (
+          <span className={cn(status?.color, "")}>{status?.name || "-"}</span>
+        );
       },
     },
     {
@@ -46,6 +49,14 @@ export function getColumns(
       header: "Захиалгын тоо",
       cell: ({ row }) => {
         const res = row.getValue<string>("order_count");
+        return <span>{res}</span>;
+      },
+    },
+    {
+      accessorKey: "amount",
+      header: "Төлөх дүн",
+      cell: ({ row }) => {
+        const res = row.getValue<string>("amount");
         return <span>{res}</span>;
       },
     },
