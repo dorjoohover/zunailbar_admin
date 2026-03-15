@@ -4,7 +4,7 @@ import {
   ACTION,
   DEFAULT_PG,
   EmployeeStatusValue,
-  getArtistLevelValue,
+  getUserLevelValue,
   getEnumValues,
   ListType,
   Option,
@@ -620,7 +620,7 @@ export const EmployeePage = ({
                             items={[UserLevel.JUNIOR, UserLevel.SENIOR].map((item) => {
                               return {
                                 value: item.toString(),
-                                label: getArtistLevelValue[item].name,
+                                label: getUserLevelValue[item].name,
                               };
                             })}
                           />

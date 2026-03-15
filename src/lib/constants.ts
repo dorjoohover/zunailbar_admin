@@ -304,10 +304,7 @@ export const getUserLevelValue = {
     color: "gold-badge badge",
     Icon: Award, // алтлаг шар
   },
-};
-
-export const getArtistLevelValue = {
-  [UserLevel.JUNIOR]: {
+   [UserLevel.JUNIOR]: {
     name: "Junior",
     textColor: "#F97316",
     color: "orange-badge badge",
@@ -321,6 +318,7 @@ export const getArtistLevelValue = {
     Icon: Crown,
   },
 };
+
 
 
 export const ErrorMessage = {

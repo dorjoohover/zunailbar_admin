@@ -16,7 +16,7 @@ import { mobileFormatter, parseDate } from "@/lib/functions";
 import { EmployeeStatus, ROLE, UserLevel, UserStatus } from "@/lib/enum";
 import {
   EmployeeStatusValue,
-  getArtistLevelValue,
+  getUserLevelValue,
   getEnumValues,
   roleIconMap,
   RoleValue,
@@ -190,7 +190,7 @@ export const getColumns = (
       
       if(!level) return <span>-</span>
       const status =
-        getArtistLevelValue[level]
+        getUserLevelValue[level] as unknown as any
        
       return <span className={cn(`${status.color} badge`)}>{status.name}</span>;
     },
