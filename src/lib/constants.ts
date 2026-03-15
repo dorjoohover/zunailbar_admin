@@ -306,6 +306,23 @@ export const getUserLevelValue = {
   },
 };
 
+export const getArtistLevelValue = {
+  [UserLevel.JUNIOR]: {
+    name: "Junior",
+    textColor: "#F97316",
+    color: "orange-badge badge",
+    Icon: Sparkles,
+  },
+
+  [UserLevel.SENIOR]: {
+    name: "Senior",
+    textColor: "#7C3AED",
+    color: "purple-badge badge",
+    Icon: Crown,
+  },
+};
+
+
 export const ErrorMessage = {
   STOCK_INSUFFICIENT: "Үлдэгдэл хүрэлцэхгүй байна.",
 } as const;

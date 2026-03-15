@@ -265,11 +265,31 @@ export default function AddEventModal({
     resolver: zodResolver(eventSchema),
     defaultValues,
   });
-
-  const [isTimeSlotsEnabled, setTimeSlotsEnabled] = useState(
-    form.getValues("edit") == undefined || values?.id != undefined,
-  );
+  
   const isEdit = Boolean(values?.id);
+  const hasId = values?.id !== undefined;
+const today = new Date();
+today.setHours(0, 0, 0, 0);
+
+const orderDateValue = form.getValues("order_date");
+const orderDate = orderDateValue ? new Date(orderDateValue) : null;
+
+if (orderDate) {
+  orderDate.setHours(0, 0, 0, 0);
+}
+
+const isFuture = orderDate ? orderDate > today : false;
+
+const [isTimeSlotsEnabled, setTimeSlotsEnabled] = useState(() => {
+  
+  if(orderDate ) {
+    return isFuture
+  }
+  if(isEdit || hasId) {
+    return true
+  }
+  return false
+});
 
   const [loader, setLoader] = useState({
     [Api.service]: false,

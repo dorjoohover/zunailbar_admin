@@ -37,6 +37,8 @@ export enum UserLevel {
   BRONZE = 0,
   SILVER = 10,
   GOLD = 20,
+  JUNIOR = 100,
+  SENIOR = 110
 }
 export enum SalaryLogStatus {
   Pending = 10,

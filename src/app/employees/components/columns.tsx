@@ -13,9 +13,10 @@ import { ArrowUpDown, Hammer, Trash2, UserRoundCog } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { IBranch } from "@/models";
 import { mobileFormatter, parseDate } from "@/lib/functions";
-import { EmployeeStatus, ROLE, UserStatus } from "@/lib/enum";
+import { EmployeeStatus, ROLE, UserLevel, UserStatus } from "@/lib/enum";
 import {
   EmployeeStatusValue,
+  getArtistLevelValue,
   getEnumValues,
   roleIconMap,
   RoleValue,
@@ -178,6 +179,19 @@ export const getColumns = (
     cell: ({ row }) => {
       const status =
         EmployeeStatusValue[row.getValue<number>("user_status") as UserStatus];
+      return <span className={cn(`${status.color} badge`)}>{status.name}</span>;
+    },
+  },
+  {
+    accessorKey: "level",
+    header: "Артистын түвшин",
+    cell: ({ row }) => {
+      const level = row.getValue<number>("level") as UserLevel
+      
+      if(!level) return <span>-</span>
+      const status =
+        getArtistLevelValue[level]
+       
       return <span className={cn(`${status.color} badge`)}>{status.name}</span>;
     },
   },

@@ -52,7 +52,12 @@
 @utility silver-badge {
   @apply text-gray-700 bg-gray-200; /* мөнгөлөг саарал */
 }
-
+@utility orange-badge {
+  @apply text-orange-900 bg-orange-300;
+}
+@utility purple-badge {
+  @apply text-purple-900 bg-purple-300;
+}
 @utility gold-badge {
   @apply text-yellow-800 bg-yellow-200; /* алтлаг шар */
 }

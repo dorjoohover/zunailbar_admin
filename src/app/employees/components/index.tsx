@@ -4,6 +4,7 @@ import {
   ACTION,
   DEFAULT_PG,
   EmployeeStatusValue,
+  getArtistLevelValue,
   getEnumValues,
   ListType,
   Option,
@@ -19,7 +20,13 @@ import { getColumns } from "./columns";
 import { Modal } from "@/shared/components/modal";
 import { ComboBox } from "@/shared/components/combobox";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { EmployeeStatus, INPUT_TYPE, ROLE, UserStatus } from "@/lib/enum";
+import {
+  EmployeeStatus,
+  INPUT_TYPE,
+  ROLE,
+  UserLevel,
+  UserStatus,
+} from "@/lib/enum";
 import { PasswordField } from "@/shared/components/password.field";
 import z from "zod";
 import { FormProvider, useForm } from "react-hook-form";
@@ -41,6 +48,7 @@ import { toast } from "sonner";
 import { showToast } from "@/shared/components/showToast";
 import { ACCEPT_ATTR, validateImageFile } from "@/lib/image.validator";
 import { COLOR_HEX } from "@/lib/colors";
+import { Textarea } from "@/components/ui/textarea";
 
 const formSchema = z.object({
   firstname: zStrOpt({
@@ -72,9 +80,6 @@ const formSchema = z.object({
   password: zStrOpt({
     label: "Нууц үг",
   }),
-  salary_day: zNumOpt({
-    label: "Цалин олгох огноо",
-  }),
   nickname: zStrOpt({
     allowNullable: false,
     label: "Хоч",
@@ -96,6 +101,15 @@ const formSchema = z.object({
     .any()
     // .refine((f) => f.size > 0, { message: "Файл заавал оруулна" })
     .nullable(),
+  description: zStrOpt({
+    label: "Тайлбар",
+  }),
+  level: z
+    .preprocess(
+      (val) => (typeof val === "string" ? parseInt(val, 10) : val),
+      z.nativeEnum(UserLevel).nullable(),
+    )
+    .optional() as unknown as number,
 });
 
 type UserType = z.infer<typeof formSchema>;
@@ -116,7 +130,6 @@ const defaultValues = {
   // color: 0,
   experience: 0,
   password: undefined,
-  salary_date: undefined,
 };
 export const EmployeePage = ({
   data,
@@ -191,7 +204,6 @@ export const EmployeePage = ({
         if ((v as any)?.message) {
           return (v as any)?.message;
         }
-
         return i == 0 ? firstLetterUpper(value) : value;
       })
       .join(", ");
@@ -264,7 +276,6 @@ export const EmployeePage = ({
     }
     refresh();
   }, [filter]);
-
   const groups: { key: keyof FilterType; label: string; items: Option[] }[] =
     useMemo(
       () => [
@@ -524,7 +535,6 @@ export const EmployeePage = ({
                       "nickname",
                       "percent",
                       "experience",
-                      "salary_day",
                     ].map((i, index) => {
                       const item = i as keyof UserType;
                       return (
@@ -570,9 +580,12 @@ export const EmployeePage = ({
                         return (
                           <DatePicker
                             mode="single"
+                            name=""
                             pl="Огноо сонгох"
-                            value={field.value as any}
-                            onChange={(date) => field.onChange(date)}
+                            value={field.value}
+                            onChange={(v) => {
+                              field.onChange(v);
+                            }}
                           />
                         );
                       }}
@@ -595,7 +608,37 @@ export const EmployeePage = ({
                         );
                       }}
                     </FormItems>
+                    <FormItems
+                      control={form.control}
+                      name="level"
+                      label="Артистын түвшин"
+                    >
+                      {(field) => {
+                        return (
+                          <ComboBox
+                            props={{ ...field }}
+                            items={[UserLevel.JUNIOR, UserLevel.SENIOR].map((item) => {
+                              return {
+                                value: item.toString(),
+                                label: getArtistLevelValue[item].name,
+                              };
+                            })}
+                          />
+                        );
+                      }}
+                    </FormItems>
                   </div>
+                     <FormItems control={form.control} name={`description`}>
+                        {(field) => {
+                          return (
+                            <Textarea
+                              className=""
+                              onChange={field.onChange}
+                              value={field.value as string}
+                            />
+                          );
+                        }}
+                      </FormItems>
                 </div>
               </FormProvider>
             </Modal>
