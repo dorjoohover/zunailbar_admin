@@ -320,6 +320,11 @@ export const getUserLevelValue = {
 };
 
 
+export const getTransactionTypeValue = {
+  'P2P': 'Дансаар',
+  "CARD": 'Карт'
+}
+
 
 export const ErrorMessage = {
   STOCK_INSUFFICIENT: "Үлдэгдэл хүрэлцэхгүй байна.",

@@ -26,6 +26,8 @@ export interface IOrder {
   customer?: User;
   color?: number;
   created_by?: string | User;
+  paid_at?: Date
+  transaction_type?: string
 }
 export interface Order {
   id: string;
@@ -48,6 +50,8 @@ export interface Order {
   customer?: User;
   details?: IOrderDetail[];
   updated_at?: Date;
+  paid_at?: Date
+  transaction_type?: string
   method?: PaymentMethod;
 }
 

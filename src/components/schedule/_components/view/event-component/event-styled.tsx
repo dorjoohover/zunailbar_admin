@@ -16,6 +16,7 @@ import { cn } from "@/lib/utils";
 import CustomModal from "@/components/ui/custom-modal";
 import { getUserColor } from "@/lib/colors";
 import {
+  getTransactionTypeValue,
   getUserLevelValue,
   ListType,
   OrderStatusValues,
@@ -25,7 +26,7 @@ import { OrderStatus, UserLevel } from "@/lib/enum";
 import { Branch, IOrder, Service, User } from "@/models";
 import { showToast } from "@/shared/components/showToast";
 import AppDialog from "@/shared/components/appDialog";
-import { mobileFormatter, usernameFormatter } from "@/lib/functions";
+import { mobileFormatter, parseDate, usernameFormatter } from "@/lib/functions";
 import { CustomEventModal } from "@/types";
 
 const FAMILIES = [
@@ -276,6 +277,18 @@ export default function EventStyled({
             </div>
           </div>
         )}
+        {event?.paid_at && (
+        <div className="my-1 text-xs">
+          <b>Төлбөр төлсөн огноо: {parseDate(new Date(event.paid_at), true)}</b>
+        </div>
+      )}
+      {
+        event.transaction_type && (
+          <div className="mb-1 text-xs">
+            <b>Төлбөрийн хэлбэр: {getTransactionTypeValue[event.transaction_type as keyof typeof getTransactionTypeValue]}</b>
+          </div>
+        )
+      }
       </div>
 
       <div
@@ -437,6 +450,19 @@ const EventItem = ({
           <b>Tip massage:</b> {event?.description}{" "}
         </div>
       )}
+      
+      {event?.paid_at && (
+        <div className="mb-1 text-xs">
+          <b>Төлбөр төлсөн огноо: {parseDate(new Date(event.paid_at), true)}</b>
+        </div>
+      )}
+      {
+        event.transaction_type && (
+          <div className="mb-1 text-xs">
+            <b>Төлбөрийн хэлбэр: {getTransactionTypeValue[event.transaction_type as keyof typeof getTransactionTypeValue]}</b>
+          </div>
+        )
+      }
       {event?.minmized && !parallel && (
         <div className="flex flex-col">
           <div className="text-[10px] flex justify-between">
