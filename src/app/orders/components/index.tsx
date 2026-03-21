@@ -50,7 +50,7 @@ export const OrderPage = ({
   const [filter, setFilter] = useState<FilterType>({});
   const changeFilter = (
     key: string,
-    value: number | string | undefined | boolean
+    value: number | string | undefined | boolean,
   ) => {
     setFilter((prev) => ({ ...prev, [key]: value }));
   };
@@ -69,10 +69,19 @@ export const OrderPage = ({
         ...item,
       };
     });
-    
+
     setOrders({ items, count: data.count });
   };
+  useEffect(() => {
+    const interval = setInterval(
+      () => {
+        void refresh();
+      },
+      5 * 60 * 1000,
+    );
 
+    return () => clearInterval(interval);
+  }, []);
   const deleteOrder = async (id: string) => {
     const res = await deleteOne(Api.order, id);
     refresh();
@@ -130,7 +139,7 @@ export const OrderPage = ({
             ...payload,
             // order_date: mnDate(payload.order_date),
           } as unknown as Order,
-          "update"
+          "update",
         )
       : await create(Api.order, {
           ...payload,
@@ -139,7 +148,7 @@ export const OrderPage = ({
       refresh();
       showToast(
         "success",
-        edit ? "Мэдээлэл шинэчиллээ!" : "Амжилттай нэмэгдлээ!"
+        edit ? "Мэдээлэл шинэчиллээ!" : "Амжилттай нэмэгдлээ!",
       );
     } else {
       showToast("info", res.error ?? "Алдаа гарлаа!", {
@@ -166,7 +175,7 @@ export const OrderPage = ({
       link.href = url;
       link.setAttribute(
         "download",
-        `order_${mnDate().toISOString().slice(0, 10)}.xlsx`
+        `order_${mnDate().toISOString().slice(0, 10)}.xlsx`,
       );
       document.body.appendChild(link);
       link.click();
@@ -198,7 +207,9 @@ export const OrderPage = ({
     const success = res?.data?.count > 0;
     showToast(
       success ? "success" : "info",
-      success ? `${res.data.count} захиалга баталгаажлаа` : "Захиалга олдсонгүй"
+      success
+        ? `${res.data.count} захиалга баталгаажлаа`
+        : "Захиалга олдсонгүй",
     );
   };
   const columns = getColumns(edit, deleteOrders);
@@ -232,7 +243,7 @@ export const OrderPage = ({
             <AppAlertDialog
               onConfirm={confirmOrders}
               title={`${dateFormat(
-                mnDate(filter?.date?.from)
+                mnDate(filter?.date?.from),
               )} өдрийн захиалгуудыг хаахдаа бэлэн байна уу`}
               trigger={
                 <Button variant="default">
