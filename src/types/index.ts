@@ -159,6 +159,7 @@ export const eventSchema = z.object({
   paid_amount: zNumOpt({
     value: 0,
     label: "Гүйцээж төлсөн төлбөр",
+    allowNullable: true,
   }),
   parallel: z.boolean().nullable().optional(),
   edit: z.string().nullable().optional(),

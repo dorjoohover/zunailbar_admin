@@ -50,13 +50,13 @@ export function ComboBox<T extends FieldValues>({
 
   // selectedValue-г string болгож state-д хадгалах
   const [selectedValue, setSelectedValue] = React.useState<string | undefined>(
-    propValue !== undefined ? propValue?.toString() : undefined
+    propValue !== undefined ? propValue?.toString() : undefined,
   );
 
   // prop value өөрчлөгдөхөд state-ийг синхрончлох
   React.useEffect(() => {
     setSelectedValue(
-      propValue !== undefined ? propValue?.toString() : undefined
+      propValue !== undefined ? propValue?.toString() : undefined,
     );
   }, [propValue]);
 
@@ -80,12 +80,12 @@ export function ComboBox<T extends FieldValues>({
           aria-expanded={open}
           className={cn(
             "min-w-32 lg:min-h-10 justify-between bg-white text-xs w-full lg:text-sm",
-            className
+            className,
           )}
         >
           {selectedValue
-            ? items.find((i) => i.value.toString() === selectedValue)?.label ??
-              name
+            ? (items.find((i) => i.value.toString() === selectedValue)?.label ??
+              name)
             : name}
           <ChevronsUpDown className="opacity-50" />
         </Button>
@@ -135,7 +135,9 @@ export function ComboBox<T extends FieldValues>({
                     <Check
                       className={cn(
                         "ml-auto",
-                        selectedValue === valueStr ? "opacity-100" : "opacity-0"
+                        selectedValue === valueStr
+                          ? "opacity-100"
+                          : "opacity-0",
                       )}
                     />
                   </CommandItem>

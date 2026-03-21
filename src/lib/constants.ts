@@ -126,7 +126,7 @@ export const zNumOpt = ({
     .preprocess(
       (val) => {
         if (val === "" || val === undefined || val === null)
-          return allowNullable && value ? value : undefined;
+          return allowNullable && (value ?? undefined);
         return typeof val === "string" ? parseFloat(val) : val;
       },
       z
@@ -170,7 +170,10 @@ export const EmployeeStatusValue = {
     text: "oklch(50.5% 0.213 27.518)",
   },
 };
-export type Option<T = string | number> = { value: T; label: string };
+export type Option<T = string | number> = {
+  value: T;
+  label: string;
+};
 
 export const UserStatusValue = {
   [UserStatus.ACTIVE]: { name: "Идэвхтэй", color: "green-badge badge" },
@@ -304,7 +307,7 @@ export const getUserLevelValue = {
     color: "gold-badge badge",
     Icon: Award, // алтлаг шар
   },
-   [UserLevel.JUNIOR]: {
+  [UserLevel.JUNIOR]: {
     name: "Junior",
     textColor: "#F97316",
     color: "orange-badge badge",
@@ -319,12 +322,10 @@ export const getUserLevelValue = {
   },
 };
 
-
 export const getTransactionTypeValue = {
-  'P2P': 'Дансаар',
-  "CARD": 'Карт'
-}
-
+  P2P: "Дансаар",
+  CARD: "Карт",
+};
 
 export const ErrorMessage = {
   STOCK_INSUFFICIENT: "Үлдэгдэл хүрэлцэхгүй байна.",
@@ -399,6 +400,12 @@ export const OrderStatusValues = {
   [OrderStatus.ABSENT]: "Цуцалсан",
   [OrderStatus.Friend]: "Танил",
 };
+
+export const StatusValues = {
+  [STATUS.Active]: "Active",
+  [STATUS.Hidden]: "Hidden",
+  [STATUS.Pending]: "Pending",
+};
 export const PaymentTypeValues = {
   [PaymentType.Salary]: "Цалин",
   [PaymentType.Advance]: "Урьдчилгаа",
@@ -455,6 +462,10 @@ export const VALUES = {
   user_id: "Артист",
   percent: "Цалингийн хувь",
   salary_day: "Цалин олгох огноо",
+  new_status: "Шинэ төлөв",
+  old_status: "Хуучин төлөв",
+  new_order_status: "Шинэ захиалгын төлөв",
+  old_order_status: "Хуучин захиалгын төлөв",
 } as const as any;
 
 export const ZValidator = {

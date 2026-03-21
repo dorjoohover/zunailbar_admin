@@ -56,7 +56,7 @@ const defaultValues = {
   order_date: mnDateFormat(new Date()),
   start_time: undefined,
   edit: undefined,
-  order_status: OrderStatus.Pending,
+  order_status: OrderStatus.Active,
   total_amount: 0,
   pre_amount: 0,
   paid_amount: 0,
@@ -265,31 +265,30 @@ export default function AddEventModal({
     resolver: zodResolver(eventSchema),
     defaultValues,
   });
-  
+
   const isEdit = Boolean(values?.id);
   const hasId = values?.id !== undefined;
-const today = new Date();
-today.setHours(0, 0, 0, 0);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
 
-const orderDateValue = form.getValues("order_date");
-const orderDate = orderDateValue ? new Date(orderDateValue) : null;
+  const orderDateValue = form.getValues("order_date");
+  const orderDate = orderDateValue ? new Date(orderDateValue) : null;
 
-if (orderDate) {
-  orderDate.setHours(0, 0, 0, 0);
-}
-
-const isFuture = orderDate ? orderDate > today : false;
-
-const [isTimeSlotsEnabled, setTimeSlotsEnabled] = useState(() => {
-  
-  if(orderDate ) {
-    return isFuture
+  if (orderDate) {
+    orderDate.setHours(0, 0, 0, 0);
   }
-  if(isEdit || hasId) {
-    return true
-  }
-  return false
-});
+
+  const isFuture = orderDate ? orderDate > today : false;
+
+  const [isTimeSlotsEnabled, setTimeSlotsEnabled] = useState(() => {
+    if (orderDate) {
+      return isFuture;
+    }
+    if (isEdit || hasId) {
+      return true;
+    }
+    return false;
+  });
 
   const [loader, setLoader] = useState({
     [Api.service]: false,
@@ -474,10 +473,12 @@ const [isTimeSlotsEnabled, setTimeSlotsEnabled] = useState(() => {
 
   useEffect(() => {
     const serviceTotal = sumPrices(details);
-    const total = serviceTotal + Number(pre_amount || 0);
-
+    const total =
+      serviceTotal == 0
+        ? Number(pre_amount || 0) + Number(paid_amount || 0) 
+        : serviceTotal;
     const currentTotal = total_amount || 0;
-
+    
     // 🔥 Loop-оос хамгаална
     if (currentTotal !== total) {
       form.setValue("total_amount", total, {
@@ -485,8 +486,8 @@ const [isTimeSlotsEnabled, setTimeSlotsEnabled] = useState(() => {
         shouldTouch: false,
       });
     }
-    if (paid_amount != serviceTotal) {
-      form.setValue("paid_amount", serviceTotal, {
+    if (total_amount != serviceTotal && serviceTotal != 0) {
+      form.setValue("paid_amount", serviceTotal - +pre_amount, {
         shouldDirty: true,
         shouldTouch: false,
       });

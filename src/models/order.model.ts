@@ -1,6 +1,7 @@
-import { OrderStatus, PaymentMethod } from "@/lib/enum";
+import { OrderStatus, PaymentMethod, STATUS } from "@/lib/enum";
 import { UserService } from "./user.service.model";
 import { User } from "./user.model";
+import { StringOrTemplateHeader } from "@tanstack/react-table";
 
 export interface IOrder {
   user_id?: string;
@@ -26,8 +27,9 @@ export interface IOrder {
   customer?: User;
   color?: number;
   created_by?: string | User;
-  paid_at?: Date
-  transaction_type?: string
+  created_at?: Date;
+  paid_at?: Date;
+  transaction_type?: string;
 }
 export interface Order {
   id: string;
@@ -50,8 +52,8 @@ export interface Order {
   customer?: User;
   details?: IOrderDetail[];
   updated_at?: Date;
-  paid_at?: Date
-  transaction_type?: string
+  paid_at?: Date;
+  transaction_type?: string;
   method?: PaymentMethod;
 }
 
@@ -79,4 +81,15 @@ export interface DateTime {
 export interface UserDateTime extends UserService {
   slots: DateTime;
   services: string[];
+}
+
+export interface OrderLog {
+  id: string;
+  changed_by: string;
+  changed_at: Date;
+  order_id: string;
+  old_status: STATUS;
+  new_status: STATUS;
+  old_order_status: OrderStatus;
+  new_order_status: OrderStatus;
 }

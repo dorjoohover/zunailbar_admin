@@ -188,7 +188,7 @@ export default function SchedulerViewFilteration({
       role: ROLE.CLIENT,
       birthday: null,
     } as any);
-    console.log(res);
+    
     if (res.success) {
       refresh({});
       setIsOPen(false);

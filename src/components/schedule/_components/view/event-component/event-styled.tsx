@@ -252,7 +252,7 @@ export default function EventStyled({
         </div>
         {event.description && (
           <div className="my-2 text-xs ">
-            <b>Tip massage:</b> {event?.description}{" "}
+            <b>Tip message:</b> {event?.description}{" "}
           </div>
         )}
         {event.created_by && (
@@ -275,20 +275,32 @@ export default function EventStyled({
                 </span>
               </div>
             </div>
+            {event?.created_at && (
+              <div className="my-1 text-xs">
+                <b>Огноо: {parseDate(new Date(event.created_at), true)}</b>
+              </div>
+            )}
           </div>
         )}
         {event?.paid_at && (
-        <div className="my-1 text-xs">
-          <b>Төлбөр төлсөн огноо: {parseDate(new Date(event.paid_at), true)}</b>
-        </div>
-      )}
-      {
-        event.transaction_type && (
-          <div className="mb-1 text-xs">
-            <b>Төлбөрийн хэлбэр: {getTransactionTypeValue[event.transaction_type as keyof typeof getTransactionTypeValue]}</b>
+          <div className="my-1 text-xs">
+            <b>
+              Төлбөр төлсөн огноо: {parseDate(new Date(event.paid_at), true)}
+            </b>
           </div>
-        )
-      }
+        )}
+        {event.transaction_type && (
+          <div className="mb-1 text-xs">
+            <b>
+              Төлбөрийн хэлбэр:{" "}
+              {
+                getTransactionTypeValue[
+                  event.transaction_type as keyof typeof getTransactionTypeValue
+                ]
+              }
+            </b>
+          </div>
+        )}
       </div>
 
       <div
@@ -447,22 +459,27 @@ const EventItem = ({
 
       {event.description && (
         <div className="my-2 text-xs ">
-          <b>Tip massage:</b> {event?.description}{" "}
+          <b>Tip message:</b> {event?.description}{" "}
         </div>
       )}
-      
+
       {event?.paid_at && (
         <div className="mb-1 text-xs">
           <b>Төлбөр төлсөн огноо: {parseDate(new Date(event.paid_at), true)}</b>
         </div>
       )}
-      {
-        event.transaction_type && (
-          <div className="mb-1 text-xs">
-            <b>Төлбөрийн хэлбэр: {getTransactionTypeValue[event.transaction_type as keyof typeof getTransactionTypeValue]}</b>
-          </div>
-        )
-      }
+      {event.transaction_type && (
+        <div className="mb-1 text-xs">
+          <b>
+            Төлбөрийн хэлбэр:{" "}
+            {
+              getTransactionTypeValue[
+                event.transaction_type as keyof typeof getTransactionTypeValue
+              ]
+            }
+          </b>
+        </div>
+      )}
       {event?.minmized && !parallel && (
         <div className="flex flex-col">
           <div className="text-[10px] flex justify-between">
