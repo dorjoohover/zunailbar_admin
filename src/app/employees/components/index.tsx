@@ -173,7 +173,10 @@ export const EmployeePage = ({
       ? await updateOne<IUser>(
           Api.user,
           editingUser?.id as string,
-          payload,
+          {
+            ...payload,
+            password: password as string,
+          },
           "update",
         )
       : await create<IUser>(Api.user, {
@@ -510,7 +513,7 @@ export const EmployeePage = ({
                     </div>
                   </div>
                   <div className="pt-5 double-col">
-                    {!editingUser && (
+                    {
                       <FormItems
                         label="Нууц үг"
                         control={form.control}
@@ -527,7 +530,7 @@ export const EmployeePage = ({
                           );
                         }}
                       </FormItems>
-                    )}
+                    }
                     {[
                       "lastname",
                       "firstname",
@@ -617,28 +620,30 @@ export const EmployeePage = ({
                         return (
                           <ComboBox
                             props={{ ...field }}
-                            items={[UserLevel.JUNIOR, UserLevel.SENIOR].map((item) => {
-                              return {
-                                value: item.toString(),
-                                label: getUserLevelValue[item].name,
-                              };
-                            })}
+                            items={[UserLevel.JUNIOR, UserLevel.SENIOR].map(
+                              (item) => {
+                                return {
+                                  value: item.toString(),
+                                  label: getUserLevelValue[item].name,
+                                };
+                              },
+                            )}
                           />
                         );
                       }}
                     </FormItems>
                   </div>
-                     <FormItems control={form.control} name={`description`}>
-                        {(field) => {
-                          return (
-                            <Textarea
-                              className=""
-                              onChange={field.onChange}
-                              value={field.value as string}
-                            />
-                          );
-                        }}
-                      </FormItems>
+                  <FormItems control={form.control} name={`description`}>
+                    {(field) => {
+                      return (
+                        <Textarea
+                          className=""
+                          onChange={field.onChange}
+                          value={field.value as string}
+                        />
+                      );
+                    }}
+                  </FormItems>
                 </div>
               </FormProvider>
             </Modal>
