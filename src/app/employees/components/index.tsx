@@ -169,14 +169,17 @@ export const EmployeePage = ({
         ...(body as IUser),
       };
     }
+    if (password) {
+      payload = {
+        ...payload,
+        password: password as string,
+      };
+    }
     const res = editingUser
       ? await updateOne<IUser>(
           Api.user,
           editingUser?.id as string,
-          {
-            ...payload,
-            password: password as string,
-          },
+          payload,
           "update",
         )
       : await create<IUser>(Api.user, {
