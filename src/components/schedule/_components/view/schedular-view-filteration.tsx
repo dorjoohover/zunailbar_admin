@@ -140,7 +140,6 @@ export default function SchedulerViewFilteration({
   useEffect(() => {
     setClientSide(true);
   }, []);
-
   const [isMobile, setIsMobile] = useState(
     clientSide ? window.innerWidth <= 768 : false,
   );
@@ -251,7 +250,7 @@ export default function SchedulerViewFilteration({
                   ref: () => null,
                   value: filter?.artist,
                 }}
-                items={values.user.map((item) => {
+                items={values.customer.map((item) => {
                   const [mobile, nickname] = item?.value?.split("__") ?? [
                     "",
                     "",
@@ -415,7 +414,7 @@ export default function SchedulerViewFilteration({
           </div>
         </div>
         <div className="divide-x-gray"></div>
-   
+
         {filter?.list ? (
           <DataTable
             // clear={() => setFilter(undefined)}
