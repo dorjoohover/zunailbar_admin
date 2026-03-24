@@ -223,7 +223,7 @@ export default function EventStyled({
                   <div
                     className="w-3 rounded-full h-3"
                     style={{
-                      backgroundColor: getBackgroundColor(e.user.color),
+                      backgroundColor: e.user.color ? getBackgroundColor(e.user.color) : '',
                     }}
                   ></div>
                   <div className="flex gap-2">
