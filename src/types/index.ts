@@ -104,6 +104,7 @@ const detail = z.object({
     allowNullable: false,
     label: "Артист",
   }),
+  
   id: z.any(),
 });
 

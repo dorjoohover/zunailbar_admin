@@ -315,6 +315,7 @@ export default function AddEventModal({
 
     setClose();
   };
+
   const onInvalid = async <T,>(e: T) => {
     const error = Object.entries(e as any)
       .map(([er, v], i) => {
@@ -366,7 +367,6 @@ export default function AddEventModal({
     duration,
   } = useWatch<EventFormData>({ control: form.control });
   const isDurationInitialized = useRef(false);
-  console.log(details)
 
   useEffect(() => {
     if (!values || !values?.id || !services.items.length) return;
@@ -377,14 +377,14 @@ export default function AddEventModal({
         id: v.id,
         service_id: service?.id ?? "",
         service_name: service?.name ?? "",
-        duration: Number(service?.duration ?? 0),
+        duration: Number(v?.duration ?? service?.duration ?? 0),
         category_id: service?.category_id ?? "",
         description: v.description ?? "",
         price: v.price ?? 0,
         user_id: v.user?.id ?? v.user_id ?? "",
       };
     });
-
+    
     form.reset({
       ...values,
       details: mappedDetails,
@@ -805,20 +805,7 @@ export default function AddEventModal({
             </FormItems>
             {details?.length > 0 && (
               <FormItems control={form.control} name="duration" label="Хугацаа">
-                {(field) => {
-                  return (
-                    <TextField
-                      type={INPUT_TYPE.NUMBER}
-                      props={{
-                        ...field,
-                        onChange: (e) => {
-                          field.onChange(e);
-                          setDuration(e);
-                        },
-                      }}
-                    />
-                  );
-                }}
+                {(field) => <TextField props={{ ...field }} disabled={true} />}
               </FormItems>
             )}
             {((order_date && slots?.[order_date]) || !isTimeSlotsEnabled) && (
@@ -974,6 +961,26 @@ export default function AddEventModal({
                                 onBlur: () => {},
                                 ref: () => {},
                                 value: detail?.price ?? "",
+                              }}
+                            />
+                          </FormItem>
+                          <FormItem>
+                            <FormLabel>Хугацаа</FormLabel>
+                            <TextField
+                              type={INPUT_TYPE.NUMBER}
+                              props={{
+                                onChange: (v: string) => {
+                                  const value = parseInt(v);
+                                  updateDetail(
+                                    i,
+                                    isNaN(value) ? 0 : value,
+                                    "duration",
+                                  );
+                                },
+                                name: "",
+                                onBlur: () => {},
+                                ref: () => {},
+                                value: detail?.duration ?? "",
                               }}
                             />
                           </FormItem>
