@@ -3,13 +3,20 @@ import { ArrowUpDown, Pencil, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AppAlertDialog } from "@/components/AlertDialog";
 import { toast } from "sonner";
-import { formatTime, getDayName, parseDate } from "@/lib/functions";
+import {
+  firstLetterUpper,
+  formatTime,
+  getDayName,
+  parseDate,
+} from "@/lib/functions";
 import { Schedule } from "@/models";
 import TooltipWrapper from "@/components/tooltipWrapper";
+import { getUserColor } from "@/lib/colors";
+import { cn } from "@/lib/utils";
 
 export function getColumns(
   onEdit: (product: Schedule) => void,
-  remove: (index: number) => Promise<boolean>
+  remove: (index: number) => Promise<boolean>,
 ): ColumnDef<Schedule>[] {
   return [
     {
@@ -17,7 +24,18 @@ export function getColumns(
       header: ({ table }) => <span>№</span>,
       cell: ({ row }) => <span className="">{row.index + 1}</span>,
     },
+    {
+      accessorFn: (row) => row.meta?.nickname ?? "",
+      id: "nickname",
+      header: "Нэр",
+      cell: ({ row }) => {
+        const value = row.getValue("nickname") as string;
+        const colorIndex = Number(row.original.meta?.color); // 🔥 зөв авах
+        const color = getUserColor(colorIndex);
 
+        return <span style={{ color }} className="font-bold">{firstLetterUpper(value || "-")}</span>;
+      },
+    },
     {
       accessorKey: "index",
       header: "Гараг",
@@ -42,6 +60,7 @@ export function getColumns(
         return time ? formatTime(time) : "-";
       },
     },
+
     {
       accessorKey: "times",
       header: "Цагууд",

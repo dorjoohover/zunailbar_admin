@@ -142,7 +142,7 @@ export function DayScheduleColumn({
         {!isEditMode && (
           <>
             {/* Add time */}
-            {availableTimesToAdd.length > 0 && (
+            {/* {availableTimesToAdd.length > 0 && (
               <button
                 onClick={() => setShowAddTime(true)}
                 className="w-full flex text-xs items-center justify-center gap-2 px-3 py-2 bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 rounded-lg transition-colors"
@@ -150,7 +150,7 @@ export function DayScheduleColumn({
                 <Plus size={14} />
                 <span>Цаг нэмэх</span>
               </button>
-            )}
+            )} */}
 
             {/* Copy previous day */}
             {onCopyPrevious && (

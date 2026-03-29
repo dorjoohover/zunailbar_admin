@@ -71,7 +71,7 @@ export const SchedulePage = ({
   const [selectedUser, setSelectedUser] = useState(users.items?.[0] ?? null);
   const userMap = useMemo(
     () => new Map(users.items.map((b) => [b.id, b])),
-    [users.items]
+    [users.items],
   );
 
   const ScheduleFormatter = (data: ListType<Schedule>) => {
@@ -112,7 +112,7 @@ export const SchedulePage = ({
         user_id: selectedUser.id,
         //   name: pg.filter,
       },
-      "employee"
+      "employee",
     ).then((d) => {
       ScheduleFormatter(d);
     });
@@ -126,8 +126,8 @@ export const SchedulePage = ({
           acc[b.index] = b.times?.split("|");
           return acc;
         },
-        {}
-      ) ?? {}
+        {},
+      ) ?? {},
     );
   }, [schedules?.items]);
   const add = async (index: number, times: string[], isAdd: boolean) => {
@@ -162,7 +162,7 @@ export const SchedulePage = ({
     const res = await deleteOne(
       Api.schedule,
       selectedUser.id + `/${index}`,
-      "index"
+      "index",
     );
     if (res.success) {
       refresh();
@@ -175,7 +175,7 @@ export const SchedulePage = ({
   const updateSchedule = async (
     dayIndex: number,
     times: string[],
-    action: number
+    action: number,
   ) => {
     if (action == 4) await remove(dayIndex);
     if (action == 0) await add(dayIndex, times, !scheduleData[dayIndex]);
@@ -189,8 +189,8 @@ export const SchedulePage = ({
             acc[b.index] = b.times?.split("|");
             return acc;
           },
-          {}
-        )[dayIndex]
+          {},
+        )[dayIndex],
       );
     setScheduleData((prev) => ({
       ...prev,
@@ -250,7 +250,7 @@ export const SchedulePage = ({
           <DataTable
             columns={columns}
             count={schedules?.count}
-            data={schedules?.items ?? []}
+            data={(schedules?.items ?? []).sort((a, b) => a.index - b.index)}
             refresh={refresh}
             loading={action == ACTION.RUNNING}
           />
