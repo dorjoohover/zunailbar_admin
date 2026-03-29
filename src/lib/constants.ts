@@ -200,6 +200,7 @@ export interface ScheduleData {
 
 export interface SearchType<T> {
   id: string;
+  user_id: string;
   value: string;
   item?: T;
   quantity?: number;

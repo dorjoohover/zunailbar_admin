@@ -176,12 +176,6 @@ export default function ({
   const [open, setIsOPen] = useState<undefined | boolean>(false);
   const onSubmit = async <T,>(e: T) => {
     const body = e as UserType;
-
-    console.log({
-      ...body,
-      role: ROLE.CLIENT,
-      birthday: null,
-    });
     const res = await create<User>(Api.user, {
       ...body,
       role: ROLE.CLIENT,

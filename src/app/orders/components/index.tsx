@@ -1,5 +1,5 @@
 "use client";
-import { Branch, IOrder, Order, Service, User } from "@/models";
+import { Branch, IOrder, Order, Schedule, Service, User } from "@/models";
 import { useEffect, useRef, useState } from "react";
 import {
   ListType,
@@ -11,7 +11,7 @@ import {
 } from "@/lib/constants";
 import z from "zod";
 import { Api } from "@/utils/api";
-import { create, deleteOne, excel, find, updateOne } from "@/app/(api)";
+import { create, deleteOne, excel, find, search, updateOne } from "@/app/(api)";
 import { fetcher } from "@/hooks/fetcher";
 import SchedulerViewFilteration from "@/components/schedule/_components/view/schedular-view-filteration";
 import { SchedulerProvider } from "@/providers/schedular-provider";
@@ -49,6 +49,7 @@ export const OrderPage = ({
   const [action, setAction] = useState(ACTION.DEFAULT);
   const [orders, setOrders] = useState<ListType<Order>>(ListDefault);
   const [filter, setFilter] = useState<FilterType>({});
+  const [artists, setArtists] = useState<SearchType<User>[]>(users);
   const changeFilter = (
     key: string,
     value: number | string | undefined | boolean,
@@ -56,12 +57,22 @@ export const OrderPage = ({
     setFilter((prev) => ({ ...prev, [key]: value }));
   };
   const isFirstRender = useRef(true);
+  const getAristSchedules = async () => {
+    const date = mnDate(filter?.date?.from);
+    let index = date.getDay() - 1;
+    index = index == -1 ? 6 : index;
+    const schedule = await search<Schedule>(Api.schedule, { index });
+    const scheduledUserIds = new Set(
+      (schedule.data ?? []).map((s) => s.user_id).filter(Boolean),
+    );
+    setArtists(users.filter((u) => scheduledUserIds.has(u.id)));
+  };
   useEffect(() => {
-    // if (isFirstRender.current) {
-    //   isFirstRender.current = false;
-    //   return;
-    // }
     refresh();
+    if (isFirstRender.current || filter.artist || filter.date) {
+      getAristSchedules();
+      isFirstRender.current = false;
+    }
   }, [filter?.date, filter?.artist, filter?.branch, filter?.status]);
 
   const orderFormatter = (data: ListType<Order>) => {
@@ -132,7 +143,6 @@ export const OrderPage = ({
         };
       });
     }
-    console.log(payload)
     const res = edit
       ? await updateOne<Order>(
           Api.order,
@@ -239,7 +249,7 @@ export const OrderPage = ({
                 branch: branches,
                 customer: customers,
                 service: services,
-                user: users,
+                user: artists,
               }}
               filter={filter}
               setFilter={changeFilter}

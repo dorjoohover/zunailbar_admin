@@ -112,7 +112,6 @@ export const OrderLogPage = ({
       limit: 20,
       page: 0,
     }).then((d) => {
-      console.log(d);
       setItems((prev) => ({
         ...prev,
         [key]: d.data,

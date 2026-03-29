@@ -2,7 +2,7 @@ import { Api } from "@/utils/api";
 import { find, search } from "../(api)";
 import { Service } from "@/models/service.model";
 import { OrderPage } from "./components";
-import { Branch, User } from "@/models";
+import { Branch, Schedule, User } from "@/models";
 import { ROLE, UserStatus } from "@/lib/enum";
 import { Slot } from "@/models/slot.model";
 
@@ -15,7 +15,7 @@ export default async function Page() {
       user_status: UserStatus.ACTIVE,
     }),
 
-    find<Service>(Api.service, { limit: 20, sort: false, }),
+    find<Service>(Api.service, { limit: 20, sort: false }),
   ]);
 
   const client = await search<User>(Api.user, { limit: 20, role: ROLE.CLIENT });

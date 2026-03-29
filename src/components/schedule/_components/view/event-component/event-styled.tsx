@@ -97,7 +97,6 @@ export default function EventStyled({
   const { setOpen } = useModal();
 
   function handleEditEvent(event: IOrder) {
-    console.log(event.details, 'event')
     setOpen(
       <CustomModal title="Захиалга засах">
         <AddEventModal
@@ -307,7 +306,6 @@ export default function EventStyled({
       <div
         onClick={(e: React.MouseEvent<HTMLDivElement>) => {
           e.stopPropagation();
-          console.log(event)
           handleEditEvent({
             ...event,
             // id: event?.id,
