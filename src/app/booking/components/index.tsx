@@ -86,7 +86,6 @@ export const BookingPage = ({
       "employee"
     ).then((d) => {
       bookingFormatter(d);
-      console.log(d);
     });
     setAction(ACTION.DEFAULT);
   };
@@ -97,7 +96,6 @@ export const BookingPage = ({
       times: times.length == 0 ? undefined : times.map((time) => time),
       branch_id: selectedBranch.id,
     };
-    console.log(payload);
 
     const id = bookings?.items?.filter((b) => b.index == index)?.[0]?.id;
     const res = isAdd

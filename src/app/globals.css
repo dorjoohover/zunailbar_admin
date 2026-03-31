@@ -89,7 +89,7 @@
 }
 
 @utility admin-container {
-  @apply w-full p-3 space-y-5 lg:p-6;
+  @apply w-full p-0 space-y-5 lg:p-6;
 }
 
 @utility double-col {

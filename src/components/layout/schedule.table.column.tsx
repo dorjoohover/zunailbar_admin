@@ -37,7 +37,7 @@ export function DayScheduleColumn({
     if (times.includes(time)) {
       onUpdateTimes(
         times.filter((t) => t !== time),
-        1
+        1,
       );
     } else {
       // Add and sort
@@ -58,7 +58,7 @@ export function DayScheduleColumn({
   };
 
   const availableTimesToAdd = allAvailableTimes.filter(
-    (t) => !times.includes(t)
+    (t) => !times.includes(t),
   );
 
   useEffect(() => {

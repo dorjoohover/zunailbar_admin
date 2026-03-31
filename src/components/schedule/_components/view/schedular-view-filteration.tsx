@@ -426,7 +426,7 @@ export default function ({
             className={cn("w-full gap-0", classNames?.tabs)}
           >
             <>
-              <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-1 mb-4">
+              <div className="grid grid-cols-1 px-2 md:grid-cols-2 lg:grid-cols-3 gap-1 mb-4">
                 {values.user.map((user, i) => {
                   const [mobile, nickname, branch, color] =
                     user.value?.split("__");
@@ -443,12 +443,16 @@ export default function ({
                       <span className="text-xs">
                         {mobileFormatter(mobile)}{" "}
                         {firstLetterUpper(nickname ?? "")}
+                      
+                      </span>
+                      <span className="text-xs">
+                          {user.item as string}
                       </span>
                     </div>
                   );
                 })}
               </div>
-              {viewsSelector?.includes("day") && (
+             <div className="px-2"> {viewsSelector?.includes("day") && (
                 <TabsContent value="day">
                   <AnimatePresence mode="wait">
                     <motion.div {...(animationConfig as any)}>
@@ -476,7 +480,7 @@ export default function ({
                     </motion.div>
                   </AnimatePresence>
                 </TabsContent>
-              )}
+              )}</div>
             </>
           </Tabs>
         )}

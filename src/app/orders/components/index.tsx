@@ -62,10 +62,19 @@ export const OrderPage = ({
     let index = date.getDay() - 1;
     index = index == -1 ? 6 : index;
     const schedule = await search<Schedule>(Api.schedule, { index });
+    const scheduleItems = schedule.data ?? [];
     const scheduledUserIds = new Set(
-      (schedule.data ?? []).map((s) => s.user_id).filter(Boolean),
+      scheduleItems.map((s) => s.user_id).filter(Boolean),
     );
-    setArtists(users.filter((u) => scheduledUserIds.has(u.id)));
+
+    setArtists(
+      users
+        .filter((u) => scheduledUserIds.has(u.id))
+        .map((u) => ({
+          ...u,
+          item: scheduleItems.find((a) => a.user_id == u.id)?.value,
+        })),
+    );
   };
   useEffect(() => {
     refresh();
