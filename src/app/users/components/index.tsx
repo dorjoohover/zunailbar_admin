@@ -20,7 +20,7 @@ import z from "zod";
 import { FormProvider, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Api } from "@/utils/api";
-import { create, deleteOne, updateOne } from "@/app/(api)";
+import { create, deleteOne, findOne, updateOne } from "@/app/(api)";
 import { FormItems } from "@/shared/components/form.field";
 import { ComboBox } from "@/shared/components/combobox";
 import { TextField } from "@/shared/components/text.field";
@@ -70,6 +70,35 @@ export const UserPage = ({
     defaultValues,
   });
   const [Users, setUsers] = useState<ListType<User> | null>(data);
+  const visitCountRequestRef = useRef(0);
+
+  const withVisitCounts = async (list: ListType<User>) => {
+    if (!list?.items?.length) {
+      return list;
+    }
+
+    const items = await Promise.all(
+      list.items.map(async (item) => {
+        try {
+          const res = await findOne(Api.order, item.id, "customer_count");
+          return {
+            ...item,
+            order_count: Number(res?.payload?.count ?? 0),
+          };
+        } catch (error) {
+          return {
+            ...item,
+            order_count: 0,
+          };
+        }
+      })
+    );
+
+    return {
+      ...list,
+      items,
+    };
+  };
 
   const clear = () => {
     form.reset(defaultValues);
@@ -131,6 +160,7 @@ export const UserPage = ({
 
   const refresh = async (pg: PG = DEFAULT_PG) => {
     setAction(ACTION.RUNNING);
+    const requestId = ++visitCountRequestRef.current;
     const { page, limit, sort, filter } = pg;
     const user_status = userFilter?.status;
     const level = userFilter?.level;
@@ -143,8 +173,11 @@ export const UserPage = ({
       user_status,
       level,
       ...pg,
-    }).then((d) => {
-      setUsers(d);
+    }).then(async (d) => {
+      const enriched = await withVisitCounts(d);
+      if (requestId === visitCountRequestRef.current) {
+        setUsers(enriched);
+      }
     });
 
     setAction(ACTION.DEFAULT);
@@ -190,6 +223,22 @@ export const UserPage = ({
     }
     refresh();
   }, [userFilter]);
+  useEffect(() => {
+    let mounted = true;
+
+    const hydrateInitialUsers = async () => {
+      const enriched = await withVisitCounts(data);
+      if (mounted) {
+        setUsers(enriched);
+      }
+    };
+
+    void hydrateInitialUsers();
+
+    return () => {
+      mounted = false;
+    };
+  }, [data]);
   const changeFilter = (key: string, value: number | string) => {
     setFilter((prev) => ({ ...prev, [key]: value }));
   };

@@ -38,6 +38,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { DateRange } from "react-day-picker";
 
 // Generate hours in 12-hour format
 const hours = Array.from({ length: totalHours }, (_, i) => {
@@ -185,7 +186,10 @@ export default function DailyView({
   prevButton?: React.ReactNode;
   deleteOrder: (id: string) => void;
 
-  setFilter: (key: string, value: string | number | undefined) => void;
+  setFilter: (
+    key: string,
+    value: string | number | undefined | DateRange,
+  ) => void;
   filter?: FilterType;
   nextButton?: React.ReactNode;
   CustomEventComponent?: React.FC<IOrder>;
@@ -195,6 +199,7 @@ export default function DailyView({
   values: {
     branch: SearchType<Branch>[];
     customer: SearchType<User>[];
+    artists: SearchType<User>[];
     user: SearchType<User>[];
     service: ListType<Service>;
   };
@@ -287,9 +292,9 @@ export default function DailyView({
     nextDay.setDate(currentDate.getDate() + 1);
     setFilter("date", {
       from: nextDay,
-      to: nextDate,
+      to: filter?.list ? nextDate : nextDay,
     } as any);
-  }, [currentDate]);
+  }, [currentDate, filter?.list, nextDate]);
 
   const handlePrevDay = useCallback(() => {
     setDirection(-1);
@@ -297,9 +302,9 @@ export default function DailyView({
     prevDay.setDate(currentDate.getDate() - 1);
     setFilter("date", {
       from: prevDay,
-      to: nextDate,
+      to: filter?.list ? nextDate : prevDay,
     } as any);
-  }, [currentDate]);
+  }, [currentDate, filter?.list, nextDate]);
 
   return (
     <>

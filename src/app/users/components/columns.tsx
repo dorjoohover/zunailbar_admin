@@ -54,6 +54,14 @@ export function getColumns(
       },
     },
     {
+      accessorKey: "order_count",
+      header: () => "Үйлчлүүлсэн",
+      cell: ({ row }) => {
+        const count = Number((row.original as IUser).order_count ?? 0);
+        return `${count} удаа`;
+      },
+    },
+    {
       accessorKey: "level",
       header: ({ column }) => "Эрэмбэ",
       cell: ({ row }) => {

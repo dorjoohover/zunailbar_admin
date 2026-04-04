@@ -1,11 +1,11 @@
 import { ColumnDef } from "@tanstack/react-table";
 import { ArrowUpDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { parseDate } from "@/lib/functions";
-import { IntegrationPayment, ISalaryLog } from "@/models";
+import { money, parseDate } from "@/lib/functions";
+import { IntegrationPayment } from "@/models";
 import { TableActionButtons } from "@/components/tableActionButtons";
-import { PaymentTypeValues, SalaryLogValues } from "@/lib/constants";
-import { PaymentType, SalaryLogStatus } from "@/lib/enum";
+import { PaymentTypeValues } from "@/lib/constants";
+import { PaymentType } from "@/lib/enum";
 
 export function getColumns(
   onEdit: (product: IntegrationPayment) => void,
@@ -32,7 +32,7 @@ export function getColumns(
 
     {
       accessorKey: "type",
-      header: "Статус",
+      header: "Төрөл",
       cell: ({ row }) => {
         const status =
           PaymentTypeValues[row.getValue<number>("type") as PaymentType];
@@ -44,8 +44,8 @@ export function getColumns(
       accessorKey: "amount",
       header: "Төлсөн дүн",
       cell: ({ row }) => {
-        const date = row.getValue("amount")
-        return `${date}₮`;
+        const amount = row.getValue<number>("amount");
+        return money(String(amount ?? 0), "₮");
       },
     },
     {

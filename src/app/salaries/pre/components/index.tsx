@@ -17,7 +17,7 @@ import z from "zod";
 import { FormProvider, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Api } from "@/utils/api";
-import { create, deleteOne, excel, updateOne } from "@/app/(api)";
+import { create, deleteOne, excel, find, updateOne } from "@/app/(api)";
 import { FormItems } from "@/shared/components/form.field";
 import { ComboBox } from "@/shared/components/combobox";
 import { TextField } from "@/shared/components/text.field";
@@ -25,11 +25,33 @@ import { fetcher } from "@/hooks/fetcher";
 import { getColumns } from "./columns";
 import DynamicHeader from "@/components/dynamicHeader";
 import { INPUT_TYPE, PaymentType } from "@/lib/enum";
-import { IIntegrationPayment, IntegrationPayment, User } from "@/models";
-import { firstLetterUpper, mnDate, usernameFormatter } from "@/lib/functions";
+import {
+  IIntegrationPayment,
+  IntegrationPayment,
+  SalaryReconciliationItem,
+  SalaryReconciliationResponse,
+  User,
+} from "@/models";
+import {
+  firstLetterUpper,
+  mnDate,
+  mnDateFormat,
+  money,
+  usernameFormatter,
+} from "@/lib/functions";
 import { DatePicker } from "@/shared/components/date.picker";
 import { showToast } from "@/shared/components/showToast";
-import { fi } from "date-fns/locale";
+import { DateRange } from "react-day-picker";
+import { Button } from "@/components/ui/button";
+import { CircleX } from "lucide-react";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 const formSchema = z.object({
   paid_at: z.preprocess(
@@ -61,6 +83,18 @@ const defaultValues = {
   edit: undefined,
 };
 type SalaryType = z.infer<typeof formSchema>;
+const defaultReconciliation: SalaryReconciliationResponse = {
+  from: "",
+  to: "",
+  count: 0,
+  items: [],
+  summary: {
+    income_amount: 0,
+    transferred_amount: 0,
+    balance_amount: 0,
+    order_count: 0,
+  },
+};
 export const PrePage = ({
   data,
   users,
@@ -70,12 +104,18 @@ export const PrePage = ({
 }) => {
   const [action, setAction] = useState(ACTION.DEFAULT);
   const [open, setOpen] = useState<undefined | boolean>(false);
+  const [reportFilter, setReportFilter] = useState<{
+    date?: DateRange;
+    artist_id?: string;
+  }>({});
   const form = useForm<SalaryType>({
     resolver: zodResolver(formSchema),
     defaultValues,
   });
   const [salaries, setSalaries] =
     useState<ListType<IntegrationPayment>>(ListDefault);
+  const [reconciliation, setReconciliation] =
+    useState<SalaryReconciliationResponse>(defaultReconciliation);
   const deleteLog = async (index: number) => {
     const id = salaries!.items[index].id;
     const res = await deleteOne(Api.integration_payment, id);
@@ -90,6 +130,15 @@ export const PrePage = ({
     () => new Map(users.items.map((b) => [b.id, b])),
     [users.items],
   );
+  const getFilterParams = () => {
+    const fromDate = reportFilter.date?.from;
+    const toDate = reportFilter.date?.to ?? reportFilter.date?.from;
+    return {
+      ...(fromDate ? { from: mnDateFormat(fromDate) } : {}),
+      ...(toDate ? { to: mnDateFormat(toDate) } : {}),
+      ...(reportFilter.artist_id ? { artist_id: reportFilter.artist_id } : {}),
+    };
+  };
 
   const userFormatter = (data: ListType<IntegrationPayment>) => {
     const items: IntegrationPayment[] = data.items.map((item) => {
@@ -102,6 +151,35 @@ export const PrePage = ({
     });
     setSalaries({ items, count: data.count });
   };
+  const mapReconciliationItems = (items: SalaryReconciliationItem[]) => {
+    return items.map((item) => {
+      const user = userMap.get(item.artist_id);
+      return {
+        ...item,
+        user_name: user ? usernameFormatter(user) : "",
+      };
+    });
+  };
+  const refreshReconciliation = async () => {
+    const params = getFilterParams();
+    const res = await find<SalaryReconciliationItem>(
+      Api.integration,
+      { ...params, limit: -1 } as any,
+      "reconciliation",
+    );
+    const payload =
+      (res.data as unknown as SalaryReconciliationResponse) ??
+      defaultReconciliation;
+    setReconciliation({
+      ...defaultReconciliation,
+      ...payload,
+      items: mapReconciliationItems(payload.items ?? []),
+      summary: {
+        ...defaultReconciliation.summary,
+        ...(payload.summary ?? {}),
+      },
+    });
+  };
 
   useEffect(() => {
     userFormatter(data);
@@ -111,16 +189,24 @@ export const PrePage = ({
   const refresh = async (pg: PG = DEFAULT_PG) => {
     setAction(ACTION.RUNNING);
     const { page, limit, sort } = pg;
+    const { from, to, artist_id } = getFilterParams();
     await fetcher<IntegrationPayment>(Api.integration_payment, {
       page: page ?? DEFAULT_PG.page,
       limit: limit ?? DEFAULT_PG.limit,
       sort: sort ?? DEFAULT_PG.sort,
+      from,
+      to,
+      artist_id,
       ...pg,
     }).then((d) => {
       userFormatter(d);
     });
     setAction(ACTION.DEFAULT);
   };
+  useEffect(() => {
+    void refresh({});
+    void refreshReconciliation();
+  }, [reportFilter]);
   const onSubmit = async <T,>(e: T) => {
     setAction(ACTION.RUNNING);
     const body = e as SalaryType;
@@ -161,10 +247,14 @@ export const PrePage = ({
   const downloadExcel = async (pg: PG = DEFAULT_PG) => {
     setAction(ACTION.RUNNING);
     const { page, limit, sort } = pg;
+    const { from, to, artist_id } = getFilterParams();
     const res = await excel(Api.integration_payment, {
       page: page ?? DEFAULT_PG.page,
       limit: -1,
       sort: sort ?? DEFAULT_PG.sort,
+      from,
+      to,
+      artist_id,
       ...pg,
     });
     if (res.success && res.data) {
@@ -188,11 +278,147 @@ export const PrePage = ({
     console.log(res);
     setAction(ACTION.DEFAULT);
   };
+  const clearReportFilter = () => {
+    setReportFilter({
+      date: undefined,
+      artist_id: undefined,
+    });
+  };
   return (
     <div className="">
       <DynamicHeader />
 
-      <div className="admin-container">
+      <div className="admin-container space-y-4">
+        <div className="bg-white rounded-2xl shadow-light border-light p-4">
+          <div className="flex flex-wrap gap-3 items-end">
+            <label>
+              <span className="filter-label">Хугацаа</span>
+              <DatePicker
+                mode="range"
+                value={reportFilter.date}
+                onChange={(value) =>
+                  setReportFilter((prev) => ({
+                    ...prev,
+                    date: value as DateRange | undefined,
+                  }))
+                }
+                pl="Огноо сонгох"
+              />
+            </label>
+            <label className="min-w-[220px]">
+              <span className="filter-label">Артист</span>
+              <ComboBox
+                pl="Артист сонгох"
+                props={{
+                  name: "artist_id",
+                  value: reportFilter.artist_id ?? "",
+                  onChange: (value) =>
+                    setReportFilter((prev) => ({
+                      ...prev,
+                      artist_id: value || undefined,
+                    })),
+                  onBlur: () => {},
+                  ref: () => {},
+                }}
+                items={users.items.map((item) => ({
+                  value: item.id,
+                  label: usernameFormatter(item),
+                }))}
+              />
+            </label>
+            <Button
+              variant="ghost"
+              onClick={clearReportFilter}
+              className="text-xs text-red-500 hover:text-red-500 bg-red-50 hover:bg-red-100 lg:h-10"
+            >
+              <CircleX />
+            </Button>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-2xl shadow-light border-light p-5">
+          <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+            <div>
+              <h3 className="text-lg font-semibold text-slate-900">
+                Артистын тооцооны үлдэгдэл
+              </h3>
+              <p className="text-sm text-slate-500">
+                Сонгосон хугацаанд орсон орлого болон шилжүүлсэн дүн
+              </p>
+            </div>
+            <div className="grid gap-2 sm:grid-cols-3">
+              <div className="rounded-xl bg-slate-50 px-4 py-3">
+                <p className="text-xs text-slate-500">Нийт орлого</p>
+                <p className="text-sm font-semibold">
+                  {money(String(reconciliation.summary.income_amount ?? 0), "₮")}
+                </p>
+              </div>
+              <div className="rounded-xl bg-slate-50 px-4 py-3">
+                <p className="text-xs text-slate-500">Нийт шилжүүлсэн</p>
+                <p className="text-sm font-semibold">
+                  {money(
+                    String(reconciliation.summary.transferred_amount ?? 0),
+                    "₮",
+                  )}
+                </p>
+              </div>
+              <div className="rounded-xl bg-slate-50 px-4 py-3">
+                <p className="text-xs text-slate-500">Үлдэгдэл</p>
+                <p className="text-sm font-semibold">
+                  {money(
+                    String(reconciliation.summary.balance_amount ?? 0),
+                    "₮",
+                  )}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Артист</TableHead>
+                  <TableHead>Үйлчилгээний тоо</TableHead>
+                  <TableHead>Орлого</TableHead>
+                  <TableHead>Шилжүүлсэн</TableHead>
+                  <TableHead>Үлдэгдэл</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {reconciliation.items.length > 0 ? (
+                  reconciliation.items.map((item) => (
+                    <TableRow key={item.artist_id}>
+                      <TableCell className="font-medium">
+                        {item.user_name || "-"}
+                      </TableCell>
+                      <TableCell>{item.order_count}</TableCell>
+                      <TableCell>
+                        {money(String(item.income_amount ?? 0), "₮")}
+                      </TableCell>
+                      <TableCell>
+                        {money(String(item.transferred_amount ?? 0), "₮")}
+                      </TableCell>
+                      <TableCell>
+                        {money(String(item.balance_amount ?? 0), "₮")}
+                      </TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell
+                      colSpan={5}
+                      className="text-center text-slate-500 py-8"
+                    >
+                      Сонгосон хугацаанд тооцооны мэдээлэл алга байна.
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </div>
+        </div>
+
         <DataTable
           columns={columns}
           count={salaries?.count}

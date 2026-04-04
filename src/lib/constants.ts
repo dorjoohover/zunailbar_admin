@@ -325,6 +325,8 @@ export const getUserLevelValue = {
 
 export const getTransactionTypeValue = {
   P2P: "Дансаар",
+  BANK: "Дансаар",
+  CASH: "Бэлнээр",
   CARD: "Карт",
 };
 

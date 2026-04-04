@@ -8,44 +8,54 @@ import {
   DEFAULT_PG,
   getEnumValues,
   ListDefault,
-  SalaryLogValues,
   VALUES,
   ZValidator,
+  PaymentTypeValues,
 } from "@/lib/constants";
 import { Modal } from "@/shared/components/modal";
 import z from "zod";
 import { FormProvider, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Api } from "@/utils/api";
-import { create, deleteOne, excel, updateOne } from "@/app/(api)";
+import { create, deleteOne, excel, find, updateOne } from "@/app/(api)";
 import { FormItems } from "@/shared/components/form.field";
 import { ComboBox } from "@/shared/components/combobox";
 import { TextField } from "@/shared/components/text.field";
 import { fetcher } from "@/hooks/fetcher";
 import { getColumns } from "./columns";
 import DynamicHeader from "@/components/dynamicHeader";
-import { INPUT_TYPE, SalaryLogStatus } from "@/lib/enum";
-import { ISalaryLog, SalaryLog, User } from "@/models";
-import { firstLetterUpper, mnDate, usernameFormatter } from "@/lib/functions";
+import { INPUT_TYPE, PaymentType } from "@/lib/enum";
+import {
+  IIntegrationPayment,
+  IntegrationPayment,
+  PaymentDailySummary,
+  User,
+} from "@/models";
+import {
+  firstLetterUpper,
+  mnDate,
+  mnDateFormat,
+  money,
+  usernameFormatter,
+} from "@/lib/functions";
 import { DatePicker } from "@/shared/components/date.picker";
 import { showToast } from "@/shared/components/showToast";
+import { DateRange } from "react-day-picker";
+import { Button } from "@/components/ui/button";
+import { CircleX } from "lucide-react";
 
 const formSchema = z.object({
-  date: z.preprocess(
+  paid_at: z.preprocess(
     (val) => (typeof val === "string" ? new Date(val) : val),
     z.date(),
   ) as unknown as Date,
-  salary_status: z
+  type: z
     .preprocess(
       (val) => (typeof val === "string" ? parseInt(val, 10) : val),
-      z.nativeEnum(SalaryLogStatus).nullable(),
+      z.nativeEnum(PaymentType).nullable(),
     )
     .optional() as unknown as number,
   amount: z.preprocess(
-    (val) => (typeof val === "string" ? parseFloat(val) : val),
-    z.number(),
-  ) as unknown as number,
-  order_count: z.preprocess(
     (val) => (typeof val === "string" ? parseFloat(val) : val),
     z.number(),
   ) as unknown as number,
@@ -53,156 +63,338 @@ const formSchema = z.object({
   user_name: z.string(),
   edit: z.string().nullable().optional(),
 });
+
 const defaultValues = {
-  date: new Date(),
-  salary_status: undefined,
+  paid_at: new Date(),
+  type: PaymentType.Salary,
   amount: 0,
-  order_count: 0,
   artist_id: "",
   user_name: "",
   edit: undefined,
 };
-type SalaryType = z.infer<typeof formSchema>;
+
+type SalaryPaymentForm = z.infer<typeof formSchema>;
+type SalaryHistory = IntegrationPayment & { user_name?: string };
+
+const defaultDailySummary: PaymentDailySummary = {
+  from: "",
+  to: "",
+  pre_amount: 0,
+  cash_amount: 0,
+  bank_amount: 0,
+  total_amount: 0,
+};
+
 export const SalaryPage = ({
   data,
   users,
 }: {
-  data: ListType<SalaryLog>;
+  data: ListType<IntegrationPayment>;
   users: ListType<User>;
 }) => {
   const [action, setAction] = useState(ACTION.DEFAULT);
   const [open, setOpen] = useState<undefined | boolean>(false);
-  const form = useForm<SalaryType>({
+  const [reportFilter, setReportFilter] = useState<{
+    date?: DateRange;
+    artist_id?: string;
+  }>({});
+  const [dailySummary, setDailySummary] =
+    useState<PaymentDailySummary>(defaultDailySummary);
+  const [payments, setPayments] = useState<ListType<SalaryHistory>>(ListDefault);
+  const form = useForm<SalaryPaymentForm>({
     resolver: zodResolver(formSchema),
     defaultValues,
   });
-  const [salaries, setSalaries] = useState<ListType<SalaryLog>>(ListDefault);
-  const deleteLog = async (index: number) => {
-    const id = salaries!.items[index].id;
-    const res = await deleteOne(Api.integration, id);
-    refresh();
-    return res.success;
-  };
-  const edit = async (e: ISalaryLog) => {
-    setOpen(true);
-    form.reset({ ...e, edit: e.id });
-  };
+
   const userMap = useMemo(
-    () => new Map(users.items.map((b) => [b.id, b])),
+    () => new Map(users.items.map((item) => [item.id, item])),
     [users.items],
   );
 
-  const userFormatter = (data: ListType<SalaryLog>) => {
-    const items: SalaryLog[] = data.items.map((item) => {
-      const user = userMap.get(item.artist_id);
+  const getFilterParams = () => {
+    const fromDate = reportFilter.date?.from;
+    const toDate = reportFilter.date?.to ?? reportFilter.date?.from;
+    return {
+      ...(fromDate ? { from: mnDateFormat(fromDate) } : {}),
+      ...(toDate ? { to: mnDateFormat(toDate) } : {}),
+      ...(reportFilter.artist_id ? { artist_id: reportFilter.artist_id } : {}),
+    };
+  };
 
+  const formatPayments = (list: ListType<IntegrationPayment>) => {
+    const items = list.items.map((item) => {
+      const user = userMap.get(item.artist_id);
       return {
         ...item,
         user_name: user ? usernameFormatter(user) : "",
       };
     });
-    setSalaries({ items, count: data.count });
+    setPayments({ items, count: list.count });
+  };
+
+  const refreshReportCards = async () => {
+    const params = getFilterParams();
+    const summaryRes = await find<PaymentDailySummary>(
+      Api.payment,
+      params as any,
+      "summary",
+    );
+
+    setDailySummary((summaryRes.data as any) ?? defaultDailySummary);
   };
 
   useEffect(() => {
-    userFormatter(data);
-  }, [data]);
-  const columns = getColumns(edit, deleteLog);
+    formatPayments(data);
+  }, [data, userMap]);
+
+  const columns = getColumns(
+    (payment) => {
+      setOpen(true);
+      form.reset({ ...payment, edit: payment.id });
+    },
+    async (index) => {
+      const id = payments.items[index]?.id;
+      if (!id) return false;
+      const res = await deleteOne(Api.integration_payment, id);
+      await refresh({});
+      return res.success;
+    },
+  );
 
   const refresh = async (pg: PG = DEFAULT_PG) => {
     setAction(ACTION.RUNNING);
     const { page, limit, sort } = pg;
-    await fetcher<SalaryLog>(Api.integration, {
+    const { from, to, artist_id } = getFilterParams();
+
+    const res = await fetcher<IntegrationPayment>(Api.integration_payment, {
       page: page ?? DEFAULT_PG.page,
       limit: limit ?? DEFAULT_PG.limit,
       sort: sort ?? DEFAULT_PG.sort,
+      from,
+      to,
+      artist_id,
       ...pg,
-    }).then((d) => {
-      userFormatter(d);
     });
+
+    formatPayments(res);
     setAction(ACTION.DEFAULT);
   };
+
+  useEffect(() => {
+    void refresh({});
+    void refreshReportCards();
+  }, [reportFilter]);
+
+  const processAllSalaries = async () => {
+    setAction(ACTION.RUNNING);
+    const res = await find(Api.order, {} as any, "confirm");
+    const processed = Number((res?.data as any)?.count ?? 0);
+    const success = processed > 0;
+
+    showToast(
+      success ? "success" : "info",
+      success
+        ? `${processed} захиалгаар цалингийн бүртгэл үүслээ`
+        : "Бодох захиалга олдсонгүй",
+    );
+    await refresh({});
+    await refreshReportCards();
+    setAction(ACTION.DEFAULT);
+  };
+
   const onSubmit = async <T,>(e: T) => {
     setAction(ACTION.RUNNING);
-    const body = e as SalaryType;
+    const body = e as SalaryPaymentForm;
     const { edit, user_name, ...payload } = body;
 
     const res = edit
-      ? await updateOne<ISalaryLog>(
-          Api.integration,
+      ? await updateOne<IIntegrationPayment>(
+          Api.integration_payment,
           edit ?? "",
-          payload as unknown as ISalaryLog,
+          payload as unknown as IIntegrationPayment,
         )
-      : await create<ISalaryLog>(Api.integration, e as ISalaryLog);
+      : await create<IIntegrationPayment>(
+          Api.integration_payment,
+          payload as unknown as IIntegrationPayment,
+        );
+
     if (res.success) {
-      refresh();
+      await refresh({});
       setOpen(false);
-      form.reset({});
+      showToast("success", edit ? "Түүх амжилттай засагдлаа" : "Цалин олгож бүртгэл үүслээ");
+      form.reset(defaultValues);
+    } else {
+      showToast("error", res.error ?? "Алдаа гарлаа");
     }
     setAction(ACTION.DEFAULT);
   };
+
   const onInvalid = async <T,>(e: T) => {
     const error = Object.entries(e as any)
-      .map(([er, v], i) => {
-        if ((v as any)?.message) {
-          return (v as any)?.message;
+      .map(([key, value], index) => {
+        if ((value as any)?.message) {
+          return (value as any)?.message;
         }
-        const value = VALUES[er];
-        return i == 0 ? firstLetterUpper(value) : value;
+        const fieldName = VALUES[key];
+        return index === 0 ? firstLetterUpper(fieldName) : fieldName;
       })
       .join(", ");
     showToast("info", error);
   };
+
   const downloadExcel = async (pg: PG = DEFAULT_PG) => {
     setAction(ACTION.RUNNING);
-    const { page, limit, sort } = pg;
-    const res = await excel(Api.integration, {
+    const { page, sort } = pg;
+    const { from, to, artist_id } = getFilterParams();
+    const res = await excel(Api.integration_payment, {
       page: page ?? DEFAULT_PG.page,
       limit: -1,
       sort: sort ?? DEFAULT_PG.sort,
+      from,
+      to,
+      artist_id,
       ...pg,
     });
+
     if (res.success && res.data) {
       const blob = new Blob([res.data], { type: "application/xlsx" });
       const url = window.URL.createObjectURL(blob);
-
       const link = document.createElement("a");
+
       link.href = url;
       link.setAttribute(
         "download",
-        `salary_${mnDate().toISOString().slice(0, 10)}.xlsx`,
+        `salary_history_${mnDate().toISOString().slice(0, 10)}.xlsx`,
       );
       document.body.appendChild(link);
       link.click();
-
       link.parentNode?.removeChild(link);
       window.URL.revokeObjectURL(url);
     } else {
       showToast("error", res.message);
     }
-    console.log(res);
+
     setAction(ACTION.DEFAULT);
   };
+
+  const clearReportFilter = () => {
+    setReportFilter({
+      date: undefined,
+      artist_id: undefined,
+    });
+  };
+
   return (
-    <div className="">
+    <div>
       <DynamicHeader />
 
-      <div className="admin-container">
+      <div className="admin-container space-y-4">
+        <div className="rounded-2xl border-light bg-white p-4 shadow-light">
+          <div className="flex flex-wrap items-end justify-between gap-3">
+            <div className="flex flex-wrap items-end gap-3">
+              <label>
+                <span className="filter-label">Хугацаа</span>
+                <DatePicker
+                  mode="range"
+                  value={reportFilter.date}
+                  onChange={(value) =>
+                    setReportFilter((prev) => ({
+                      ...prev,
+                      date: value as DateRange | undefined,
+                    }))
+                  }
+                  pl="Огноо сонгох"
+                />
+              </label>
+              <label className="min-w-[220px]">
+                <span className="filter-label">Артист</span>
+                <ComboBox
+                  pl="Артист сонгох"
+                  props={{
+                    name: "artist_id",
+                    value: reportFilter.artist_id ?? "",
+                    onChange: (value) =>
+                      setReportFilter((prev) => ({
+                        ...prev,
+                        artist_id: value || undefined,
+                      })),
+                    onBlur: () => {},
+                    ref: () => {},
+                  }}
+                  items={users.items.map((item) => ({
+                    value: item.id,
+                    label: usernameFormatter(item),
+                  }))}
+                />
+              </label>
+              <Button
+                variant="ghost"
+                onClick={clearReportFilter}
+                className="bg-red-50 text-xs text-red-500 hover:bg-red-100 hover:text-red-500 lg:h-10"
+              >
+                <CircleX />
+              </Button>
+            </div>
+            <Button
+              onClick={processAllSalaries}
+              disabled={action == ACTION.RUNNING}
+              className="w-full sm:w-auto"
+            >
+              {action == ACTION.RUNNING ? "Бодож байна" : "Бүгдийн цалин бодох"}
+            </Button>
+          </div>
+        </div>
+
+        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+          {[
+            {
+              label: "Урьдчилгаа",
+              value: dailySummary.pre_amount,
+              className: "border-amber-100 bg-amber-50",
+            },
+            {
+              label: "Бэлэн",
+              value: dailySummary.cash_amount,
+              className: "border-emerald-100 bg-emerald-50",
+            },
+            {
+              label: "Дансаар",
+              value: dailySummary.bank_amount,
+              className: "border-sky-100 bg-sky-50",
+            },
+            {
+              label: "Нийт орсон",
+              value: dailySummary.total_amount,
+              className: "border-slate-200 bg-slate-50",
+            },
+          ].map((item) => (
+            <div
+              key={item.label}
+              className={`rounded-2xl border p-4 shadow-light ${item.className}`}
+            >
+              <p className="text-sm text-slate-500">{item.label}</p>
+              <p className="mt-2 text-2xl font-semibold text-slate-900">
+                {money(String(item.value ?? 0), "₮")}
+              </p>
+            </div>
+          ))}
+        </div>
+
         <DataTable
           columns={columns}
-          count={salaries?.count}
-          data={salaries?.items ?? []}
+          count={payments.count}
+          data={payments.items}
           refresh={refresh}
           loading={action == ACTION.RUNNING}
           excel={downloadExcel}
           modalAdd={
             <Modal
               maw="xl"
-              name={"Цалин нэмэх"}
+              name="Цалин олгох"
               submit={() => form.handleSubmit(onSubmit, onInvalid)()}
               open={open == true}
-              setOpen={(v) => {
-                setOpen(v);
+              setOpen={(value) => {
+                setOpen(value);
                 form.reset(defaultValues);
               }}
               loading={action == ACTION.RUNNING}
@@ -211,79 +403,65 @@ export const SalaryPage = ({
                 <div className="divide-y">
                   <div className="double-col">
                     <FormItems
-                      label="Статус"
+                      label="Төрөл"
                       control={form.control}
-                      name="salary_status"
-                      className={"col-span-1"}
+                      name="type"
+                      className="col-span-1"
                     >
-                      {(field) => {
-                        return (
-                          <ComboBox
-                            props={{ ...field }}
-                            items={getEnumValues(SalaryLogStatus).map(
-                              (item) => {
-                                return {
-                                  value: item.toString(),
-                                  label: SalaryLogValues[item].name,
-                                };
-                              },
-                            )}
-                          />
-                        );
-                      }}
+                      {(field) => (
+                        <ComboBox
+                          props={{ ...field }}
+                          items={getEnumValues(PaymentType).map((item) => ({
+                            value: item.toString(),
+                            label: PaymentTypeValues[item],
+                          }))}
+                        />
+                      )}
                     </FormItems>
                     <FormItems
-                      label="Нэр"
+                      label="Артист"
                       control={form.control}
                       name="artist_id"
-                      className={"col-span-1"}
+                      className="col-span-1"
                     >
-                      {(field) => {
-                        return (
-                          <ComboBox
-                            props={{ ...field }}
-                            items={users.items.map((item) => {
-                              return {
-                                value: item.id,
-                                label: usernameFormatter(item),
-                              };
-                            })}
-                          />
-                        );
-                      }}
-                    </FormItems>
-                    <FormItems label="Огноо" control={form.control} name="date">
-                      {(field) => {
-                        return (
-                          <DatePicker
-                            name=""
-                            pl="Огноо сонгох"
-                            value={field.value as any}
-                            onChange={(e) => field.onChange(e)}
-                          />
-                        );
-                      }}
+                      {(field) => (
+                        <ComboBox
+                          props={{ ...field }}
+                          items={users.items.map((item) => ({
+                            value: item.id,
+                            label: usernameFormatter(item),
+                          }))}
+                        />
+                      )}
                     </FormItems>
                     <FormItems
+                      label="Төлсөн огноо"
                       control={form.control}
-                      name="order_count"
-                      label="Нийт хийсэн үйлчилгээ"
+                      name="paid_at"
                     >
-                      {(field) => {
-                        return (
-                          <TextField
-                            props={{
-                              name: "order_count",
-                              onBlur: () => {},
-                              onChange: () => {},
-                              disabled: true,
-                              ref: () => {},
-                              value: form.getValues("order_count"),
-                            }}
-                            type={INPUT_TYPE.NUMBER}
-                          />
-                        );
-                      }}
+                      {(field) => (
+                        <DatePicker
+                          name=""
+                          mode="single"
+                          pl="Огноо сонгох"
+                          value={field.value as any}
+                          onChange={(value) => field.onChange(value)}
+                        />
+                      )}
+                    </FormItems>
+                    <FormItems
+                      label="Төлсөн дүн"
+                      control={form.control}
+                      name="amount"
+                    >
+                      {(field) => (
+                        <TextField
+                          props={{
+                            ...field,
+                          }}
+                          type={INPUT_TYPE.MONEY}
+                        />
+                      )}
                     </FormItems>
                   </div>
                 </div>

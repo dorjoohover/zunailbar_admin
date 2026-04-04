@@ -38,6 +38,7 @@ import { PasswordField } from "@/shared/components/password.field";
 import { ComboBox } from "@/shared/components/combobox";
 import { FilterType } from "@/app/orders/components";
 import { getUserColor } from "@/lib/colors";
+import { DateRange } from "react-day-picker";
 
 // Animation settings for Framer Motion
 const animationConfig = {
@@ -91,13 +92,14 @@ export default function ({
   orders: ListType<Order>;
   setFilter: (
     key: string,
-    value: string | number | undefined | boolean,
+    value: string | number | undefined | boolean | DateRange,
   ) => void;
   filter?: FilterType;
   values: {
     branch: SearchType<Branch>[];
     customer: SearchType<User>[];
     user: SearchType<User>[];
+    artists: SearchType<User>[];
     service: ListType<Service>;
   };
   views?: Views;
@@ -130,6 +132,7 @@ export default function ({
     filter?: T;
   }) => void;
 }) {
+  const resetDate = new Date();
   const [activeView, setActiveView] = useState<string>("day");
   const [clientSide, setClientSide] = useState(false);
   const form = useForm<UserType>({
@@ -202,19 +205,33 @@ export default function ({
       <div className="daily-weekly-monthly-selection relative w-full">
         <div className="flex items-center justify-between w-full gap-4 mb-0">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 w-full gap-2">
-            {filter?.list && (
-              <label className="min-w-[150px]">
-                <span className="filter-label">Огноо</span>
+            <label className="min-w-[150px]">
+              <span className="filter-label">Огноо</span>
 
-                <DatePicker
-                  value={filter?.date}
-                  mode="range"
-                  onChange={(date) => setFilter("date", date as any)}
-                  name=""
-                  pl="Огноо сонгох"
-                />
-              </label>
-            )}
+              <DatePicker
+                value={filter?.list ? filter?.date : filter?.date?.from}
+                mode={filter?.list ? "range" : "single"}
+                onChange={(date) => {
+                  if (filter?.list) {
+                    setFilter("date", date as DateRange);
+                    return;
+                  }
+
+                  const selected = date as Date | undefined;
+                  setFilter(
+                    "date",
+                    selected
+                      ? {
+                          from: selected,
+                          to: selected,
+                        }
+                      : undefined,
+                  );
+                }}
+                name=""
+                pl="Огноо сонгох"
+              />
+            </label>
             <label className="w-full maw-[300px] min-w-[150px]">
               <span className="filter-label">Салбар</span>
               <ComboBox
@@ -244,7 +261,7 @@ export default function ({
                   ref: () => null,
                   value: filter?.artist,
                 }}
-                items={values.customer.map((item) => {
+                items={values.artists.map((item) => {
                   const [mobile, nickname] = item?.value?.split("__") ?? [
                     "",
                     "",
@@ -287,7 +304,10 @@ export default function ({
                 setFilter("artist", undefined);
                 setFilter("branch", undefined);
                 setFilter("status", undefined);
-                setFilter("date", undefined);
+                setFilter("date", {
+                  from: resetDate,
+                  to: resetDate,
+                });
               }}
               className="text-xs text-red-500 hover:text-red-500 bg-red-50 hover:bg-red-100  lg:h-10"
             >
@@ -411,7 +431,6 @@ export default function ({
 
         {filter?.list ? (
           <DataTable
-            // clear={() => setFilter(undefined)}
             limit={20}
             columns={columns}
             count={Number(orders?.count ?? "0")}
@@ -427,7 +446,7 @@ export default function ({
           >
             <>
               <div className="grid grid-cols-1 px-2 md:grid-cols-2 lg:grid-cols-3 gap-1 mb-4">
-                {values.user.map((user, i) => {
+                {values.artists.map((user, i) => {
                   const [mobile, nickname, branch, color] =
                     user.value?.split("__");
                   return (
@@ -443,44 +462,45 @@ export default function ({
                       <span className="text-xs">
                         {mobileFormatter(mobile)}{" "}
                         {firstLetterUpper(nickname ?? "")}
-                      
                       </span>
                       <span className="text-xs">
-                          {user.item as string}
+                        {user.item as string}
                       </span>
                     </div>
                   );
                 })}
               </div>
-             <div className="px-2"> {viewsSelector?.includes("day") && (
-                <TabsContent value="day">
-                  <AnimatePresence mode="wait">
-                    <motion.div {...(animationConfig as any)}>
-                      <DailyView
-                        deleteOrder={deleteOrder}
-                        loading={loading}
-                        filter={filter}
-                        setFilter={setFilter}
-                        values={values}
-                        events={orders.items}
-                        send={send}
-                        stopDayEventSummary={stopDayEventSummary}
-                        classNames={classNames?.buttons}
-                        prevButton={
-                          CustomComponents?.customButtons?.CustomPrevButton
-                        }
-                        nextButton={
-                          CustomComponents?.customButtons?.CustomNextButton
-                        }
-                        CustomEventComponent={
-                          CustomComponents?.CustomEventComponent
-                        }
-                        CustomEventModal={CustomComponents?.CustomEventModal}
-                      />
-                    </motion.div>
-                  </AnimatePresence>
-                </TabsContent>
-              )}</div>
+              <div className="px-2">
+                {viewsSelector?.includes("day") && (
+                  <TabsContent value="day">
+                    <AnimatePresence mode="wait">
+                      <motion.div {...(animationConfig as any)}>
+                        <DailyView
+                          deleteOrder={deleteOrder}
+                          loading={loading}
+                          filter={filter}
+                          setFilter={setFilter}
+                          values={values}
+                          events={orders.items}
+                          send={send}
+                          stopDayEventSummary={stopDayEventSummary}
+                          classNames={classNames?.buttons}
+                          prevButton={
+                            CustomComponents?.customButtons?.CustomPrevButton
+                          }
+                          nextButton={
+                            CustomComponents?.customButtons?.CustomNextButton
+                          }
+                          CustomEventComponent={
+                            CustomComponents?.CustomEventComponent
+                          }
+                          CustomEventModal={CustomComponents?.CustomEventModal}
+                        />
+                      </motion.div>
+                    </AnimatePresence>
+                  </TabsContent>
+                )}
+              </div>
             </>
           </Tabs>
         )}

@@ -37,3 +37,12 @@ export interface IPayment {
   updated_at?: Date;
   created_by?: string;
 }
+
+export interface PaymentDailySummary {
+  from: string;
+  to: string;
+  pre_amount: number;
+  cash_amount: number;
+  bank_amount: number;
+  total_amount: number;
+}

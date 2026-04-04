@@ -1,22 +1,21 @@
 import { ColumnDef } from "@tanstack/react-table";
 import { ArrowUpDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { parseDate } from "@/lib/functions";
-import { ISalaryLog } from "@/models";
+import { money, parseDate } from "@/lib/functions";
+import { IntegrationPayment } from "@/models";
 import { TableActionButtons } from "@/components/tableActionButtons";
-import { SalaryLogValues } from "@/lib/constants";
-import { SalaryLogStatus } from "@/lib/enum";
-import { cn } from "@/lib/utils";
+import { PaymentTypeValues } from "@/lib/constants";
+import { PaymentType } from "@/lib/enum";
 
 export function getColumns(
-  onEdit: (product: ISalaryLog) => void,
+  onEdit: (payment: IntegrationPayment) => void,
   remove: (index: number) => Promise<boolean>,
-): ColumnDef<ISalaryLog>[] {
+): ColumnDef<IntegrationPayment>[] {
   return [
     {
       id: "select",
-      header: ({ table }) => <span>№</span>,
-      cell: ({ row }) => <span className="">{row.index + 1}</span>,
+      header: () => <span>№</span>,
+      cell: ({ row }) => <span>{row.index + 1}</span>,
     },
     {
       accessorKey: "user_name",
@@ -26,45 +25,31 @@ export function getColumns(
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           className="font-bold"
         >
-          Хоч <ArrowUpDown className="w-4 h-4 ml-2" />
+          Хоч <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       ),
     },
-
     {
-      accessorKey: "salary_status",
-      header: "Статус",
+      accessorKey: "type",
+      header: "Төрөл",
       cell: ({ row }) => {
-        const status =
-          SalaryLogValues[
-            row.getValue<number>("salary_status") as SalaryLogStatus
-          ];
-        return (
-          <span className={cn(status?.color, "")}>{status?.name || "-"}</span>
-        );
-      },
-    },
-    {
-      accessorKey: "order_count",
-      header: "Захиалгын тоо",
-      cell: ({ row }) => {
-        const res = row.getValue<string>("order_count");
-        return <span>{res}</span>;
+        const type = PaymentTypeValues[row.getValue<number>("type") as PaymentType];
+        return <span>{type || "-"}</span>;
       },
     },
     {
       accessorKey: "amount",
-      header: "Төлөх дүн",
+      header: "Төлсөн дүн",
       cell: ({ row }) => {
-        const res = row.getValue<string>("amount");
-        return <span>{res}</span>;
+        const amount = row.getValue<number>("amount");
+        return <span>{money(String(amount ?? 0), "₮")}</span>;
       },
     },
     {
-      accessorKey: "date",
-      header: "Огноо",
+      accessorKey: "paid_at",
+      header: "Төлсөн огноо",
       cell: ({ row }) => {
-        const date = parseDate(new Date(row.getValue("date")), false);
+        const date = parseDate(new Date(row.getValue("paid_at")), false);
         return date;
       },
     },
@@ -75,34 +60,9 @@ export function getColumns(
         <TableActionButtons
           rowData={row.original}
           onEdit={(data) => onEdit(data)}
-          onRemove={(data) => remove(row.index)}
-        ></TableActionButtons>
+          onRemove={() => remove(row.index)}
+        />
       ),
     },
   ];
 }
-
-// <div className="flex items-center gap-2">
-//   <TooltipWrapper tooltip="Засварлах">
-//     <Button variant="ghost" size="icon" onClick={() => onEdit(row.original)}>
-//       <Pencil className="w-4 h-4" />
-//     </Button>
-//   </TooltipWrapper>
-
-//   <AppAlertDialog
-//     title="Итгэлтэй байна уу?"
-//     description="Бүр устгана шүү."
-//     onConfirm={async () => {
-//       const res = await remove(row.index);
-//       console.log(res);
-//       toast("Амжилттай устгалаа!" + res, {});
-//     }}
-//     trigger={
-//       <Button variant="ghost" size="icon">
-//         <TooltipWrapper tooltip="Статус солих">
-//           <Trash2 className="w-4 h-4 text-red-500" />
-//         </TooltipWrapper>
-//       </Button>
-//     }
-//   />
-// </div>

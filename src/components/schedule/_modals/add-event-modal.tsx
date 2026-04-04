@@ -38,7 +38,7 @@ import {
 import { TextField } from "@/shared/components/text.field";
 import { showToast } from "@/shared/components/showToast";
 import { API, Api } from "@/utils/api";
-import { create, find, search } from "@/app/(api)";
+import { create, find, findOne, search } from "@/app/(api)";
 import { Textarea } from "@/components/ui/textarea";
 import { FormItem, FormLabel } from "@/components/ui/form";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -100,6 +100,7 @@ export default function AddEventModal({
   items: {
     branch: SearchType<Branch>[];
     customer: SearchType<User>[];
+    artists: SearchType<User>[];
     user: SearchType<User>[];
     service: ListType<Service>;
   };
@@ -258,6 +259,10 @@ export default function AddEventModal({
     count: 0,
     items: [],
   });
+  const [customerVisitCount, setCustomerVisitCount] = useState<number | null>(
+    null,
+  );
+  const [isCustomerCountLoading, setIsCustomerCountLoading] = useState(false);
   const [orderDuration, setDuration] = useState(undefined);
   const [userService, setUserService] = useState<OrderSlot>({});
   const [slots, setSlots] = useState<Record<string, Slot[]>>({});
@@ -384,7 +389,7 @@ export default function AddEventModal({
         user_id: v.user?.id ?? v.user_id ?? "",
       };
     });
-    
+
     form.reset({
       ...values,
       details: mappedDetails,
@@ -430,6 +435,39 @@ export default function AddEventModal({
     }
 
     syncCustomer();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [customerId]);
+  useEffect(() => {
+    let cancelled = false;
+
+    const loadCustomerVisitCount = async () => {
+      if (!customerId) {
+        setCustomerVisitCount(null);
+        return;
+      }
+
+      setIsCustomerCountLoading(true);
+
+      try {
+        const res = await findOne(Api.order, customerId, "customer_count");
+        if (!cancelled) {
+          setCustomerVisitCount(Number(res?.payload?.count ?? 0));
+        }
+      } catch (error) {
+        if (!cancelled) {
+          setCustomerVisitCount(null);
+        }
+      } finally {
+        if (!cancelled) {
+          setIsCustomerCountLoading(false);
+        }
+      }
+    };
+
+    loadCustomerVisitCount();
 
     return () => {
       cancelled = true;
@@ -527,36 +565,50 @@ export default function AddEventModal({
       <FormProvider {...form}>
         <div className="double-col">
           <div className="flex gap-4 items-start col-span-2">
-            <FormItems
-              control={form.control}
-              name="customer_id"
-              label="Хэрэглэгч"
-              className=" flex-1"
-            >
-              {(field) => {
-                return (
-                  <ComboBox
-                    search={(v) => {
-                      if (v.length > 1) searchField(v, Api.customer);
-                    }}
-                    props={{ ...field }}
-                    items={allItems.customer.map((item) => {
-                      const [mobile, nickname] = item?.value?.split("__") ?? [
-                        "",
-                        "",
-                        "",
-                        "",
-                      ];
-                      const name = nickname == "null" ? "" : (nickname ?? "");
-                      return {
-                        value: item.id,
-                        label: `${mobileFormatter(mobile)} ${name}`,
-                      };
-                    })}
-                  />
-                );
-              }}
-            </FormItems>
+            <div className="flex-1 space-y-2">
+              <FormItems
+                control={form.control}
+                name="customer_id"
+                label="Хэрэглэгч"
+                className=" flex-1"
+              >
+                {(field) => {
+                  return (
+                    <ComboBox
+                      search={(v) => {
+                        if (v.length > 1) searchField(v, Api.customer);
+                      }}
+                      props={{ ...field }}
+                      items={allItems.customer.map((item) => {
+                        const [mobile, nickname] = item?.value?.split("__") ?? [
+                          "",
+                          "",
+                          "",
+                          "",
+                        ];
+                        const name = nickname == "null" ? "" : (nickname ?? "");
+                        return {
+                          value: item.id,
+                          label: `${mobileFormatter(mobile)} ${name}`,
+                        };
+                      })}
+                    />
+                  );
+                }}
+              </FormItems>
+              {customerId && (
+                <div className="rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700">
+                  {isCustomerCountLoading ? (
+                    <span>Үйлчлүүлсэн тоог уншиж байна...</span>
+                  ) : (
+                    <span>
+                      Нийт үйлчлүүлсэн:{" "}
+                      <b>{customerVisitCount ?? 0} удаа</b>
+                    </span>
+                  )}
+                </div>
+              )}
+            </div>
             <FormItems
               control={form.control}
               name="description"

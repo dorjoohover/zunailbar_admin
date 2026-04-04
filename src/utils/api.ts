@@ -15,6 +15,7 @@ const BASE = process.env.API
 export enum Api {
   login = "login",
   order = "order",
+  payment = "payment",
   register = "register",
   user = "user",
   // dev
@@ -52,6 +53,7 @@ export enum Api {
 export const API = {
   [Api.login]: BASE + "login",
   [Api.order]: BASE + "order",
+  [Api.payment]: BASE + "payment",
   [Api.discount]: BASE + "discount",
   [Api.register]: BASE + "register",
   [Api.warehouse]: BASE + "warehouse",
