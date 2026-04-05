@@ -8,7 +8,7 @@ export * from "./order.model";
 export * from "./product.model";
 export * from "./product.transaction.model";
 export * from "./payment.model";
-export * from "./salary.log.model";
+export * from "./integration.model";
 export * from "./schedule.model";
 export * from "./user.product.model";
 export * from "./user.service.model";

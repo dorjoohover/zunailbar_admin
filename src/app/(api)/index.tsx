@@ -42,7 +42,7 @@ export const find = async <T,>(
     });
     if (!res.ok) {
       return {
-        data: { count: 0, items: [] },
+        data: { count: 0, items: [], from: "", to: "", summary: undefined },
         error: `Failed to fetch: ${res.status} ${res.statusText}`,
       };
     }
@@ -51,7 +51,7 @@ export const find = async <T,>(
     return { data: data as ListType<T> };
   } catch (err) {
     return {
-      data: { count: 0, items: [] },
+      data: { count: 0, items: [], from: "", to: "", summary: undefined },
       error: (err as Error).message || "Unknown error occurred",
     };
   }

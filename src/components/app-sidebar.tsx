@@ -219,16 +219,16 @@ export const sidebar_items = [
         children: [
           {
             title: "Цалингийн удирдлага",
-            url: "/salaries",
+            url: "/integrations",
             // icon: Milk,
           },
           {
             title: "Цалингийн түүх",
-            url: "/salaries/pre",
+            url: "/integrations/history",
           },
           {
             title: "Танилын будалт",
-            url: "/salaries/friends",
+            url: "/integrations/friends",
           },
         ],
       },

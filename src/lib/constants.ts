@@ -193,6 +193,9 @@ export const ScheduleStatusValue = {
 export interface ListType<T> {
   count: number;
   items: T[];
+  to?: string;
+  from?: string;
+  summary?: any;
 }
 export interface ScheduleData {
   [day: number]: string[];
@@ -233,6 +236,9 @@ export const DEFAULT_PG: Required<PG> = {
 export const ListDefault = {
   count: 0,
   items: [],
+  from: "",
+  to: "",
+  summary: undefined,
 };
 
 // export const PG = (dto: PgDto = {}): Required<PgDto> => ({
