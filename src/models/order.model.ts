@@ -62,10 +62,13 @@ export interface IOrderDetail {
   order_id?: string;
   service_id: string;
   description?: string;
+  price?: number;
   max_price?: number;
   min_price?: number;
   service_name?: string;
   user_id?: string;
+  nickname?: string;
+  order_date?: string;
   start_time?: string;
   end_time?: string;
   duration?: number;

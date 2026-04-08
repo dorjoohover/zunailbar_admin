@@ -1,15 +1,22 @@
 "use client";
 
-import Link from "next/link";
 import z from "zod";
-import { DateRange } from "react-day-picker";
-import { CircleX } from "lucide-react";
+import { Download } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import DynamicHeader from "@/components/dynamicHeader";
 import { DataTable } from "@/components/data-table";
+import { TableActionButtons } from "@/components/tableActionButtons";
 import { Button } from "@/components/ui/button";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { create, deleteOne, excel, updateOne } from "@/app/(api)";
 import { fetcher } from "@/hooks/fetcher";
 import {
@@ -29,11 +36,13 @@ import {
   mnDate,
   mnDateFormat,
   money,
+  parseDate,
   usernameFormatter,
 } from "@/lib/functions";
 import {
   IIntegrationPayment,
   IntegrationPayment,
+  IntegrationTransferSummaryRow,
   SalaryReconciliationSummary,
   User,
 } from "@/models";
@@ -45,6 +54,7 @@ import { ComboBox } from "@/shared/components/combobox";
 import { DatePicker } from "@/shared/components/date.picker";
 import { TextField } from "@/shared/components/text.field";
 import { showToast } from "@/shared/components/showToast";
+import { SalarySectionNav } from "../../_components/section-nav";
 
 const formSchema = z.object({
   paid_at: z.preprocess(
@@ -98,16 +108,22 @@ const parseDateValue = (value?: string) => {
 
 const getInitialDateRange = (
   initialFilter?: IntegrationHistoryFilter,
-): DateRange | undefined => {
+): { from?: Date; to?: Date } => {
   const from = parseDateValue(initialFilter?.from);
   const to = parseDateValue(initialFilter?.to ?? initialFilter?.from);
+  return { from, to };
+};
 
-  if (!from) return undefined;
+const toFormDate = (value: Date | string) => {
+  if (value instanceof Date) {
+    return value;
+  }
 
-  return {
-    from,
-    to,
-  };
+  if (!value) {
+    return new Date();
+  }
+
+  return new Date(value.includes("T") ? value : `${value}T00:00:00`);
 };
 
 export const IntegrationHistoryPage = ({
@@ -121,16 +137,23 @@ export const IntegrationHistoryPage = ({
 }) => {
   const [action, setAction] = useState(ACTION.DEFAULT);
   const [open, setOpen] = useState<undefined | boolean>(false);
+  const [detailOpen, setDetailOpen] = useState(false);
   const [reportFilter, setReportFilter] = useState<{
-    date?: DateRange;
+    from?: Date;
+    to?: Date;
     artist_id?: string;
   }>({
-    date: getInitialDateRange(initialFilter),
+    ...getInitialDateRange(initialFilter),
     artist_id: initialFilter?.artist_id,
   });
   const [payments, setPayments] = useState<ListType<IntegrationHistoryItem>>(
     ListDefault as ListType<IntegrationHistoryItem>,
   );
+  const [rows, setRows] = useState<ListType<IntegrationTransferSummaryRow>>(
+    ListDefault as ListType<IntegrationTransferSummaryRow>,
+  );
+  const [selectedRow, setSelectedRow] = useState<IntegrationTransferSummaryRow>();
+  const [detailRows, setDetailRows] = useState<IntegrationHistoryItem[]>([]);
 
   const form = useForm<IntegrationHistoryForm>({
     resolver: zodResolver(formSchema),
@@ -143,8 +166,8 @@ export const IntegrationHistoryPage = ({
   );
 
   const getFilterParams = () => {
-    const fromDate = reportFilter.date?.from;
-    const toDate = reportFilter.date?.to ?? reportFilter.date?.from;
+    const fromDate = reportFilter.from;
+    const toDate = reportFilter.to ?? reportFilter.from;
 
     return {
       ...(fromDate ? { from: mnDateFormat(fromDate) } : {}),
@@ -161,6 +184,28 @@ export const IntegrationHistoryPage = ({
         user_name: user ? usernameFormatter(user) : "",
       };
     });
+    const filterParams = getFilterParams();
+    const grouped = new Map<string, IntegrationTransferSummaryRow>();
+
+    for (const item of items) {
+      const current = grouped.get(item.artist_id) ?? {
+        artist_id: item.artist_id,
+        user_name: item.user_name,
+        from: filterParams.from ?? list.from ?? "",
+        to: filterParams.to ?? list.to ?? filterParams.from ?? "",
+        payment_count: 0,
+        transferred_amount: 0,
+      };
+
+      current.payment_count += 1;
+      current.transferred_amount += Number(item.amount ?? 0);
+      current.user_name = current.user_name || item.user_name;
+      grouped.set(item.artist_id, current);
+    }
+
+    const summaryItems = [...grouped.values()].sort((a, b) =>
+      (a.user_name ?? "").localeCompare(b.user_name ?? ""),
+    );
 
     setPayments({
       items,
@@ -168,6 +213,13 @@ export const IntegrationHistoryPage = ({
       summary: list.summary ?? defaultSummary,
       from: list.from,
       to: list.to,
+    });
+    setRows({
+      items: summaryItems,
+      count: summaryItems.length,
+      summary: list.summary ?? defaultSummary,
+      from: filterParams.from ?? list.from ?? "",
+      to: filterParams.to ?? list.to ?? "",
     });
   };
 
@@ -189,7 +241,7 @@ export const IntegrationHistoryPage = ({
       artist_id,
       ...pg,
     });
-    console.log(res);
+
     formatPayments(res);
     setAction(ACTION.DEFAULT);
   };
@@ -198,21 +250,62 @@ export const IntegrationHistoryPage = ({
     void refresh({});
   }, [reportFilter]);
 
-  const deleteLog = async (index: number) => {
-    const id = payments.items[index]?.id;
-    if (!id) return false;
+  useEffect(() => {
+    if (!rows.items.length) {
+      setSelectedRow(undefined);
+      setDetailRows([]);
+      setDetailOpen(false);
+      return;
+    }
 
-    const res = await deleteOne(Api.integration_payment, id);
+    if (
+      selectedRow &&
+      !rows.items.some((item) => item.artist_id === selectedRow.artist_id)
+    ) {
+      setSelectedRow(undefined);
+      setDetailRows([]);
+      setDetailOpen(false);
+    }
+  }, [rows.items, selectedRow]);
+
+  useEffect(() => {
+    if (!selectedRow) {
+      setDetailRows([]);
+      return;
+    }
+
+    const items = payments.items
+      .filter((item) => item.artist_id === selectedRow.artist_id)
+      .sort(
+        (a, b) =>
+          new Date(b.paid_at ?? 0).getTime() - new Date(a.paid_at ?? 0).getTime(),
+      );
+
+    setDetailRows(items);
+  }, [payments.items, selectedRow]);
+
+  const deletePayment = async (payment: IIntegrationPayment) => {
+    const res = await deleteOne(Api.integration_payment, payment.id);
     await refresh({});
     return res.success;
   };
 
   const edit = async (payment: IIntegrationPayment) => {
+    setDetailOpen(false);
     setOpen(true);
-    form.reset({ ...payment, edit: payment.id });
+    form.reset({
+      ...payment,
+      paid_at: toFormDate(payment.paid_at),
+      edit: payment.id,
+    });
   };
 
-  const columns = getColumns(edit, deleteLog);
+  const openDetail = (row: IntegrationTransferSummaryRow) => {
+    setSelectedRow(row);
+    setDetailOpen(true);
+  };
+
+  const columns = getColumns(openDetail);
 
   const onSubmit = async <T,>(values: T) => {
     setAction(ACTION.RUNNING);
@@ -236,7 +329,7 @@ export const IntegrationHistoryPage = ({
       form.reset(defaultValues);
       showToast(
         "success",
-        edit ? "Түүх амжилттай засагдлаа" : "Цалин олгож бүртгэл үүслээ",
+        edit ? "Шилжүүлгийн бүртгэл шинэчлэгдлээ" : "Шилжүүлэг амжилттай бүртгэгдлээ",
       );
     } else {
       showToast("error", res.error ?? "Алдаа гарлаа");
@@ -297,47 +390,64 @@ export const IntegrationHistoryPage = ({
 
   const clearReportFilter = () => {
     setReportFilter({
-      date: undefined,
+      from: undefined,
+      to: undefined,
       artist_id: undefined,
     });
-  };
-
-  const getIntegrationsHref = () => {
-    const params = new URLSearchParams();
-    const { from, to, artist_id } = getFilterParams();
-
-    if (from) params.set("from", from);
-    if (to) params.set("to", to);
-    if (artist_id) params.set("artist_id", artist_id);
-
-    const query = params.toString();
-    return `/integrations${query ? `?${query}` : ""}`;
   };
 
   const summary =
     (payments.summary as SalaryReconciliationSummary | undefined) ??
     defaultSummary;
+  const detailTotal = detailRows.reduce(
+    (total, item) => total + Number(item.amount ?? 0),
+    0,
+  );
 
   return (
     <div>
       <DynamicHeader />
 
       <div className="admin-container space-y-4">
-        <div className="rounded-2xl border-light bg-white p-4 shadow-light">
-          <div className="flex flex-wrap items-end justify-between gap-3">
-            <div className="flex flex-wrap items-end gap-3">
+        <SalarySectionNav />
+
+        <DataTable
+          columns={columns}
+          count={rows.count}
+          data={rows.items ?? []}
+          refresh={refresh}
+          loading={action == ACTION.RUNNING}
+          search={false}
+          fitContainer
+          clear={clearReportFilter}
+          filter={
+            <>
               <label>
-                <span className="filter-label">Хугацаа</span>
+                <span className="filter-label">Эхлэх огноо</span>
                 <DatePicker
-                  mode="range"
-                  value={reportFilter.date}
+                  mode="single"
+                  value={reportFilter.from}
                   onChange={(value) =>
                     setReportFilter((prev) => ({
                       ...prev,
-                      date: value as DateRange | undefined,
+                      from: value as Date | undefined,
                     }))
                   }
-                  pl="Огноо сонгох"
+                  pl="Эхлэх огноо"
+                />
+              </label>
+              <label>
+                <span className="filter-label">Дуусах огноо</span>
+                <DatePicker
+                  mode="single"
+                  value={reportFilter.to}
+                  onChange={(value) =>
+                    setReportFilter((prev) => ({
+                      ...prev,
+                      to: value as Date | undefined,
+                    }))
+                  }
+                  pl="Дуусах огноо"
                 />
               </label>
               <label className="min-w-[220px]">
@@ -361,142 +471,196 @@ export const IntegrationHistoryPage = ({
                   }))}
                 />
               </label>
-              <Button
-                variant="ghost"
-                onClick={clearReportFilter}
-                className="bg-red-50 text-xs text-red-500 hover:bg-red-100 hover:text-red-500 lg:h-10"
-              >
-                <CircleX />
-              </Button>
-            </div>
-
-            <Button variant="outline" asChild>
-              <Link href={getIntegrationsHref()}>Тооцооны бүртгэл</Link>
-            </Button>
-          </div>
-        </div>
-
-        <DataTable
-          columns={columns}
-          count={payments.count}
-          data={payments.items ?? []}
-          refresh={refresh}
-          loading={action == ACTION.RUNNING}
-          excel={downloadExcel}
+            </>
+          }
           filterRight={
-            <div className="flex w-full flex-wrap items-center justify-between gap-3">
-              <div>
-                <h3 className="text-lg font-semibold text-slate-900">
-                  Артистын тооцооны үлдэгдэл
-                </h3>
-                <p className="text-sm text-slate-500">
-                  Сонгосон хугацаанд орсон орлого болон шилжүүлсэн дүн
+            <div className="flex w-full flex-wrap justify-end gap-2 xl:w-auto">
+              <div className="rounded-xl bg-slate-50 px-4 py-2">
+                <p className="text-[11px] text-slate-500">
+                  Орлого / Шилжүүлэг / Үлдэгдэл
+                </p>
+                <p className="text-sm font-semibold text-slate-900">
+                  {money(String(summary.income_amount ?? 0), "₮")} /{" "}
+                  {money(String(summary.transferred_amount ?? 0), "₮")} /{" "}
+                  {money(String(summary.balance_amount ?? 0), "₮")}
                 </p>
               </div>
+              <Button
+                variant="ghost"
+                onClick={() => void downloadExcel()}
+                className="bg-green-500 text-white hover:bg-green-500/80 hover:text-white"
+              >
+                <Download />
+                Экспорт
+              </Button>
+              <Modal
+                maw="xl"
+                name="Шилжүүлэг нэмэх"
+                submit={() => form.handleSubmit(onSubmit, onInvalid)()}
+                open={open == true}
+                setOpen={(value) => {
+                  setOpen(value);
+                  form.reset(defaultValues);
+                }}
+                loading={action == ACTION.RUNNING}
+              >
+                <FormProvider {...form}>
+                  <div className="divide-y">
+                    <div className="double-col">
+                      <FormItems
+                        label="Төрөл"
+                        control={form.control}
+                        name="type"
+                        className="col-span-1"
+                      >
+                        {(field) => (
+                          <ComboBox
+                            props={{ ...field }}
+                            items={getEnumValues(PaymentType).map((item) => ({
+                              value: item.toString(),
+                              label: PaymentTypeValues[item],
+                            }))}
+                          />
+                        )}
+                      </FormItems>
+                      <FormItems
+                        label="Артист"
+                        control={form.control}
+                        name="artist_id"
+                        className="col-span-1"
+                      >
+                        {(field) => (
+                          <ComboBox
+                            props={{ ...field }}
+                            items={users.items.map((item) => ({
+                              value: item.id,
+                              label: usernameFormatter(item),
+                            }))}
+                          />
+                        )}
+                      </FormItems>
+                      <FormItems
+                        label="Төлсөн огноо"
+                        control={form.control}
+                        name="paid_at"
+                      >
+                        {(field) => (
+                          <DatePicker
+                            name=""
+                            mode="single"
+                            pl="Огноо сонгох"
+                            value={field.value as any}
+                            onChange={(value) => field.onChange(value)}
+                          />
+                        )}
+                      </FormItems>
+                      <FormItems
+                        label="Төлсөн дүн"
+                        control={form.control}
+                        name="amount"
+                      >
+                        {(field) => (
+                          <TextField
+                            props={{
+                              ...field,
+                            }}
+                            type={INPUT_TYPE.MONEY}
+                          />
+                        )}
+                      </FormItems>
+                    </div>
+                  </div>
+                </FormProvider>
+              </Modal>
+            </div>
+          }
+        />
+
+        <Modal
+          open={detailOpen}
+          setOpen={setDetailOpen}
+          maw="6xl"
+          title="Шилжүүлгийн дэлгэрэнгүй"
+          description={
+            selectedRow
+              ? `${selectedRow.user_name ?? "Артист"} · ${selectedRow.from || "-"}${selectedRow.to ? ` - ${selectedRow.to}` : ""}`
+              : "Шилжүүлгийн мөрүүдийг харуулна."
+          }
+        >
+          <div className="space-y-4">
+            {selectedRow && (
               <div className="grid gap-2 sm:grid-cols-3">
                 <div className="rounded-xl bg-slate-50 px-4 py-3">
-                  <p className="text-xs text-slate-500">Нийт орлого</p>
-                  <p className="text-sm font-semibold">
-                    {money(String(summary.income_amount ?? 0), "₮")}
+                  <p className="text-xs text-slate-500">Шилжүүлгийн тоо</p>
+                  <p className="text-sm font-semibold text-slate-900">
+                    {selectedRow.payment_count ?? 0}
                   </p>
                 </div>
                 <div className="rounded-xl bg-slate-50 px-4 py-3">
-                  <p className="text-xs text-slate-500">Нийт шилжүүлсэн</p>
-                  <p className="text-sm font-semibold">
-                    {money(String(summary.transferred_amount ?? 0), "₮")}
+                  <p className="text-xs text-slate-500">Шилжүүлсэн дүн</p>
+                  <p className="text-sm font-semibold text-slate-900">
+                    {money(String(selectedRow.transferred_amount ?? 0), "₮")}
                   </p>
                 </div>
                 <div className="rounded-xl bg-slate-50 px-4 py-3">
-                  <p className="text-xs text-slate-500">Үлдэгдэл</p>
-                  <p className="text-sm font-semibold">
-                    {money(String(summary.balance_amount ?? 0), "₮")}
+                  <p className="text-xs text-slate-500">Хугацаа</p>
+                  <p className="text-sm font-semibold text-slate-900">
+                    {selectedRow.from || "-"}
+                    {selectedRow.to ? ` - ${selectedRow.to}` : ""}
                   </p>
                 </div>
               </div>
-            </div>
-          }
-          modalAdd={
-            <Modal
-              maw="xl"
-              name="Цалин нэмэх"
-              submit={() => form.handleSubmit(onSubmit, onInvalid)()}
-              open={open == true}
-              setOpen={(value) => {
-                setOpen(value);
-                form.reset(defaultValues);
-              }}
-              loading={action == ACTION.RUNNING}
-            >
-              <FormProvider {...form}>
-                <div className="divide-y">
-                  <div className="double-col">
-                    <FormItems
-                      label="Төрөл"
-                      control={form.control}
-                      name="type"
-                      className="col-span-1"
-                    >
-                      {(field) => (
-                        <ComboBox
-                          props={{ ...field }}
-                          items={getEnumValues(PaymentType).map((item) => ({
-                            value: item.toString(),
-                            label: PaymentTypeValues[item],
-                          }))}
+            )}
+
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Артист</TableHead>
+                  <TableHead>Төлсөн огноо</TableHead>
+                  <TableHead>Төрөл</TableHead>
+                  <TableHead>Дүн</TableHead>
+                  <TableHead>Үйлдэл</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {detailRows.length ? (
+                  detailRows.map((item) => (
+                    <TableRow key={item.id}>
+                      <TableCell>{selectedRow?.user_name ?? "-"}</TableCell>
+                      <TableCell>{parseDate(new Date(item.paid_at), false)}</TableCell>
+                      <TableCell>
+                        {PaymentTypeValues[item.type as PaymentType] ?? "-"}
+                      </TableCell>
+                      <TableCell>{money(String(item.amount ?? 0), "₮")}</TableCell>
+                      <TableCell>
+                        <TableActionButtons
+                          rowData={item}
+                          onEdit={(data) => void edit(data)}
+                          onRemove={(data) => deletePayment(data)}
                         />
-                      )}
-                    </FormItems>
-                    <FormItems
-                      label="Артист"
-                      control={form.control}
-                      name="artist_id"
-                      className="col-span-1"
-                    >
-                      {(field) => (
-                        <ComboBox
-                          props={{ ...field }}
-                          items={users.items.map((item) => ({
-                            value: item.id,
-                            label: usernameFormatter(item),
-                          }))}
-                        />
-                      )}
-                    </FormItems>
-                    <FormItems
-                      label="Төлсөн огноо"
-                      control={form.control}
-                      name="paid_at"
-                    >
-                      {(field) => (
-                        <DatePicker
-                          name=""
-                          mode="single"
-                          pl="Огноо сонгох"
-                          value={field.value as any}
-                          onChange={(value) => field.onChange(value)}
-                        />
-                      )}
-                    </FormItems>
-                    <FormItems
-                      label="Төлсөн дүн"
-                      control={form.control}
-                      name="amount"
-                    >
-                      {(field) => (
-                        <TextField
-                          props={{
-                            ...field,
-                          }}
-                          type={INPUT_TYPE.MONEY}
-                        />
-                      )}
-                    </FormItems>
-                  </div>
-                </div>
-              </FormProvider>
-            </Modal>
-          }
-        />
+                      </TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={5} className="py-8 text-center">
+                      Дэлгэрэнгүй мэдээлэл алга байна
+                    </TableCell>
+                  </TableRow>
+                )}
+                <TableRow>
+                  <TableCell />
+                  <TableCell />
+                  <TableCell className="font-semibold text-slate-900">Нийт</TableCell>
+                  <TableCell className="font-semibold text-slate-900">
+                    {money(String(detailTotal), "₮")}
+                  </TableCell>
+                  <TableCell />
+                </TableRow>
+              </TableBody>
+            </Table>
+          </div>
+        </Modal>
       </div>
     </div>
   );

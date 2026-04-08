@@ -198,12 +198,21 @@ export const OrderPage = ({
 
   const downloadExcel = async (pg: PG = DEFAULT_PG) => {
     setAction(ACTION.RUNNING);
-    const { page, limit, sort } = pg;
+    const selectedStart = filter?.date?.from ?? mnDate(new Date());
+    const selectedEnd =
+      filter?.date?.to ?? filter?.date?.from ?? mnDate(new Date());
+    const start = dateFormat(mnDate(selectedStart));
+    const end = dateFormat(mnDate(selectedEnd));
     const res = await excel(Api.order, {
-      page: page ?? DEFAULT_PG.page,
-      limit: limit ?? -1,
-      sort: sort ?? DEFAULT_PG.sort,
-      ...pg,
+      page: 0,
+      limit: -1,
+      sort: DEFAULT_PG.sort,
+      date: start,
+      end_date: filter?.list ? end : undefined,
+      order_status: filter?.status,
+      user_id: filter?.artist,
+      branch_id: filter?.branch,
+      friend: filter?.status != OrderStatus.Friend ? undefined : 0,
     });
     if (res.success && res.data) {
       const blob = new Blob([res.data], { type: "application/xlsx" });

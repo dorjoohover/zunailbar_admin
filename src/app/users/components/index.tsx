@@ -20,7 +20,7 @@ import z from "zod";
 import { FormProvider, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Api } from "@/utils/api";
-import { create, deleteOne, findOne, updateOne } from "@/app/(api)";
+import { create, deleteOne, excel, findOne, updateOne } from "@/app/(api)";
 import { FormItems } from "@/shared/components/form.field";
 import { ComboBox } from "@/shared/components/combobox";
 import { TextField } from "@/shared/components/text.field";
@@ -182,6 +182,39 @@ export const UserPage = ({
 
     setAction(ACTION.DEFAULT);
   };
+  const downloadExcel = async (pg: PG = DEFAULT_PG) => {
+    setAction(ACTION.RUNNING);
+    const { sort, filter } = pg;
+    const res = await excel(Api.user, {
+      page: 0,
+      limit: -1,
+      sort: sort ?? DEFAULT_PG.sort,
+      role: ROLE.CLIENT,
+      mobile: filter,
+      user_status: userFilter?.status,
+      level: userFilter?.level,
+    });
+
+    if (res.success && res.data) {
+      const blob = new Blob([res.data], { type: "application/xlsx" });
+      const url = window.URL.createObjectURL(blob);
+
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute(
+        "download",
+        `users_${new Date().toISOString().slice(0, 10)}.xlsx`
+      );
+      document.body.appendChild(link);
+      link.click();
+
+      link.parentNode?.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } else {
+      showToast("error", res.message);
+    }
+    setAction(ACTION.DEFAULT);
+  };
   const onSubmit = async <T,>(e: T) => {
     setAction(ACTION.RUNNING);
     const body = e as UserType;
@@ -289,6 +322,7 @@ export const UserPage = ({
       <div className="admin-container">
         <DataTable
           clear={filterClear}
+          excel={downloadExcel}
           filterRight={
             <>
               <Button onClick={() => setLevelOpen(true)}>Эрэмбэ</Button>

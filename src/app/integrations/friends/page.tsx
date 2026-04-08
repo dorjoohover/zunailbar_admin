@@ -11,7 +11,7 @@ export default async function Page() {
       order_status: OrderStatus.Friend,
     }),
     find<User>(Api.user, {
-      limit: 20,
+      limit: -1,
       role: ROLE.E_M,
       user_status: UserStatus.ACTIVE,
     }),

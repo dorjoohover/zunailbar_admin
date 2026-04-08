@@ -1,6 +1,6 @@
 import { find } from "@/app/(api)";
 import { ROLE, UserStatus } from "@/lib/enum";
-import { Integration, User } from "@/models";
+import { Integration, SalaryReconciliationItem, User } from "@/models";
 import { Api } from "@/utils/api";
 import { IntegrationsPage } from "./components";
 
@@ -22,8 +22,21 @@ export default async function Page({ searchParams }: PageProps) {
     artist_id: getValue(searchParams?.artist_id),
   };
 
-  const [res, user] = await Promise.all([
-    find<Integration>(Api.integration, initialFilter),
+  const [res, reconciliation, user] = await Promise.all([
+    find<Integration>(Api.integration, {
+      ...initialFilter,
+      limit: 500,
+      page: 0,
+    }),
+    find<SalaryReconciliationItem>(
+      Api.integration,
+      {
+        ...initialFilter,
+        limit: 500,
+        page: 0,
+      },
+      "reconciliation",
+    ),
     find<User>(Api.user, {
       role: ROLE.E_M,
       limit: -1,
@@ -35,6 +48,7 @@ export default async function Page({ searchParams }: PageProps) {
     <section>
       <IntegrationsPage
         data={res.data}
+        reconciliation={reconciliation.data}
         users={user.data}
         initialFilter={initialFilter}
       />

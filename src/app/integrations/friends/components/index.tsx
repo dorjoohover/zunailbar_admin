@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { DateRange } from "react-day-picker";
-import { CircleX } from "lucide-react";
+import { Download } from "lucide-react";
 import { DataTable } from "@/components/data-table";
 import DynamicHeader from "@/components/dynamicHeader";
 import { ComboBox } from "@/shared/components/combobox";
@@ -17,6 +17,7 @@ import { OrderStatus } from "@/lib/enum";
 import { ListType, ACTION, PG, DEFAULT_PG } from "@/lib/constants";
 import { mnDate, mnDateFormat, usernameFormatter } from "@/lib/functions";
 import { getColumns } from "./columns";
+import { SalarySectionNav } from "../../_components/section-nav";
 
 type FriendFilter = {
   date?: DateRange;
@@ -114,52 +115,7 @@ export function FriendsPage({
       <DynamicHeader count={orders.count} titleOverride="Танилын будалт" />
 
       <div className="admin-container space-y-4">
-        <div className="bg-white rounded-2xl shadow-light border-light p-4">
-          <div className="flex flex-wrap gap-3 items-end">
-            <label>
-              <span className="filter-label">Хугацаа</span>
-              <DatePicker
-                mode="range"
-                value={reportFilter.date}
-                onChange={(value) =>
-                  setReportFilter((prev) => ({
-                    ...prev,
-                    date: value as DateRange | undefined,
-                  }))
-                }
-                pl="Огноо сонгох"
-              />
-            </label>
-            <label className="min-w-[220px]">
-              <span className="filter-label">Артист</span>
-              <ComboBox
-                pl="Артист сонгох"
-                props={{
-                  name: "artist_id",
-                  value: reportFilter.artist_id ?? "",
-                  onChange: (value) =>
-                    setReportFilter((prev) => ({
-                      ...prev,
-                      artist_id: value || undefined,
-                    })),
-                  onBlur: () => {},
-                  ref: () => {},
-                }}
-                items={users.items.map((item) => ({
-                  value: item.id,
-                  label: usernameFormatter(item),
-                }))}
-              />
-            </label>
-            <Button
-              variant="ghost"
-              onClick={clearReportFilter}
-              className="text-xs text-red-500 hover:text-red-500 bg-red-50 hover:bg-red-100 lg:h-10"
-            >
-              <CircleX />
-            </Button>
-          </div>
-        </div>
+        <SalarySectionNav />
 
         <DataTable
           columns={getColumns()}
@@ -167,7 +123,60 @@ export function FriendsPage({
           data={orders.items}
           refresh={refresh}
           loading={action == ACTION.RUNNING}
-          excel={downloadExcel}
+          search={false}
+          fitContainer
+          clear={clearReportFilter}
+          filter={
+            <>
+              <label>
+                <span className="filter-label">Хугацаа</span>
+                <DatePicker
+                  mode="range"
+                  value={reportFilter.date}
+                  onChange={(value) =>
+                    setReportFilter((prev) => ({
+                      ...prev,
+                      date: value as DateRange | undefined,
+                    }))
+                  }
+                  pl="Огноо сонгох"
+                />
+              </label>
+              <label className="min-w-[220px]">
+                <span className="filter-label">Артист</span>
+                <ComboBox
+                  pl="Артист сонгох"
+                  props={{
+                    name: "artist_id",
+                    value: reportFilter.artist_id ?? "",
+                    onChange: (value) =>
+                      setReportFilter((prev) => ({
+                        ...prev,
+                        artist_id: value || undefined,
+                      })),
+                    onBlur: () => {},
+                    ref: () => {},
+                  }}
+                  items={users.items.map((item) => ({
+                    value: item.id,
+                    label: usernameFormatter(item),
+                  }))}
+                />
+              </label>
+            </>
+          }
+          filterRight={
+            <div className="flex w-full justify-end xl:w-auto">
+              <Button
+                variant="ghost"
+                onClick={() => void downloadExcel()}
+                className="bg-green-500 text-white hover:bg-green-500/80 hover:text-white"
+              >
+                <Download />
+                Экспорт
+              </Button>
+            </div>
+          }
         />
       </div>
     </div>

@@ -77,6 +77,7 @@ interface DataTableProps<TData, TValue> {
   clear?: () => void;
   filterRight?: ReactNode;
   search?: boolean;
+  fitContainer?: boolean;
 }
 
 export function DataTable<TData, TValue>({
@@ -92,6 +93,7 @@ export function DataTable<TData, TValue>({
   filter,
   filterRight,
   search = true,
+  fitContainer = false,
 }: DataTableProps<TData, TValue>) {
   const [globalFilter, setGlobalFilter] = useState("");
   const [pagination, setPagination] = useState({
@@ -131,7 +133,7 @@ export function DataTable<TData, TValue>({
       globalFilter,
       pagination: pagination,
     },
-    pageCount: Math.ceil(count / limit),
+    pageCount: Math.max(Math.ceil(count / limit), 1),
     manualPagination: true,
     onPaginationChange,
     onGlobalFilterChange: (e) => {
@@ -144,7 +146,7 @@ export function DataTable<TData, TValue>({
     // getFilteredRowModel: getFilteredRowModel(),
   });
 
-  const totalPages = Math.ceil(count / limit);
+  const totalPages = Math.max(Math.ceil(count / limit), 1);
   const currentPage = pagination.pageIndex;
 
   const downloadExcel = () => {
@@ -174,6 +176,7 @@ export function DataTable<TData, TValue>({
   // }, []);
 
   const { open } = useSidebar();
+  const hasToolbar = search || Boolean(excel) || Boolean(modalAdd);
 
   useEffect(() => {
     if (open) {
@@ -203,7 +206,9 @@ export function DataTable<TData, TValue>({
     <div
       className={cn(
         "space-y-4 w-full transition-all duration-300",
-        open
+        fitContainer
+          ? "w-full"
+          : open
           ? "lg:w-[calc(100vw-20rem-3rem)] w-[calc(100vw-2rem)]"
           : "lg:w-[calc(100vw-8rem)] w-[calc(100vw-2rem)]",
       )}
@@ -229,43 +234,41 @@ export function DataTable<TData, TValue>({
 
       {/* Filterees dooshig */}
       <div className="bg-white rounded-xl shadow-light border-light p-5 pt-0">
-        {/* Table action */}
-        <div className="w-full flex justify-between gap-4 lg:gap-20 py-5">
-          {/* Search */}
-          <div className="relative w-full max-w-xl space-y-2">
-            {search && (
-              <>
-                <Search
-                  className="size-5 absolute top-[50%] -translate-y-[50%] left-2 text-slate-600"
-                  strokeWidth={2.5}
-                />
+        {hasToolbar && (
+          <div className="w-full flex justify-between gap-4 lg:gap-20 py-5">
+            <div className="relative w-full max-w-xl space-y-2">
+              {search && (
+                <>
+                  <Search
+                    className="size-5 absolute top-[50%] -translate-y-[50%] left-2 text-slate-600"
+                    strokeWidth={2.5}
+                  />
 
-                <Input
-                  placeholder="Хайх..."
-                  value={globalFilter}
-                  onChange={(e) => setGlobalFilter(e.target.value)}
-                  className="w-full pl-10 text-sm! bg-white"
-                />
-              </>
-            )}
-          </div>
+                  <Input
+                    placeholder="Хайх..."
+                    value={globalFilter}
+                    onChange={(e) => setGlobalFilter(e.target.value)}
+                    className="w-full pl-10 text-sm! bg-white"
+                  />
+                </>
+              )}
+            </div>
 
-          {/* Excel || Add button  */}
-          <div className="flex items-center justify-end space-x-2">
-            {/* Add modal button */}
-            {excel && (
-              <Button
-                variant={"ghost"}
-                onClick={downloadExcel}
-                className="bg-green-500 text-white hover:bg-green-500/80 gap-1 hover:text-white"
-              >
-                <FileText />
-                Excel
-              </Button>
-            )}
-            {modalAdd && <div> {modalAdd}</div>}
+            <div className="flex items-center justify-end space-x-2">
+              {excel && (
+                <Button
+                  variant={"ghost"}
+                  onClick={downloadExcel}
+                  className="bg-green-500 text-white hover:bg-green-500/80 gap-1 hover:text-white"
+                >
+                  <FileText />
+                  Excel
+                </Button>
+              )}
+              {modalAdd && <div>{modalAdd}</div>}
+            </div>
           </div>
-        </div>
+        )}
 
         <ScrollArea className={cn("h-fit w-full transition-all duration-300")}>
           {/* Table */}

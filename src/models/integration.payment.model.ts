@@ -5,7 +5,7 @@ export interface IIntegrationPayment {
   amount: number;
   artist_id: string;
   paid_by: string;
-  paid_at: Date;
+  paid_at: Date | string;
 }
 
 export interface IntegrationPayment {
@@ -15,5 +15,14 @@ export interface IntegrationPayment {
   amount: number;
   artist_id: string;
   paid_by: string;
-  paid_at: Date;
+  paid_at: Date | string;
+}
+
+export interface IntegrationTransferSummaryRow {
+  artist_id: string;
+  user_name?: string;
+  from?: string;
+  to?: string;
+  payment_count: number;
+  transferred_amount: number;
 }

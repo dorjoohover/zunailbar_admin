@@ -2,7 +2,7 @@ export interface IIntegration {
   id: string;
   artist_id: string;
   approved_by: string;
-  date: Date;
+  date: Date | string;
   amount: number;
   salary_status: number;
   order_count: number;
@@ -14,7 +14,7 @@ export interface Integration {
   id: string;
   artist_id: string;
   approved_by: string;
-  date: Date;
+  date: Date | string;
   amount: number;
   salary_status: number;
   status: number;
@@ -45,4 +45,16 @@ export interface IntegrationListSummary {
   total_amount: number;
   total_order_count: number;
   total_count: number;
+}
+
+export interface SalaryCalculationRow {
+  artist_id: string;
+  user_name?: string;
+  from?: string;
+  to?: string;
+  income_amount: number;
+  salary_amount: number;
+  order_count: number;
+  transferred_amount: number;
+  balance_amount: number;
 }

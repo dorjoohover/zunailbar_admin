@@ -56,7 +56,11 @@ export const find = async <T,>(
     };
   }
 };
-export const excel = async <T,>(uri: keyof typeof API, p: Pagination = {}) => {
+export const excel = async <T,>(
+  uri: keyof typeof API,
+  p: Pagination = {},
+  route = "report"
+) => {
   try {
     const store = await cookies();
     const token = store.get("token")?.value;
@@ -67,7 +71,7 @@ export const excel = async <T,>(uri: keyof typeof API, p: Pagination = {}) => {
       ...defaultPagination,
       ...p,
     };
-    const url = paginationToQuery(uri, merged, "report");
+    const url = paginationToQuery(uri, merged, route);
     const response = await fetch(url, {
       cache: "no-store",
       headers: {

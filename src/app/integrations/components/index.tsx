@@ -1,12 +1,18 @@
 "use client";
 
-import Link from "next/link";
-import { DateRange } from "react-day-picker";
-import { CircleX } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
+import { Download } from "lucide-react";
 import DynamicHeader from "@/components/dynamicHeader";
 import { DataTable } from "@/components/data-table";
 import { Button } from "@/components/ui/button";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { fetcher } from "@/hooks/fetcher";
 import {
   ACTION,
@@ -16,13 +22,21 @@ import {
   PG,
 } from "@/lib/constants";
 import { mnDateFormat, money, usernameFormatter } from "@/lib/functions";
-import { Integration, IntegrationListSummary, User } from "@/models";
+import {
+  IOrderDetail,
+  Integration,
+  SalaryCalculationRow,
+  SalaryReconciliationItem,
+  User,
+} from "@/models";
 import { Api } from "@/utils/api";
 import { ComboBox } from "@/shared/components/combobox";
 import { DatePicker } from "@/shared/components/date.picker";
+import { Modal } from "@/shared/components/modal";
 import { showToast } from "@/shared/components/showToast";
 import { excel, find } from "@/app/(api)";
 import { getColumns } from "./columns";
+import { SalarySectionNav } from "../_components/section-nav";
 
 type IntegrationFilter = {
   from?: string;
@@ -30,13 +44,13 @@ type IntegrationFilter = {
   artist_id?: string;
 };
 
-type IntegrationTableItem = Integration & { user_name?: string };
-
-const defaultSummary: IntegrationListSummary = {
-  total_amount: 0,
-  total_order_count: 0,
-  total_count: 0,
-};
+const defaultReconciliation = {
+  count: 0,
+  items: [],
+  from: "",
+  to: "",
+  summary: undefined,
+} as ListType<SalaryReconciliationItem>;
 
 const parseDateValue = (value?: string) => {
   if (!value) return undefined;
@@ -45,38 +59,53 @@ const parseDateValue = (value?: string) => {
   return new Date(year, month - 1, day);
 };
 
-const getInitialDateRange = (initialFilter?: IntegrationFilter): DateRange | undefined => {
+const getInitialDateRange = (
+  initialFilter?: IntegrationFilter,
+): { from?: Date; to?: Date } => {
   const from = parseDateValue(initialFilter?.from);
   const to = parseDateValue(initialFilter?.to ?? initialFilter?.from);
+  return { from, to };
+};
 
-  if (!from) return undefined;
+const detailInfo = (detail: IOrderDetail) => {
+  const parts = [
+    detail.service_name,
+    detail.start_time && detail.end_time
+      ? `${detail.start_time.slice(0, 5)} - ${detail.end_time.slice(0, 5)}`
+      : undefined,
+    detail.description,
+  ].filter(Boolean);
 
-  return {
-    from,
-    to,
-  };
+  return parts.join(" / ");
 };
 
 export const IntegrationsPage = ({
   data,
+  reconciliation,
   users,
   initialFilter,
 }: {
   data: ListType<Integration>;
+  reconciliation: ListType<SalaryReconciliationItem>;
   users: ListType<User>;
   initialFilter?: IntegrationFilter;
 }) => {
   const [action, setAction] = useState(ACTION.DEFAULT);
+  const [detailAction, setDetailAction] = useState(ACTION.DEFAULT);
   const [reportFilter, setReportFilter] = useState<{
-    date?: DateRange;
+    from?: Date;
+    to?: Date;
     artist_id?: string;
   }>({
-    date: getInitialDateRange(initialFilter),
+    ...getInitialDateRange(initialFilter),
     artist_id: initialFilter?.artist_id,
   });
-  const [integrations, setIntegrations] = useState<ListType<IntegrationTableItem>>(
-    ListDefault as ListType<IntegrationTableItem>,
+  const [rows, setRows] = useState<ListType<SalaryCalculationRow>>(
+    ListDefault as ListType<SalaryCalculationRow>,
   );
+  const [selectedRow, setSelectedRow] = useState<SalaryCalculationRow>();
+  const [detailRows, setDetailRows] = useState<IOrderDetail[]>([]);
+  const [detailOpen, setDetailOpen] = useState(false);
 
   const userMap = useMemo(
     () => new Map(users.items.map((item) => [item.id, item])),
@@ -84,8 +113,8 @@ export const IntegrationsPage = ({
   );
 
   const getFilterParams = () => {
-    const fromDate = reportFilter.date?.from;
-    const toDate = reportFilter.date?.to ?? reportFilter.date?.from;
+    const fromDate = reportFilter.from;
+    const toDate = reportFilter.to ?? reportFilter.from;
 
     return {
       ...(fromDate ? { from: mnDateFormat(fromDate) } : {}),
@@ -94,60 +123,147 @@ export const IntegrationsPage = ({
     };
   };
 
-  const formatIntegrations = (list: ListType<Integration>) => {
-    const items = list.items.map((item) => {
-      const user = userMap.get(item.artist_id);
+  const formatRows = (
+    integrationList: ListType<Integration>,
+    reconciliationList: ListType<SalaryReconciliationItem>,
+  ) => {
+    const salaryMap = new Map<
+      string,
+      { salary_amount: number; order_count: number }
+    >();
 
-      return {
-        ...item,
-        user_name: user ? usernameFormatter(user) : "",
+    for (const item of integrationList.items ?? []) {
+      const current = salaryMap.get(item.artist_id) ?? {
+        salary_amount: 0,
+        order_count: 0,
       };
-    });
 
-    setIntegrations({
+      salaryMap.set(item.artist_id, {
+        salary_amount: current.salary_amount + Number(item.amount ?? 0),
+        order_count: current.order_count + Number(item.order_count ?? 0),
+      });
+    }
+
+    const reconciliationMap = new Map(
+      (reconciliationList.items ?? []).map((item) => [item.artist_id, item]),
+    );
+    const artistIds = new Set([
+      ...salaryMap.keys(),
+      ...(reconciliationList.items ?? []).map((item) => item.artist_id),
+    ]);
+    const filterParams = getFilterParams();
+
+    const items = [...artistIds]
+      .map((artist_id) => {
+        const salary = salaryMap.get(artist_id);
+        const reconciliationItem = reconciliationMap.get(artist_id);
+        const user = userMap.get(artist_id);
+
+        return {
+          artist_id,
+          user_name: user ? usernameFormatter(user) : "",
+          from:
+            filterParams.from ??
+            reconciliationList.from ??
+            integrationList.from ??
+            "",
+          to:
+            filterParams.to ??
+            reconciliationList.to ??
+            integrationList.to ??
+            filterParams.from ??
+            "",
+          income_amount: Number(reconciliationItem?.income_amount ?? 0),
+          salary_amount: Number(salary?.salary_amount ?? 0),
+          order_count: Number(
+            reconciliationItem?.order_count ?? salary?.order_count ?? 0,
+          ),
+          transferred_amount: Number(reconciliationItem?.transferred_amount ?? 0),
+          balance_amount: Number(reconciliationItem?.balance_amount ?? 0),
+        } satisfies SalaryCalculationRow;
+      })
+      .sort((a, b) => (a.user_name ?? "").localeCompare(b.user_name ?? ""));
+
+    setRows({
+      count: items.length,
       items,
-      count: list.count,
-      summary: list.summary ?? defaultSummary,
-      from: list.from,
-      to: list.to,
+      from: filterParams.from ?? reconciliationList.from ?? integrationList.from ?? "",
+      to: filterParams.to ?? reconciliationList.to ?? integrationList.to ?? "",
     });
   };
 
   useEffect(() => {
-    formatIntegrations(data);
-  }, [data, userMap]);
+    formatRows(data, reconciliation ?? defaultReconciliation);
+  }, [data, reconciliation, userMap]);
 
-  const getHistoryHref = (integration?: Integration) => {
-    const params = new URLSearchParams();
-    const { from, to, artist_id } = getFilterParams();
+  const loadDetails = async (row: SalaryCalculationRow) => {
+    setSelectedRow(row);
+    setDetailRows([]);
+    setDetailOpen(true);
+    setDetailAction(ACTION.RUNNING);
+    const from = row.from || undefined;
+    const to = row.to || row.from || undefined;
 
-    if (from) params.set("from", from);
-    if (to) params.set("to", to);
-    if (artist_id) params.set("artist_id", artist_id);
-    if (integration?.artist_id) params.set("artist_id", integration.artist_id);
+    const detailRes = await fetcher<IOrderDetail>(Api.order_detail, {
+      page: 0,
+      limit: 500,
+      sort: false,
+      user_id: row.artist_id,
+      ...(from ? { from } : {}),
+      ...(to ? { to } : {}),
+    } as any);
 
-    const query = params.toString();
-    return `/integrations/history${query ? `?${query}` : ""}`;
+    const items = (detailRes.items ?? []).sort((a, b) => {
+      const dateA = new Date(a.order_date ?? 0).getTime();
+      const dateB = new Date(b.order_date ?? 0).getTime();
+      if (dateA !== dateB) return dateA - dateB;
+      return (a.start_time ?? "").localeCompare(b.start_time ?? "");
+    });
+
+    setDetailRows(items);
+    setDetailAction(ACTION.DEFAULT);
   };
 
-  const columns = getColumns(getHistoryHref);
+  useEffect(() => {
+    if (!rows.items.length) {
+      setSelectedRow(undefined);
+      setDetailRows([]);
+      setDetailOpen(false);
+      return;
+    }
+  }, [rows.items]);
 
   const refresh = async (pg: PG = DEFAULT_PG) => {
     setAction(ACTION.RUNNING);
-    const { page, limit, sort } = pg;
+    const { sort } = pg;
     const { from, to, artist_id } = getFilterParams();
 
-    const res = await fetcher<Integration>(Api.integration, {
-      page: page ?? DEFAULT_PG.page,
-      limit: limit ?? DEFAULT_PG.limit,
-      sort: sort ?? DEFAULT_PG.sort,
-      from,
-      to,
-      artist_id,
-      ...pg,
-    });
+    const [integrationRes, reconciliationRes] = await Promise.all([
+      fetcher<Integration>(Api.integration, {
+        page: 0,
+        limit: 500,
+        sort: sort ?? DEFAULT_PG.sort,
+        from,
+        to,
+        artist_id,
+        ...pg,
+      }),
+      find<SalaryReconciliationItem>(
+        Api.integration,
+        {
+          page: 0,
+          limit: 500,
+          sort: sort ?? DEFAULT_PG.sort,
+          from,
+          to,
+          artist_id,
+          ...pg,
+        },
+        "reconciliation",
+      ),
+    ]);
 
-    formatIntegrations(res);
+    formatRows(integrationRes, reconciliationRes.data);
     setAction(ACTION.DEFAULT);
   };
 
@@ -179,19 +295,21 @@ export const IntegrationsPage = ({
     setAction(ACTION.DEFAULT);
   };
 
-  const downloadExcel = async (pg: PG = DEFAULT_PG) => {
-    setAction(ACTION.RUNNING);
-    const { page, sort } = pg;
+  const downloadSummary = async () => {
     const { from, to, artist_id } = getFilterParams();
-    const res = await excel(Api.integration, {
-      page: page ?? DEFAULT_PG.page,
-      limit: -1,
-      sort: sort ?? DEFAULT_PG.sort,
-      from,
-      to,
-      artist_id,
-      ...pg,
-    });
+
+    const res = await excel(
+      Api.integration,
+      {
+        page: 0,
+        limit: -1,
+        sort: DEFAULT_PG.sort,
+        from,
+        to,
+        artist_id,
+      },
+      "report_summary",
+    );
 
     if (res.success && res.data) {
       const blob = new Blob([res.data], { type: "application/xlsx" });
@@ -199,47 +317,78 @@ export const IntegrationsPage = ({
       const link = document.createElement("a");
 
       link.href = url;
-      link.setAttribute("download", "integrations.xlsx");
+      link.setAttribute(
+        "download",
+        `salary_summary_${new Date().toISOString().slice(0, 10)}.xlsx`,
+      );
       document.body.appendChild(link);
       link.click();
       link.parentNode?.removeChild(link);
       window.URL.revokeObjectURL(url);
-    } else {
-      showToast("error", res.message);
+      return;
     }
 
-    setAction(ACTION.DEFAULT);
+    showToast("error", res.message ?? "Экспорт хийхэд алдаа гарлаа");
   };
 
   const clearReportFilter = () => {
     setReportFilter({
-      date: undefined,
+      from: undefined,
+      to: undefined,
       artist_id: undefined,
     });
   };
 
-  const summary = (integrations.summary as IntegrationListSummary | undefined) ?? defaultSummary;
+  const detailTotal = detailRows.reduce(
+    (total, item) => total + Number(item.price ?? 0),
+    0,
+  );
 
   return (
     <div>
       <DynamicHeader />
 
       <div className="admin-container space-y-4">
-        <div className="rounded-2xl border-light bg-white p-4 shadow-light">
-          <div className="flex flex-wrap items-end justify-between gap-3">
-            <div className="flex flex-wrap items-end gap-3">
+        <SalarySectionNav />
+
+        <DataTable
+          columns={getColumns((row) => void loadDetails(row))}
+          limit={Math.max(rows.items.length, 1)}
+          count={rows.count}
+          data={rows.items}
+          refresh={refresh}
+          loading={action === ACTION.RUNNING}
+          search={false}
+          fitContainer
+          clear={clearReportFilter}
+          filter={
+            <>
               <label>
-                <span className="filter-label">Хугацаа</span>
+                <span className="filter-label">Эхлэх огноо</span>
                 <DatePicker
-                  mode="range"
-                  value={reportFilter.date}
+                  mode="single"
+                  value={reportFilter.from}
                   onChange={(value) =>
                     setReportFilter((prev) => ({
                       ...prev,
-                      date: value as DateRange | undefined,
+                      from: value as Date | undefined,
                     }))
                   }
-                  pl="Огноо сонгох"
+                  pl="Эхлэх огноо"
+                />
+              </label>
+              <label>
+                <span className="filter-label">Дуусах огноо</span>
+                <DatePicker
+                  mode="single"
+                  value={reportFilter.to}
+                  onChange={(value) =>
+                    setReportFilter((prev) => ({
+                      ...prev,
+                      to: value as Date | undefined,
+                    }))
+                  }
+                  pl="Дуусах огноо"
                 />
               </label>
               <label className="min-w-[220px]">
@@ -263,59 +412,110 @@ export const IntegrationsPage = ({
                   }))}
                 />
               </label>
+            </>
+          }
+          filterRight={
+            <div className="flex w-full flex-wrap justify-end gap-2 xl:w-auto">
+              <Button
+                variant="outline"
+                onClick={processAllSalaries}
+                disabled={action === ACTION.RUNNING}
+              >
+                {action === ACTION.RUNNING ? "Бодож байна" : "Цалин бодох"}
+              </Button>
               <Button
                 variant="ghost"
-                onClick={clearReportFilter}
-                className="bg-red-50 text-xs text-red-500 hover:bg-red-100 hover:text-red-500 lg:h-10"
+                onClick={downloadSummary}
+                className="bg-green-500 text-white hover:bg-green-500/80 hover:text-white"
               >
-                <CircleX />
+                <Download />
+                Экспорт
               </Button>
             </div>
-
-            <div className="flex w-full flex-wrap justify-end gap-2 sm:w-auto">
-              <Button variant="outline" asChild>
-                <Link href={getHistoryHref()}>Цалингийн түүх</Link>
-              </Button>
-              <Button
-                onClick={processAllSalaries}
-                disabled={action == ACTION.RUNNING}
-                className="w-full sm:w-auto"
-              >
-                {action == ACTION.RUNNING ? "Бодож байна" : "Бүгдийн цалин бодох"}
-              </Button>
-            </div>
-          </div>
-        </div>
-
-        <div className="grid gap-3 md:grid-cols-3">
-          <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-light">
-            <p className="text-sm text-slate-500">Нийт бодогдсон цалин</p>
-            <p className="mt-2 text-2xl font-semibold text-slate-900">
-              {money(String(summary.total_amount ?? 0), "₮")}
-            </p>
-          </div>
-          <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-light">
-            <p className="text-sm text-slate-500">Үйлчилгээний нийт тоо</p>
-            <p className="mt-2 text-2xl font-semibold text-slate-900">
-              {summary.total_order_count ?? 0}
-            </p>
-          </div>
-          <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-light">
-            <p className="text-sm text-slate-500">Тооцооны бүртгэл</p>
-            <p className="mt-2 text-2xl font-semibold text-slate-900">
-              {summary.total_count ?? integrations.count ?? 0}
-            </p>
-          </div>
-        </div>
-
-        <DataTable
-          columns={columns}
-          count={integrations.count}
-          data={integrations.items ?? []}
-          refresh={refresh}
-          loading={action == ACTION.RUNNING}
-          excel={downloadExcel}
+          }
         />
+
+        <Modal
+          open={detailOpen}
+          setOpen={setDetailOpen}
+          maw="6xl"
+          title="Нэгтгэлийн захиалгын задрал"
+          description={
+            selectedRow
+              ? `${selectedRow.user_name ?? "Артист"} · ${selectedRow.from || "-"}${selectedRow.to ? ` - ${selectedRow.to}` : ""}`
+              : "Захиалгын задралыг харуулна."
+          }
+        >
+          <div className="space-y-4">
+            {selectedRow && (
+              <div className="grid gap-2 sm:grid-cols-3">
+                <div className="rounded-xl bg-slate-50 px-4 py-3">
+                  <p className="text-xs text-slate-500">Нийт орлого</p>
+                  <p className="text-sm font-semibold text-slate-900">
+                    {money(String(selectedRow.income_amount ?? 0), "₮")}
+                  </p>
+                </div>
+                <div className="rounded-xl bg-slate-50 px-4 py-3">
+                  <p className="text-xs text-slate-500">Цалин</p>
+                  <p className="text-sm font-semibold text-slate-900">
+                    {money(String(selectedRow.salary_amount ?? 0), "₮")}
+                  </p>
+                </div>
+                <div className="rounded-xl bg-slate-50 px-4 py-3">
+                  <p className="text-xs text-slate-500">Шилжүүлсэн</p>
+                  <p className="text-sm font-semibold text-slate-900">
+                    {money(String(selectedRow.transferred_amount ?? 0), "₮")}
+                  </p>
+                </div>
+              </div>
+            )}
+
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Артист</TableHead>
+                  <TableHead>Огноо</TableHead>
+                  <TableHead>Захиалгын мэдээлэл</TableHead>
+                  <TableHead>Дүн</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {detailAction === ACTION.RUNNING ? (
+                  <TableRow>
+                    <TableCell colSpan={4} className="py-8 text-center">
+                      Уншиж байна
+                    </TableCell>
+                  </TableRow>
+                ) : detailRows.length ? (
+                  detailRows.map((item, index) => (
+                    <TableRow key={`${item.id ?? item.order_id ?? index}-${index}`}>
+                      <TableCell>{selectedRow?.user_name ?? "-"}</TableCell>
+                      <TableCell>{item.order_date ?? "-"}</TableCell>
+                      <TableCell className="whitespace-normal">
+                        {detailInfo(item) || "-"}
+                      </TableCell>
+                      <TableCell>{money(String(item.price ?? 0), "₮")}</TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={4} className="py-8 text-center">
+                      Дэлгэрэнгүй мэдээлэл алга байна
+                    </TableCell>
+                  </TableRow>
+                )}
+                <TableRow>
+                  <TableCell />
+                  <TableCell />
+                  <TableCell className="font-semibold text-slate-900">Нийт</TableCell>
+                  <TableCell className="font-semibold text-slate-900">
+                    {money(String(detailTotal), "₮")}
+                  </TableCell>
+                </TableRow>
+              </TableBody>
+            </Table>
+          </div>
+        </Modal>
       </div>
     </div>
   );

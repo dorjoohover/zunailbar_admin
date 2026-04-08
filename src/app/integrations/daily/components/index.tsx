@@ -1,0 +1,378 @@
+"use client";
+
+import { useEffect, useMemo, useState } from "react";
+import { CircleX, Download } from "lucide-react";
+import DynamicHeader from "@/components/dynamicHeader";
+import { Button } from "@/components/ui/button";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { find } from "@/app/(api)";
+import { fetcher } from "@/hooks/fetcher";
+import { ACTION, getMethodValue, ListType } from "@/lib/constants";
+import { mnDateFormat, money, parseDate } from "@/lib/functions";
+import {
+  Branch,
+  PaymentDailyBreakdownItem,
+  PaymentDailySummary,
+} from "@/models";
+import { Api } from "@/utils/api";
+import { DatePicker } from "@/shared/components/date.picker";
+import { ComboBox } from "@/shared/components/combobox";
+import { Modal } from "@/shared/components/modal";
+import { SalarySectionNav } from "../../_components/section-nav";
+
+type DailySummaryFilter = {
+  from?: string;
+  to?: string;
+  branch_id?: string;
+};
+
+const parseDateValue = (value?: string) => {
+  if (!value) return undefined;
+  const [year, month, day] = value.split("-").map(Number);
+  if (!year || !month || !day) return undefined;
+  return new Date(year, month - 1, day);
+};
+
+const defaultSummary: PaymentDailySummary = {
+  from: "",
+  to: "",
+  pre_amount: 0,
+  cash_amount: 0,
+  bank_amount: 0,
+  total_amount: 0,
+};
+
+export function DailySummaryPage({
+  data,
+  initialFilter,
+  branches,
+}: {
+  data?: PaymentDailySummary;
+  initialFilter?: DailySummaryFilter;
+  branches: ListType<Branch>;
+}) {
+  const initialState = useMemo(
+    () => ({
+      from: parseDateValue(initialFilter?.from),
+      to: parseDateValue(initialFilter?.to ?? initialFilter?.from),
+      branch_id: initialFilter?.branch_id,
+    }),
+    [initialFilter],
+  );
+  const [action, setAction] = useState(ACTION.DEFAULT);
+  const [detailAction, setDetailAction] = useState(ACTION.DEFAULT);
+  const [detailOpen, setDetailOpen] = useState(false);
+  const [summary, setSummary] = useState<PaymentDailySummary>(data ?? defaultSummary);
+  const [detailRows, setDetailRows] = useState<PaymentDailyBreakdownItem[]>([]);
+  const [reportFilter, setReportFilter] = useState(initialState);
+
+  const getFilterParams = () => ({
+    ...(reportFilter.from ? { from: mnDateFormat(reportFilter.from) } : {}),
+    ...(reportFilter.to ? { to: mnDateFormat(reportFilter.to) } : {}),
+    ...(reportFilter.branch_id ? { branch_id: reportFilter.branch_id } : {}),
+  });
+
+  const refresh = async () => {
+    setAction(ACTION.RUNNING);
+    const res = await find<any>(Api.payment, getFilterParams() as any, "summary");
+    setSummary((res.data as unknown as PaymentDailySummary) ?? defaultSummary);
+    setAction(ACTION.DEFAULT);
+  };
+
+  const openBreakdown = async () => {
+    setDetailOpen(true);
+    setDetailRows([]);
+    setDetailAction(ACTION.RUNNING);
+    const res = await fetcher<PaymentDailyBreakdownItem>(
+      Api.payment,
+      {
+        page: 0,
+        limit: 500,
+        ...getFilterParams(),
+      } as any,
+      "breakdown",
+    );
+    setDetailRows(res.items ?? []);
+    setDetailAction(ACTION.DEFAULT);
+  };
+
+  useEffect(() => {
+    void refresh();
+    setDetailOpen(false);
+    setDetailRows([]);
+  }, [reportFilter]);
+
+  const clearReportFilter = () => {
+    setReportFilter(initialState);
+    setSummary(data ?? defaultSummary);
+    setDetailOpen(false);
+    setDetailRows([]);
+  };
+
+  const downloadSummary = () => {
+    const rows = [
+      [
+        "Эхлэх огноо",
+        "Дуусах огноо",
+        "Салбар",
+        "Урьдчилгаа",
+        "Данс / карт",
+        "Бэлэн",
+        "Нийт",
+      ],
+      [
+        summary.from || "-",
+        summary.to || summary.from || "-",
+        branches.items.find((item) => item.id === reportFilter.branch_id)?.name ?? "Бүгд",
+        String(summary.pre_amount ?? 0),
+        String(summary.bank_amount ?? 0),
+        String(summary.cash_amount ?? 0),
+        String(summary.total_amount ?? 0),
+      ],
+    ];
+
+    const csv = rows.map((row) => row.join(",")).join("\n");
+    const blob = new Blob([`\uFEFF${csv}`], { type: "text/csv;charset=utf-8;" });
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement("a");
+
+    link.href = url;
+    link.setAttribute("download", "daily_summary.csv");
+    document.body.appendChild(link);
+    link.click();
+    link.parentNode?.removeChild(link);
+    window.URL.revokeObjectURL(url);
+  };
+
+  const detailTotal = detailRows.reduce(
+    (total, item) => total + Number(item.amount ?? 0),
+    0,
+  );
+
+  return (
+    <div>
+      <DynamicHeader />
+
+      <div className="admin-container space-y-4">
+        <SalarySectionNav />
+
+        <div className="rounded-2xl border-light bg-white p-4 shadow-light">
+          <div className="flex flex-wrap items-end justify-between gap-3">
+            <div className="flex flex-wrap items-end gap-3">
+              <label>
+                <span className="filter-label">Эхлэх огноо</span>
+                <DatePicker
+                  mode="single"
+                  value={reportFilter.from}
+                  onChange={(value) =>
+                    setReportFilter((prev) => ({
+                      ...prev,
+                      from: value as Date | undefined,
+                    }))
+                  }
+                  pl="Эхлэх огноо"
+                />
+              </label>
+              <label>
+                <span className="filter-label">Дуусах огноо</span>
+                <DatePicker
+                  mode="single"
+                  value={reportFilter.to}
+                  onChange={(value) =>
+                    setReportFilter((prev) => ({
+                      ...prev,
+                      to: value as Date | undefined,
+                    }))
+                  }
+                  pl="Дуусах огноо"
+                />
+              </label>
+              <label className="min-w-[220px]">
+                <span className="filter-label">Салбар</span>
+                <ComboBox
+                  pl="Салбар сонгох"
+                  props={{
+                    name: "branch_id",
+                    value: reportFilter.branch_id ?? "",
+                    onChange: (value) =>
+                      setReportFilter((prev) => ({
+                        ...prev,
+                        branch_id: value || undefined,
+                      })),
+                    onBlur: () => {},
+                    ref: () => {},
+                  }}
+                  items={branches.items.map((item) => ({
+                    value: item.id,
+                    label: item.name,
+                  }))}
+                />
+              </label>
+              <Button
+                variant="ghost"
+                onClick={clearReportFilter}
+                className="bg-red-50 text-xs text-red-500 hover:bg-red-100 hover:text-red-500 lg:h-10"
+              >
+                <CircleX />
+              </Button>
+            </div>
+
+            <div className="flex flex-wrap gap-2">
+              <Button variant="outline" onClick={refresh} disabled={action === ACTION.RUNNING}>
+                Шинэчлэх
+              </Button>
+              <Button
+                variant="ghost"
+                onClick={downloadSummary}
+                className="bg-green-500 text-white hover:bg-green-500/80 hover:text-white"
+              >
+                <Download />
+                Экспорт
+              </Button>
+            </div>
+          </div>
+        </div>
+
+        <div className="rounded-2xl border-light bg-white p-4 shadow-light">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Эхлэх огноо</TableHead>
+                <TableHead>Дуусах огноо</TableHead>
+                <TableHead>Салбар</TableHead>
+                <TableHead>Урьдчилгаа</TableHead>
+                <TableHead>Данс / карт</TableHead>
+                <TableHead>Бэлэн</TableHead>
+                <TableHead>Нийт</TableHead>
+                <TableHead>Дэлгэрэнгүй</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              <TableRow>
+                <TableCell>{summary.from || "-"}</TableCell>
+                <TableCell>{summary.to || summary.from || "-"}</TableCell>
+                <TableCell>
+                  {branches.items.find((item) => item.id === reportFilter.branch_id)?.name ??
+                    "Бүх салбар"}
+                </TableCell>
+                <TableCell>{money(String(summary.pre_amount ?? 0), "₮")}</TableCell>
+                <TableCell>{money(String(summary.bank_amount ?? 0), "₮")}</TableCell>
+                <TableCell>{money(String(summary.cash_amount ?? 0), "₮")}</TableCell>
+                <TableCell className="font-bold text-slate-900">
+                  {money(String(summary.total_amount ?? 0), "₮")}
+                </TableCell>
+                <TableCell>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => void openBreakdown()}
+                    disabled={action === ACTION.RUNNING}
+                  >
+                    Дэлгэрэнгүй
+                  </Button>
+                </TableCell>
+              </TableRow>
+            </TableBody>
+          </Table>
+        </div>
+
+        <Modal
+          open={detailOpen}
+          setOpen={setDetailOpen}
+          maw="6xl"
+          title="Борлуулалтын задрал"
+          description={`${summary.from || "-"}${summary.to ? ` - ${summary.to}` : ""}${
+            reportFilter.branch_id
+              ? ` · ${branches.items.find((item) => item.id === reportFilter.branch_id)?.name ?? ""}`
+              : ""
+          }`}
+        >
+          <div className="space-y-4">
+            <div className="grid gap-2 sm:grid-cols-4">
+              <div className="rounded-xl bg-slate-50 px-4 py-3">
+                <p className="text-xs text-slate-500">Урьдчилгаа</p>
+                <p className="text-sm font-semibold text-slate-900">
+                  {money(String(summary.pre_amount ?? 0), "₮")}
+                </p>
+              </div>
+              <div className="rounded-xl bg-slate-50 px-4 py-3">
+                <p className="text-xs text-slate-500">Данс / карт</p>
+                <p className="text-sm font-semibold text-slate-900">
+                  {money(String(summary.bank_amount ?? 0), "₮")}
+                </p>
+              </div>
+              <div className="rounded-xl bg-slate-50 px-4 py-3">
+                <p className="text-xs text-slate-500">Бэлэн</p>
+                <p className="text-sm font-semibold text-slate-900">
+                  {money(String(summary.cash_amount ?? 0), "₮")}
+                </p>
+              </div>
+              <div className="rounded-xl bg-slate-50 px-4 py-3">
+                <p className="text-xs text-slate-500">Нийт</p>
+                <p className="text-sm font-semibold text-slate-900">
+                  {money(String(summary.total_amount ?? 0), "₮")}
+                </p>
+              </div>
+            </div>
+
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Төлсөн огноо</TableHead>
+                  <TableHead>Салбар</TableHead>
+                  <TableHead>Төлбөр</TableHead>
+                  <TableHead>Арга</TableHead>
+                  <TableHead>Захиалга</TableHead>
+                  <TableHead>Дүн</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {detailAction === ACTION.RUNNING ? (
+                  <TableRow>
+                    <TableCell colSpan={6} className="py-8 text-center">
+                      Уншиж байна
+                    </TableCell>
+                  </TableRow>
+                ) : detailRows.length ? (
+                  detailRows.map((item) => (
+                    <TableRow key={item.id}>
+                      <TableCell>{parseDate(new Date(item.paid_at ?? 0), false)}</TableCell>
+                      <TableCell>{item.branch_name ?? "-"}</TableCell>
+                      <TableCell>{item.is_pre_amount ? "Урьдчилгаа" : "Үндсэн төлбөр"}</TableCell>
+                      <TableCell>{getMethodValue[item.method] ?? "-"}</TableCell>
+                      <TableCell>{item.order_id ?? "-"}</TableCell>
+                      <TableCell>{money(String(item.amount ?? 0), "₮")}</TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={6} className="py-8 text-center">
+                      Задралын мэдээлэл алга байна
+                    </TableCell>
+                  </TableRow>
+                )}
+                <TableRow>
+                  <TableCell />
+                  <TableCell />
+                  <TableCell />
+                  <TableCell />
+                  <TableCell className="font-semibold text-slate-900">Нийт</TableCell>
+                  <TableCell className="font-semibold text-slate-900">
+                    {money(String(detailTotal), "₮")}
+                  </TableCell>
+                </TableRow>
+              </TableBody>
+            </Table>
+          </div>
+        </Modal>
+      </div>
+    </div>
+  );
+}

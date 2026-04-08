@@ -490,6 +490,21 @@ export default function AddEventModal({
     }
   }, [branchId]);
   useEffect(() => {
+    if (values?.id) return;
+
+    form.reset({
+      ...defaultValues,
+      ...values,
+      details: values?.details ?? defaultValues.details,
+      order_date: values?.order_date ?? defaultValues.order_date,
+      start_time: values?.start_time ?? defaultValues.start_time,
+      total_amount: values?.total_amount ?? defaultValues.total_amount,
+      pre_amount: values?.pre_amount ?? defaultValues.pre_amount,
+      paid_amount: values?.paid_amount ?? defaultValues.paid_amount,
+    });
+  }, [values, form]);
+
+  useEffect(() => {
     if (!values?.id) return;
     isDurationInitialized.current = false;
 

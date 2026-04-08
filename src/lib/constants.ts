@@ -197,8 +197,12 @@ export interface ListType<T> {
   from?: string;
   summary?: any;
 }
+export interface ScheduleDayData {
+  times: string[];
+  finish_time?: string | null;
+}
 export interface ScheduleData {
-  [day: number]: string[];
+  [day: number]: ScheduleDayData;
 }
 
 export interface SearchType<T> {

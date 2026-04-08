@@ -55,10 +55,23 @@ export function getColumns(
     },
     {
       accessorKey: "order_count",
-      header: () => "Үйлчлүүлсэн",
+      header: ({ column }) => (
+        <Button
+          variant="table_header"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          className="font-bold"
+        >
+          Үйлчлүүлсэн <ArrowUpDown className="w-4 h-4 ml-2" />
+        </Button>
+      ),
       cell: ({ row }) => {
         const count = Number((row.original as IUser).order_count ?? 0);
         return `${count} удаа`;
+      },
+      sortingFn: (rowA, rowB, columnId) => {
+        const countA = Number(rowA.getValue(columnId) ?? 0);
+        const countB = Number(rowB.getValue(columnId) ?? 0);
+        return countA - countB;
       },
     },
     {

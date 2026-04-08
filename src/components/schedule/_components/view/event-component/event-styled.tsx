@@ -12,6 +12,7 @@ import {
   UserCircle,
   Phone,
   Pencil,
+  ChevronLeft,
   ChevronDown,
   ChevronUp,
 } from "lucide-react";
@@ -176,6 +177,20 @@ export default function EventStyled({
         )}
         onClick={(e) => e.stopPropagation()}
       >
+        <div className="mb-2 sm:hidden">
+          <Button
+            size="sm"
+            variant="ghost"
+            className="-ml-2 h-8 px-2 text-slate-600"
+            onClick={(e) => {
+              e.stopPropagation();
+              setIsExpanded(false);
+            }}
+          >
+            <ChevronLeft size={16} />
+            Буцах
+          </Button>
+        </div>
         <div className="mb-3 flex flex-col gap-3 border-b border-slate-100 pb-3 sm:flex-row sm:items-start sm:justify-between">
           <div className="text-xs font-semibold text-slate-500">
             Захиалгын дэлгэрэнгүй

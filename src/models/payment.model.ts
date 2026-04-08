@@ -46,3 +46,14 @@ export interface PaymentDailySummary {
   bank_amount: number;
   total_amount: number;
 }
+
+export interface PaymentDailyBreakdownItem {
+  id: string;
+  order_id?: string;
+  amount: number;
+  method: PaymentMethod;
+  is_pre_amount: boolean;
+  paid_at?: Date | string;
+  branch_id?: string;
+  branch_name?: string;
+}

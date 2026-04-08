@@ -1,70 +1,53 @@
 import { ColumnDef } from "@tanstack/react-table";
-import { ArrowUpDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { money, parseDate } from "@/lib/functions";
-import { IntegrationPayment } from "@/models";
-import { TableActionButtons } from "@/components/tableActionButtons";
-import { PaymentTypeValues } from "@/lib/constants";
-import { PaymentType } from "@/lib/enum";
+import { money } from "@/lib/functions";
+import { IntegrationTransferSummaryRow } from "@/models";
 
 export function getColumns(
-  onEdit: (payment: IntegrationPayment) => void,
-  remove: (index: number) => Promise<boolean>,
-): ColumnDef<IntegrationPayment>[] {
+  onOpenDetail: (row: IntegrationTransferSummaryRow) => void,
+): ColumnDef<IntegrationTransferSummaryRow>[] {
   return [
     {
-      id: "select",
+      id: "index",
       header: () => <span>№</span>,
       cell: ({ row }) => <span>{row.index + 1}</span>,
     },
     {
       accessorKey: "user_name",
-      header: ({ column }) => (
-        <Button
-          variant="table_header"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          className="font-bold"
-        >
-          Артист <ArrowUpDown className="w-4 h-4 ml-2" />
-        </Button>
+      header: "Артист",
+      cell: ({ row }) => <span>{row.getValue<string>("user_name") || "-"}</span>,
+    },
+    {
+      accessorKey: "from",
+      header: "Эхлэх огноо",
+      cell: ({ row }) => <span>{row.getValue<string>("from") || "-"}</span>,
+    },
+    {
+      accessorKey: "to",
+      header: "Дуусах огноо",
+      cell: ({ row }) => <span>{row.getValue<string>("to") || "-"}</span>,
+    },
+    {
+      accessorKey: "payment_count",
+      header: "Шилжүүлгийн тоо",
+      cell: ({ row }) => <span>{row.getValue<number>("payment_count") ?? 0}</span>,
+    },
+    {
+      accessorKey: "transferred_amount",
+      header: "Шилжүүлсэн дүн",
+      cell: ({ row }) => (
+        <span className="font-semibold text-slate-900">
+          {money(String(row.getValue<number>("transferred_amount") ?? 0), "₮")}
+        </span>
       ),
-    },
-
-    {
-      accessorKey: "type",
-      header: "Төрөл",
-      cell: ({ row }) => {
-        const status =
-          PaymentTypeValues[row.getValue<number>("type") as PaymentType];
-        return <span>{status}</span>;
-      },
-    },
-
-    {
-      accessorKey: "amount",
-      header: "Төлсөн дүн",
-      cell: ({ row }) => {
-        const amount = row.getValue<number>("amount");
-        return money(String(amount ?? 0), "₮");
-      },
-    },
-    {
-      accessorKey: "paid_at",
-      header: "Төлсөн огноо",
-      cell: ({ row }) => {
-        const date = parseDate(new Date(row.getValue("paid_at")), false);
-        return date;
-      },
     },
     {
       id: "actions",
-      header: "Үйлдэл",
+      header: "Дэлгэрэнгүй",
       cell: ({ row }) => (
-        <TableActionButtons
-          rowData={row.original}
-          onEdit={(data) => onEdit(data)}
-          onRemove={() => remove(row.index)}
-        />
+        <Button variant="outline" size="sm" onClick={() => onOpenDetail(row.original)}>
+          Дэлгэрэнгүй
+        </Button>
       ),
     },
   ];

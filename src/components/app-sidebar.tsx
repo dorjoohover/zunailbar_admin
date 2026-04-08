@@ -218,12 +218,15 @@ export const sidebar_items = [
         icon: Wallet,
         children: [
           {
-            title: "Цалингийн удирдлага",
-            url: "/integrations",
-            // icon: Milk,
+            title: "Борлуулалт, өдрийн нэгтгэл",
+            url: "/integrations/daily",
           },
           {
-            title: "Цалингийн түүх",
+            title: "Цалингийн тооцоо",
+            url: "/integrations",
+          },
+          {
+            title: "Шилжүүлэг",
             url: "/integrations/history",
           },
           {

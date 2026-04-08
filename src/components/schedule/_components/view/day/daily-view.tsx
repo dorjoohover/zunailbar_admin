@@ -228,15 +228,16 @@ export default function DailyView({
   );
 
   function handleAddEvent(event?: IOrder) {
-    const orderDate = event?.order_date || new Date();
+    const selectedOrderDate = event?.order_date ?? mnDateFormat(currentDate);
+    const orderDate = selectedOrderDate || new Date();
 
     setOpen(
       <CustomModal title="Захиалга нэмэх" contentClass="max-w-3xl">
         <AddEventModal
           items={values}
           values={{
-            order_date: event?.order_date,
-            start_time: event?.start_time?.slice(0, 2),
+            order_date: selectedOrderDate,
+            start_time: event?.start_time,
             paid_amount: 0,
             total_amount: 0,
             pre_amount: 0,
@@ -281,6 +282,7 @@ export default function DailyView({
 
     handleAddEvent({
       order_date: mnDateFormat(date),
+      start_time: toTimeString(hours),
       branch_id: "",
       user_id: "",
     });
