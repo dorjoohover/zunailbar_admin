@@ -17,6 +17,34 @@ import { IOrder } from "@/models";
 import { TableActionButtons } from "@/components/tableActionButtons";
 import { OrderStatusValues, StatusValues } from "@/lib/constants";
 
+const formatOrderLogChangedAt = (value: string | Date) => {
+  if (typeof value === "string") {
+    const match = value
+      .trim()
+      .match(
+        /^(\d{4})[-/.](\d{2})[-/.](\d{2})(?:[ T](\d{2}):(\d{2}):(\d{2}))?/,
+      );
+
+    if (match) {
+      const [, year, month, day, hour = "00", minute = "00", second = "00"] =
+        match;
+      return `${year}/${month}/${day} ${hour}:${minute}:${second}`;
+    }
+  }
+
+  if (value instanceof Date && !Number.isNaN(value.getTime())) {
+    const year = value.getUTCFullYear();
+    const month = String(value.getUTCMonth() + 1).padStart(2, "0");
+    const day = String(value.getUTCDate()).padStart(2, "0");
+    const hour = String(value.getUTCHours()).padStart(2, "0");
+    const minute = String(value.getUTCMinutes()).padStart(2, "0");
+    const second = String(value.getUTCSeconds()).padStart(2, "0");
+    return `${year}/${month}/${day} ${hour}:${minute}:${second}`;
+  }
+
+  return parseDate(value, true);
+};
+
 export function getColumns(
   view: (id: OrderLog) => void,
 ): ColumnDef<OrderLog>[] {
@@ -54,7 +82,7 @@ export function getColumns(
       cell: ({ row }) => (
         <div>
           <span>
-            {parseDate(row.getValue("changed_at") as string | Date, true)}
+            {formatOrderLogChangedAt(row.getValue("changed_at") as string | Date)}
           </span>
         </div>
       ),

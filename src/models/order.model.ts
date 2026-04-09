@@ -89,7 +89,7 @@ export interface UserDateTime extends UserService {
 export interface OrderLog {
   id: string;
   changed_by: string;
-  changed_at: Date;
+  changed_at: Date | string;
   order_id: string;
   old_status: STATUS;
   new_status: STATUS;
