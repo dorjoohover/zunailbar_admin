@@ -91,7 +91,10 @@ export function getColumns(
         </Button>
       ),
       cell: ({ row }) => {
-        const date = parseDate(new Date(row.getValue("created_at")), false);
+        const date = parseDate(
+          row.getValue("created_at") as string | Date,
+          false,
+        );
         return date;
       },
       sortingFn: (rowA, rowB, columnId) => {

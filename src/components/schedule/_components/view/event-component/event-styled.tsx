@@ -12,9 +12,9 @@ import {
   UserCircle,
   Phone,
   Pencil,
-  ChevronLeft,
   ChevronDown,
   ChevronUp,
+  X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import CustomModal from "@/components/ui/custom-modal";
@@ -171,35 +171,35 @@ export default function EventStyled({
     >
       <div
         className={cn(
-          "absolute left-0 right-0 top-[100%] min-w-[250px] rounded-b-lg border border-slate-200 bg-white px-3 py-4 shadow-md transition-all duration-200",
-          "max-sm:fixed max-sm:inset-x-3 max-sm:top-auto max-sm:bottom-4 max-sm:min-w-0 max-sm:max-h-[75vh] max-sm:overflow-y-auto max-sm:rounded-2xl max-sm:shadow-2xl",
+          "absolute left-0 right-0 top-[calc(100%+8px)] min-w-[250px] rounded-2xl border border-slate-200 bg-white px-3 py-4 shadow-md transition-all duration-200",
+          "max-sm:min-w-0 max-sm:max-h-[75vh] max-sm:overflow-y-auto max-sm:shadow-2xl",
           isExpanded ? "block" : "hidden",
         )}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="mb-2 sm:hidden">
-          <Button
-            size="sm"
-            variant="ghost"
-            className="-ml-2 h-8 px-2 text-slate-600"
-            onClick={(e) => {
-              e.stopPropagation();
-              setIsExpanded(false);
-            }}
-          >
-            <ChevronLeft size={16} />
-            Буцах
-          </Button>
-        </div>
-        <div className="mb-3 flex flex-col gap-3 border-b border-slate-100 pb-3 sm:flex-row sm:items-start sm:justify-between">
-          <div className="text-xs font-semibold text-slate-500">
-            Захиалгын дэлгэрэнгүй
+        <div className="mb-3 border-b border-slate-100 pb-3">
+          <div className="flex items-start justify-between gap-3">
+            <div className="text-xs font-semibold text-slate-500">
+              Захиалгын дэлгэрэнгүй
+            </div>
+            <Button
+              size="icon"
+              variant="ghost"
+              className="h-8 w-8 shrink-0 rounded-full text-slate-500 hover:bg-slate-100 hover:text-slate-700"
+              onClick={(e) => {
+                e.stopPropagation();
+                setIsExpanded(false);
+              }}
+              aria-label="Дэлгэрэнгүй хаах"
+            >
+              <X size={16} />
+            </Button>
           </div>
-          <div className="flex w-full gap-2 sm:w-auto sm:flex-col">
+          <div className="mt-3 flex w-full gap-2 sm:w-auto sm:flex-row">
             <Button
               size="sm"
               variant="outline"
-              className="h-8 flex-1 justify-center px-3 sm:flex-none sm:justify-start"
+              className="h-8 flex-1 justify-center px-3"
               onClick={(e) => {
                 e.stopPropagation();
                 setIsExpanded(false);
@@ -216,7 +216,7 @@ export default function EventStyled({
                 <Button
                   size="sm"
                   variant="destructive"
-                  className="h-8 flex-1 justify-center px-3 sm:flex-none sm:justify-start"
+                  className="h-8 flex-1 justify-center px-3"
                   onClick={(e) => e.stopPropagation()}
                 >
                   <Trash2 size={14} />
@@ -327,7 +327,7 @@ export default function EventStyled({
             </div>
             {event?.created_at && (
               <div className="my-1 text-xs">
-                <b>Огноо: {parseDate(new Date(event.created_at), true)}</b>
+                <b>Огноо: {parseDate(event.created_at, true)}</b>
               </div>
             )}
           </div>
@@ -335,7 +335,7 @@ export default function EventStyled({
         {event?.paid_at && (
           <div className="my-1 text-xs">
             <b>
-              Төлбөр төлсөн огноо: {parseDate(new Date(event.paid_at), true)}
+              Төлбөр төлсөн огноо: {parseDate(event.paid_at, true)}
             </b>
           </div>
         )}
@@ -515,7 +515,7 @@ const EventItem = ({
 
       {event?.paid_at && (
         <div className="mb-1 text-xs">
-          <b>Төлбөр төлсөн огноо: {parseDate(new Date(event.paid_at), true)}</b>
+          <b>Төлбөр төлсөн огноо: {parseDate(event.paid_at, true)}</b>
         </div>
       )}
       {event.transaction_type && (

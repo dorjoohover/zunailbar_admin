@@ -8,21 +8,99 @@ export const formatDate = (value: string, limit = 10) => {
   if (!value || value == "") return "";
   return parseInt(value) < limit ? `0${value}` : `${value}`;
 };
-export const parseDate = (date = new Date(), isHour = true) => {
-  const year = date.getFullYear();
-  let month = (date.getMonth() + 1).toString();
-  let day = date.getDate().toString();
-  let hour = date.getHours().toString();
-  let minute = date.getMinutes().toString();
-  let second = date.getSeconds().toString();
-  month = formatDate(month);
-  day = formatDate(day);
-  hour = formatDate(hour);
-  minute = formatDate(minute);
-  second = formatDate(second);
-  return `${year}/${month}/${day}${
-    isHour ? ` ${hour}:${minute}:${second}` : ""
+const UB_TIME_ZONE = "Asia/Ulaanbaatar";
+
+const hasExplicitTimeZone = (value: string) =>
+  /(?:Z|[+-]\d{2}:?\d{2})$/i.test(value.trim());
+
+const parseLooseDateString = (value: string) => {
+  const match = value
+    .trim()
+    .match(
+      /^(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})(?:[ T](\d{1,2})(?::(\d{1,2})(?::(\d{1,2}))?)?)?/,
+    );
+
+  if (!match) return null;
+
+  const [, year, month, day, hour = "0", minute = "0", second = "0"] = match;
+
+  return {
+    year,
+    month: formatDate(month),
+    day: formatDate(day),
+    hour: formatDate(hour),
+    minute: formatDate(minute),
+    second: formatDate(second),
+    hasTime: match[4] != null,
+  };
+};
+
+const formatDateString = (
+  value: {
+    year: string;
+    month: string;
+    day: string;
+    hour: string;
+    minute: string;
+    second: string;
+  },
+  isHour: boolean,
+) =>
+  `${value.year}/${value.month}/${value.day}${
+    isHour ? ` ${value.hour}:${value.minute}:${value.second}` : ""
   }`;
+
+const formatDateInUB = (date: Date, isHour: boolean) => {
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: UB_TIME_ZONE,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    ...(isHour
+      ? {
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit",
+          hour12: false,
+        }
+      : {}),
+  }).formatToParts(date);
+
+  const getPart = (type: Intl.DateTimeFormatPartTypes) =>
+    parts.find((part) => part.type === type)?.value ?? "";
+
+  return formatDateString(
+    {
+      year: getPart("year"),
+      month: getPart("month"),
+      day: getPart("day"),
+      hour: getPart("hour"),
+      minute: getPart("minute"),
+      second: getPart("second"),
+    },
+    isHour,
+  );
+};
+
+export const parseDate = (
+  value: Date | string | number = new Date(),
+  isHour = true,
+) => {
+  if (value == null || value === "") return "";
+
+  if (typeof value === "string") {
+    const parsed = parseLooseDateString(value);
+
+    if (parsed && !hasExplicitTimeZone(value)) {
+      return formatDateString(parsed, isHour && parsed.hasTime);
+    }
+  }
+
+  const date = value instanceof Date ? value : new Date(value);
+
+  if (Number.isNaN(date.getTime())) return "";
+
+  return formatDateInUB(date, isHour);
 };
 
 export function formatTime(input: string | number): string {
@@ -43,8 +121,8 @@ export const objectCompact = <T extends Record<string, any>>(v: T) =>
   Object.fromEntries(
     Object.entries(v).filter(
       ([, val]) =>
-        !(val == null || (typeof val === "string" && val.trim() === ""))
-    )
+        !(val == null || (typeof val === "string" && val.trim() === "")),
+    ),
   ) as Partial<T>;
 
 export const round = (value: number, l = 2) => {
@@ -130,15 +208,9 @@ export const addMinutes = (time: string, minutes: number) => {
 };
 
 export function add15Days(day: number) {
-  const today = new Date();
-  const month = today.getMonth();
-  const year = today.getFullYear();
-
-  const date = new Date(year, month, day);
-  const newDate = new Date(date);
-  newDate.setDate(date.getDate() + 15);
-
-  return `${date.getDate()} | ${newDate.getDate()}`;
+  const value = Number(day);
+  if (!Number.isFinite(value) || value <= 0) return "-";
+  return `${value} | ${value + 15}`;
 }
 export function mnDateFormat(d: Date | string | number = new Date()) {
   return new Intl.DateTimeFormat("en-CA", {
@@ -150,7 +222,7 @@ export function mnDateFormat(d: Date | string | number = new Date()) {
 }
 export function getDayNameWithDate(
   dayNumber: number,
-  date: number | Date
+  date: number | Date,
 ): {
   date: string;
   day: string;
@@ -206,7 +278,7 @@ export const changeValue = (
     }>
   >,
   key: string,
-  value: string | null
+  value: string | null,
 ) => {
   if (value != null) set((prev) => ({ ...prev, [key]: value }));
 };
@@ -266,7 +338,7 @@ export const money = (value: string, currency = "") => {
 export function paginationToQuery(
   uri: string,
   pagination: Pagination,
-  route?: string
+  route?: string,
 ): string {
   const { limit, page, sort } = { ...defaultPagination, ...pagination };
   const filtersOnly = { ...pagination };
@@ -313,7 +385,7 @@ export const textValue = (value: string) => {
 
 export function getPaginationRange(
   current: number,
-  total: number
+  total: number,
 ): (number | "...")[] {
   const delta = 1; // current-ийг тойрсон хуудасны тоо
   const range: (number | "...")[] = [];

@@ -58,7 +58,7 @@ export function getColumns(onEdit: (product: ICost) => void, remove: (index: num
         </Button>
       ),
       cell: ({ row }) => {
-        const date = parseDate(new Date(row.getValue("date")), false);
+        const date = parseDate(row.getValue("date") as string | Date, false);
         return date;
       },
       sortingFn: (rowA, rowB, columnId) => {

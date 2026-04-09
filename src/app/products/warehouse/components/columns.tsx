@@ -48,7 +48,7 @@ export function getColumns(onEdit: (product: IProductWarehouse) => void, remove:
       accessorKey: "date",
       header: "Огноо",
       cell: ({ row }) => {
-        const date = parseDate(new Date(row.getValue("date")), false);
+        const date = parseDate(row.getValue("date") as string | Date, false);
         return date;
       },
     },
@@ -60,7 +60,10 @@ export function getColumns(onEdit: (product: IProductWarehouse) => void, remove:
         </Button>
       ),
       cell: ({ row }) => {
-        const date = parseDate(new Date(row.getValue("created_at")), false);
+        const date = parseDate(
+          row.getValue("created_at") as string | Date,
+          false,
+        );
         return date;
       },
       sortingFn: (rowA, rowB, columnId) => {

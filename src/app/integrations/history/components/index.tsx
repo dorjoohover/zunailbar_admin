@@ -1,7 +1,7 @@
 "use client";
 
 import z from "zod";
-import { Download } from "lucide-react";
+import { Download, Plus } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -94,6 +94,7 @@ type IntegrationHistoryItem = IntegrationPayment & { user_name?: string };
 
 const defaultSummary: SalaryReconciliationSummary = {
   income_amount: 0,
+  salary_amount: 0,
   transferred_amount: 0,
   balance_amount: 0,
   order_count: 0,
@@ -152,7 +153,8 @@ export const IntegrationHistoryPage = ({
   const [rows, setRows] = useState<ListType<IntegrationTransferSummaryRow>>(
     ListDefault as ListType<IntegrationTransferSummaryRow>,
   );
-  const [selectedRow, setSelectedRow] = useState<IntegrationTransferSummaryRow>();
+  const [selectedRow, setSelectedRow] =
+    useState<IntegrationTransferSummaryRow>();
   const [detailRows, setDetailRows] = useState<IntegrationHistoryItem[]>([]);
 
   const form = useForm<IntegrationHistoryForm>({
@@ -278,7 +280,8 @@ export const IntegrationHistoryPage = ({
       .filter((item) => item.artist_id === selectedRow.artist_id)
       .sort(
         (a, b) =>
-          new Date(b.paid_at ?? 0).getTime() - new Date(a.paid_at ?? 0).getTime(),
+          new Date(b.paid_at ?? 0).getTime() -
+          new Date(a.paid_at ?? 0).getTime(),
       );
 
     setDetailRows(items);
@@ -329,7 +332,9 @@ export const IntegrationHistoryPage = ({
       form.reset(defaultValues);
       showToast(
         "success",
-        edit ? "Шилжүүлгийн бүртгэл шинэчлэгдлээ" : "Шилжүүлэг амжилттай бүртгэгдлээ",
+        edit
+          ? "Шилжүүлгийн бүртгэл шинэчлэгдлээ"
+          : "Шилжүүлэг амжилттай бүртгэгдлээ",
       );
     } else {
       showToast("error", res.error ?? "Алдаа гарлаа");
@@ -399,6 +404,46 @@ export const IntegrationHistoryPage = ({
   const summary =
     (payments.summary as SalaryReconciliationSummary | undefined) ??
     defaultSummary;
+  const totalProfit =
+    Number(summary.income_amount ?? 0) - Number(summary.salary_amount ?? 0);
+  const summaryCards = useMemo(() => {
+    const totalArtists = rows.items.length;
+    const totalPayments = rows.items.reduce(
+      (total, item) => total + Number(item.payment_count ?? 0),
+      0,
+    );
+
+    return [
+      {
+        label: "Артист",
+        value: String(totalArtists),
+      },
+      {
+        label: "Шилжүүлэг",
+        value: String(totalPayments),
+      },
+      {
+        label: "Орлого",
+        value: money(String(summary.income_amount ?? 0), "₮"),
+      },
+      {
+        label: "Цалин",
+        value: money(String(summary.salary_amount ?? 0), "₮"),
+      },
+      {
+        label: "Ашиг",
+        value: money(String(totalProfit), "₮"),
+      },
+      {
+        label: "Шилжүүлсэн",
+        value: money(String(summary.transferred_amount ?? 0), "₮"),
+      },
+      {
+        label: "Цалингийн үлдэгдэл",
+        value: money(String(summary.balance_amount ?? 0), "₮"),
+      },
+    ];
+  }, [rows.items, summary, totalProfit]);
   const detailTotal = detailRows.reduce(
     (total, item) => total + Number(item.amount ?? 0),
     0,
@@ -410,6 +455,35 @@ export const IntegrationHistoryPage = ({
 
       <div className="admin-container space-y-4">
         <SalarySectionNav />
+
+        <div className="rounded-2xl border-light bg-white p-4 shadow-light">
+          <div className="mb-3 flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <h2 className="text-sm font-semibold text-slate-900">Нэгтгэл</h2>
+              <p className="text-xs text-slate-500">
+                {(rows.from || reportFilter.from) &&
+                (rows.to || reportFilter.to)
+                  ? `${rows.from || mnDateFormat(reportFilter.from!)} - ${
+                      rows.to || mnDateFormat(reportFilter.to!)
+                    }`
+                  : "Сонгосон хугацааны шилжүүлгийн нэгтгэл"}
+              </p>
+            </div>
+          </div>
+          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-7">
+            {summaryCards.map((item) => (
+              <div
+                key={item.label}
+                className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3"
+              >
+                <p className="text-xs text-slate-500">{item.label}</p>
+                <p className="mt-1 text-sm font-semibold text-slate-900">
+                  {item.value}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
 
         <DataTable
           columns={columns}
@@ -475,16 +549,16 @@ export const IntegrationHistoryPage = ({
           }
           filterRight={
             <div className="flex w-full flex-wrap justify-end gap-2 xl:w-auto">
-              <div className="rounded-xl bg-slate-50 px-4 py-2">
-                <p className="text-[11px] text-slate-500">
-                  Орлого / Шилжүүлэг / Үлдэгдэл
-                </p>
-                <p className="text-sm font-semibold text-slate-900">
-                  {money(String(summary.income_amount ?? 0), "₮")} /{" "}
-                  {money(String(summary.transferred_amount ?? 0), "₮")} /{" "}
-                  {money(String(summary.balance_amount ?? 0), "₮")}
-                </p>
-              </div>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  form.reset(defaultValues);
+                  setOpen(true);
+                }}
+              >
+                <Plus className="size-4" />
+                Шилжүүлэг нэмэх
+              </Button>
               <Button
                 variant="ghost"
                 onClick={() => void downloadExcel()}
@@ -495,7 +569,7 @@ export const IntegrationHistoryPage = ({
               </Button>
               <Modal
                 maw="xl"
-                name="Шилжүүлэг нэмэх"
+                title="Шилжүүлэг нэмэх"
                 submit={() => form.handleSubmit(onSubmit, onInvalid)()}
                 open={open == true}
                 setOpen={(value) => {
@@ -627,11 +701,15 @@ export const IntegrationHistoryPage = ({
                   detailRows.map((item) => (
                     <TableRow key={item.id}>
                       <TableCell>{selectedRow?.user_name ?? "-"}</TableCell>
-                      <TableCell>{parseDate(new Date(item.paid_at), false)}</TableCell>
+                      <TableCell>
+                        {parseDate(new Date(item.paid_at), false)}
+                      </TableCell>
                       <TableCell>
                         {PaymentTypeValues[item.type as PaymentType] ?? "-"}
                       </TableCell>
-                      <TableCell>{money(String(item.amount ?? 0), "₮")}</TableCell>
+                      <TableCell>
+                        {money(String(item.amount ?? 0), "₮")}
+                      </TableCell>
                       <TableCell>
                         <TableActionButtons
                           rowData={item}
@@ -651,7 +729,9 @@ export const IntegrationHistoryPage = ({
                 <TableRow>
                   <TableCell />
                   <TableCell />
-                  <TableCell className="font-semibold text-slate-900">Нийт</TableCell>
+                  <TableCell className="font-semibold text-slate-900">
+                    Нийт
+                  </TableCell>
                   <TableCell className="font-semibold text-slate-900">
                     {money(String(detailTotal), "₮")}
                   </TableCell>

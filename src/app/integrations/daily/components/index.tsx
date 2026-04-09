@@ -14,8 +14,9 @@ import {
 } from "@/components/ui/table";
 import { find } from "@/app/(api)";
 import { fetcher } from "@/hooks/fetcher";
-import { ACTION, getMethodValue, ListType } from "@/lib/constants";
-import { mnDateFormat, money, parseDate } from "@/lib/functions";
+import { ACTION, ListType } from "@/lib/constants";
+import { dateOnly, money, parseDate } from "@/lib/functions";
+import { getTransactionTypeValue } from "@/lib/constants";
 import {
   Branch,
   PaymentDailyBreakdownItem,
@@ -33,6 +34,12 @@ type DailySummaryFilter = {
   branch_id?: string;
 };
 
+type DailySummaryFilterState = {
+  from?: Date;
+  to?: Date;
+  branch_id?: string;
+};
+
 const parseDateValue = (value?: string) => {
   if (!value) return undefined;
   const [year, month, day] = value.split("-").map(Number);
@@ -47,6 +54,37 @@ const defaultSummary: PaymentDailySummary = {
   cash_amount: 0,
   bank_amount: 0,
   total_amount: 0,
+};
+
+const normalizeReportFilter = (
+  filter: DailySummaryFilterState,
+): DailySummaryFilterState => {
+  const from = filter.from;
+  const to = filter.to;
+
+  if (from && to && from.getTime() > to.getTime()) {
+    return {
+      ...filter,
+      from: to,
+      to: from,
+    };
+  }
+
+  if (from && !to) {
+    return {
+      ...filter,
+      to: from,
+    };
+  }
+
+  if (!from && to) {
+    return {
+      ...filter,
+      from: to,
+    };
+  }
+
+  return filter;
 };
 
 export function DailySummaryPage({
@@ -69,19 +107,35 @@ export function DailySummaryPage({
   const [action, setAction] = useState(ACTION.DEFAULT);
   const [detailAction, setDetailAction] = useState(ACTION.DEFAULT);
   const [detailOpen, setDetailOpen] = useState(false);
-  const [summary, setSummary] = useState<PaymentDailySummary>(data ?? defaultSummary);
+  const [summary, setSummary] = useState<PaymentDailySummary>(
+    data ?? defaultSummary,
+  );
   const [detailRows, setDetailRows] = useState<PaymentDailyBreakdownItem[]>([]);
   const [reportFilter, setReportFilter] = useState(initialState);
+  const normalizedReportFilter = useMemo(
+    () => normalizeReportFilter(reportFilter),
+    [reportFilter],
+  );
 
   const getFilterParams = () => ({
-    ...(reportFilter.from ? { from: mnDateFormat(reportFilter.from) } : {}),
-    ...(reportFilter.to ? { to: mnDateFormat(reportFilter.to) } : {}),
-    ...(reportFilter.branch_id ? { branch_id: reportFilter.branch_id } : {}),
+    ...(normalizedReportFilter.from
+      ? { from: dateOnly(normalizedReportFilter.from) }
+      : {}),
+    ...(normalizedReportFilter.to
+      ? { to: dateOnly(normalizedReportFilter.to) }
+      : {}),
+    ...(normalizedReportFilter.branch_id
+      ? { branch_id: normalizedReportFilter.branch_id }
+      : {}),
   });
 
   const refresh = async () => {
     setAction(ACTION.RUNNING);
-    const res = await find<any>(Api.payment, getFilterParams() as any, "summary");
+    const res = await find<any>(
+      Api.payment,
+      getFilterParams() as any,
+      "summary",
+    );
     setSummary((res.data as unknown as PaymentDailySummary) ?? defaultSummary);
     setAction(ACTION.DEFAULT);
   };
@@ -130,7 +184,8 @@ export function DailySummaryPage({
       [
         summary.from || "-",
         summary.to || summary.from || "-",
-        branches.items.find((item) => item.id === reportFilter.branch_id)?.name ?? "Бүгд",
+        branches.items.find((item) => item.id === reportFilter.branch_id)
+          ?.name ?? "Бүгд",
         String(summary.pre_amount ?? 0),
         String(summary.bank_amount ?? 0),
         String(summary.cash_amount ?? 0),
@@ -139,7 +194,9 @@ export function DailySummaryPage({
     ];
 
     const csv = rows.map((row) => row.join(",")).join("\n");
-    const blob = new Blob([`\uFEFF${csv}`], { type: "text/csv;charset=utf-8;" });
+    const blob = new Blob([`\uFEFF${csv}`], {
+      type: "text/csv;charset=utf-8;",
+    });
     const url = window.URL.createObjectURL(blob);
     const link = document.createElement("a");
 
@@ -154,6 +211,36 @@ export function DailySummaryPage({
   const detailTotal = detailRows.reduce(
     (total, item) => total + Number(item.amount ?? 0),
     0,
+  );
+  const detailOrderTotal = Array.from(
+    detailRows.reduce((acc, item) => {
+      if (!item.order_id) return acc;
+      if (!acc.has(item.order_id)) {
+        acc.set(item.order_id, Number(item.order_total_amount ?? 0));
+      }
+      return acc;
+    }, new Map<string, number>()),
+  ).reduce((total, [, amount]) => total + amount, 0);
+  const summaryCards = useMemo(
+    () => [
+      {
+        label: "Урьдчилгаа",
+        value: money(String(summary.pre_amount ?? 0), "₮"),
+      },
+      {
+        label: "Данс / карт",
+        value: money(String(summary.bank_amount ?? 0), "₮"),
+      },
+      {
+        label: "Бэлэн",
+        value: money(String(summary.cash_amount ?? 0), "₮"),
+      },
+      {
+        label: "Нийт",
+        value: money(String(summary.total_amount ?? 0), "₮"),
+      },
+    ],
+    [summary],
   );
 
   return (
@@ -170,7 +257,7 @@ export function DailySummaryPage({
                 <span className="filter-label">Эхлэх огноо</span>
                 <DatePicker
                   mode="single"
-                  value={reportFilter.from}
+                  value={normalizedReportFilter.from}
                   onChange={(value) =>
                     setReportFilter((prev) => ({
                       ...prev,
@@ -184,7 +271,7 @@ export function DailySummaryPage({
                 <span className="filter-label">Дуусах огноо</span>
                 <DatePicker
                   mode="single"
-                  value={reportFilter.to}
+                  value={normalizedReportFilter.to}
                   onChange={(value) =>
                     setReportFilter((prev) => ({
                       ...prev,
@@ -200,7 +287,7 @@ export function DailySummaryPage({
                   pl="Салбар сонгох"
                   props={{
                     name: "branch_id",
-                    value: reportFilter.branch_id ?? "",
+                    value: normalizedReportFilter.branch_id ?? "",
                     onChange: (value) =>
                       setReportFilter((prev) => ({
                         ...prev,
@@ -225,7 +312,11 @@ export function DailySummaryPage({
             </div>
 
             <div className="flex flex-wrap gap-2">
-              <Button variant="outline" onClick={refresh} disabled={action === ACTION.RUNNING}>
+              <Button
+                variant="outline"
+                onClick={refresh}
+                disabled={action === ACTION.RUNNING}
+              >
                 Шинэчлэх
               </Button>
               <Button
@@ -237,6 +328,37 @@ export function DailySummaryPage({
                 Экспорт
               </Button>
             </div>
+          </div>
+        </div>
+
+        <div className="rounded-2xl border-light bg-white p-4 shadow-light">
+          <div className="mb-3 flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <h2 className="text-sm font-semibold text-slate-900">Нэгтгэл</h2>
+              <p className="text-xs text-slate-500">
+                {summary.from
+                  ? `${summary.from}${summary.to ? ` - ${summary.to}` : ""}`
+                  : "Сонгосон хугацааны борлуулалтын нэгтгэл"}
+              </p>
+            </div>
+            <p className="text-xs text-slate-500">
+              {branches.items.find(
+                (item) => item.id === normalizedReportFilter.branch_id,
+              )?.name ?? "Бүх салбар"}
+            </p>
+          </div>
+          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+            {summaryCards.map((item) => (
+              <div
+                key={item.label}
+                className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3"
+              >
+                <p className="text-xs text-slate-500">{item.label}</p>
+                <p className="mt-1 text-sm font-semibold text-slate-900">
+                  {item.value}
+                </p>
+              </div>
+            ))}
           </div>
         </div>
 
@@ -259,12 +381,19 @@ export function DailySummaryPage({
                 <TableCell>{summary.from || "-"}</TableCell>
                 <TableCell>{summary.to || summary.from || "-"}</TableCell>
                 <TableCell>
-                  {branches.items.find((item) => item.id === reportFilter.branch_id)?.name ??
-                    "Бүх салбар"}
+                  {branches.items.find(
+                    (item) => item.id === reportFilter.branch_id,
+                  )?.name ?? "Бүх салбар"}
                 </TableCell>
-                <TableCell>{money(String(summary.pre_amount ?? 0), "₮")}</TableCell>
-                <TableCell>{money(String(summary.bank_amount ?? 0), "₮")}</TableCell>
-                <TableCell>{money(String(summary.cash_amount ?? 0), "₮")}</TableCell>
+                <TableCell>
+                  {money(String(summary.pre_amount ?? 0), "₮")}
+                </TableCell>
+                <TableCell>
+                  {money(String(summary.bank_amount ?? 0), "₮")}
+                </TableCell>
+                <TableCell>
+                  {money(String(summary.cash_amount ?? 0), "₮")}
+                </TableCell>
                 <TableCell className="font-bold text-slate-900">
                   {money(String(summary.total_amount ?? 0), "₮")}
                 </TableCell>
@@ -289,8 +418,8 @@ export function DailySummaryPage({
           maw="6xl"
           title="Борлуулалтын задрал"
           description={`${summary.from || "-"}${summary.to ? ` - ${summary.to}` : ""}${
-            reportFilter.branch_id
-              ? ` · ${branches.items.find((item) => item.id === reportFilter.branch_id)?.name ?? ""}`
+            normalizedReportFilter.branch_id
+              ? ` · ${branches.items.find((item) => item.id === normalizedReportFilter.branch_id)?.name ?? ""}`
               : ""
           }`}
         >
@@ -325,35 +454,57 @@ export function DailySummaryPage({
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Төлсөн огноо</TableHead>
+                  <TableHead>Огноо</TableHead>
                   <TableHead>Салбар</TableHead>
+                  <TableHead>Артист</TableHead>
+                  <TableHead>Үйлчилгээ</TableHead>
                   <TableHead>Төлбөр</TableHead>
-                  <TableHead>Арга</TableHead>
-                  <TableHead>Захиалга</TableHead>
-                  <TableHead>Дүн</TableHead>
+                  <TableHead>Төлсөн дүн</TableHead>
+                  <TableHead>Нийт үнэ</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {detailAction === ACTION.RUNNING ? (
                   <TableRow>
-                    <TableCell colSpan={6} className="py-8 text-center">
+                    <TableCell colSpan={7} className="py-8 text-center">
                       Уншиж байна
                     </TableCell>
                   </TableRow>
                 ) : detailRows.length ? (
                   detailRows.map((item) => (
                     <TableRow key={item.id}>
-                      <TableCell>{parseDate(new Date(item.paid_at ?? 0), false)}</TableCell>
+                      <TableCell>
+                        {parseDate(item.order_date ?? "", false)}
+                      </TableCell>
                       <TableCell>{item.branch_name ?? "-"}</TableCell>
-                      <TableCell>{item.is_pre_amount ? "Урьдчилгаа" : "Үндсэн төлбөр"}</TableCell>
-                      <TableCell>{getMethodValue[item.method] ?? "-"}</TableCell>
-                      <TableCell>{item.order_id ?? "-"}</TableCell>
-                      <TableCell>{money(String(item.amount ?? 0), "₮")}</TableCell>
+                      <TableCell>{item.artist_names ?? "-"}</TableCell>
+                      <TableCell>{item.service_names ?? "-"}</TableCell>
+                      <TableCell>
+                        {[
+                          Number(item.pre_amount ?? 0) > 0 ? "Урьдчилгаа" : "",
+                          Number(item.paid_amount ?? 0) > 0
+                            ? (getTransactionTypeValue[
+                                (String(
+                                  item.transaction_type ?? "",
+                                ).toUpperCase() ||
+                                  "BANK") as keyof typeof getTransactionTypeValue
+                              ] ?? "Дансаар")
+                            : "",
+                        ]
+                          .filter(Boolean)
+                          .join(" + ") || "-"}
+                      </TableCell>
+                      <TableCell>
+                        {money(String(item.amount ?? 0), "₮")}
+                      </TableCell>
+                      <TableCell>
+                        {money(String(item.order_total_amount ?? 0), "₮")}
+                      </TableCell>
                     </TableRow>
                   ))
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={6} className="py-8 text-center">
+                    <TableCell colSpan={7} className="py-8 text-center">
                       Задралын мэдээлэл алга байна
                     </TableCell>
                   </TableRow>
@@ -363,9 +514,14 @@ export function DailySummaryPage({
                   <TableCell />
                   <TableCell />
                   <TableCell />
-                  <TableCell className="font-semibold text-slate-900">Нийт</TableCell>
+                  <TableCell className="font-semibold text-slate-900">
+                    Нийт
+                  </TableCell>
                   <TableCell className="font-semibold text-slate-900">
                     {money(String(detailTotal), "₮")}
+                  </TableCell>
+                  <TableCell className="font-semibold text-slate-900">
+                    {money(String(detailOrderTotal), "₮")}
                   </TableCell>
                 </TableRow>
               </TableBody>

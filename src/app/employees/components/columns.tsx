@@ -12,7 +12,7 @@ import { IUser } from "@/models/user.model";
 import { ArrowUpDown, Hammer, Trash2, UserRoundCog } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { IBranch } from "@/models";
-import { mobileFormatter, parseDate } from "@/lib/functions";
+import { add15Days, mobileFormatter, parseDate } from "@/lib/functions";
 import { EmployeeStatus, ROLE, UserLevel, UserStatus } from "@/lib/enum";
 import {
   EmployeeStatusValue,
@@ -33,7 +33,7 @@ export const getColumns = (
   onEdit: (product: IUser) => void,
   setStatus: (index: number, status: EmployeeStatus) => void,
   giveProduct: (index: number) => void,
-  remove: (index: number) => Promise<boolean>
+  remove: (index: number) => Promise<boolean>,
 ): ColumnDef<IUser>[] => [
   {
     id: "select",
@@ -85,7 +85,7 @@ export const getColumns = (
           className={`h-5 w-8 rounded-full`}
           style={{
             backgroundColor: `${getUserColor(
-              +((row.getValue("color") as string) ?? -1)
+              +((row.getValue("color") as string) ?? -1),
             )}`,
           }}
         ></div>
@@ -126,8 +126,8 @@ export const getColumns = (
     accessorKey: "salary_day",
     header: "Цалин олгох огноо",
     cell: ({ row }) => {
-      const value  = row.getValue("salary_day");
-      return `${value ? `${value} | ${Math.floor((+value + 15) % 30)}` : `-`} `;
+      const value = row.getValue<number>("salary_day");
+      return add15Days(value);
     },
   },
   {
@@ -186,12 +186,11 @@ export const getColumns = (
     accessorKey: "level",
     header: "Артистын түвшин",
     cell: ({ row }) => {
-      const level = row.getValue<number>("level") as UserLevel
-      
-      if(!level) return <span>-</span>
-      const status =
-        getUserLevelValue[level] as unknown as any
-       
+      const level = row.getValue<number>("level") as UserLevel;
+
+      if (!level) return <span>-</span>;
+      const status = getUserLevelValue[level] as unknown as any;
+
       return <span className={cn(`${status.color} badge`)}>{status.name}</span>;
     },
   },

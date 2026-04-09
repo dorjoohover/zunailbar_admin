@@ -51,9 +51,16 @@ export interface PaymentDailyBreakdownItem {
   id: string;
   order_id?: string;
   amount: number;
-  method: PaymentMethod;
-  is_pre_amount: boolean;
+  method?: PaymentMethod;
+  is_pre_amount?: boolean;
   paid_at?: Date | string;
+  order_date?: Date | string;
+  transaction_type?: string;
   branch_id?: string;
   branch_name?: string;
+  artist_names?: string;
+  service_names?: string;
+  pre_amount?: number;
+  paid_amount?: number;
+  order_total_amount?: number;
 }

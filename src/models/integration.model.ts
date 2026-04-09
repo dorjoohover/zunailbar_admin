@@ -28,14 +28,18 @@ export interface Integration {
 export interface SalaryReconciliationItem {
   artist_id: string;
   income_amount: number;
+  salary_amount: number;
   transferred_amount: number;
   balance_amount: number;
   order_count: number;
+  percent?: number;
+  salary_day?: number;
   user_name?: string;
 }
 
 export interface SalaryReconciliationSummary {
   income_amount: number;
+  salary_amount?: number;
   transferred_amount: number;
   balance_amount: number;
   order_count: number;
@@ -57,4 +61,6 @@ export interface SalaryCalculationRow {
   order_count: number;
   transferred_amount: number;
   balance_amount: number;
+  percent?: number;
+  salary_day?: number;
 }

@@ -83,7 +83,7 @@ export function getColumns(
       accessorKey: "date",
       header: "Огноо",
       cell: ({ row }) => {
-        const date = parseDate(new Date(row.getValue("date")), false);
+        const date = parseDate(row.getValue("date") as string | Date, false);
         return date;
       },
     },
@@ -91,7 +91,10 @@ export function getColumns(
       accessorKey: "created_at",
       header: "Үүсгэсэн",
       cell: ({ row }) => {
-        const date = parseDate(new Date(row.getValue("created_at")), false);
+        const date = parseDate(
+          row.getValue("created_at") as string | Date,
+          false,
+        );
         return date;
       },
       sortingFn: (rowA, rowB, columnId) => {

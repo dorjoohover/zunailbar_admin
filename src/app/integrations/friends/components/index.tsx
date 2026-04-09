@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { DateRange } from "react-day-picker";
 import { Download } from "lucide-react";
 import { DataTable } from "@/components/data-table";
@@ -15,7 +15,12 @@ import { Api } from "@/utils/api";
 import { IOrder, User } from "@/models";
 import { OrderStatus } from "@/lib/enum";
 import { ListType, ACTION, PG, DEFAULT_PG } from "@/lib/constants";
-import { mnDate, mnDateFormat, usernameFormatter } from "@/lib/functions";
+import {
+  mnDate,
+  mnDateFormat,
+  money,
+  usernameFormatter,
+} from "@/lib/functions";
 import { getColumns } from "./columns";
 import { SalarySectionNav } from "../../_components/section-nav";
 
@@ -81,6 +86,44 @@ export function FriendsPage({
     });
   };
 
+  const summaryCards = useMemo(() => {
+    const totalOrders = orders.items.length;
+    const totalArtists = new Set(
+      orders.items.flatMap(
+        (order) =>
+          (order.details ?? [])
+            .map((detail) => detail.user_id)
+            .filter(Boolean) as string[],
+      ),
+    ).size;
+    const totalCustomers = new Set(
+      orders.items.map((order) => order.customer_id).filter(Boolean),
+    ).size;
+    const totalAmount = orders.items.reduce(
+      (total, order) => total + Number(order.total_amount ?? 0),
+      0,
+    );
+
+    return [
+      {
+        label: "Артист",
+        value: String(totalArtists),
+      },
+      {
+        label: "Захиалга",
+        value: String(totalOrders),
+      },
+      {
+        label: "Клиент",
+        value: String(totalCustomers),
+      },
+      {
+        label: "Нийт дүн",
+        value: money(String(totalAmount), "₮"),
+      },
+    ];
+  }, [orders.items]);
+
   const downloadExcel = async (pg: PG = DEFAULT_PG) => {
     setAction(ACTION.RUNNING);
     const { page, sort } = pg;
@@ -116,6 +159,36 @@ export function FriendsPage({
 
       <div className="admin-container space-y-4">
         <SalarySectionNav />
+
+        <div className="rounded-2xl border-light bg-white p-4 shadow-light">
+          <div className="mb-3 flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <h2 className="text-sm font-semibold text-slate-900">Нэгтгэл</h2>
+              <p className="text-xs text-slate-500">
+                {reportFilter.date?.from
+                  ? `${mnDateFormat(reportFilter.date.from)}${
+                      reportFilter.date.to
+                        ? ` - ${mnDateFormat(reportFilter.date.to)}`
+                        : ""
+                    }`
+                  : "Сонгосон хугацааны танилийн будалтын нэгтгэл"}
+              </p>
+            </div>
+          </div>
+          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+            {summaryCards.map((item) => (
+              <div
+                key={item.label}
+                className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3"
+              >
+                <p className="text-xs text-slate-500">{item.label}</p>
+                <p className="mt-1 text-sm font-semibold text-slate-900">
+                  {item.value}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
 
         <DataTable
           columns={getColumns()}

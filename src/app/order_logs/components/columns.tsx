@@ -54,8 +54,7 @@ export function getColumns(
       cell: ({ row }) => (
         <div>
           <span>
-            {" "}
-            {parseDate(new Date(row.getValue("changed_at") as string), true)}
+            {parseDate(row.getValue("changed_at") as string | Date, true)}
           </span>
         </div>
       ),

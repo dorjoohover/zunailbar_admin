@@ -14,14 +14,13 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { fetcher } from "@/hooks/fetcher";
+import { ACTION, DEFAULT_PG, ListDefault, ListType, PG } from "@/lib/constants";
 import {
-  ACTION,
-  DEFAULT_PG,
-  ListDefault,
-  ListType,
-  PG,
-} from "@/lib/constants";
-import { mnDateFormat, money, usernameFormatter } from "@/lib/functions";
+  add15Days,
+  mnDateFormat,
+  money,
+  usernameFormatter,
+} from "@/lib/functions";
 import {
   IOrderDetail,
   Integration,
@@ -174,12 +173,18 @@ export const IntegrationsPage = ({
             filterParams.from ??
             "",
           income_amount: Number(reconciliationItem?.income_amount ?? 0),
-          salary_amount: Number(salary?.salary_amount ?? 0),
+          salary_amount: Number(
+            reconciliationItem?.salary_amount ?? salary?.salary_amount ?? 0,
+          ),
           order_count: Number(
             reconciliationItem?.order_count ?? salary?.order_count ?? 0,
           ),
-          transferred_amount: Number(reconciliationItem?.transferred_amount ?? 0),
+          transferred_amount: Number(
+            reconciliationItem?.transferred_amount ?? 0,
+          ),
           balance_amount: Number(reconciliationItem?.balance_amount ?? 0),
+          percent: Number(reconciliationItem?.percent ?? user?.percent ?? 0),
+          salary_day: Number(reconciliationItem?.salary_day ?? 0),
         } satisfies SalaryCalculationRow;
       })
       .sort((a, b) => (a.user_name ?? "").localeCompare(b.user_name ?? ""));
@@ -187,7 +192,11 @@ export const IntegrationsPage = ({
     setRows({
       count: items.length,
       items,
-      from: filterParams.from ?? reconciliationList.from ?? integrationList.from ?? "",
+      from:
+        filterParams.from ??
+        reconciliationList.from ??
+        integrationList.from ??
+        "",
       to: filterParams.to ?? reconciliationList.to ?? integrationList.to ?? "",
     });
   };
@@ -343,6 +352,61 @@ export const IntegrationsPage = ({
     (total, item) => total + Number(item.price ?? 0),
     0,
   );
+  const summaryCards = useMemo(() => {
+    const totalArtists = rows.items.length;
+    const totalOrders = rows.items.reduce(
+      (total, item) => total + Number(item.order_count ?? 0),
+      0,
+    );
+    const totalIncome = rows.items.reduce(
+      (total, item) => total + Number(item.income_amount ?? 0),
+      0,
+    );
+    const totalSalary = rows.items.reduce(
+      (total, item) => total + Number(item.salary_amount ?? 0),
+      0,
+    );
+    const totalProfit = totalIncome - totalSalary;
+    const totalTransferred = rows.items.reduce(
+      (total, item) => total + Number(item.transferred_amount ?? 0),
+      0,
+    );
+    const totalBalance = rows.items.reduce(
+      (total, item) => total + Number(item.balance_amount ?? 0),
+      0,
+    );
+
+    return [
+      {
+        label: "Артист",
+        value: String(totalArtists),
+      },
+      {
+        label: "Захиалга",
+        value: String(totalOrders),
+      },
+      {
+        label: "Нийт орлого",
+        value: money(String(totalIncome), "₮"),
+      },
+      {
+        label: "Цалин",
+        value: money(String(totalSalary), "₮"),
+      },
+      {
+        label: "Ашиг",
+        value: money(String(totalProfit), "₮"),
+      },
+      {
+        label: "Шилжүүлсэн",
+        value: money(String(totalTransferred), "₮"),
+      },
+      {
+        label: "Цалингийн үлдэгдэл",
+        value: money(String(totalBalance), "₮"),
+      },
+    ];
+  }, [rows.items]);
 
   return (
     <div>
@@ -350,6 +414,35 @@ export const IntegrationsPage = ({
 
       <div className="admin-container space-y-4">
         <SalarySectionNav />
+
+        <div className="rounded-2xl border-light bg-white p-4 shadow-light">
+          <div className="mb-3 flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <h2 className="text-sm font-semibold text-slate-900">Нэгтгэл</h2>
+              <p className="text-xs text-slate-500">
+                {(rows.from || reportFilter.from) &&
+                (rows.to || reportFilter.to)
+                  ? `${rows.from || mnDateFormat(reportFilter.from!)} - ${
+                      rows.to || mnDateFormat(reportFilter.to!)
+                    }`
+                  : "Сонгосон хугацааны цалингийн нэгтгэл"}
+              </p>
+            </div>
+          </div>
+          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-7">
+            {summaryCards.map((item) => (
+              <div
+                key={item.label}
+                className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3"
+              >
+                <p className="text-xs text-slate-500">{item.label}</p>
+                <p className="mt-1 text-sm font-semibold text-slate-900">
+                  {item.value}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
 
         <DataTable
           columns={getColumns((row) => void loadDetails(row))}
@@ -448,7 +541,7 @@ export const IntegrationsPage = ({
         >
           <div className="space-y-4">
             {selectedRow && (
-              <div className="grid gap-2 sm:grid-cols-3">
+              <div className="grid gap-2 sm:grid-cols-5">
                 <div className="rounded-xl bg-slate-50 px-4 py-3">
                   <p className="text-xs text-slate-500">Нийт орлого</p>
                   <p className="text-sm font-semibold text-slate-900">
@@ -462,9 +555,32 @@ export const IntegrationsPage = ({
                   </p>
                 </div>
                 <div className="rounded-xl bg-slate-50 px-4 py-3">
+                  <p className="text-xs text-slate-500">Ашиг</p>
+                  <p className="text-sm font-semibold text-slate-900">
+                    {money(
+                      String(
+                        Number(selectedRow.income_amount ?? 0) -
+                          Number(selectedRow.salary_amount ?? 0),
+                      ),
+                      "₮",
+                    )}
+                  </p>
+                </div>
+                <div className="rounded-xl bg-slate-50 px-4 py-3">
                   <p className="text-xs text-slate-500">Шилжүүлсэн</p>
                   <p className="text-sm font-semibold text-slate-900">
                     {money(String(selectedRow.transferred_amount ?? 0), "₮")}
+                  </p>
+                </div>
+                <div className="rounded-xl bg-slate-50 px-4 py-3">
+                  <p className="text-xs text-slate-500">
+                    Хувь / Цалингийн өдөр
+                  </p>
+                  <p className="text-sm font-semibold text-slate-900">
+                    {selectedRow.percent ?? 0}% /{" "}
+                    {selectedRow.salary_day
+                      ? add15Days(selectedRow.salary_day)
+                      : "-"}
                   </p>
                 </div>
               </div>
@@ -488,13 +604,17 @@ export const IntegrationsPage = ({
                   </TableRow>
                 ) : detailRows.length ? (
                   detailRows.map((item, index) => (
-                    <TableRow key={`${item.id ?? item.order_id ?? index}-${index}`}>
+                    <TableRow
+                      key={`${item.id ?? item.order_id ?? index}-${index}`}
+                    >
                       <TableCell>{selectedRow?.user_name ?? "-"}</TableCell>
                       <TableCell>{item.order_date ?? "-"}</TableCell>
                       <TableCell className="whitespace-normal">
                         {detailInfo(item) || "-"}
                       </TableCell>
-                      <TableCell>{money(String(item.price ?? 0), "₮")}</TableCell>
+                      <TableCell>
+                        {money(String(item.price ?? 0), "₮")}
+                      </TableCell>
                     </TableRow>
                   ))
                 ) : (
@@ -507,7 +627,9 @@ export const IntegrationsPage = ({
                 <TableRow>
                   <TableCell />
                   <TableCell />
-                  <TableCell className="font-semibold text-slate-900">Нийт</TableCell>
+                  <TableCell className="font-semibold text-slate-900">
+                    Нийт
+                  </TableCell>
                   <TableCell className="font-semibold text-slate-900">
                     {money(String(detailTotal), "₮")}
                   </TableCell>
