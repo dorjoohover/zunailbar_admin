@@ -108,63 +108,90 @@ const detail = z.object({
   id: z.any(),
 });
 
-export const eventSchema = z.object({
-  branch_id: zStrOpt({
-    label: "Салбар",
-    allowNullable: false,
-  }),
+export const eventSchema = z
+  .object({
+    branch_id: zStrOpt({
+      label: "Салбар",
+      allowNullable: false,
+    }),
 
-  customer_id: zStrOpt({
-    allowNullable: false,
-    label: "Хэрэглэгч",
-  }),
-  duration: zNumOpt({
-    allowNullable: true,
-    label: "Хугацаа",
-  }),
-  details: z.array(detail),
-  description: zStrOpt({
-    label: "Тайлбар",
-  }),
-  order_date: zStrOpt({
-    label: "Захиалгын огноо",
-    allowNullable: false,
-  }),
-  start_time: zStrOpt({
-    allowNullable: false,
-    label: "Цаг",
-  }),
-  end_time: zStrOpt({
-    label: "Дуусах цаг",
-  }),
-  order_status: z
-    .preprocess(
-      (val) => (typeof val === "string" ? parseInt(val, 10) : val),
-      z.nativeEnum(OrderStatus).nullable(),
-    )
-    .optional() as unknown as number,
-  method: z
-    .preprocess(
-      (val) => (typeof val === "string" ? parseInt(val, 10) : val),
-      z.nativeEnum(PaymentMethod).nullable(),
-    )
-    .optional() as unknown as number,
-  total_amount: zNumOpt({
-    label: "Нийт үнэ",
-    value: 0,
-  }),
-  pre_amount: zNumOpt({
-    value: 0,
-    label: "Урьдчилгаа",
-  }),
-  paid_amount: zNumOpt({
-    value: 0,
-    label: "Гүйцээж төлсөн төлбөр",
-    allowNullable: true,
-  }),
-  parallel: z.boolean().nullable().optional(),
-  edit: z.string().nullable().optional(),
-});
+    customer_id: zStrOpt({
+      allowNullable: false,
+      label: "Хэрэглэгч",
+    }),
+    duration: zNumOpt({
+      allowNullable: true,
+      label: "Хугацаа",
+    }),
+    details: z.array(detail),
+    description: zStrOpt({
+      label: "Тайлбар",
+    }),
+    order_date: zStrOpt({
+      label: "Захиалгын огноо",
+      allowNullable: false,
+    }),
+    start_time: zStrOpt({
+      allowNullable: false,
+      label: "Цаг",
+    }),
+    end_time: zStrOpt({
+      label: "Дуусах цаг",
+    }),
+    order_status: z
+      .preprocess(
+        (val) => (typeof val === "string" ? parseInt(val, 10) : val),
+        z.nativeEnum(OrderStatus).nullable(),
+      )
+      .optional() as unknown as number,
+    method: z
+      .preprocess(
+        (val) => (typeof val === "string" ? parseInt(val, 10) : val),
+        z.nativeEnum(PaymentMethod).nullable(),
+      )
+      .optional() as unknown as number,
+    pre_method: z
+      .preprocess(
+        (val) => (typeof val === "string" ? parseInt(val, 10) : val),
+        z.nativeEnum(PaymentMethod).nullable(),
+      )
+      .optional() as unknown as number,
+    total_amount: zNumOpt({
+      label: "Нийт үнэ",
+      value: 0,
+    }),
+    pre_amount: zNumOpt({
+      value: 0,
+      label: "Урьдчилгаа",
+    }),
+    paid_amount: zNumOpt({
+      value: 0,
+      label: "Гүйцээж төлсөн төлбөр",
+      allowNullable: true,
+    }),
+    parallel: z.boolean().nullable().optional(),
+    edit: z.string().nullable().optional(),
+  })
+  .superRefine((data, ctx) => {
+    const preAmount = Number(data.pre_amount ?? 0);
+    const paidAmount = Number(data.paid_amount ?? 0);
+
+    if (preAmount > 0 && !data.pre_method) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["pre_method"],
+        message: "Урьдчилгааны төлбөрийн хэлбэр сонгоно уу",
+      });
+    }
+
+    if (paidAmount > 0 && !data.method) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["method"],
+        message: "Үлдэгдэл төлбөрийн хэлбэр сонгоно уу",
+      });
+    }
+  });
 
 export type EventFormData = z.infer<typeof eventSchema>;
 

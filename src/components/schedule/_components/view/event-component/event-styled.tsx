@@ -21,12 +21,13 @@ import CustomModal from "@/components/ui/custom-modal";
 import { getUserColor } from "@/lib/colors";
 import {
   getTransactionTypeValue,
+  getMethodValue,
   getUserLevelValue,
   ListType,
   OrderStatusValues,
   SearchType,
 } from "@/lib/constants";
-import { OrderStatus, UserLevel } from "@/lib/enum";
+import { OrderStatus, PaymentMethod, UserLevel } from "@/lib/enum";
 import { Branch, IOrder, Service, User } from "@/models";
 import { showToast } from "@/shared/components/showToast";
 import AppDialog from "@/shared/components/appDialog";
@@ -72,6 +73,45 @@ export const PALETTE = FAMILIES.flatMap((c) =>
     text: `text-${c}-${s.text}`,
   })),
 );
+
+const getPaymentMethodLabel = (
+  method?: PaymentMethod | string | number | null,
+) => {
+  if (method == null || method === "") return undefined;
+
+  const normalized = Number(method);
+  if (Number.isNaN(normalized)) return undefined;
+
+  return getMethodValue[normalized as PaymentMethod];
+};
+
+const PaymentMethodSummary = ({ event }: { event: EventStyledProps }) => {
+  const transactionLabel = event.transaction_type
+    ? getTransactionTypeValue[
+        event.transaction_type as keyof typeof getTransactionTypeValue
+      ]
+    : undefined;
+  const preMethodLabel = getPaymentMethodLabel(event.pre_method);
+  const methodLabel = getPaymentMethodLabel(event.method);
+  const prePaymentLabel = transactionLabel ?? preMethodLabel;
+
+  if (!prePaymentLabel && !methodLabel) return null;
+
+  return (
+    <div className="mb-1 text-xs">
+      {prePaymentLabel && (
+        <div>
+          <b>Урьдчилгаа: {prePaymentLabel}</b>
+        </div>
+      )}
+      {methodLabel && (
+        <div>
+          <b>Төлбөрийн хэлбэр: {methodLabel}</b>
+        </div>
+      )}
+    </div>
+  );
+};
 
 interface EventStyledProps extends IOrder {
   minmized?: boolean;
@@ -273,7 +313,9 @@ export default function EventStyled({
                   <div
                     className="w-3 rounded-full h-3"
                     style={{
-                      backgroundColor: e.color ? getBackgroundColor(e.color) : '',
+                      backgroundColor: e.color
+                        ? getBackgroundColor(e.color)
+                        : "",
                     }}
                   ></div>
                   <div className="flex gap-2">
@@ -334,23 +376,10 @@ export default function EventStyled({
         )}
         {event?.paid_at && (
           <div className="my-1 text-xs">
-            <b>
-              Төлбөр төлсөн огноо: {parseDate(event.paid_at, true)}
-            </b>
+            <b>Төлбөр төлсөн огноо: {parseDate(event.paid_at, true)}</b>
           </div>
         )}
-        {event.transaction_type && (
-          <div className="mb-1 text-xs">
-            <b>
-              Төлбөрийн хэлбэр:{" "}
-              {
-                getTransactionTypeValue[
-                  event.transaction_type as keyof typeof getTransactionTypeValue
-                ]
-              }
-            </b>
-          </div>
-        )}
+        <PaymentMethodSummary event={event} />
       </div>
 
       <div
@@ -408,7 +437,8 @@ export default function EventStyled({
           <div
             className={cn(
               "w-full p-2 text-white rounded-lg h-full",
-              isExpanded && "ring-2 ring-white/70 ring-offset-1 ring-offset-slate-200",
+              isExpanded &&
+                "ring-2 ring-white/70 ring-offset-1 ring-offset-slate-200",
               event?.minmized ? "flex-grow overflow-hidden" : "min-h-fit",
             )}
             style={{
@@ -518,18 +548,7 @@ const EventItem = ({
           <b>Төлбөр төлсөн огноо: {parseDate(event.paid_at, true)}</b>
         </div>
       )}
-      {event.transaction_type && (
-        <div className="mb-1 text-xs">
-          <b>
-            Төлбөрийн хэлбэр:{" "}
-            {
-              getTransactionTypeValue[
-                event.transaction_type as keyof typeof getTransactionTypeValue
-              ]
-            }
-          </b>
-        </div>
-      )}
+      {/* <PaymentMethodSummary event={event} /> */}
       {event?.minmized && !parallel && (
         <div className="flex flex-col">
           <div className="text-[10px] flex justify-between">

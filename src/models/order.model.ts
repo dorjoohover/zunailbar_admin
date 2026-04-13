@@ -30,6 +30,8 @@ export interface IOrder {
   created_at?: Date;
   paid_at?: Date;
   transaction_type?: string;
+  pre_method?: PaymentMethod;
+  method?: PaymentMethod;
 }
 export interface Order {
   id: string;
@@ -55,6 +57,7 @@ export interface Order {
   paid_at?: Date;
   transaction_type?: string;
   method?: PaymentMethod;
+  pre_method?: PaymentMethod;
 }
 
 export interface IOrderDetail {
