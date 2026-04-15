@@ -19,6 +19,7 @@ import {
   add15Days,
   mnDateFormat,
   money,
+  parseDate,
   usernameFormatter,
 } from "@/lib/functions";
 import {
@@ -78,13 +79,21 @@ const detailInfo = (detail: IOrderDetail) => {
   return parts.join(" / ");
 };
 
+const getDateTime = (value?: Date | string) => {
+  if (!value) return 0;
+  const time = new Date(value).getTime();
+  return Number.isNaN(time) ? 0 : time;
+};
+
 export const IntegrationsPage = ({
   data,
+  integrationMetadata,
   reconciliation,
   users,
   initialFilter,
 }: {
   data: ListType<Integration>;
+  integrationMetadata?: ListType<Integration>;
   reconciliation: ListType<SalaryReconciliationItem>;
   users: ListType<User>;
   initialFilter?: IntegrationFilter;
@@ -125,21 +134,52 @@ export const IntegrationsPage = ({
   const formatRows = (
     integrationList: ListType<Integration>,
     reconciliationList: ListType<SalaryReconciliationItem>,
+    metadataList?: ListType<Integration>,
   ) => {
     const salaryMap = new Map<
       string,
-      { salary_amount: number; order_count: number }
+      {
+        salary_amount: number;
+        order_count: number;
+        date?: Date | string;
+        created_at?: Date | string;
+      }
     >();
+    const metadataMap = new Map<
+      string,
+      { date?: Date | string; created_at?: Date | string }
+    >();
+
+    for (const item of metadataList?.items ?? []) {
+      const current = metadataMap.get(item.artist_id);
+      const shouldUseItemDates =
+        !current?.date ||
+        getDateTime(item.created_at ?? item.date) >
+          getDateTime(current.created_at ?? current.date);
+
+      if (shouldUseItemDates) {
+        metadataMap.set(item.artist_id, {
+          date: item.date,
+          created_at: item.created_at,
+        });
+      }
+    }
 
     for (const item of integrationList.items ?? []) {
       const current = salaryMap.get(item.artist_id) ?? {
         salary_amount: 0,
         order_count: 0,
       };
+      const shouldUseItemDates =
+        !current.date ||
+        getDateTime(item.created_at ?? item.date) >
+          getDateTime(current.created_at ?? current.date);
 
       salaryMap.set(item.artist_id, {
         salary_amount: current.salary_amount + Number(item.amount ?? 0),
         order_count: current.order_count + Number(item.order_count ?? 0),
+        date: shouldUseItemDates ? item.date : current.date,
+        created_at: shouldUseItemDates ? item.created_at : current.created_at,
       });
     }
 
@@ -155,6 +195,7 @@ export const IntegrationsPage = ({
     const items = [...artistIds]
       .map((artist_id) => {
         const salary = salaryMap.get(artist_id);
+        const metadata = metadataMap.get(artist_id);
         const reconciliationItem = reconciliationMap.get(artist_id);
         const user = userMap.get(artist_id);
 
@@ -185,6 +226,8 @@ export const IntegrationsPage = ({
           balance_amount: Number(reconciliationItem?.balance_amount ?? 0),
           percent: Number(reconciliationItem?.percent ?? user?.percent ?? 0),
           salary_day: Number(reconciliationItem?.salary_day ?? 0),
+          date: salary?.date ?? metadata?.date,
+          created_at: salary?.created_at ?? metadata?.created_at,
         } satisfies SalaryCalculationRow;
       })
       .sort((a, b) => (a.user_name ?? "").localeCompare(b.user_name ?? ""));
@@ -202,8 +245,8 @@ export const IntegrationsPage = ({
   };
 
   useEffect(() => {
-    formatRows(data, reconciliation ?? defaultReconciliation);
-  }, [data, reconciliation, userMap]);
+    formatRows(data, reconciliation ?? defaultReconciliation, integrationMetadata);
+  }, [data, integrationMetadata, reconciliation, userMap]);
 
   const loadDetails = async (row: SalaryCalculationRow) => {
     setSelectedRow(row);
@@ -247,19 +290,9 @@ export const IntegrationsPage = ({
     const { sort } = pg;
     const { from, to, artist_id } = getFilterParams();
 
-    const [integrationRes, reconciliationRes] = await Promise.all([
-      fetcher<Integration>(Api.integration, {
-        page: 0,
-        limit: 500,
-        sort: sort ?? DEFAULT_PG.sort,
-        from,
-        to,
-        artist_id,
-        ...pg,
-      }),
-      find<SalaryReconciliationItem>(
-        Api.integration,
-        {
+    const [integrationRes, integrationMetadataRes, reconciliationRes] =
+      await Promise.all([
+        fetcher<Integration>(Api.integration, {
           page: 0,
           limit: 500,
           sort: sort ?? DEFAULT_PG.sort,
@@ -267,12 +300,28 @@ export const IntegrationsPage = ({
           to,
           artist_id,
           ...pg,
-        },
-        "reconciliation",
-      ),
-    ]);
-
-    formatRows(integrationRes, reconciliationRes.data);
+        }),
+        fetcher<Integration>(Api.integration, {
+          page: 0,
+          limit: 500,
+          sort: sort ?? DEFAULT_PG.sort,
+          artist_id,
+        }),
+        find<SalaryReconciliationItem>(
+          Api.integration,
+          {
+            page: 0,
+            limit: 500,
+            sort: sort ?? DEFAULT_PG.sort,
+            from,
+            to,
+            artist_id,
+            ...pg,
+          },
+          "reconciliation",
+        ),
+      ]);
+    formatRows(integrationRes, reconciliationRes.data, integrationMetadataRes);
     setAction(ACTION.DEFAULT);
   };
 
@@ -608,7 +657,7 @@ export const IntegrationsPage = ({
                       key={`${item.id ?? item.order_id ?? index}-${index}`}
                     >
                       <TableCell>{selectedRow?.user_name ?? "-"}</TableCell>
-                      <TableCell>{item.order_date ?? "-"}</TableCell>
+                      <TableCell>{item.order_date ? parseDate(item.order_date, false) : "-"}</TableCell>
                       <TableCell className="whitespace-normal">
                         {detailInfo(item) || "-"}
                       </TableCell>

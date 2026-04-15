@@ -6,6 +6,7 @@ export interface IUserSalary {
   status?: number;
   date?: Date;
   created_at?: Date;
+  updated_at?: Date;
 }
 export interface UserSalary {
   id: string;
@@ -15,4 +16,5 @@ export interface UserSalary {
   status?: number;
   date?: Date;
   created_at?: Date;
+  updated_at?: Date;
 }

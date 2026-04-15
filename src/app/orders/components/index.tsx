@@ -119,7 +119,8 @@ export const OrderPage = ({
   useEffect(() => {
     const interval = setInterval(
       () => {
-        void refresh();
+        setFilter({});
+        getAristSchedules();
       },
       5 * 60 * 1000,
     );
@@ -262,8 +263,8 @@ export const OrderPage = ({
     );
 
     setAction(ACTION.RUNNING);
-    const res = await find(Api.order, { from, to } as any, "confirm");
-    const processed = Number((res?.data as any)?.count ?? 0);
+    const res = await create(Api.order, { from, to } as any, "confirm");
+    const processed = Number((res?.data as any)?.payload?.count ?? 0);
     const success = processed > 0;
 
     showToast(
@@ -304,7 +305,7 @@ export const OrderPage = ({
                 customer: customers,
                 service: services,
                 user: users,
-                artists: artists
+                artists: artists,
               }}
               filter={filter}
               setFilter={changeFilter}
@@ -317,9 +318,7 @@ export const OrderPage = ({
             <div className="flex justify-end my-8">
               <AppAlertDialog
                 onConfirm={confirmOrders}
-                title={`${dateFormat(
-                  mnDate(filter?.date?.from),
-                )}${
+                title={`${dateFormat(mnDate(filter?.date?.from))}${
                   filter?.date?.to
                     ? ` - ${dateFormat(mnDate(filter?.date?.to))}`
                     : ""

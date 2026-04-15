@@ -197,6 +197,7 @@ export const IntegrationHistoryPage = ({
         to: filterParams.to ?? list.to ?? filterParams.from ?? "",
         payment_count: 0,
         transferred_amount: 0,
+        paid_at: item.paid_at
       };
 
       current.payment_count += 1;
@@ -243,7 +244,6 @@ export const IntegrationHistoryPage = ({
       artist_id,
       ...pg,
     });
-
     formatPayments(res);
     setAction(ACTION.DEFAULT);
   };
@@ -702,7 +702,7 @@ export const IntegrationHistoryPage = ({
                     <TableRow key={item.id}>
                       <TableCell>{selectedRow?.user_name ?? "-"}</TableCell>
                       <TableCell>
-                        {parseDate(new Date(item.paid_at), false)}
+                        {parseDate(new Date(item.paid_at), true)}
                       </TableCell>
                       <TableCell>
                         {PaymentTypeValues[item.type as PaymentType] ?? "-"}

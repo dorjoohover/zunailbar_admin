@@ -1,6 +1,6 @@
 import { ColumnDef } from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
-import { money } from "@/lib/functions";
+import { money, parseDate } from "@/lib/functions";
 import { IntegrationTransferSummaryRow } from "@/models";
 
 export function getColumns(
@@ -18,15 +18,14 @@ export function getColumns(
       cell: ({ row }) => <span>{row.getValue<string>("user_name") || "-"}</span>,
     },
     {
-      accessorKey: "from",
-      header: "Эхлэх огноо",
-      cell: ({ row }) => <span>{row.getValue<string>("from") || "-"}</span>,
+      accessorKey: "paid_at",
+      header: "Огноо",
+      cell: ({ row }) => {
+        const data = row.getValue<string>("paid_at") 
+        return <span>{data ? parseDate(data) : '-'}</span>
+      }
     },
-    {
-      accessorKey: "to",
-      header: "Дуусах огноо",
-      cell: ({ row }) => <span>{row.getValue<string>("to") || "-"}</span>,
-    },
+ 
     {
       accessorKey: "payment_count",
       header: "Шилжүүлгийн тоо",

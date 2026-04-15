@@ -68,6 +68,23 @@ export function getColumns(
       ),
     },
     {
+      accessorKey: "created_at",
+      header: ({ column }) => "Үүсгэсэн",
+      cell: ({ row }) => {
+        const date = parseDate(new Date(row.getValue("created_at")), false);
+        return date;
+      },
+    },
+    {
+      accessorKey: "updated_at",
+      header: ({ column }) => "Өөрчлөгдсөн",
+      cell: ({ row }) => {
+        const updated = row.getValue("updated_at");
+        const date = updated ? parseDate(new Date(updated as string), false) : "";
+        return date;
+      },
+    },
+    {
       accessorKey: "salary_status",
       header: "Статус",
       cell: ({ row }) => {

@@ -1,6 +1,6 @@
 import { ColumnDef } from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
-import { money } from "@/lib/functions";
+import { money, parseDate } from "@/lib/functions";
 import { SalaryCalculationRow } from "@/models";
 
 export function getColumns(
@@ -15,23 +15,26 @@ export function getColumns(
     {
       accessorKey: "user_name",
       header: "Артист",
-      cell: ({ row }) => <span>{row.getValue<string>("user_name") || "-"}</span>,
+      cell: ({ row }) => (
+        <span>{row.getValue<string>("user_name") || "-"}</span>
+      ),
     },
     {
-      accessorKey: "from",
-      header: "Эхлэх огноо",
-      cell: ({ row }) => <span>{row.getValue<string>("from") || "-"}</span>,
+      accessorKey: "date",
+      header: "Олгох огноо",
+      cell: ({ row }) => {
+        const data = row.getValue<string>("date");
+        return <span>{data ? data : "-"}</span>;
+      },
     },
-    {
-      accessorKey: "to",
-      header: "Дуусах огноо",
-      cell: ({ row }) => <span>{row.getValue<string>("to") || "-"}</span>,
-    },
+  
     {
       accessorKey: "income_amount",
       header: "Нийт орлого",
       cell: ({ row }) => (
-        <span>{money(String(row.getValue<number>("income_amount") ?? 0), "₮")}</span>
+        <span>
+          {money(String(row.getValue<number>("income_amount") ?? 0), "₮")}
+        </span>
       ),
     },
     {
@@ -43,11 +46,23 @@ export function getColumns(
         </span>
       ),
     },
+      {
+      accessorKey: "created_at",
+      header: "Үүсгэсэн",
+      cell: ({ row }) => {
+        const data = row.getValue<string>("created_at");
+        return <span>{data ? parseDate(data) : "-"}</span>;
+      },
+    },
     {
       id: "actions",
       header: "Дэлгэрэнгүй",
       cell: ({ row }) => (
-        <Button variant="outline" size="sm" onClick={() => onOpenDetail(row.original)}>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => onOpenDetail(row.original)}
+        >
           Дэлгэрэнгүй
         </Button>
       ),

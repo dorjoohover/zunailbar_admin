@@ -56,6 +56,8 @@ export interface SalaryCalculationRow {
   user_name?: string;
   from?: string;
   to?: string;
+  date?: Date | string;
+  created_at?: Date | string;
   income_amount: number;
   salary_amount: number;
   order_count: number;
