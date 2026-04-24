@@ -6,14 +6,21 @@ import { EmployeePage } from "./components";
 import { ROLE, UserStatus } from "@/lib/enum";
 
 export default async function EmployeesPage() {
-  const [userRes, branchRes] = await Promise.all([
-    find<User>(Api.user, { role: ROLE.E_M , user_status: UserStatus.ACTIVE}),
+  const [userRes, branchRes, levelRes] = await Promise.all([
+    find<User>(Api.user, { role: ROLE.E_M, user_status: UserStatus.ACTIVE }),
     find<Branch>(Api.branch),
+    find(Api.order, {}, "level"),
   ]);
+  const levelConfig = (levelRes.data as any)?.items ?? levelRes.data ?? {};
+
   return (
     <section>
       {/* <div className="admin-container"> */}
-      <EmployeePage data={userRes.data} branches={branchRes.data} />
+      <EmployeePage
+        data={userRes.data}
+        branches={branchRes.data}
+        level={levelConfig as any}
+      />
       {/* </div> */}
     </section>
   );

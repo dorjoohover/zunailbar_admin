@@ -28,12 +28,14 @@ import { cn } from "@/lib/utils";
 import { getUserColor } from "@/lib/colors";
 import { AppAlertDialog } from "@/components/AlertDialog";
 import { toast } from "sonner";
+import { getLevelName, LevelConfig } from "@/lib/level-config";
 
 export const getColumns = (
   onEdit: (product: IUser) => void,
   setStatus: (index: number, status: EmployeeStatus) => void,
   giveProduct: (index: number) => void,
   remove: (index: number) => Promise<boolean>,
+  levelConfig: LevelConfig,
 ): ColumnDef<IUser>[] => [
   {
     id: "select",
@@ -191,7 +193,11 @@ export const getColumns = (
       if (!level) return <span>-</span>;
       const status = getUserLevelValue[level] as unknown as any;
 
-      return <span className={cn(`${status.color} badge`)}>{status.name}</span>;
+      return (
+        <span className={cn(`${status?.color ?? ""} badge`)}>
+          {getLevelName(levelConfig, "employee", level)}
+        </span>
+      );
     },
   },
   {

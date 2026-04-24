@@ -1,4 +1,4 @@
-"use client";;
+"use client";
 import { DataTable } from "@/components/data-table";
 import { IUser, User } from "@/models";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -7,12 +7,13 @@ import {
   ACTION,
   PG,
   DEFAULT_PG,
+  CUSTOMER_USER_LEVELS,
+  EMPLOYEE_USER_LEVELS,
   getEnumValues,
   Option,
   UserStatusValue,
   zStrOpt,
   PPDT,
-  getUserLevelValue,
   zNumOpt,
 } from "@/lib/constants";
 import { Modal } from "@/shared/components/modal";
@@ -32,17 +33,29 @@ import { PasswordField } from "@/shared/components/password.field";
 import { showToast } from "@/shared/components/showToast";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
+import {
+  getLevelName,
+  LevelConfig,
+  normalizeLevelConfig,
+} from "@/lib/level-config";
 
-const formSchema = z.object({
-  mobile: z.string().length(8),
-  nickname: zStrOpt({}),
-  password: zStrOpt({
-    allowNullable: false,
-    label: "Нууц үг",
-  }),
-  level: zNumOpt(),
-  edit: z.string().nullable().optional(),
-});
+const formSchema = z
+  .object({
+    mobile: z.string().length(8),
+    nickname: zStrOpt({}),
+    password: z.string().nullable().optional(),
+    level: zNumOpt(),
+    edit: z.string().nullable().optional(),
+  })
+  .superRefine((data, ctx) => {
+    if (!data.edit && !data.password?.trim()) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["password"],
+        message: "Нууц үг оруулна уу",
+      });
+    }
+  });
 
 const defaultValues: UserType = {
   mobile: "",
@@ -56,12 +69,13 @@ type FilterType = {
   level?: number;
 };
 type UserType = z.infer<typeof formSchema>;
+
 export const UserPage = ({
   data,
   level,
 }: {
   data: ListType<User>;
-  level: Record<UserLevel, number>;
+  level: LevelConfig;
 }) => {
   const [action, setAction] = useState(ACTION.DEFAULT);
   const [open, setOpen] = useState<undefined | boolean>(false);
@@ -153,10 +167,8 @@ export const UserPage = ({
   };
   const edit = async (e: IUser) => {
     setOpen(true);
-    form.reset({ ...e, edit: e.id });
+    form.reset({ ...e, password: "", edit: e.id });
   };
-
-  const columns = getColumns(edit, deleteUser, updateStatus, updateLevel);
 
   const refresh = async (pg: PG = DEFAULT_PG) => {
     setAction(ACTION.RUNNING);
@@ -219,6 +231,12 @@ export const UserPage = ({
     setAction(ACTION.RUNNING);
     const body = e as UserType;
     const { edit, ...payload } = body;
+    const password = payload.password?.trim();
+    if (password) {
+      payload.password = password;
+    } else {
+      delete payload.password;
+    }
 
     const res = edit
       ? await updateOne<User>(
@@ -231,7 +249,7 @@ export const UserPage = ({
           "one"
         )
       : await create<User>(Api.user, {
-          ...e,
+          ...payload,
           role: ROLE.CLIENT,
           birthday: null,
         } as any);
@@ -275,6 +293,29 @@ export const UserPage = ({
   const changeFilter = (key: string, value: number | string) => {
     setFilter((prev) => ({ ...prev, [key]: value }));
   };
+  const [levelOpen, setLevelOpen] = useState(false);
+  const router = useRouter();
+  const normalizedLevel = useMemo(() => normalizeLevelConfig(level), [level]);
+  const [levelValue, setLevelValue] = useState<LevelConfig>(normalizedLevel);
+
+  useEffect(() => {
+    setLevelValue(normalizedLevel);
+  }, [normalizedLevel]);
+
+  const updateOrderLevel = async () => {
+    const res = await updateOne(Api.order, "level", levelValue);
+    toast(res, false);
+    setLevelOpen(false);
+    router.refresh();
+  };
+
+  const columns = getColumns(
+    edit,
+    deleteUser,
+    updateStatus,
+    updateLevel,
+    levelValue
+  );
 
   const groups: { key: keyof FilterType; label: string; items: Option[] }[] =
     useMemo(
@@ -289,14 +330,14 @@ export const UserPage = ({
         },
         {
           key: "level",
-          label: "Эрэмбэ",
-          items: getEnumValues(UserLevel).map((s) => ({
+          label: "Хэрэглэгчийн түвшин",
+          items: CUSTOMER_USER_LEVELS.map((s) => ({
             value: s,
-            label: getUserLevelValue[s].name,
+            label: getLevelName(levelValue, "customer", s),
           })),
         },
       ],
-      []
+      [levelValue]
     );
 
   const filterClear = () => {
@@ -306,16 +347,6 @@ export const UserPage = ({
     });
   };
 
-  const [levelOpen, setLevelOpen] = useState(false);
-  const router = useRouter();
-  const [levelValue, setLevelValue] =
-    useState<Record<UserLevel, number>>(level);
-  const updateOrderLevel = async () => {
-    const res = await updateOne(Api.order, "level", level);
-    toast(res, false);
-    setLevelOpen(false);
-    router.refresh();
-  };
   return (
     <div className="">
       <DynamicHeader />
@@ -325,41 +356,118 @@ export const UserPage = ({
           excel={downloadExcel}
           filterRight={
             <>
-              <Button onClick={() => setLevelOpen(true)}>Эрэмбэ</Button>
+              <Button onClick={() => setLevelOpen(true)}>
+                Түвшний тохиргоо
+              </Button>
               <Modal
                 open={levelOpen}
                 setOpen={(v) => setLevelOpen(v)}
-                title="Эрэмбэ"
+                title="Түвшний тохиргоо"
                 submit={updateOrderLevel}
               >
-                {Object.entries(levelValue ?? level).map(([k, value], i) => {
-                  const key = k as unknown as UserLevel;
+                <div className="space-y-6">
+                  <p className="text-sm text-muted-foreground">
+                    Хэрэглэгчийн түвшний нэр, босго болон артистын түвшний
+                    нэрийг тус тусад нь эндээс солино.
+                  </p>
+                  <div className="space-y-3">
+                    <h3 className="font-semibold">Хэрэглэгчийн түвшин</h3>
+                    {CUSTOMER_USER_LEVELS.map((key) => {
+                      const value = levelValue.customer[key] ?? {
+                        name: getLevelName(levelValue, "customer", key),
+                        threshold: 0,
+                      };
 
-                  const lvl = getUserLevelValue[key];
-                  if (lvl)
-                    return (
-                      <div key={i} className="mb-2">
-                        <label className="mb-1">{lvl.name}</label>
-                        <TextField
-                          props={{
-                            name: k,
-                            value,
-                            onChange: (e: string) => {
-                              const v = parseInt(e);
-                              if (isNaN(v)) return;
+                      return (
+                        <div key={key} className="grid gap-3 md:grid-cols-2">
+                          <div>
+                            <label className="mb-1 block text-sm">Нэр</label>
+                            <TextField
+                              props={{
+                                name: `${key}_name`,
+                                value: value.name,
+                                onChange: (name: string) =>
+                                  setLevelValue((prev) => ({
+                                    ...prev,
+                                    customer: {
+                                      ...prev.customer,
+                                      [key]: {
+                                        ...(prev.customer[key] ?? value),
+                                        name,
+                                      },
+                                    },
+                                  })),
+                                ref: () => null,
+                                onBlur: () => {},
+                              }}
+                            />
+                          </div>
+                          <div>
+                            <label className="mb-1 block text-sm">
+                              Босго
+                            </label>
+                            <TextField
+                              props={{
+                                name: `${key}_threshold`,
+                                value: value.threshold ?? 0,
+                                onChange: (e: string) => {
+                                  const threshold = parseInt(e, 10);
+                                  if (isNaN(threshold)) return;
 
-                              setLevelValue((prev) => ({
-                                ...prev,
-                                [k]: v,
-                              }));
-                            },
-                            ref: () => null,
-                            onBlur: () => {},
-                          }}
-                        />
-                      </div>
-                    );
-                })}
+                                  setLevelValue((prev) => ({
+                                    ...prev,
+                                    customer: {
+                                      ...prev.customer,
+                                      [key]: {
+                                        ...(prev.customer[key] ?? value),
+                                        threshold,
+                                      },
+                                    },
+                                  }));
+                                },
+                                ref: () => null,
+                                onBlur: () => {},
+                              }}
+                            />
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  <div className="space-y-3">
+                    <h3 className="font-semibold">Артистын түвшин</h3>
+                    {EMPLOYEE_USER_LEVELS.map((key) => {
+                      const value = levelValue.employee[key] ?? {
+                        name: getLevelName(levelValue, "employee", key),
+                      };
+
+                      return (
+                        <div key={key}>
+                          <label className="mb-1 block text-sm">Нэр</label>
+                          <TextField
+                            props={{
+                              name: `${key}_employee_name`,
+                              value: value.name,
+                              onChange: (name: string) =>
+                                setLevelValue((prev) => ({
+                                  ...prev,
+                                  employee: {
+                                    ...prev.employee,
+                                    [key]: {
+                                      ...(prev.employee[key] ?? value),
+                                      name,
+                                    },
+                                  },
+                                })),
+                              ref: () => null,
+                              onBlur: () => {},
+                            }}
+                          />
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
               </Modal>
             </>
           }
@@ -445,28 +553,38 @@ export const UserPage = ({
                     );
                   })}
                   <div className="double-col">
-                    {form.watch("edit") == undefined && (
-                      <FormItems control={form.control} name="password">
-                        {(field) => {
-                          return (
-                            <PasswordField props={{ ...field }} view={true} />
-                          );
-                        }}
-                      </FormItems>
-                    )}
+                    <FormItems control={form.control} name="password">
+                      {(field) => {
+                        return (
+                          <PasswordField
+                            props={{ ...field }}
+                            view={true}
+                            label={
+                              form.watch("edit")
+                                ? "Шинэ нууц үг (заавал биш)"
+                                : "Нууц үг"
+                            }
+                          />
+                        );
+                      }}
+                    </FormItems>
                     <FormItems
                       control={form.control}
                       name={"level"}
-                      label="Эрэмбэ"
+                      label="Хэрэглэгчийн түвшин"
                     >
                       {(field) => {
                         return (
                           <ComboBox
                             props={{ ...field }}
-                            items={getEnumValues(UserLevel).map((item) => {
+                            items={CUSTOMER_USER_LEVELS.map((item) => {
                               return {
                                 value: item.toString(),
-                                label: getUserLevelValue[item].name,
+                                label: getLevelName(
+                                  levelValue,
+                                  "customer",
+                                  item
+                                ),
                               };
                             })}
                           />

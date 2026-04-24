@@ -63,14 +63,18 @@ export const OrderLogPage = ({
   });
   const userMap = useMemo(
     () => new Map(items[Api.user].map((b) => [b.id, b.value])),
-    [users],
+    [items],
   );
   const orderLogsFormatter = (data: ListType<OrderLog>) => {
     const items: OrderLog[] = data.items.map((item) => {
       const user = item.changed_by ? userMap.get(item.changed_by) : null;
       return {
-        changed_user: user ? searchUsernameFormatter(user) : "",
         ...item,
+        changed_user: user ? searchUsernameFormatter(user) : "",
+        branch_name: item.branch_name ?? "",
+        artist_names: item.artist_names ?? "",
+        customer_mobile: item.customer_mobile ?? "",
+        customer_name: item.customer_name ?? "",
       };
     });
     return { items, count: data.count };

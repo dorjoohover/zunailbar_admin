@@ -10,9 +10,11 @@ export default async function Page() {
     find<User>(Api.user, { role: ROLE.CLIENT, user_status: UserStatus.ACTIVE }),
     find(Api.order, {}, "level"),
   ]);
+  const levelConfig = (level.data as any)?.items ?? level.data ?? {};
+
   return (
     <section>
-      <UserPage data={res.data} level={level.data.items as any} />
+      <UserPage data={res.data} level={levelConfig as any} />
     </section>
   );
 }

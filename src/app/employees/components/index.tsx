@@ -2,9 +2,9 @@
 import { DataTable } from "@/components/data-table";
 import {
   ACTION,
+  EMPLOYEE_USER_LEVELS,
   DEFAULT_PG,
   EmployeeStatusValue,
-  getUserLevelValue,
   getEnumValues,
   ListType,
   Option,
@@ -49,6 +49,12 @@ import { showToast } from "@/shared/components/showToast";
 import { ACCEPT_ATTR, validateImageFile } from "@/lib/image.validator";
 import { COLOR_HEX } from "@/lib/colors";
 import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
+import {
+  getLevelName,
+  LevelConfig,
+  normalizeLevelConfig,
+} from "@/lib/level-config";
 
 const formSchema = z.object({
   firstname: zStrOpt({
@@ -134,9 +140,11 @@ const defaultValues = {
 export const EmployeePage = ({
   data,
   branches,
+  level,
 }: {
   data: ListType<User>;
   branches: ListType<Branch>;
+  level: LevelConfig;
 }) => {
   const [action, setAction] = useState(ACTION.DEFAULT);
   const [open, setOpen] = useState<boolean | undefined>(false);
@@ -180,7 +188,7 @@ export const EmployeePage = ({
           Api.user,
           editingUser?.id as string,
           payload,
-          "update",
+          "one",
         )
       : await create<IUser>(Api.user, {
           ...payload,
@@ -265,7 +273,33 @@ export const EmployeePage = ({
     refresh();
     return res.success;
   };
-  const columns = getColumns(edit, setStatus, giveProduct, deleteEmployee);
+  const [levelOpen, setLevelOpen] = useState(false);
+  const normalizedLevel = useMemo(() => normalizeLevelConfig(level), [level]);
+  const [levelValue, setLevelValue] = useState<LevelConfig>(normalizedLevel);
+
+  useEffect(() => {
+    setLevelValue(normalizedLevel);
+  }, [normalizedLevel]);
+
+  const updateOrderLevel = async () => {
+    setAction(ACTION.RUNNING);
+    const res = await updateOne(Api.order, "level", levelValue);
+    if (res.success) {
+      setLevelOpen(false);
+      showToast("success", "Артистын түвшин шинэчлэгдлээ");
+    } else {
+      showToast("error", res.error ?? "Алдаа гарлаа");
+    }
+    setAction(ACTION.DEFAULT);
+  };
+
+  const columns = getColumns(
+    edit,
+    setStatus,
+    giveProduct,
+    deleteEmployee,
+    levelValue,
+  );
 
   const [filter, setFilter] = useState<FilterType>({
     status: UserStatus.ACTIVE,
@@ -320,6 +354,56 @@ export const EmployeePage = ({
         />
         <DataTable
           clear={() => setFilter({})}
+          filterRight={
+            <>
+              <Button onClick={() => setLevelOpen(true)}>
+                Артистын түвшин
+              </Button>
+              <Modal
+                open={levelOpen}
+                setOpen={setLevelOpen}
+                title="Артистын түвшин"
+                submit={updateOrderLevel}
+                loading={action === ACTION.RUNNING}
+              >
+                <div className="space-y-4">
+                  <p className="text-sm text-muted-foreground">
+                    Junior/Senior зэрэг артистын түвшний нэрийг эндээс солино.
+                  </p>
+                  {EMPLOYEE_USER_LEVELS.map((key) => {
+                    const value = levelValue.employee[key] ?? {
+                      name: getLevelName(levelValue, "employee", key),
+                    };
+
+                    return (
+                      <div key={key}>
+                        <label className="mb-1 block text-sm">Нэр</label>
+                        <TextField
+                          props={{
+                            name: `${key}_employee_name`,
+                            value: value.name,
+                            onChange: (name: string) =>
+                              setLevelValue((prev) => ({
+                                ...prev,
+                                employee: {
+                                  ...prev.employee,
+                                  [key]: {
+                                    ...(prev.employee[key] ?? value),
+                                    name,
+                                  },
+                                },
+                              })),
+                            onBlur: () => {},
+                            ref: () => null,
+                          }}
+                        />
+                      </div>
+                    );
+                  })}
+                </div>
+              </Modal>
+            </>
+          }
           filter={
             <>
               {groups.map((item, i) => {
@@ -623,14 +707,16 @@ export const EmployeePage = ({
                         return (
                           <ComboBox
                             props={{ ...field }}
-                            items={[UserLevel.JUNIOR, UserLevel.SENIOR].map(
-                              (item) => {
-                                return {
-                                  value: item.toString(),
-                                  label: getUserLevelValue[item].name,
-                                };
-                              },
-                            )}
+                            items={EMPLOYEE_USER_LEVELS.map((item) => {
+                              return {
+                                value: item.toString(),
+                                label: getLevelName(
+                                  levelValue,
+                                  "employee",
+                                  item,
+                                ),
+                              };
+                            })}
                           />
                         );
                       }}

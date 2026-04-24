@@ -14,7 +14,14 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { fetcher } from "@/hooks/fetcher";
-import { ACTION, DEFAULT_PG, ListDefault, ListType, PG } from "@/lib/constants";
+import {
+  ACTION,
+  DEFAULT_PG,
+  getTransactionTypeValue,
+  ListDefault,
+  ListType,
+  PG,
+} from "@/lib/constants";
 import {
   add15Days,
   mnDateFormat,
@@ -83,6 +90,19 @@ const getDateTime = (value?: Date | string) => {
   if (!value) return 0;
   const time = new Date(value).getTime();
   return Number.isNaN(time) ? 0 : time;
+};
+
+const transactionTypeLabel = (value?: string) =>
+  getTransactionTypeValue[
+    (String(value ?? "").toUpperCase() ||
+      "BANK") as keyof typeof getTransactionTypeValue
+  ] ?? "Дансаар";
+
+const paymentAmount = (amount?: number, label?: string) => {
+  const value = Number(amount ?? 0);
+  if (value <= 0) return "-";
+  const formatted = money(String(value), "₮");
+  return label ? `${label} · ${formatted}` : formatted;
 };
 
 export const IntegrationsPage = ({
@@ -416,15 +436,6 @@ export const IntegrationsPage = ({
       0,
     );
     const totalProfit = totalIncome - totalSalary;
-    const totalTransferred = rows.items.reduce(
-      (total, item) => total + Number(item.transferred_amount ?? 0),
-      0,
-    );
-    const totalBalance = rows.items.reduce(
-      (total, item) => total + Number(item.balance_amount ?? 0),
-      0,
-    );
-
     return [
       {
         label: "Артист",
@@ -445,14 +456,6 @@ export const IntegrationsPage = ({
       {
         label: "Ашиг",
         value: money(String(totalProfit), "₮"),
-      },
-      {
-        label: "Шилжүүлсэн",
-        value: money(String(totalTransferred), "₮"),
-      },
-      {
-        label: "Цалингийн үлдэгдэл",
-        value: money(String(totalBalance), "₮"),
       },
     ];
   }, [rows.items]);
@@ -478,7 +481,7 @@ export const IntegrationsPage = ({
               </p>
             </div>
           </div>
-          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-7">
+          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
             {summaryCards.map((item) => (
               <div
                 key={item.label}
@@ -590,7 +593,7 @@ export const IntegrationsPage = ({
         >
           <div className="space-y-4">
             {selectedRow && (
-              <div className="grid gap-2 sm:grid-cols-5">
+              <div className="grid gap-2 sm:grid-cols-4">
                 <div className="rounded-xl bg-slate-50 px-4 py-3">
                   <p className="text-xs text-slate-500">Нийт орлого</p>
                   <p className="text-sm font-semibold text-slate-900">
@@ -616,12 +619,6 @@ export const IntegrationsPage = ({
                   </p>
                 </div>
                 <div className="rounded-xl bg-slate-50 px-4 py-3">
-                  <p className="text-xs text-slate-500">Шилжүүлсэн</p>
-                  <p className="text-sm font-semibold text-slate-900">
-                    {money(String(selectedRow.transferred_amount ?? 0), "₮")}
-                  </p>
-                </div>
-                <div className="rounded-xl bg-slate-50 px-4 py-3">
                   <p className="text-xs text-slate-500">
                     Хувь / Цалингийн өдөр
                   </p>
@@ -641,13 +638,15 @@ export const IntegrationsPage = ({
                   <TableHead>Артист</TableHead>
                   <TableHead>Огноо</TableHead>
                   <TableHead>Захиалгын мэдээлэл</TableHead>
+                  <TableHead>Урьдчилгаа</TableHead>
+                  <TableHead>Үлдэгдэл төлбөр</TableHead>
                   <TableHead>Дүн</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {detailAction === ACTION.RUNNING ? (
                   <TableRow>
-                    <TableCell colSpan={4} className="py-8 text-center">
+                    <TableCell colSpan={6} className="py-8 text-center">
                       Уншиж байна
                     </TableCell>
                   </TableRow>
@@ -662,18 +661,29 @@ export const IntegrationsPage = ({
                         {detailInfo(item) || "-"}
                       </TableCell>
                       <TableCell>
+                        {paymentAmount(item.pre_amount, "Урьдчилгаа")}
+                      </TableCell>
+                      <TableCell>
+                        {paymentAmount(
+                          item.paid_amount,
+                          transactionTypeLabel(item.transaction_type),
+                        )}
+                      </TableCell>
+                      <TableCell>
                         {money(String(item.price ?? 0), "₮")}
                       </TableCell>
                     </TableRow>
                   ))
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={4} className="py-8 text-center">
+                    <TableCell colSpan={6} className="py-8 text-center">
                       Дэлгэрэнгүй мэдээлэл алга байна
                     </TableCell>
                   </TableRow>
                 )}
                 <TableRow>
+                  <TableCell />
+                  <TableCell />
                   <TableCell />
                   <TableCell />
                   <TableCell className="font-semibold text-slate-900">

@@ -19,7 +19,7 @@ import z from "zod";
 import { FormProvider, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Api } from "@/utils/api";
-import { create, deleteOne, search, updateOne } from "@/app/(api)";
+import { create, deleteOne, updateOne } from "@/app/(api)";
 import { FormItems } from "@/shared/components/form.field";
 import { ComboBox } from "@/shared/components/combobox";
 import { TextField } from "@/shared/components/text.field";
@@ -171,24 +171,26 @@ export const DiscountPage = ({
   const [items, setItems] = useState({
     [Api.service]: services,
   });
-  const searchField = async (v: string, key: Api, edit?: boolean) => {
-    let value = "";
-    if (v.length > 1) value = v;
-    if (v.length == 1) return;
-
-    const payload = { id: value };
-
-    await search(key as any, {
-      ...payload,
-      limit: 20,
-      page: 0,
-    }).then((d) => {
-      console.log(key, d.data);
-      setItems((prev) => ({
-        ...prev,
-        [key]: d.data,
-      }));
+  useEffect(() => {
+    setItems({
+      [Api.service]: services,
     });
+  }, [services]);
+  const searchField = (v: string, key: Api) => {
+    if (key !== Api.service) return;
+
+    const query = v.trim().toLowerCase();
+    const filtered =
+      query.length === 0
+        ? services
+        : services.filter((item) =>
+            searchFormatter(item.value).toLowerCase().includes(query),
+          );
+
+    setItems((prev) => ({
+      ...prev,
+      [key]: filtered,
+    }));
   };
   return (
     <div className="">

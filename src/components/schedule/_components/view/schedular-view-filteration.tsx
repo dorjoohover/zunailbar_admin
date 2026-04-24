@@ -10,8 +10,8 @@ import { ClassNames, Views } from "@/types/index";
 import { cn } from "@/lib/utils";
 import {
   ACTION,
+  CUSTOMER_USER_LEVELS,
   getEnumValues,
-  getUserLevelValue,
   ListType,
   OrderStatusValues,
   SearchType,
@@ -39,6 +39,11 @@ import { ComboBox } from "@/shared/components/combobox";
 import { FilterType } from "@/app/orders/components";
 import { getUserColor } from "@/lib/colors";
 import { DateRange } from "react-day-picker";
+import {
+  getLevelName,
+  LevelConfig,
+  normalizeLevelConfig,
+} from "@/lib/level-config";
 
 // Animation settings for Framer Motion
 const animationConfig = {
@@ -137,6 +142,7 @@ export default function ({
   deleteOrder,
   action,
   columns,
+  levelConfig,
 }: {
   loading: boolean;
   deleteOrder: (id: string) => void;
@@ -151,6 +157,7 @@ export default function ({
     customer: SearchType<User>[];
     user: SearchType<User>[];
     artists: SearchType<User>[];
+    filterArtists?: SearchType<User>[];
     service: ListType<Service>;
   };
   views?: Views;
@@ -160,6 +167,7 @@ export default function ({
   send: (order: IOrder) => void;
   action: ACTION;
   columns: ColumnDef<IOrder>[];
+  levelConfig?: LevelConfig;
   refresh: <T>({
     page,
     limit,
@@ -186,6 +194,7 @@ export default function ({
   const resetDate = new Date();
   const [activeView, setActiveView] = useState<string>("day");
   const [clientSide, setClientSide] = useState(false);
+  const normalizedLevelConfig = normalizeLevelConfig(levelConfig);
   const form = useForm<UserType>({
     resolver: zodResolver(formSchema),
     defaultValues,
@@ -328,7 +337,7 @@ export default function ({
                   ref: () => null,
                   value: filter?.artist,
                 }}
-                items={values.artists.map((item) => {
+                items={(values.filterArtists ?? values.artists).map((item) => {
                   const [mobile, nickname] = item?.value?.split("__") ?? [
                     "",
                     "",
@@ -459,10 +468,14 @@ export default function ({
                         return (
                           <ComboBox
                             props={{ ...field }}
-                            items={getEnumValues(UserLevel).map((item) => {
+                            items={CUSTOMER_USER_LEVELS.map((item) => {
                               return {
                                 value: item.toString(),
-                                label: getUserLevelValue[item].name,
+                                label: getLevelName(
+                                  normalizedLevelConfig,
+                                  "customer",
+                                  item,
+                                ),
                               };
                             })}
                           />

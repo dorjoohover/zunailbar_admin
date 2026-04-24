@@ -146,7 +146,7 @@ export const CostPage = ({
     const branch_id = filter?.branch;
     const category_id = filter?.category;
     const product_id = filter?.product;
-    const user_product_status = filter?.status;
+    const cost_status = filter?.status;
     const start_date = filter?.start ? dateOnly(filter?.start) : undefined;
     const end_date = filter?.end ? dateOnly(filter?.end) : undefined;
     await fetcher<Cost>(Api.cost, {
@@ -157,7 +157,7 @@ export const CostPage = ({
       branch_id,
       category_id,
       product_id,
-      user_product_status,
+      cost_status,
       start_date,
       end_date,
       ...pg,
@@ -203,7 +203,7 @@ export const CostPage = ({
         branch_id: filter?.branch,
         category_id: filter?.category,
         product_id: filter?.product,
-        user_product_status: filter?.status,
+        cost_status: filter?.status,
         start_date: filter?.start ? dateOnly(filter?.start) : undefined,
         end_date: filter?.end ? dateOnly(filter?.end) : undefined,
         page: 0,

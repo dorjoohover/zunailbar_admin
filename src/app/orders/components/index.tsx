@@ -25,6 +25,9 @@ import { Check } from "lucide-react";
 import { AppAlertDialog } from "@/components/AlertDialog";
 import { DateRange } from "react-day-picker";
 import { Slot } from "@/models/slot.model";
+import { ArtistLeave } from "@/models/artist.leaves.model";
+import { BranchLeave } from "@/models/branch.leaves.model";
+import { LevelConfig } from "@/lib/level-config";
 
 const getTodayRange = (): DateRange => {
   const today = mnDate(new Date());
@@ -51,6 +54,7 @@ export const OrderPage = ({
   initialFilter,
   titleOverride,
   showConfirmButton = true,
+  level,
 }: {
   branches: SearchType<Branch>[];
   services: ListType<Service>;
@@ -59,6 +63,7 @@ export const OrderPage = ({
   initialFilter?: FilterType;
   titleOverride?: string;
   showConfirmButton?: boolean;
+  level: LevelConfig;
 }) => {
   const [action, setAction] = useState(ACTION.DEFAULT);
   const [orders, setOrders] = useState<ListType<Order>>(ListDefault);
@@ -67,6 +72,7 @@ export const OrderPage = ({
     ...initialFilter,
   });
   const [artists, setArtists] = useState<SearchType<User>[]>(users);
+  const [orderArtists, setOrderArtists] = useState<SearchType<User>[]>([]);
   const changeFilter = (
     key: string,
     value: number | string | undefined | boolean | DateRange,
@@ -84,27 +90,96 @@ export const OrderPage = ({
   };
   const isFirstRender = useRef(true);
   const getAristSchedules = async () => {
-    const date = mnDate(filter?.date?.from);
+    const selectedDate = mnDate(filter?.date?.from ?? new Date());
+    const selectedDateText = dateFormat(selectedDate);
+    const date = selectedDate;
     let index = date.getDay() - 1;
     index = index == -1 ? 6 : index;
-    const schedule = await search<Schedule>(Api.schedule, { index });
-    const scheduleItems = schedule.data ?? [];
+    const [schedule, artistLeaves, branchLeaves] = await Promise.all([
+      search<Schedule>(Api.schedule, { index }),
+      find<ArtistLeave>(Api.artist_leaves, {
+        limit: -1,
+        date: selectedDateText,
+      }),
+      find<BranchLeave>(Api.branch_leaves, {
+        limit: -1,
+        start_date: selectedDateText,
+        end_date: selectedDateText,
+      }),
+    ]);
+    const scheduleItems = (schedule.data ?? []).filter((item) =>
+      Boolean(item.value && `${item.value}`.trim()),
+    );
     const scheduledUserIds = new Set(
       scheduleItems.map((s) => s.user_id).filter(Boolean),
+    );
+    const artistLeaveIds = new Set(
+      (artistLeaves.data?.items ?? []).map((item) => item.artist_id).filter(Boolean),
+    );
+    const branchLeaveIds = new Set(
+      (branchLeaves.data?.items ?? []).map((item) => item.branch_id).filter(Boolean),
     );
 
     setArtists(
       users
-        .filter((u) => scheduledUserIds.has(u.id))
+        .filter((u) => {
+          const [, , branchId = ""] = u.value?.split("__") ?? [];
+          return (
+            scheduledUserIds.has(u.id) &&
+            !artistLeaveIds.has(u.id) &&
+            !branchLeaveIds.has(branchId)
+          );
+        })
         .map((u) => ({
           ...u,
           item: scheduleItems.find((a) => a.user_id == u.id)?.value,
         })),
     );
   };
+  const getOrderArtists = async () => {
+    const selectedStart = filter?.date?.from ?? mnDate(new Date());
+    const selectedEnd =
+      filter?.date?.to ?? filter?.date?.from ?? mnDate(new Date());
+    const start = dateFormat(mnDate(selectedStart));
+    const end = dateFormat(mnDate(selectedEnd));
+    const data = await fetcher<Order>(Api.order, {
+      page: 0,
+      limit: 1000,
+      sort: DEFAULT_PG.sort,
+      date: start,
+      end_date: filter?.list ? end : undefined,
+      order_status: filter?.status,
+      branch_id: filter?.branch,
+      friend: filter?.status != OrderStatus.Friend ? undefined : 0,
+    });
+    const map = new Map<string, SearchType<User>>();
+
+    data.items.forEach((order) => {
+      (order.details ?? []).forEach((detail: any) => {
+        const id = detail.user_id ?? detail.artist_id;
+        if (!id || map.has(id)) return;
+
+        const user = users.find((item) => item.id === id);
+        const [fallbackMobile = "", fallbackNickname = "", , fallbackColor = ""] =
+          user?.value?.split("__") ?? [];
+        const mobile = detail.mobile ?? fallbackMobile;
+        const nickname = detail.nickname ?? fallbackNickname;
+        const color = detail.color ?? fallbackColor;
+
+        map.set(id, {
+          id,
+          user_id: id,
+          value: `${mobile ?? ""}__${nickname ?? ""}____${color ?? ""}`,
+        });
+      });
+    });
+
+    setOrderArtists([...map.values()]);
+  };
   useEffect(() => {
     refresh();
     getAristSchedules();
+    getOrderArtists();
   }, [filter?.date, filter?.artist, filter?.branch, filter?.status]);
 
   const orderFormatter = (data: ListType<Order>) => {
@@ -138,6 +213,19 @@ export const OrderPage = ({
     const day = String(d.getDate()).padStart(2, "0");
     return `${y}-${m}-${day}`;
   };
+  const getFilteredDateFileSuffix = () => {
+    const selectedStart = filter?.date?.from ?? mnDate(new Date());
+    const selectedEnd =
+      filter?.date?.to ?? filter?.date?.from ?? mnDate(new Date());
+    const start = dateFormat(mnDate(selectedStart));
+    const end = dateFormat(mnDate(selectedEnd));
+
+    if (filter?.list && start !== end) {
+      return `${start}_${end}`;
+    }
+
+    return start;
+  };
   const refresh = async (pg: PG = DEFAULT_PG) => {
     setAction(ACTION.RUNNING);
     const { page, limit, sort } = pg;
@@ -170,15 +258,6 @@ export const OrderPage = ({
     const { edit, ...body } = e as any;
 
     const payload = { ...body };
-    const details = payload.details;
-    if (details.length == 1) {
-      payload.details = details.map((d: any) => {
-        return {
-          price: body.total_amount,
-          ...d,
-        };
-      });
-    }
     const res = edit
       ? await updateOne<Order>(
           Api.order,
@@ -232,7 +311,7 @@ export const OrderPage = ({
       link.href = url;
       link.setAttribute(
         "download",
-        `order_${mnDate().toISOString().slice(0, 10)}.xlsx`,
+        `order_${getFilteredDateFileSuffix()}.xlsx`,
       );
       document.body.appendChild(link);
       link.click();
@@ -286,6 +365,7 @@ export const OrderPage = ({
     }
 
     refresh({});
+    getOrderArtists();
   }, [filter?.list]);
   return (
     <div className="relative">
@@ -306,9 +386,11 @@ export const OrderPage = ({
                 service: services,
                 user: users,
                 artists: artists,
+                filterArtists: orderArtists,
               }}
               filter={filter}
               setFilter={changeFilter}
+              levelConfig={level}
               action={action}
               columns={columns}
               refresh={refresh}

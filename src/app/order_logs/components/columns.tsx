@@ -45,6 +45,11 @@ const formatOrderLogChangedAt = (value: string | Date) => {
   return parseDate(value, true);
 };
 
+const displayText = (value?: string | null) => {
+  const text = `${value ?? ""}`.trim();
+  return text.toLowerCase() === "null" ? "" : text;
+};
+
 export function getColumns(
   view: (id: OrderLog) => void,
 ): ColumnDef<OrderLog>[] {
@@ -66,12 +71,39 @@ export function getColumns(
       ),
     },
     {
+      accessorKey: "branch_name",
+      header: ({ table }) => <span>Салбар</span>,
+      cell: ({ row }) => (
+        <div>
+          <span>{displayText(row.getValue("branch_name") as string)}</span>
+        </div>
+      ),
+    },
+    {
+      accessorKey: "artist_names",
+      header: ({ table }) => <span>Артист</span>,
+      cell: ({ row }) => (
+        <div>
+          <span>{displayText(row.getValue("artist_names") as string)}</span>
+        </div>
+      ),
+    },
+    {
       accessorKey: "customer_mobile",
       header: ({ table }) => <span>Хэрэглэгчийн дугаар</span>,
 
       cell: ({ row }) => (
         <div>
           <span> {mobileFormatter(row.getValue("customer_mobile") as string)}</span>
+        </div>
+      ),
+    },
+    {
+      accessorKey: "customer_name",
+      header: ({ table }) => <span>Хэрэглэгчийн нэр</span>,
+      cell: ({ row }) => (
+        <div>
+          <span>{displayText(row.getValue("customer_name") as string)}</span>
         </div>
       ),
     },

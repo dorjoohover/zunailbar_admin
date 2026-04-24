@@ -40,6 +40,17 @@ type DailySummaryFilterState = {
   branch_id?: string;
 };
 
+type DailySummaryRow = {
+  date: string;
+  branch_id?: string;
+  branch_name: string;
+  pre_amount: number;
+  bank_amount: number;
+  card_amount: number;
+  cash_amount: number;
+  total_amount: number;
+};
+
 const parseDateValue = (value?: string) => {
   if (!value) return undefined;
   const [year, month, day] = value.split("-").map(Number);
@@ -53,6 +64,7 @@ const defaultSummary: PaymentDailySummary = {
   pre_amount: 0,
   cash_amount: 0,
   bank_amount: 0,
+  card_amount: 0,
   total_amount: 0,
 };
 
@@ -87,6 +99,90 @@ const normalizeReportFilter = (
   return filter;
 };
 
+const numberValue = (value?: number) => Number(value ?? 0);
+
+const getDateKey = (value?: Date | string) => {
+  if (!value) return "";
+  if (typeof value === "string") {
+    const trimmed = value.trim();
+
+    if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) {
+      return trimmed;
+    }
+
+    if (/^\d{4}\/\d{2}\/\d{2}$/.test(trimmed)) {
+      return trimmed.replaceAll("/", "-");
+    }
+
+    const normalized = parseDate(trimmed, false).replaceAll("/", "-");
+    if (normalized) return normalized;
+  }
+
+  const date = value instanceof Date ? value : new Date(value);
+  if (Number.isNaN(date.getTime())) return "";
+  return dateOnly(date);
+};
+
+const getDateLabel = (value?: Date | string) => {
+  const key = getDateKey(value);
+  return key ? key.replaceAll("-", "/") : "";
+};
+
+const getDateRangeKeys = (from?: string, to?: string) => {
+  if (!from && !to) return [];
+
+  const startKey = from ?? to;
+  const endKey = to ?? from;
+  if (!startKey || !endKey) return [];
+
+  const start = new Date(startKey);
+  const end = new Date(endKey);
+  if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) return [];
+
+  const current = new Date(start);
+  const dates: string[] = [];
+
+  while (current <= end) {
+    dates.push(dateOnly(current));
+    current.setDate(current.getDate() + 1);
+  }
+
+  return dates;
+};
+
+const getPaymentTypeLabel = (value?: string) =>
+  getTransactionTypeValue[
+    (String(value ?? "").toUpperCase() ||
+      "BANK") as keyof typeof getTransactionTypeValue
+  ] ?? "Дансаар";
+
+const isCashPayment = (value?: string) =>
+  String(value ?? "").toUpperCase() === "CASH";
+
+const isCardPayment = (value?: string) =>
+  String(value ?? "").toUpperCase() === "CARD";
+
+const paymentAmount = (amount?: number, label?: string) => {
+  const value = numberValue(amount);
+  if (value <= 0) return "-";
+  const formatted = money(String(value), "₮");
+  return label ? `${label} · ${formatted}` : formatted;
+};
+
+const rewardAmount = (amount?: number, label?: string) => {
+  const value = numberValue(amount);
+  if (value <= 0) return "-";
+  const formatted = `-${money(String(value), "₮")}`;
+  return label ? `${label} · ${formatted}` : formatted;
+};
+
+const isSameDailyRow = (
+  item: PaymentDailyBreakdownItem,
+  row: DailySummaryRow,
+) =>
+  getDateKey(item.order_date) === row.date &&
+  (!row.branch_id || item.branch_id === row.branch_id);
+
 export function DailySummaryPage({
   data,
   initialFilter,
@@ -110,7 +206,11 @@ export function DailySummaryPage({
   const [summary, setSummary] = useState<PaymentDailySummary>(
     data ?? defaultSummary,
   );
+  const [allDetailRows, setAllDetailRows] = useState<
+    PaymentDailyBreakdownItem[]
+  >([]);
   const [detailRows, setDetailRows] = useState<PaymentDailyBreakdownItem[]>([]);
+  const [selectedDailyRow, setSelectedDailyRow] = useState<DailySummaryRow>();
   const [reportFilter, setReportFilter] = useState(initialState);
   const normalizedReportFilter = useMemo(
     () => normalizeReportFilter(reportFilter),
@@ -131,29 +231,35 @@ export function DailySummaryPage({
 
   const refresh = async () => {
     setAction(ACTION.RUNNING);
-    const res = await find<any>(
-      Api.payment,
-      getFilterParams() as any,
-      "summary",
+    const filterParams = getFilterParams();
+    const [summaryRes, breakdownRes] = await Promise.all([
+      find<any>(Api.payment, filterParams as any, "summary"),
+      fetcher<PaymentDailyBreakdownItem>(
+        Api.payment,
+        {
+          page: 0,
+          limit: 500,
+          ...filterParams,
+        } as any,
+        "breakdown",
+      ),
+    ]);
+
+    const items = breakdownRes.items ?? [];
+    setSummary(
+      (summaryRes.data as unknown as PaymentDailySummary) ?? defaultSummary,
     );
-    setSummary((res.data as unknown as PaymentDailySummary) ?? defaultSummary);
+    setAllDetailRows(items);
+    if (selectedDailyRow) {
+      setDetailRows(items.filter((item) => isSameDailyRow(item, selectedDailyRow)));
+    }
     setAction(ACTION.DEFAULT);
   };
 
-  const openBreakdown = async () => {
+  const openBreakdown = (row: DailySummaryRow) => {
+    setSelectedDailyRow(row);
     setDetailOpen(true);
-    setDetailRows([]);
-    setDetailAction(ACTION.RUNNING);
-    const res = await fetcher<PaymentDailyBreakdownItem>(
-      Api.payment,
-      {
-        page: 0,
-        limit: 500,
-        ...getFilterParams(),
-      } as any,
-      "breakdown",
-    );
-    setDetailRows(res.items ?? []);
+    setDetailRows(allDetailRows.filter((item) => isSameDailyRow(item, row)));
     setDetailAction(ACTION.DEFAULT);
   };
 
@@ -161,36 +267,38 @@ export function DailySummaryPage({
     void refresh();
     setDetailOpen(false);
     setDetailRows([]);
+    setSelectedDailyRow(undefined);
   }, [reportFilter]);
 
   const clearReportFilter = () => {
     setReportFilter(initialState);
     setSummary(data ?? defaultSummary);
+    setAllDetailRows([]);
     setDetailOpen(false);
     setDetailRows([]);
+    setSelectedDailyRow(undefined);
   };
 
   const downloadSummary = () => {
     const rows = [
       [
-        "Эхлэх огноо",
-        "Дуусах огноо",
+        "Огноо",
         "Салбар",
         "Урьдчилгаа",
-        "Данс / карт",
+        "Данс",
+        "Карт",
         "Бэлэн",
         "Нийт",
       ],
-      [
-        summary.from || "-",
-        summary.to || summary.from || "-",
-        branches.items.find((item) => item.id === reportFilter.branch_id)
-          ?.name ?? "Бүгд",
-        String(summary.pre_amount ?? 0),
-        String(summary.bank_amount ?? 0),
-        String(summary.cash_amount ?? 0),
-        String(summary.total_amount ?? 0),
-      ],
+      ...dailyRows.map((row) => [
+        row.date,
+        row.branch_name,
+        String(row.pre_amount ?? 0),
+        String(row.bank_amount ?? 0),
+        String(row.card_amount ?? 0),
+        String(row.cash_amount ?? 0),
+        String(row.total_amount ?? 0),
+      ]),
     ];
 
     const csv = rows.map((row) => row.join(",")).join("\n");
@@ -208,19 +316,99 @@ export function DailySummaryPage({
     window.URL.revokeObjectURL(url);
   };
 
-  const detailTotal = detailRows.reduce(
-    (total, item) => total + Number(item.amount ?? 0),
-    0,
-  );
-  const detailOrderTotal = Array.from(
-    detailRows.reduce((acc, item) => {
-      if (!item.order_id) return acc;
-      if (!acc.has(item.order_id)) {
-        acc.set(item.order_id, Number(item.order_total_amount ?? 0));
+  const dailyRows = useMemo(() => {
+    const grouped = new Map<string, DailySummaryRow>();
+    const fallbackBranchName =
+      branches.items.find(
+        (item) => item.id === normalizedReportFilter.branch_id,
+      )?.name ?? "Бүх салбар";
+
+    for (const item of allDetailRows) {
+      const date = getDateKey(item.order_date);
+      if (!date) continue;
+
+      const current = grouped.get(date) ?? {
+        date,
+        branch_id: normalizedReportFilter.branch_id,
+        branch_name: fallbackBranchName,
+        pre_amount: 0,
+        bank_amount: 0,
+        card_amount: 0,
+        cash_amount: 0,
+        total_amount: 0,
+      };
+      const paidAmount = numberValue(item.paid_amount);
+
+      current.pre_amount += numberValue(item.pre_amount);
+      current.total_amount += numberValue(item.amount);
+      if (paidAmount > 0 && isCashPayment(item.transaction_type)) {
+        current.cash_amount += paidAmount;
+      } else if (paidAmount > 0 && isCardPayment(item.transaction_type)) {
+        current.card_amount += paidAmount;
+      } else {
+        current.bank_amount += paidAmount;
+      }
+
+      grouped.set(date, current);
+    }
+
+    const rangeKeys = getDateRangeKeys(summary.from, summary.to);
+    const rows = (rangeKeys.length ? rangeKeys : [...grouped.keys()])
+      .map(
+        (date) =>
+          grouped.get(date) ?? {
+            date,
+            branch_id: normalizedReportFilter.branch_id,
+            branch_name: fallbackBranchName,
+            pre_amount: 0,
+            bank_amount: 0,
+            card_amount: 0,
+            cash_amount: 0,
+            total_amount: 0,
+          },
+      )
+      .sort((a, b) => b.date.localeCompare(a.date));
+
+    if (rows.length) return rows;
+
+    return [
+      {
+        date: summary.from || "-",
+        branch_id: normalizedReportFilter.branch_id,
+        branch_name: fallbackBranchName,
+        pre_amount: numberValue(summary.pre_amount),
+        bank_amount: numberValue(summary.bank_amount),
+        card_amount: numberValue(summary.card_amount),
+        cash_amount: numberValue(summary.cash_amount),
+        total_amount: numberValue(summary.total_amount),
+      },
+    ];
+  }, [allDetailRows, branches.items, normalizedReportFilter.branch_id, summary]);
+
+  const detailSummary = detailRows.reduce(
+    (acc, item) => {
+      const paidAmount = numberValue(item.paid_amount);
+      acc.pre_amount += numberValue(item.pre_amount);
+      acc.discount_amount += numberValue(item.discount_amount);
+      acc.total_amount += numberValue(item.amount);
+      if (paidAmount > 0 && isCashPayment(item.transaction_type)) {
+        acc.cash_amount += paidAmount;
+      } else if (paidAmount > 0 && isCardPayment(item.transaction_type)) {
+        acc.card_amount += paidAmount;
+      } else {
+        acc.bank_amount += paidAmount;
       }
       return acc;
-    }, new Map<string, number>()),
-  ).reduce((total, [, amount]) => total + amount, 0);
+    },
+    {
+      pre_amount: 0,
+      discount_amount: 0,
+      bank_amount: 0,
+      card_amount: 0,
+      cash_amount: 0,
+      total_amount: 0,
+    },
+  );
   const summaryCards = useMemo(
     () => [
       {
@@ -228,8 +416,12 @@ export function DailySummaryPage({
         value: money(String(summary.pre_amount ?? 0), "₮"),
       },
       {
-        label: "Данс / карт",
+        label: "Данс",
         value: money(String(summary.bank_amount ?? 0), "₮"),
+      },
+      {
+        label: "Карт",
+        value: money(String(summary.card_amount ?? 0), "₮"),
       },
       {
         label: "Бэлэн",
@@ -347,7 +539,7 @@ export function DailySummaryPage({
               )?.name ?? "Бүх салбар"}
             </p>
           </div>
-          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
             {summaryCards.map((item) => (
               <div
                 key={item.label}
@@ -366,48 +558,48 @@ export function DailySummaryPage({
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Эхлэх огноо</TableHead>
-                <TableHead>Дуусах огноо</TableHead>
+                <TableHead>Огноо</TableHead>
                 <TableHead>Салбар</TableHead>
                 <TableHead>Урьдчилгаа</TableHead>
-                <TableHead>Данс / карт</TableHead>
+                <TableHead>Данс</TableHead>
+                <TableHead>Карт</TableHead>
                 <TableHead>Бэлэн</TableHead>
                 <TableHead>Нийт</TableHead>
                 <TableHead>Дэлгэрэнгүй</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              <TableRow>
-                <TableCell>{summary.from || "-"}</TableCell>
-                <TableCell>{summary.to || summary.from || "-"}</TableCell>
-                <TableCell>
-                  {branches.items.find(
-                    (item) => item.id === reportFilter.branch_id,
-                  )?.name ?? "Бүх салбар"}
-                </TableCell>
-                <TableCell>
-                  {money(String(summary.pre_amount ?? 0), "₮")}
-                </TableCell>
-                <TableCell>
-                  {money(String(summary.bank_amount ?? 0), "₮")}
-                </TableCell>
-                <TableCell>
-                  {money(String(summary.cash_amount ?? 0), "₮")}
-                </TableCell>
-                <TableCell className="font-bold text-slate-900">
-                  {money(String(summary.total_amount ?? 0), "₮")}
-                </TableCell>
-                <TableCell>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => void openBreakdown()}
-                    disabled={action === ACTION.RUNNING}
-                  >
-                    Дэлгэрэнгүй
-                  </Button>
-                </TableCell>
-              </TableRow>
+              {dailyRows.map((row) => (
+                <TableRow key={`${row.date}-${row.branch_id ?? "all"}`}>
+                  <TableCell>{row.date}</TableCell>
+                  <TableCell>{row.branch_name}</TableCell>
+                  <TableCell>
+                    {money(String(row.pre_amount ?? 0), "₮")}
+                  </TableCell>
+                  <TableCell>
+                    {money(String(row.bank_amount ?? 0), "₮")}
+                  </TableCell>
+                  <TableCell>
+                    {money(String(row.card_amount ?? 0), "₮")}
+                  </TableCell>
+                  <TableCell>
+                    {money(String(row.cash_amount ?? 0), "₮")}
+                  </TableCell>
+                  <TableCell className="font-bold text-slate-900">
+                    {money(String(row.total_amount ?? 0), "₮")}
+                  </TableCell>
+                  <TableCell>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => openBreakdown(row)}
+                      disabled={action === ACTION.RUNNING}
+                    >
+                      Дэлгэрэнгүй
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))}
             </TableBody>
           </Table>
         </div>
@@ -417,36 +609,46 @@ export function DailySummaryPage({
           setOpen={setDetailOpen}
           maw="6xl"
           title="Борлуулалтын задрал"
-          description={`${summary.from || "-"}${summary.to ? ` - ${summary.to}` : ""}${
-            normalizedReportFilter.branch_id
-              ? ` · ${branches.items.find((item) => item.id === normalizedReportFilter.branch_id)?.name ?? ""}`
-              : ""
+          description={`${selectedDailyRow?.date ?? summary.from ?? "-"}${
+            selectedDailyRow?.branch_name ? ` · ${selectedDailyRow.branch_name}` : ""
           }`}
         >
           <div className="space-y-4">
-            <div className="grid gap-2 sm:grid-cols-4">
+            <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-6">
               <div className="rounded-xl bg-slate-50 px-4 py-3">
                 <p className="text-xs text-slate-500">Урьдчилгаа</p>
                 <p className="text-sm font-semibold text-slate-900">
-                  {money(String(summary.pre_amount ?? 0), "₮")}
+                  {money(String(detailSummary.pre_amount ?? 0), "₮")}
                 </p>
               </div>
               <div className="rounded-xl bg-slate-50 px-4 py-3">
-                <p className="text-xs text-slate-500">Данс / карт</p>
+                <p className="text-xs text-slate-500">Урамшуулал</p>
+                <p className="text-sm font-semibold text-rose-600">
+                  {rewardAmount(detailSummary.discount_amount)}
+                </p>
+              </div>
+              <div className="rounded-xl bg-slate-50 px-4 py-3">
+                <p className="text-xs text-slate-500">Данс</p>
                 <p className="text-sm font-semibold text-slate-900">
-                  {money(String(summary.bank_amount ?? 0), "₮")}
+                  {money(String(detailSummary.bank_amount ?? 0), "₮")}
+                </p>
+              </div>
+              <div className="rounded-xl bg-slate-50 px-4 py-3">
+                <p className="text-xs text-slate-500">Карт</p>
+                <p className="text-sm font-semibold text-slate-900">
+                  {money(String(detailSummary.card_amount ?? 0), "₮")}
                 </p>
               </div>
               <div className="rounded-xl bg-slate-50 px-4 py-3">
                 <p className="text-xs text-slate-500">Бэлэн</p>
                 <p className="text-sm font-semibold text-slate-900">
-                  {money(String(summary.cash_amount ?? 0), "₮")}
+                  {money(String(detailSummary.cash_amount ?? 0), "₮")}
                 </p>
               </div>
               <div className="rounded-xl bg-slate-50 px-4 py-3">
                 <p className="text-xs text-slate-500">Нийт</p>
                 <p className="text-sm font-semibold text-slate-900">
-                  {money(String(summary.total_amount ?? 0), "₮")}
+                  {money(String(detailSummary.total_amount ?? 0), "₮")}
                 </p>
               </div>
             </div>
@@ -458,15 +660,16 @@ export function DailySummaryPage({
                   <TableHead>Салбар</TableHead>
                   <TableHead>Артист</TableHead>
                   <TableHead>Үйлчилгээ</TableHead>
-                  <TableHead>Төлбөр</TableHead>
-                  <TableHead>Төлсөн дүн</TableHead>
+                  <TableHead>Урьдчилгаа</TableHead>
+                  <TableHead>Урамшуулал</TableHead>
+                  <TableHead>Үлдэгдэл төлбөр</TableHead>
                   <TableHead>Нийт үнэ</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {detailAction === ACTION.RUNNING ? (
                   <TableRow>
-                    <TableCell colSpan={7} className="py-8 text-center">
+                    <TableCell colSpan={8} className="py-8 text-center">
                       Уншиж байна
                     </TableCell>
                   </TableRow>
@@ -474,28 +677,25 @@ export function DailySummaryPage({
                   detailRows.map((item) => (
                     <TableRow key={item.id}>
                       <TableCell>
-                        {parseDate(item.order_date ?? "", false)}
+                        {getDateLabel(item.order_date)}
                       </TableCell>
                       <TableCell>{item.branch_name ?? "-"}</TableCell>
                       <TableCell>{item.artist_names ?? "-"}</TableCell>
                       <TableCell>{item.service_names ?? "-"}</TableCell>
                       <TableCell>
-                        {[
-                          Number(item.pre_amount ?? 0) > 0 ? "Урьдчилгаа" : "",
-                          Number(item.paid_amount ?? 0) > 0
-                            ? (getTransactionTypeValue[
-                                (String(
-                                  item.transaction_type ?? "",
-                                ).toUpperCase() ||
-                                  "BANK") as keyof typeof getTransactionTypeValue
-                              ] ?? "Дансаар")
-                            : "",
-                        ]
-                          .filter(Boolean)
-                          .join(" + ") || "-"}
+                        {paymentAmount(item.pre_amount, "Урьдчилгаа")}
                       </TableCell>
                       <TableCell>
-                        {money(String(item.amount ?? 0), "₮")}
+                        {rewardAmount(
+                          item.discount_amount,
+                          item.voucher_name || "Урамшуулал",
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        {paymentAmount(
+                          item.paid_amount,
+                          getPaymentTypeLabel(item.transaction_type),
+                        )}
                       </TableCell>
                       <TableCell>
                         {money(String(item.order_total_amount ?? 0), "₮")}
@@ -504,7 +704,7 @@ export function DailySummaryPage({
                   ))
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={7} className="py-8 text-center">
+                    <TableCell colSpan={8} className="py-8 text-center">
                       Задралын мэдээлэл алга байна
                     </TableCell>
                   </TableRow>
@@ -514,14 +714,15 @@ export function DailySummaryPage({
                   <TableCell />
                   <TableCell />
                   <TableCell />
+                  <TableCell />
+                  <TableCell className="font-semibold text-rose-600">
+                    {rewardAmount(detailSummary.discount_amount)}
+                  </TableCell>
                   <TableCell className="font-semibold text-slate-900">
                     Нийт
                   </TableCell>
                   <TableCell className="font-semibold text-slate-900">
-                    {money(String(detailTotal), "₮")}
-                  </TableCell>
-                  <TableCell className="font-semibold text-slate-900">
-                    {money(String(detailOrderTotal), "₮")}
+                    {money(String(detailSummary.total_amount), "₮")}
                   </TableCell>
                 </TableRow>
               </TableBody>

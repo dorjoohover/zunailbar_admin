@@ -32,6 +32,11 @@ export interface IOrder {
   transaction_type?: string;
   pre_method?: PaymentMethod;
   method?: PaymentMethod;
+  voucher_id?: string | null;
+  voucher_name?: string | null;
+  voucher_value?: number | null;
+  discount?: number;
+  discount_type?: number | null;
 }
 export interface Order {
   id: string;
@@ -58,6 +63,11 @@ export interface Order {
   transaction_type?: string;
   method?: PaymentMethod;
   pre_method?: PaymentMethod;
+  voucher_id?: string | null;
+  voucher_name?: string | null;
+  voucher_value?: number | null;
+  discount?: number;
+  discount_type?: number | null;
 }
 
 export interface IOrderDetail {
@@ -66,6 +76,7 @@ export interface IOrderDetail {
   service_id: string;
   description?: string;
   price?: number;
+  original_price?: number;
   max_price?: number;
   min_price?: number;
   service_name?: string;
@@ -79,6 +90,14 @@ export interface IOrderDetail {
   category?: number | null;
   created_at?: Date;
   pre?: number;
+  transaction_type?: string;
+  branch_id?: string;
+  branch_name?: string;
+  artist_names?: string;
+  service_names?: string;
+  pre_amount?: number;
+  paid_amount?: number;
+  order_total_amount?: number;
 }
 
 export interface DateTime {
@@ -94,6 +113,11 @@ export interface OrderLog {
   changed_by: string;
   changed_at: Date | string;
   order_id: string;
+  branch_id?: string;
+  branch_name?: string;
+  artist_names?: string;
+  customer_mobile?: string;
+  customer_name?: string;
   old_status: STATUS;
   new_status: STATUS;
   old_order_status: OrderStatus;

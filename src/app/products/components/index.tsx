@@ -51,7 +51,7 @@ type FilterType = {
 type ProductType = z.infer<typeof formSchema>;
 const defaultValues = {
   edit: undefined,
-  branch_id: "",
+  brand_id: "",
   category_id: "",
   name: "",
 };
@@ -125,9 +125,11 @@ export const ProductPage = ({
       );
       setOpen(false);
       clear();
+      showToast("success", "Амжилттай хадгалагдлаа!");
+    } else {
+      showToast("error", res.error ?? "Алдаа гарлаа");
     }
     setAction(ACTION.DEFAULT);
-    showToast("success", "Амжилттай хадгалагдлаа!");
   };
   const onInvalid = async <T,>(e: T) => {
     const error = Object.entries(e as any)
@@ -185,10 +187,14 @@ export const ProductPage = ({
     setAction(ACTION.RUNNING);
     const { page, limit, sort } = pg;
     const res = await excel(Api.product, {
+      ...pg,
       page: page ?? DEFAULT_PG.page,
       limit: -1,
       sort: sort ?? DEFAULT_PG.sort,
-      ...pg,
+      name: pg.filter,
+      type: CategoryType.DEFAULT,
+      brand_id: filter?.brand,
+      category_id: filter?.category,
     });
     if (res.success && res.data) {
       const blob = new Blob([res.data], { type: "application/xlsx" });

@@ -7,7 +7,7 @@ import { ROLE, UserStatus } from "@/lib/enum";
 import { Slot } from "@/models/slot.model";
 
 export default async function Page() {
-  const [branch, user, services] = await Promise.all([
+  const [branch, user, services, level] = await Promise.all([
     search<Branch>(Api.branch, { limit: -1 }),
     search<User>(Api.user, {
       limit: 20,
@@ -16,9 +16,11 @@ export default async function Page() {
     }),
 
     find<Service>(Api.service, { limit: 20, sort: false }),
+    find(Api.order, {}, "level"),
   ]);
 
   const client = await search<User>(Api.user, { limit: 20, role: ROLE.CLIENT });
+  const levelConfig = (level.data as any)?.items ?? level.data ?? {};
   return (
     <section>
       {/* <div className="admin-container"> */}
@@ -27,6 +29,7 @@ export default async function Page() {
         users={user.data}
         customers={client.data}
         services={services.data}
+        level={levelConfig as any}
       />
       {/* </div> */}
     </section>

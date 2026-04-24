@@ -106,10 +106,26 @@ export const EmployeeProductPage = ({
     [Api.product]: products,
     [Api.user]: users,
   });
+  const [productSearch, setProductSearch] = useState("");
   const productMap = useMemo(
     () => new Map(products.map((p) => [p.id, p.value])),
     [products]
   );
+
+  const refreshProductOptions = async (value = "") => {
+    const query = value.length > 1 ? value : "";
+    const result = await search<Product>(Api.product, {
+      id: query,
+      type: CategoryType.DEFAULT,
+      limit: 20,
+      page: 0,
+    });
+
+    setItems((prev) => ({
+      ...prev,
+      [Api.product]: result.data,
+    }));
+  };
 
   const userProductFormatter = (data: ListType<UserProduct>) => {
     const items: UserProduct[] = data.items.map((item) => {
@@ -135,7 +151,8 @@ export const EmployeeProductPage = ({
         )
       : await create(Api.user_product, { items: [payload as UserProduct] });
     if (res.success) {
-      refresh();
+      await refresh();
+      await refreshProductOptions(productSearch);
 
       showToast("success", edit ? "Мэдээлэл засагдсан." : "Амжилттай нэмлээ.");
       setOpen(false);
@@ -265,6 +282,10 @@ export const EmployeeProductPage = ({
     if (v.length > 1) value = v;
     if (v.length == 1) return;
 
+    if (key === Api.product) {
+      setProductSearch(value);
+    }
+
     const payload =
       key === Api.product
         ? { id: value, type: CategoryType.DEFAULT }
@@ -346,6 +367,9 @@ export const EmployeeProductPage = ({
               open={open == true}
               setOpen={(v) => {
                 setOpen(v);
+                if (v) {
+                  void refreshProductOptions(productSearch);
+                }
                 form.reset(defaultValues);
               }}
               loading={action == ACTION.RUNNING}

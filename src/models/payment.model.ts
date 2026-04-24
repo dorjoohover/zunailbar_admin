@@ -44,6 +44,7 @@ export interface PaymentDailySummary {
   pre_amount: number;
   cash_amount: number;
   bank_amount: number;
+  card_amount: number;
   total_amount: number;
 }
 
@@ -61,6 +62,8 @@ export interface PaymentDailyBreakdownItem {
   artist_names?: string;
   service_names?: string;
   pre_amount?: number;
+  discount_amount?: number;
   paid_amount?: number;
   order_total_amount?: number;
+  voucher_name?: string;
 }

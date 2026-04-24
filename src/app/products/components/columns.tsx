@@ -30,7 +30,7 @@ export function getColumns(onEdit: (product: IProduct) => void, remove: (index: 
     },
     {
       accessorKey: "category_name",
-      header: "Англилал",
+      header: "Ангилал",
       cell: ({ row }) => checkEmpty(row.getValue("category_name")),
     },
 

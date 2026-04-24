@@ -43,7 +43,6 @@ import {
   IIntegrationPayment,
   IntegrationPayment,
   IntegrationTransferSummaryRow,
-  SalaryReconciliationSummary,
   User,
 } from "@/models";
 import { Api } from "@/utils/api";
@@ -91,14 +90,6 @@ type IntegrationHistoryFilter = {
 
 type IntegrationHistoryForm = z.infer<typeof formSchema>;
 type IntegrationHistoryItem = IntegrationPayment & { user_name?: string };
-
-const defaultSummary: SalaryReconciliationSummary = {
-  income_amount: 0,
-  salary_amount: 0,
-  transferred_amount: 0,
-  balance_amount: 0,
-  order_count: 0,
-};
 
 const parseDateValue = (value?: string) => {
   if (!value) return undefined;
@@ -213,14 +204,14 @@ export const IntegrationHistoryPage = ({
     setPayments({
       items,
       count: list.count,
-      summary: list.summary ?? defaultSummary,
+      summary: list.summary,
       from: list.from,
       to: list.to,
     });
     setRows({
       items: summaryItems,
       count: summaryItems.length,
-      summary: list.summary ?? defaultSummary,
+      summary: list.summary,
       from: filterParams.from ?? list.from ?? "",
       to: filterParams.to ?? list.to ?? "",
     });
@@ -401,15 +392,14 @@ export const IntegrationHistoryPage = ({
     });
   };
 
-  const summary =
-    (payments.summary as SalaryReconciliationSummary | undefined) ??
-    defaultSummary;
-  const totalProfit =
-    Number(summary.income_amount ?? 0) - Number(summary.salary_amount ?? 0);
   const summaryCards = useMemo(() => {
     const totalArtists = rows.items.length;
     const totalPayments = rows.items.reduce(
       (total, item) => total + Number(item.payment_count ?? 0),
+      0,
+    );
+    const totalTransferred = rows.items.reduce(
+      (total, item) => total + Number(item.transferred_amount ?? 0),
       0,
     );
 
@@ -423,27 +413,11 @@ export const IntegrationHistoryPage = ({
         value: String(totalPayments),
       },
       {
-        label: "Орлого",
-        value: money(String(summary.income_amount ?? 0), "₮"),
-      },
-      {
-        label: "Цалин",
-        value: money(String(summary.salary_amount ?? 0), "₮"),
-      },
-      {
-        label: "Ашиг",
-        value: money(String(totalProfit), "₮"),
-      },
-      {
-        label: "Шилжүүлсэн",
-        value: money(String(summary.transferred_amount ?? 0), "₮"),
-      },
-      {
-        label: "Цалингийн үлдэгдэл",
-        value: money(String(summary.balance_amount ?? 0), "₮"),
+        label: "Нийт шилжүүлсэн",
+        value: money(String(totalTransferred), "₮"),
       },
     ];
-  }, [rows.items, summary, totalProfit]);
+  }, [rows.items]);
   const detailTotal = detailRows.reduce(
     (total, item) => total + Number(item.amount ?? 0),
     0,
@@ -470,7 +444,7 @@ export const IntegrationHistoryPage = ({
               </p>
             </div>
           </div>
-          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-7">
+          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
             {summaryCards.map((item) => (
               <div
                 key={item.label}

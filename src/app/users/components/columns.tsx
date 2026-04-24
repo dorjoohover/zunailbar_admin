@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import TooltipWrapper from "@/components/tooltipWrapper";
 import {
+  CUSTOMER_USER_LEVELS,
   getEnumValues,
   getUserLevelValue,
   UserStatusValue,
@@ -22,12 +23,14 @@ import { UserLevel, UserStatus } from "@/lib/enum";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { AppAlertDialog } from "@/components/AlertDialog";
+import { getLevelName, LevelConfig } from "@/lib/level-config";
 
 export function getColumns(
   onEdit: (product: IUser) => void,
   remove: (index: number) => Promise<boolean>,
   setStatus: (index: number, status: UserStatus) => void,
-  setLevel: (index: number, status: UserLevel) => void
+  setLevel: (index: number, status: UserLevel) => void,
+  levelConfig: LevelConfig
 ): ColumnDef<IUser>[] {
   return [
     {
@@ -76,17 +79,18 @@ export function getColumns(
     },
     {
       accessorKey: "level",
-      header: ({ column }) => "Эрэмбэ",
+      header: ({ column }) => "Хэрэглэгчийн түвшин",
       cell: ({ row }) => {
         const value = row.getValue("level") as UserLevel;
 
         if (value != undefined && value != null) {
           const level = getUserLevelValue[value];
-          const { Icon, textColor } = level;
+          const { Icon, color, textColor } = level;
           return (
-            <div>
-              <Icon color={textColor} />
-            </div>
+            <span className={cn(color, "inline-flex items-center gap-1")}>
+              <Icon color={textColor} className="size-4" />
+              {getLevelName(levelConfig, "customer", value)}
+            </span>
           );
         } else {
           return <div>-</div>;
@@ -148,7 +152,7 @@ export function getColumns(
               </DropdownMenuContent>
             </DropdownMenu>
             <DropdownMenu>
-              <TooltipWrapper tooltip="Эрэмбэ солих">
+              <TooltipWrapper tooltip="Хэрэглэгчийн түвшин солих">
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" size="icon">
                     <Gem className="size-4" />
@@ -157,9 +161,9 @@ export function getColumns(
               </TooltipWrapper>
 
               <DropdownMenuContent>
-                <DropdownMenuLabel>Эрэмбэ солих</DropdownMenuLabel>
+                <DropdownMenuLabel>Хэрэглэгчийн түвшин солих</DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                {getEnumValues(UserLevel).map((item, i) => {
+                {CUSTOMER_USER_LEVELS.map((item, i) => {
                   const status = getUserLevelValue[item];
                   return (
                     <DropdownMenuItem
@@ -167,7 +171,7 @@ export function getColumns(
                       onClick={() => setLevel(row.index, item)}
                     >
                       <span className={cn(status.color, "w-full text-center")}>
-                        {status.name}
+                        {getLevelName(levelConfig, "customer", item)}
                       </span>
                     </DropdownMenuItem>
                   );

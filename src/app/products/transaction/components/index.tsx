@@ -149,7 +149,7 @@ export const ProductTransactionPage = ({
     const branch_id = filter?.branch;
     const user_id = filter?.user;
     const product_id = filter?.product;
-    const product_transaction_status = filter?.status;
+    const transaction_status = filter?.status;
     await fetcher<ProductTransaction>(Api.product_transaction_admin, {
       page: page ?? DEFAULT_PG.page,
       limit: limit ?? DEFAULT_PG.limit,
@@ -157,7 +157,7 @@ export const ProductTransactionPage = ({
       branch_id,
       user_id,
       product_id,
-      product_transaction_status,
+      transaction_status,
       ...pg,
     }).then((d) => {
       transactionFormatter(d);
@@ -212,7 +212,7 @@ export const ProductTransactionPage = ({
         branch_id: filter?.branch,
         user_id: filter?.user,
         product_id: filter?.product,
-        product_transaction_status: filter?.status,
+        transaction_status: filter?.status,
         page: 0,
       }),
     );
