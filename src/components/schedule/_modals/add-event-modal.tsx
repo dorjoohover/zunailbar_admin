@@ -467,17 +467,19 @@ export default function AddEventModal({
       normalizePriceValue(formData.discount ?? 0),
       detailSubtotal,
     );
+    const rawPreAmount = normalizePriceValue(formData.pre_amount ?? 0);
     const normalizedTotalAmount = Math.max(
       detailSubtotal - normalizedDiscount,
+      rawPreAmount,
       0,
     );
     const normalizedPreAmount = Math.min(
-      Number(formData.pre_amount ?? 0),
+      rawPreAmount,
       normalizedTotalAmount,
     );
-    const normalizedPaidAmount = Math.min(
-      normalizePriceValue(formData.paid_amount ?? 0),
-      Math.max(normalizedTotalAmount - normalizedPreAmount, 0),
+    const normalizedPaidAmount = Math.max(
+      normalizedTotalAmount - normalizedPreAmount,
+      0,
     );
     const newEvent = {
       branch_id: formData.branch_id,
@@ -834,32 +836,32 @@ export default function AddEventModal({
 
   useEffect(() => {
     if (!details.length) {
-      const preservedTotal = isEdit ? normalizePriceValue(total_amount) : 0;
+      const preservedTotal = Math.max(
+        isEdit ? normalizePriceValue(total_amount) : 0,
+        normalizePriceValue(pre_amount),
+      );
 
       setFormValueIfChanged("total_amount", preservedTotal, {
         shouldDirty: true,
         shouldTouch: false,
       });
 
-      if (isEdit) {
-        const normalizedPreAmount = Math.min(
-          normalizePriceValue(pre_amount),
-          preservedTotal,
-        );
-        const nextPaidAmount = Math.min(
-          normalizePriceValue(paid_amount),
-          Math.max(preservedTotal - normalizedPreAmount, 0),
-        );
+      const normalizedPreAmount = Math.min(
+        normalizePriceValue(pre_amount),
+        preservedTotal,
+      );
+      const nextPaidAmount = Math.max(preservedTotal - normalizedPreAmount, 0);
 
+      if (isEdit) {
         setFormValueIfChanged("pre_amount", normalizedPreAmount, {
           shouldDirty: true,
           shouldTouch: false,
         });
-        setFormValueIfChanged("paid_amount", nextPaidAmount, {
-          shouldDirty: true,
-          shouldTouch: false,
-        });
       }
+      setFormValueIfChanged("paid_amount", nextPaidAmount, {
+        shouldDirty: true,
+        shouldTouch: false,
+      });
 
       return;
     }
@@ -877,8 +879,16 @@ export default function AddEventModal({
       effectiveDiscount,
     );
     const calculatedTotal = sumPrices(discountedDetails);
-    if (calculatedTotal <= 0) {
+    const nextTotalAmount = Math.max(
+      calculatedTotal,
+      normalizePriceValue(pre_amount),
+    );
+    if (nextTotalAmount <= 0) {
       setFormValueIfChanged("total_amount", 0, {
+        shouldDirty: true,
+        shouldTouch: false,
+      });
+      setFormValueIfChanged("paid_amount", 0, {
         shouldDirty: true,
         shouldTouch: false,
       });
@@ -886,13 +896,10 @@ export default function AddEventModal({
     }
     const normalizedPreAmount = Math.min(
       normalizePriceValue(pre_amount),
-      calculatedTotal,
+      nextTotalAmount,
     );
-    const nextPaidAmount = Math.min(
-      normalizePriceValue(paid_amount),
-      Math.max(calculatedTotal - normalizedPreAmount, 0),
-    );
-    setFormValueIfChanged("total_amount", calculatedTotal, {
+    const nextPaidAmount = Math.max(nextTotalAmount - normalizedPreAmount, 0);
+    setFormValueIfChanged("total_amount", nextTotalAmount, {
       shouldDirty: true,
       shouldTouch: false,
     });
@@ -1192,7 +1199,7 @@ export default function AddEventModal({
               {(field) => {
                 return (
                   <TextField
-                    disabled={false}
+                    disabled={true}
                     type={INPUT_TYPE.MONEY}
                     props={{ ...field }}
                   />
