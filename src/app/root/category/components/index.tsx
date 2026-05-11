@@ -8,7 +8,6 @@ import {
   PG,
   DEFAULT_PG,
   getEnumValues,
-  CategoryTypeValues,
   VALUES,
   ZValidator,
 } from "@/lib/constants";
@@ -23,24 +22,17 @@ import { ComboBox } from "@/shared/components/combobox";
 import { TextField } from "@/shared/components/text.field";
 import { fetcher } from "@/hooks/fetcher";
 import { getColumns } from "./columns";
-import { CategoryType as CategoryTypEnum } from "@/lib/enum";
 import DynamicHeader from "@/components/dynamicHeader";
 import { firstLetterUpper } from "@/lib/functions";
 import { showToast } from "@/shared/components/showToast";
 
 const formSchema = z.object({
   name: ZValidator.name,
-  type: z
-    .preprocess(
-      (val) => (typeof val === "string" ? parseInt(val, 10) : val),
-      z.nativeEnum(CategoryTypEnum).nullable()
-    )
-    .optional() as unknown as number,
+
   edit: z.string().nullable().optional(),
 });
 const defaultValues = {
   name: "",
-  type: CategoryTypEnum.DEFAULT,
   edit: undefined,
 };
 type CategoryType = z.infer<typeof formSchema>;
@@ -87,7 +79,7 @@ export const CategoryPage = ({ data }: { data: ListType<Category> }) => {
       ? await updateOne<ICategory>(
           Api.category,
           edit ?? "",
-          payload as unknown as ICategory
+          payload as unknown as ICategory,
         )
       : await create<ICategory>(Api.category, e as ICategory);
     if (res.success) {
@@ -144,28 +136,6 @@ export const CategoryPage = ({ data }: { data: ListType<Category> }) => {
                     >
                       {(field) => {
                         return <TextField props={{ ...field }} />;
-                      }}
-                    </FormItems>
-                    <FormItems
-                      label="Төрөл"
-                      control={form.control}
-                      name="type"
-                      className={"col-span-1"}
-                    >
-                      {(field) => {
-                        return (
-                          <ComboBox
-                            props={{ ...field }}
-                            items={getEnumValues(CategoryTypEnum).map(
-                              (item) => {
-                                return {
-                                  value: item.toString(),
-                                  label: CategoryTypeValues[item],
-                                };
-                              }
-                            )}
-                          />
-                        );
                       }}
                     </FormItems>
                   </div>

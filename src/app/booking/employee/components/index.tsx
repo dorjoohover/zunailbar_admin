@@ -133,19 +133,30 @@ export const SchedulePage = ({
   useEffect(() => {
     setScheduleData(toScheduleData(schedules?.items ?? []));
   }, [schedules?.items]);
-  const add = async (index: number, day: ScheduleData[number], isAdd: boolean) => {
+  const add = async (index: number, day: ScheduleData[number]) => {
+    // Хоосон цаг хадгалахыг бүрэн блоклоно. Хэрэв одоо байгаа мөртэй бол remove дуудна.
+    if (!day.times || day.times.length === 0) {
+      const existing = schedules?.items?.find((b) => b.index === index);
+      if (existing) {
+        await remove(index);
+      } else {
+        showToast("info", "Цаг сонгоогүй байна.");
+      }
+      return;
+    }
+
     setAction(ACTION.RUNNING);
+    const existingId = schedules?.items?.find((b) => b.index === index)?.id;
     const payload = {
       index: index,
-      times: day.times.length == 0 ? null : day.times,
-      finish_time: day.times.length == 0 ? null : day.finish_time ?? null,
+      times: day.times,
+      finish_time: day.finish_time ?? null,
       user_id: selectedUser.id,
     };
 
-    const id = schedules?.items?.filter((b) => b.index == index)?.[0]?.id;
-    const res = isAdd
-      ? await create<ISchedule>(Api.schedule, payload)
-      : await updateOne<ISchedule>(Api.schedule, id!, payload);
+    const res = existingId
+      ? await updateOne<ISchedule>(Api.schedule, existingId, payload)
+      : await create<ISchedule>(Api.schedule, payload);
     if (res.success) {
       refresh();
       showToast("success", "Амжилттай шинэчиллээ.");
@@ -181,16 +192,11 @@ export const SchedulePage = ({
     day: ScheduleData[number],
     action: number,
   ) => {
-    if (action == 4) await remove(dayIndex);
-    if (action == 0)
-      await add(dayIndex, day, !(scheduleData[dayIndex]?.times?.length ?? 0));
-
-    if (action == 2)
-      await add(
-        dayIndex,
-        day,
-        !(toScheduleData(schedules?.items ?? [])[dayIndex]?.times?.length ?? 0),
-      );
+    if (action == 4) {
+      await remove(dayIndex);
+    } else if (action == 0 || action == 2) {
+      await add(dayIndex, day);
+    }
     setScheduleData((prev) => ({
       ...prev,
       [dayIndex]: day,

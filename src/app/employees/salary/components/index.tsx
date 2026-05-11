@@ -12,8 +12,7 @@ import {
   VALUES,
   getEnumValues,
   getValuesStatus,
-  SalaryStatusValue,
-} from "@/lib/constants";
+  SalaryStatusValue } from "@/lib/constants";
 import { Modal } from "@/shared/components/modal";
 import z from "zod";
 import { FormProvider, useForm } from "react-hook-form";
@@ -27,20 +26,17 @@ import { getColumns } from "./columns";
 import {
   firstLetterUpper,
   objectCompact,
-  searchUsernameFormatter,
-} from "@/lib/functions";
+  searchUsernameFormatter } from "@/lib/functions";
 import DynamicHeader from "@/components/dynamicHeader";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { showToast } from "@/shared/components/showToast";
 import {
-  CategoryType,
   ROLE,
   STATUS,
   INPUT_TYPE,
   UserStatus,
-  SalaryStatus,
-} from "@/lib/enum";
+  SalaryStatus } from "@/lib/enum";
 import { TextField } from "@/shared/components/text.field";
 
 const formSchema = z.object({
@@ -60,15 +56,13 @@ const formSchema = z.object({
       z.nativeEnum(STATUS).nullable(),
     )
     .optional() as unknown as number,
-  edit: z.string().nullable().optional(),
-});
+  edit: z.string().nullable().optional() });
 const defaultValues: UserSalaryType = {
   user_id: "",
   duration: 5,
   percent: 30,
   status: STATUS.Active,
-  edit: undefined,
-};
+  edit: undefined };
 type UserSalaryType = z.infer<typeof formSchema>;
 type FilterType = {
   service?: string;
@@ -77,8 +71,7 @@ type FilterType = {
 };
 export const EmployeeUserSalaryPage = ({
   data,
-  users,
-}: {
+  users }: {
   data: ListType<UserSalary>;
   users: SearchType<User>[];
 }) => {
@@ -86,8 +79,7 @@ export const EmployeeUserSalaryPage = ({
   const [open, setOpen] = useState<undefined | boolean>(false);
   const form = useForm<UserSalaryType>({
     resolver: zodResolver(formSchema),
-    defaultValues,
-  });
+    defaultValues });
   const [userSalaries, setUserSalarys] = useState<ListType<IUserSalary> | null>(
     null,
   );
@@ -102,8 +94,7 @@ export const EmployeeUserSalaryPage = ({
       const user = userMap.get(item.user_id);
       return {
         ...item,
-        user_name: user ? searchUsernameFormatter(user) : item.user_id,
-      };
+        user_name: user ? searchUsernameFormatter(user) : item.user_id };
     });
 
     setUserSalarys({ items, count: data.count });
@@ -126,8 +117,7 @@ export const EmployeeUserSalaryPage = ({
       user_id: e.user_id,
       duration: e.duration,
       percent: e.percent,
-      status: e.status,
-    });
+      status: e.status });
     setOpen(true);
   };
   const columns = getColumns(edit, deleteUserSalary);
@@ -187,8 +177,7 @@ export const EmployeeUserSalaryPage = ({
     showToast("info", error);
   };
   const [filter, setFilter] = useState<FilterType | undefined>({
-    salary_status: SalaryStatus.ACTIVE,
-  });
+    salary_status: SalaryStatus.ACTIVE });
   const changeFilter = (key: string, value: number | string) => {
     setFilter((prev) => ({ ...prev, [key]: value }));
   };
@@ -198,8 +187,7 @@ export const EmployeeUserSalaryPage = ({
       objectCompact({
         service_id: filter?.service,
         user_id: filter?.user,
-        page: 0,
-      }),
+        page: 0 }),
     );
   }, [filter]);
   const groups: { key: keyof FilterType; label: string; items: Option[] }[] =
@@ -210,24 +198,19 @@ export const EmployeeUserSalaryPage = ({
           label: "Артист",
           items: users.map((b) => ({
             value: b.id,
-            label: searchUsernameFormatter(b.value),
-          })),
-        },
+            label: searchUsernameFormatter(b.value) })) },
         {
           key: "salary_status",
           label: "Статус",
           items: Object.entries(SalaryStatusValue).map(([key, value]) => ({
             value: key,
-            label: value.name,
-          })),
-        },
+            label: value.name })) },
       ],
       [users],
     );
 
   const [items, setItems] = useState({
-    [Api.user]: users,
-  });
+    [Api.user]: users });
   const searchField = async (v: string, key: Api, edit?: boolean) => {
     let value = "";
     if (v.length > 1) value = v;
@@ -235,28 +218,24 @@ export const EmployeeUserSalaryPage = ({
 
     const payload =
       key === Api.product
-        ? { id: value, type: CategoryType.DEFAULT }
+        ? { id: value }
         : edit === undefined
           ? {
               id: value,
               role: ROLE.E_M,
-              user_status: UserStatus.ACTIVE,
-            }
+              user_status: UserStatus.ACTIVE }
           : {
               role: ROLE.E_M,
               user_status: UserStatus.ACTIVE,
 
-              value: v,
-            };
+              value: v };
     await search(key as any, {
       ...payload,
       limit: 20,
-      page: 0,
-    }).then((d) => {
+      page: 0 }).then((d) => {
       setItems((prev) => ({
         ...prev,
-        [key]: d.data,
-      }));
+        [key]: d.data }));
     });
   };
   console.log(data)
@@ -280,15 +259,13 @@ export const EmployeeUserSalaryPage = ({
                       value={filter?.[key] ? String(filter[key]) : ""} //
                       items={item.items.map((it) => ({
                         value: String(it.value),
-                        label: it.label as string,
-                      }))}
+                        label: it.label as string }))}
                       props={{
                         value: filter?.[key] ? String(filter[key]) : "",
                         onChange: (val: string) => changeFilter(key, val),
                         onBlur: () => {},
                         name: key,
-                        ref: () => {},
-                      }}
+                        ref: () => {} }}
                     />
                   </label>
                 );
@@ -330,8 +307,7 @@ export const EmployeeUserSalaryPage = ({
                           items={items[Api.user].map((item) => {
                             return {
                               value: item.id,
-                              label: searchUsernameFormatter(item.value),
-                            };
+                              label: searchUsernameFormatter(item.value) };
                           })}
                         />
                       );
@@ -381,8 +357,7 @@ export const EmployeeUserSalaryPage = ({
                           items={[STATUS.Active, STATUS.Pending].map((item) => {
                             return {
                               value: item.toString(),
-                              label: getValuesStatus[item].name,
-                            };
+                              label: getValuesStatus[item].name };
                           })}
                         />
                       );

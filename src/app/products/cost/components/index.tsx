@@ -1,6 +1,7 @@
 "use client";
+
 import { DataTable } from "@/components/data-table";
-import { Branch, Category, Cost, ICost, Product } from "@/models";
+import { Branch, CostCategory, Cost, ICost } from "@/models";
 import { getColumns } from "./columns";
 import { useEffect, useMemo, useState } from "react";
 import {
@@ -26,7 +27,7 @@ import { FormItems } from "@/shared/components/form.field";
 import { ComboBox } from "@/shared/components/combobox";
 import { TextField } from "@/shared/components/text.field";
 import { fetcher } from "@/hooks/fetcher";
-import { CategoryType, CostStatus, INPUT_TYPE } from "@/lib/enum";
+import { CostStatus, INPUT_TYPE } from "@/lib/enum";
 import {
   dateOnly,
   firstLetterUpper,
@@ -34,7 +35,6 @@ import {
   mnDateFormat,
   objectCompact,
   searchFormatter,
-  searchProductFormatter,
 } from "@/lib/functions";
 import DynamicHeader from "@/components/dynamicHeader";
 import { FilterPopover } from "@/components/layout/popover";
@@ -43,9 +43,8 @@ import { showToast } from "@/shared/components/showToast";
 
 const formSchema = z
   .object({
-    category_id: z.string().nullable().optional(),
+    cost_category_id: z.string().min(1, "Зардлын ангилал сонгоно уу"),
     branch_id: ZValidator.branch,
-    product_id: ZValidator.product,
     date: z.preprocess(
       (val) => (typeof val === "string" ? new Date(val) : val),
       z.date()
@@ -63,12 +62,11 @@ const formSchema = z
   })
   .refine((data) => (data?.paid_amount ?? 0) <= (data?.price ?? 0), {
     message: "Төлсөн дүн нийт дүнгээс хэтэрч болохгүй",
-    path: ["paid_amount"], // алдаа paid_amount дээр харагдана
+    path: ["paid_amount"],
   });
 const defaultValues = {
-  category_id: "",
+  cost_category_id: "",
   branch_id: "",
-  product_id: "",
   date: mnDateFormat(mnDate()),
   price: 0,
   paid_amount: 0,
@@ -78,21 +76,18 @@ type CostType = z.infer<typeof formSchema>;
 type FilterType = {
   category?: string;
   branch?: string;
-  product?: string;
   start?: Date;
   end?: Date;
   status?: number;
 };
 export const CostPage = ({
   data,
-  products,
   branches,
   categories,
 }: {
   data: ListType<Cost>;
-  products: SearchType<Product>[];
   branches: ListType<Branch>;
-  categories: SearchType<Category>[];
+  categories: SearchType<CostCategory>[];
 }) => {
   const [action, setAction] = useState(ACTION.DEFAULT);
   const [open, setOpen] = useState<undefined | boolean>(false);
@@ -101,24 +96,27 @@ export const CostPage = ({
     defaultValues,
   });
   const [costs, setCosts] = useState<ListType<Cost>>(ListDefault);
-  const productMap = useMemo(
-    () => new Map(products.map((b) => [b.id, b.value])),
-    [products]
-  );
   const branchMap = useMemo(
     () => new Map(branches.items.map((b) => [b.id, b])),
     [branches.items]
   );
+  const categoryMap = useMemo(
+    () => new Map(categories.map((c) => [c.id, c.value])),
+    [categories]
+  );
 
   const costFormatter = (data: ListType<Cost>) => {
     const items: Cost[] = data.items.map((item) => {
-      const product = productMap.get(item.product_id);
       const branch = branchMap.get(item.branch_id);
+      const fallbackName =
+        item.cost_category_name ||
+        (item.cost_category_id ? categoryMap.get(item.cost_category_id) : "") ||
+        "";
 
       return {
         ...item,
         branch_name: branch?.name ?? "",
-        product_name: searchProductFormatter(product ?? "") ?? "",
+        cost_category_name: fallbackName,
       };
     });
 
@@ -135,8 +133,11 @@ export const CostPage = ({
   };
   const edit = async (e: ICost) => {
     setOpen(true);
-    console.log(e);
-    form.reset({ ...e, date: e.date?.toString().slice(0, 10), edit: e.id });
+    form.reset({
+      ...e,
+      date: e.date?.toString().slice(0, 10) as unknown as Date,
+      edit: e.id,
+    });
   };
   const columns = getColumns(edit, deleteProduct);
 
@@ -144,8 +145,7 @@ export const CostPage = ({
     setAction(ACTION.RUNNING);
     const { page, limit, sort } = pg;
     const branch_id = filter?.branch;
-    const category_id = filter?.category;
-    const product_id = filter?.product;
+    const cost_category_id = filter?.category;
     const cost_status = filter?.status;
     const start_date = filter?.start ? dateOnly(filter?.start) : undefined;
     const end_date = filter?.end ? dateOnly(filter?.end) : undefined;
@@ -155,8 +155,7 @@ export const CostPage = ({
       sort: sort ?? DEFAULT_PG.sort,
       name: pg.filter,
       branch_id,
-      category_id,
-      product_id,
+      cost_category_id,
       cost_status,
       start_date,
       end_date,
@@ -201,8 +200,7 @@ export const CostPage = ({
     refresh(
       objectCompact({
         branch_id: filter?.branch,
-        category_id: filter?.category,
-        product_id: filter?.product,
+        cost_category_id: filter?.category,
         cost_status: filter?.status,
         start_date: filter?.start ? dateOnly(filter?.start) : undefined,
         end_date: filter?.end ? dateOnly(filter?.end) : undefined,
@@ -220,19 +218,10 @@ export const CostPage = ({
         },
         {
           key: "category",
-          label: "Ангилал",
+          label: "Зардлын ангилал",
           items: categories.map((b) => ({
             value: b.id,
             label: searchFormatter(b.value),
-          })),
-        },
-
-        {
-          key: "product",
-          label: "Бүтээгдэхүүн",
-          items: products.map((b) => ({
-            value: b.id,
-            label: searchProductFormatter(b.value),
           })),
         },
         {
@@ -244,31 +233,22 @@ export const CostPage = ({
           })),
         },
       ],
-      [branches.items, categories, products]
+      [branches.items, categories]
     );
 
   const [items, setItems] = useState({
-    [Api.product]: products,
-    [Api.category]: categories,
+    [Api.cost_category]: categories,
   });
-  const searchField = async (v: string, key: Api, edit?: boolean) => {
+  const searchField = async (v: string, key: Api) => {
     let value = "";
     if (v.length > 1) value = v;
     if (v.length == 1) return;
 
-    const payload =
-      key === Api.product
-        ? { id: value, type: CategoryType.COST }
-        : {
-            id: value,
-          };
-
     await search(key as any, {
-      ...payload,
+      id: value,
       limit: 20,
       page: 0,
     }).then((d) => {
-      console.log(key, d.data);
       setItems((prev) => ({
         ...prev,
         [key]: d.data,
@@ -287,29 +267,6 @@ export const CostPage = ({
               {groups.map((item, i) => {
                 const { key } = item;
                 return (
-                  // <FilterPopover
-                  // key={i}
-                  //   content={item.items.map((it, index) => (
-                  //     <label
-                  //       key={index}
-                  //       className="checkbox-label"
-                  //     >
-                  //       <Checkbox
-                  //         checked={filter?.[key] == it.value}
-                  //         onCheckedChange={() => changeFilter(key, it.value)}
-                  //       />
-                  //       <span>{it.label as string}</span>
-                  //     </label>
-                  //   ))}
-                  //   value={
-                  //     filter?.[key]
-                  //       ? item.items.filter(
-                  //           (item) => item.value == filter[key]
-                  //         )[0].label
-                  //       : undefined
-                  //   }
-                  //   label={item.label}
-                  // />
                   <label key={i}>
                     <span className="filter-label">{item.label as string}</span>
                     <ComboBox
@@ -386,18 +343,18 @@ export const CostPage = ({
                   <div className="pb-5 space-y-4">
                     <FormItems
                       control={form.control}
-                      name="product_id"
-                      label="Зардал"
+                      name="cost_category_id"
+                      label="Зардлын ангилал"
                     >
                       {(field) => {
                         return (
                           <ComboBox
-                            search={(e) => searchField(e, Api.product)}
+                            search={(e) => searchField(e, Api.cost_category)}
                             props={{ ...field }}
-                            items={items[Api.product].map((item) => {
+                            items={items[Api.cost_category].map((item) => {
                               return {
                                 value: item.id,
-                                label: item.value?.split("__")?.[2],
+                                label: item.value,
                               };
                             })}
                           />
@@ -450,7 +407,6 @@ export const CostPage = ({
                           control={form.control}
                           name={name}
                           key={i}
-                          className={item.key === "name" ? "col-span-2" : ""}
                         >
                           {(field) => {
                             return (

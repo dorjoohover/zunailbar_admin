@@ -106,7 +106,7 @@ export const sidebar_items = [
         icon: Milk,
         children: [
           {
-            title: "Бүтээгдэхүүний удирдлага",
+            title: "Бүтээгдэхүүний бүртгэл ",
             url: "/products",
             // icon: Milk,
           },
@@ -116,12 +116,12 @@ export const sidebar_items = [
             // icon: Milk,
           },
           {
-            title: "Худалдан авалт",
+            title: "Худалдан авалтын бүртгэл ",
             url: "/products/history",
             // icon: Milk,
           },
           {
-            title: "Агуулах",
+            title: "Агуулахын бүртгэл",
             url: "/products/warehouse",
             // icon: Milk,
           },
@@ -248,7 +248,7 @@ export const sidebar_items = [
         icon: SquareMenu,
         children: [
           {
-            title: "Ангилал удирдлага",
+            title: "Бүтээгдэхүүний ангилал бүртгэл ",
             url: "/root/category",
             // icon: Milk,
           },
@@ -263,7 +263,7 @@ export const sidebar_items = [
             // icon: Milk,
           },
           {
-            title: "Хэрэглээний зардал",
+            title: "Зардлын ангилал",
             url: "/root/cost",
             // icon: Milk,
           },

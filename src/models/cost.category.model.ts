@@ -1,9 +1,9 @@
-export interface ICategory {
+export interface ICostCategory {
   id?: string;
   name: string;
   created_at?: Date;
 }
-export interface Category {
+export interface CostCategory {
   id: string;
   name: string;
   created_at?: Date;

@@ -123,10 +123,6 @@ export enum VoucherStatus {
   Cancelled = 30,
 }
 
-export enum CategoryType {
-  DEFAULT = 10,
-  COST = 20,
-}
 export enum CostStatus {
   Paid = 10,
   Remainder = 20,

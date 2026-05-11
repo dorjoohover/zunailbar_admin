@@ -9,8 +9,7 @@ import {
   DEFAULT_PG,
   Option,
   SearchType,
-  VALUES,
-} from "@/lib/constants";
+  VALUES } from "@/lib/constants";
 import { Modal } from "@/shared/components/modal";
 import z from "zod";
 import { FormProvider, useForm } from "react-hook-form";
@@ -24,28 +23,24 @@ import { getColumns } from "./columns";
 import {
   firstLetterUpper,
   objectCompact,
-  searchUsernameFormatter,
-} from "@/lib/functions";
+  searchUsernameFormatter } from "@/lib/functions";
 import { Service } from "@/models/service.model";
 import DynamicHeader from "@/components/dynamicHeader";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { showToast } from "@/shared/components/showToast";
-import { CategoryType, ROLE, UserStatus } from "@/lib/enum";
+import { ROLE, UserStatus } from "@/lib/enum";
 
 const formSchema = z.object({
   user_id: z.string().min(1, "Артист сонгоно уу"),
   services: z.array(z.string()).refine((arr) => arr.length > 0, {
-    message: "Үйлчилгээний жагсаалтыг сонгоно уу",
-  }),
+    message: "Үйлчилгээний жагсаалтыг сонгоно уу" }),
 
-  edit: z.string().nullable().optional(),
-});
+  edit: z.string().nullable().optional() });
 const defaultValues: UserServiceType = {
   user_id: "",
   services: [],
-  edit: undefined,
-};
+  edit: undefined };
 type UserServiceType = z.infer<typeof formSchema>;
 type FilterType = {
   service?: string;
@@ -54,8 +49,7 @@ type FilterType = {
 export const EmployeeUserServicePage = ({
   data,
   services,
-  users,
-}: {
+  users }: {
   data: ListType<UserService>;
   services: ListType<Service>;
   users: SearchType<User>[];
@@ -64,8 +58,7 @@ export const EmployeeUserServicePage = ({
   const [open, setOpen] = useState<undefined | boolean>(false);
   const form = useForm<UserServiceType>({
     resolver: zodResolver(formSchema),
-    defaultValues,
-  });
+    defaultValues });
   const [userServices, setUserServices] =
     useState<ListType<UserService> | null>(null);
   const serviceMap = useMemo(
@@ -92,8 +85,7 @@ export const EmployeeUserServicePage = ({
           ?.map((s: any) => {
             return `${s.service_name}`;
           })
-          .join(", "),
-      };
+          .join(", ") };
     });
 
     setUserServices({ items, count: data.count });
@@ -180,8 +172,7 @@ export const EmployeeUserServicePage = ({
       objectCompact({
         service_id: filter?.service,
         user_id: filter?.user,
-        page: 0,
-      })
+        page: 0 })
     );
   }, [filter]);
   const groups: { key: keyof FilterType; label: string; items: Option[] }[] =
@@ -192,14 +183,11 @@ export const EmployeeUserServicePage = ({
           label: "Артист",
           items: users.map((b) => ({
             value: b.id,
-            label: searchUsernameFormatter(b.value),
-          })),
-        },
+            label: searchUsernameFormatter(b.value) })) },
         {
           key: "service",
           label: "Үйлчилгээ",
-          items: services.items.map((b) => ({ value: b.id, label: b.name })),
-        },
+          items: services.items.map((b) => ({ value: b.id, label: b.name })) },
       ],
       [services.items, users]
     );
@@ -217,8 +205,7 @@ export const EmployeeUserServicePage = ({
         form.reset({
           services: [...services[0]],
           user_id: editUser,
-          edit: editUser,
-        });
+          edit: editUser });
       } else {
         const user_id = form.watch("user_id");
         const services =
@@ -227,15 +214,13 @@ export const EmployeeUserServicePage = ({
             ?.map((s) => s.service_id) ?? [];
         form.reset({
           user_id,
-          services,
-        });
+          services });
       }
     }
   }, [open, form.watch("user_id")]);
   const [items, setItems] = useState({
     [Api.user]: users,
-    [Api.service]: services,
-  });
+    [Api.service]: services });
   const searchField = async (v: string, key: Api, edit?: boolean) => {
     let value = "";
     if (v.length > 1) value = v;
@@ -243,28 +228,24 @@ export const EmployeeUserServicePage = ({
 
     const payload =
       key === Api.product
-        ? { id: value, type: CategoryType.DEFAULT }
+        ? { id: value }
         : edit === undefined
         ? {
             id: value,
             role: ROLE.E_M,
-            user_status: UserStatus.ACTIVE,
-          }
+            user_status: UserStatus.ACTIVE }
         : {
             role: ROLE.E_M,
             user_status: UserStatus.ACTIVE,
 
-            value: v,
-          };
+            value: v };
     await search(key as any, {
       ...payload,
       limit: 20,
-      page: 0,
-    }).then((d) => {
+      page: 0 }).then((d) => {
       setItems((prev) => ({
         ...prev,
-        [key]: d.data,
-      }));
+        [key]: d.data }));
     });
   };
   return (
@@ -298,15 +279,13 @@ export const EmployeeUserServicePage = ({
                       value={filter?.[key] ? String(filter[key]) : ""} //
                       items={item.items.map((it) => ({
                         value: String(it.value),
-                        label: it.label as string,
-                      }))}
+                        label: it.label as string }))}
                       props={{
                         value: filter?.[key] ? String(filter[key]) : "",
                         onChange: (val: string) => changeFilter(key, val),
                         onBlur: () => {},
                         name: key,
-                        ref: () => {},
-                      }}
+                        ref: () => {} }}
                     />
                   </label>
                 );
@@ -347,8 +326,7 @@ export const EmployeeUserServicePage = ({
                           items={items[Api.user].map((item) => {
                             return {
                               value: item.id,
-                              label: searchUsernameFormatter(item.value),
-                            };
+                              label: searchUsernameFormatter(item.value) };
                           })}
                         />
                       );

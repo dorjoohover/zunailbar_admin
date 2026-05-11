@@ -6,12 +6,10 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { parseDate } from "@/lib/functions";
 import { ICategory } from "@/models";
 import { TableActionButtons } from "@/components/tableActionButtons";
-import { CategoryTypeValues } from "@/lib/constants";
-import { CategoryType } from "@/lib/enum";
 
 export function getColumns(
   onEdit: (product: ICategory) => void,
-  remove: (index: number) => Promise<boolean>
+  remove: (index: number) => Promise<boolean>,
 ): ColumnDef<ICategory>[] {
   return [
     {
@@ -21,37 +19,14 @@ export function getColumns(
     },
     {
       accessorKey: "name",
-      header: ({ column }) => (
-        <Button
-          variant="table_header"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          className="font-bold"
-        >
-          Ангилал <ArrowUpDown className="w-4 h-4 ml-2" />
-        </Button>
-      ),
+      header: ({ column }) => 'Ангилал' 
+      
     },
 
     {
-      accessorKey: "type",
-      header: "Статус",
-      cell: ({ row }) => {
-        const status =
-          CategoryTypeValues[row.getValue<number>("type") as CategoryType];
-        return <span>{status}</span>;
-      },
-    },
-    {
       accessorKey: "created_at",
-      header: ({ column }) => (
-        <Button
-          variant="table_header"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          className="font-bold"
-        >
-          Үүсгэсэн <ArrowUpDown className="w-4 h-4 ml-2" />
-        </Button>
-      ),
+      header: ({ column }) => "Үүсгэсэн",
+
       cell: ({ row }) => {
         const date = parseDate(new Date(row.getValue("created_at")), false);
         return date;

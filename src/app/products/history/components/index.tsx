@@ -14,8 +14,7 @@ import {
   SearchType,
   ZValidator,
   zNumOpt,
-  zStrOpt,
-} from "@/lib/constants";
+  zStrOpt } from "@/lib/constants";
 import { Modal } from "@/shared/components/modal";
 import z from "zod";
 import { FormProvider, useForm } from "react-hook-form";
@@ -27,7 +26,7 @@ import { ComboBox } from "@/shared/components/combobox";
 import { TextField } from "@/shared/components/text.field";
 import { fetcher } from "@/hooks/fetcher";
 import { getColumns } from "./columns";
-import { CategoryType, INPUT_TYPE, ProductLogStatus } from "@/lib/enum";
+import { INPUT_TYPE, ProductLogStatus } from "@/lib/enum";
 import { DatePicker } from "@/shared/components/date.picker";
 import DynamicHeader from "@/components/dynamicHeader";
 import {
@@ -36,8 +35,7 @@ import {
   objectCompact,
   parseDate,
   round,
-  searchProductFormatter,
-} from "@/lib/functions";
+  searchProductFormatter } from "@/lib/functions";
 import { FilterPopover } from "@/components/layout/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { Input } from "@/components/ui/input";
@@ -47,55 +45,44 @@ import {
   SelectGroup,
   SelectItem,
   SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+  SelectValue } from "@/components/ui/select";
 import { showToast } from "@/shared/components/showToast";
 
 const formSchema = z
   .object({
     product_id: zStrOpt({
       allowNullable: false,
-      label: "Бүтээгдэхүүн",
-    }),
+      label: "Бүтээгдэхүүн" }),
 
     quantity: zNumOpt({
       label: "Тоо ширхэг",
-      allowNullable: false,
-    }),
+      allowNullable: false }),
     price: zNumOpt({
       label: "Үнэ(Тухайн вальютаар)",
-      allowNullable: false,
-    }),
+      allowNullable: false }),
     currency: zStrOpt({
       allowNullable: false,
-      label: "Ханш",
-    }),
+      label: "Ханш" }),
     total_amount: zNumOpt({
       label: "Нийт үнэ",
-      allowNullable: false,
-    }),
+      allowNullable: false }),
     unit_price: zNumOpt({
       label: "Нэгж үнэ",
-      allowNullable: false,
-    }),
+      allowNullable: false }),
     paid_amount: zNumOpt({
       label: "Төлсөн үнэ",
-      allowNullable: false,
-    }),
+      allowNullable: false }),
     cargo: zNumOpt({
       label: "Карго",
-      allowNullable: false,
-    }),
+      allowNullable: false }),
     currency_amount: zNumOpt({
       label: "Валютын ханш",
-      allowNullable: false,
-    }),
+      allowNullable: false }),
     edit: z.string().nullable().optional(),
     date: z.preprocess(
       (val) => (typeof val === "string" ? new Date(val) : val),
       z.date(),
-    ) as unknown as Date,
-  })
+    ) as unknown as Date })
   .refine((data) => (data?.paid_amount ?? 0) <= (data?.total_amount ?? 0), {
     message: "Төлсөн дүн нийт дүнгээс хэтэрч болохгүй",
     path: ["paid_amount"], // алдаа paid_amount дээр харагдана
@@ -110,8 +97,7 @@ const defaultValues = {
   paid_amount: 0,
   unit_price: 0,
   date: new Date(),
-  product_log_status: ProductLogStatus.Bought,
-};
+  product_log_status: ProductLogStatus.Bought };
 type FilterType = {
   product?: string;
   status?: number;
@@ -122,8 +108,7 @@ type FilterType = {
 type LogType = z.infer<typeof formSchema>;
 export const ProductHistoryPage = ({
   data,
-  products,
-}: {
+  products }: {
   data: ListType<ProductLog>;
   products: SearchType<Product>[];
 }) => {
@@ -131,8 +116,7 @@ export const ProductHistoryPage = ({
   const [open, setOpen] = useState<undefined | boolean>(false);
   const form = useForm<LogType>({
     resolver: zodResolver(formSchema),
-    defaultValues,
-  });
+    defaultValues });
   const [transactions, setTransactions] =
     useState<ListType<IProductLog> | null>(null);
 
@@ -147,8 +131,7 @@ export const ProductHistoryPage = ({
 
       return {
         ...item,
-        product_name: searchProductFormatter(product ?? "") ?? "",
-      };
+        product_name: searchProductFormatter(product ?? "") ?? "" };
     });
 
     setTransactions({ items, count: data.count });
@@ -171,14 +154,12 @@ export const ProductHistoryPage = ({
       currency_amount: e.currency_amount,
       cargo: e.cargo,
       total_amount: +e.total_amount,
-      edit: e.id,
-    });
+      edit: e.id });
   };
   const setStatus = async (index: number, status: number) => {
     if (transactions?.items != null) {
       await updateOne(Api.product_log, transactions?.items[index].id, {
-        product_log_status: status,
-      });
+        product_log_status: status });
       refresh();
     }
   };
@@ -199,8 +180,7 @@ export const ProductHistoryPage = ({
       product_log_status,
       start_date,
       end_date,
-      ...(searchValue && { name: searchValue }),
-    }).then((d) => {
+      ...(searchValue && { name: searchValue }) }).then((d) => {
       logFormatter(d);
     });
     setAction(ACTION.DEFAULT);
@@ -213,18 +193,15 @@ export const ProductHistoryPage = ({
       ...payload,
       price: round(+(payload.price ?? 0)),
       unit_price: round(+(payload.unit_price ?? 0)),
-      total_amount: round(+(payload.total_amount ?? 0)),
-    };
+      total_amount: round(+(payload.total_amount ?? 0)) };
 
     const res = edit
       ? await updateOne<IProductLog>(Api.product_log, edit ?? "", {
           ...payload,
-          cargo,
-        } as unknown as IProductLog)
+          cargo } as unknown as IProductLog)
       : await create<IProductLog>(Api.product_log, {
           ...payload,
-          cargo,
-        } as unknown as IProductLog);
+          cargo } as unknown as IProductLog);
     if (res.success) {
       refresh();
       setOpen(false);
@@ -256,12 +233,10 @@ export const ProductHistoryPage = ({
     if (Math.abs(paid - total) < 100) total = paid;
     form.setValue("total_amount", total, {
       shouldValidate: true,
-      shouldDirty: true,
-    });
+      shouldDirty: true });
     form.setValue("unit_price", unit_price, {
       shouldValidate: true,
-      shouldDirty: true,
-    });
+      shouldDirty: true });
   }, [qty, price, form, currency, cargo]);
 
   const [filter, setFilter] = useState<FilterType>();
@@ -277,8 +252,7 @@ export const ProductHistoryPage = ({
         start_date: filter?.start ? dateOnly(filter?.start) : undefined,
         end_date: filter?.end ? dateOnly(filter?.end) : undefined,
 
-        page: 0,
-      }),
+        page: 0 }),
     );
   }, [filter]);
   const groups: { key: keyof FilterType; label: string; items: Option[] }[] =
@@ -289,41 +263,34 @@ export const ProductHistoryPage = ({
           label: "Бүтээгдэхүүн",
           items: products.map((b) => ({
             value: b.id,
-            label: searchProductFormatter(b.value),
-          })),
-        },
+            label: searchProductFormatter(b.value) })) },
 
         {
           key: "status",
           label: "Статус",
           items: getEnumValues(ProductLogStatus).map((s) => ({
             value: s,
-            label: getValuesProductLogStatus[s].name,
-          })),
-        },
+            label: getValuesProductLogStatus[s].name })) },
       ],
       [products],
     );
   const [items, setItems] = useState({
-    [Api.product]: products,
-  });
+    [Api.product]: products });
   const searchField = async (v: string, key: Api, edit?: boolean) => {
     let value = "";
     if (v.length > 1) value = v;
     if (v.length == 1) return;
 
-    const payload = { id: value, type: CategoryType.DEFAULT };
+    const payload = { id: value };
 
     await search(key as any, {
       ...payload,
       limit: 20,
-      page: 0,
-    }).then((d) => {
+      page: 0 }).then((d) => {
       console.log(key, d.data);
       setItems((prev) => ({
         ...prev,
-        [key]: d.data,
-      }));
+        [key]: d.data }));
     });
   };
   return (
@@ -347,15 +314,13 @@ export const ProductHistoryPage = ({
                       value={filter?.[key] ? String(filter[key]) : ""} //
                       items={item.items.map((it) => ({
                         value: String(it.value),
-                        label: it.label as string,
-                      }))}
+                        label: it.label as string }))}
                       props={{
                         value: filter?.[key] ? String(filter[key]) : "",
                         onChange: (val: string) => changeFilter(key, val),
                         onBlur: () => {},
                         name: key,
-                        ref: () => {},
-                      }}
+                        ref: () => {} }}
                     />
                   </label>
                 );
@@ -427,8 +392,7 @@ export const ProductHistoryPage = ({
                           items={items[Api.product].map((item) => {
                             return {
                               value: item.id,
-                              label: searchProductFormatter(item.value),
-                            };
+                              label: searchProductFormatter(item.value) };
                           })}
                         />
                       );
@@ -493,34 +457,28 @@ export const ProductHistoryPage = ({
                       {
                         key: "cargo",
                         type: INPUT_TYPE.MONEY,
-                        label: "Kargo",
-                      },
+                        label: "Kargo" },
                       {
                         key: "quantity",
                         type: INPUT_TYPE.NUMBER,
-                        label: "Тоо ширхэг",
-                      },
+                        label: "Тоо ширхэг" },
 
                       {
                         key: "price",
                         type: INPUT_TYPE.NUMBER,
-                        label: "Үнэ (Тухайн вальютаар)",
-                      },
+                        label: "Үнэ (Тухайн вальютаар)" },
                       {
                         key: "unit_price",
                         type: INPUT_TYPE.MONEY,
-                        label: "Нэгжийн үнэ",
-                      },
+                        label: "Нэгжийн үнэ" },
                       {
                         key: "total_amount",
                         type: INPUT_TYPE.MONEY,
-                        label: "Нийт дүн",
-                      },
+                        label: "Нийт дүн" },
                       {
                         key: "paid_amount",
                         type: INPUT_TYPE.MONEY,
-                        label: "Төлсөн дүн",
-                      },
+                        label: "Төлсөн дүн" },
                     ].map((item, i) => {
                       const name = item.key as keyof LogType;
                       const label = item.label as keyof LogType;

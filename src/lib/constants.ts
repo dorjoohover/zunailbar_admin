@@ -17,7 +17,6 @@ import {
   User2,
 } from "lucide-react";
 import {
-  CategoryType,
   CostStatus,
   DISCOUNT,
   EmployeeStatus,
@@ -417,12 +416,6 @@ export const getValuesProductLogStatus = {
     name: "Үлдэгдэлтэй",
     color: "yellow-badge badge",
   },
-  // [ProductLogStatus.Damaged]: "Эвдэрсэн",
-};
-
-export const CategoryTypeValues = {
-  [CategoryType.DEFAULT]: "Default",
-  [CategoryType.COST]: "Хэрэглээний зардал",
   // [ProductLogStatus.Damaged]: "Эвдэрсэн",
 };
 

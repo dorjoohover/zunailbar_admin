@@ -11,8 +11,7 @@ import {
   Option,
   SearchType,
   VALUES,
-  zStrOpt,
-} from "@/lib/constants";
+  zStrOpt } from "@/lib/constants";
 import { Modal } from "@/shared/components/modal";
 import z from "zod";
 import { FormProvider, useForm } from "react-hook-form";
@@ -23,26 +22,21 @@ import { FormItems } from "@/shared/components/form.field";
 import { ComboBox } from "@/shared/components/combobox";
 import { TextField } from "@/shared/components/text.field";
 import { fetcher } from "@/hooks/fetcher";
-import { CategoryType } from "@/lib/enum";
 import { showToast } from "@/shared/components/showToast";
 import DynamicHeader from "@/components/dynamicHeader";
 import { firstLetterUpper, mnDate, objectCompact } from "@/lib/functions";
 
 const formSchema = z.object({
   brand_id: zStrOpt({
-    label: "Бранд",
-  }),
+    label: "Бранд" }),
   category_id: zStrOpt({
     allowNullable: false,
-    label: "Ангилал",
-  }),
+    label: "Ангилал" }),
   name: zStrOpt({
     allowNullable: false,
-    label: "Нэр",
-  }),
+    label: "Нэр" }),
 
-  edit: z.string().nullable().optional(),
-});
+  edit: z.string().nullable().optional() });
 
 type FilterType = {
   brand?: string;
@@ -53,13 +47,11 @@ const defaultValues = {
   edit: undefined,
   brand_id: "",
   category_id: "",
-  name: "",
-};
+  name: "" };
 export const ProductPage = ({
   data,
   categories,
-  brands,
-}: {
+  brands }: {
   data: ListType<Product>;
   categories: SearchType<Category>[];
   brands: SearchType<Brand>[];
@@ -68,8 +60,7 @@ export const ProductPage = ({
   const [open, setOpen] = useState<undefined | boolean>(false);
   const form = useForm<ProductType>({
     resolver: zodResolver(formSchema),
-    defaultValues,
-  });
+    defaultValues });
   const [products, setProducts] = useState<ListType<Product>>(data);
   const deleteProduct = async (index: number) => {
     const id = products.items[index].id;
@@ -78,8 +69,7 @@ export const ProductPage = ({
       objectCompact({
         brand_id: filter?.brand,
         category_id: filter?.category,
-        page: 0,
-      })
+        page: 0 })
     );
     return res.success;
   };
@@ -99,11 +89,9 @@ export const ProductPage = ({
       limit: limit ?? DEFAULT_PG.limit,
       sort: sort ?? DEFAULT_PG.sort,
       name: pg.filter,
-      type: CategoryType.DEFAULT,
       brand_id,
       category_id,
-      ...pg,
-    }).then((d) => {
+      ...pg }).then((d) => {
       setProducts(d);
     });
     setAction(ACTION.DEFAULT);
@@ -120,8 +108,7 @@ export const ProductPage = ({
         objectCompact({
           brand_id: filter?.brand,
           category_id: filter?.category,
-          page: 0,
-        })
+          page: 0 })
       );
       setOpen(false);
       clear();
@@ -165,17 +152,13 @@ export const ProductPage = ({
           label: "Бренд",
           items: brands.map((b) => ({
             value: b.id,
-            label: b.value?.split("__")?.[0],
-          })),
-        },
+            label: b.value?.split("__")?.[0] })) },
         {
           key: "category",
           label: "Ангилал",
           items: categories.map((b) => ({
             value: b.id,
-            label: b.value?.split("__")?.[0],
-          })),
-        },
+            label: b.value?.split("__")?.[0] })) },
       ],
       [brands, categories]
     );
@@ -192,10 +175,8 @@ export const ProductPage = ({
       limit: -1,
       sort: sort ?? DEFAULT_PG.sort,
       name: pg.filter,
-      type: CategoryType.DEFAULT,
       brand_id: filter?.brand,
-      category_id: filter?.category,
-    });
+      category_id: filter?.category });
     if (res.success && res.data) {
       const blob = new Blob([res.data], { type: "application/xlsx" });
       const url = window.URL.createObjectURL(blob);
@@ -219,8 +200,7 @@ export const ProductPage = ({
   };
   const [items, setItems] = useState({
     [Api.brand]: brands,
-    [Api.category]: categories,
-  });
+    [Api.category]: categories });
   const searchField = async (v: string, key: Api, edit?: boolean) => {
     let value = "";
     if (v.length > 1) value = v;
@@ -231,14 +211,11 @@ export const ProductPage = ({
     await search(key as any, {
       ...payload,
       limit: 20,
-      page: 0,
-      type: CategoryType.DEFAULT,
-    }).then((d) => {
+      page: 0 }).then((d) => {
       console.log(key, d.data);
       setItems((prev) => ({
         ...prev,
-        [key]: d.data,
-      }));
+        [key]: d.data }));
     });
   };
   return (
@@ -268,15 +245,13 @@ export const ProductPage = ({
                       value={filter?.[key] ? String(filter[key]) : ""} //
                       items={item.items.map((it) => ({
                         value: String(it.value),
-                        label: it.label as string,
-                      }))}
+                        label: it.label as string }))}
                       props={{
                         value: filter?.[key] ? String(filter[key]) : "",
                         onChange: (val: string) => changeFilter(key, val),
                         onBlur: () => {},
                         name: key,
-                        ref: () => {},
-                      }}
+                        ref: () => {} }}
                     />
                   </label>
                 );
@@ -312,8 +287,7 @@ export const ProductPage = ({
                             items={items[Api.category].map((item) => {
                               return {
                                 value: item.id,
-                                label: item.value?.split("__")?.[0],
-                              };
+                                label: item.value?.split("__")?.[0] };
                             })}
                           />
                         );
@@ -332,8 +306,7 @@ export const ProductPage = ({
                             items={items[Api.brand].map((item) => {
                               return {
                                 value: item.id,
-                                label: item.value?.split("__")?.[0],
-                              };
+                                label: item.value?.split("__")?.[0] };
                             })}
                           />
                         );
@@ -344,8 +317,7 @@ export const ProductPage = ({
                     {[
                       {
                         key: "name",
-                        label: "Бүтээгдэхүүний нэр",
-                      },
+                        label: "Бүтээгдэхүүний нэр" },
                     ].map((item, i) => {
                       const name = item.key as keyof ProductType;
                       const label = item.label as keyof ProductType;

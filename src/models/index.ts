@@ -2,6 +2,7 @@ export * from "./user.model";
 export * from "./branch.model";
 export * from "./brand.model";
 export * from "./category.model";
+export * from "./cost.category.model";
 export * from "./cost.model";
 export * from "./discount.model";
 export * from "./order.model";

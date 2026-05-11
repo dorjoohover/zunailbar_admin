@@ -1,8 +1,7 @@
 "use client";
 
 import { DataTable } from "@/components/data-table";
-import { Category, IProduct, Product } from "@/models";
-import { getColumns } from "./columns";
+import { CostCategory, ICostCategory } from "@/models";
 import { useState } from "react";
 import {
   ListType,
@@ -19,85 +18,81 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Api } from "@/utils/api";
 import { create, deleteOne, updateOne } from "@/app/(api)";
 import { FormItems } from "@/shared/components/form.field";
-import { ComboBox } from "@/shared/components/combobox";
 import { TextField } from "@/shared/components/text.field";
 import { fetcher } from "@/hooks/fetcher";
-import { CategoryType } from "@/lib/enum";
 import DynamicHeader from "@/components/dynamicHeader";
 import { showToast } from "@/shared/components/showToast";
 import { firstLetterUpper } from "@/lib/functions";
+import { getColumns } from "./columns";
 
 const formSchema = z.object({
-  category_id: ZValidator.category,
   name: ZValidator.name,
-  // color: z.string().nullable().optional(),
-
-  // size: z.string().nullable().optional(),
   edit: z.string().nullable().optional(),
 });
 const defaultValues = {
+  name: "",
   edit: undefined,
 };
-type ProductType = z.infer<typeof formSchema>;
-export const CostPage = ({
-  data,
-  categories,
-}: {
-  data: ListType<Product>;
-  categories: ListType<Category>;
-}) => {
+type CostCategoryFormType = z.infer<typeof formSchema>;
+
+export const CostPage = ({ data }: { data: ListType<CostCategory> }) => {
   const [action, setAction] = useState(ACTION.DEFAULT);
   const [open, setOpen] = useState<undefined | boolean>(false);
-  const form = useForm<ProductType>({
+  const form = useForm<CostCategoryFormType>({
     resolver: zodResolver(formSchema),
     defaultValues,
   });
-  const [products, setProducts] = useState<ListType<Product>>(data);
-  const deleteProduct = async (index: number) => {
-    const id = products.items[index].id;
-    const res = await deleteOne(Api.product, id);
+  const [costCategories, setCostCategories] =
+    useState<ListType<CostCategory>>(data);
+
+  const deleteCostCategory = async (index: number) => {
+    const id = costCategories!.items[index].id;
+    const res = await deleteOne(Api.cost_category, id);
     refresh();
     return res.success;
   };
-  const edit = async (e: IProduct) => {
+  const edit = async (e: ICostCategory) => {
     setOpen(true);
     form.reset({ ...e, edit: e.id });
   };
-  const columns = getColumns(edit, deleteProduct);
+  const columns = getColumns(edit, deleteCostCategory);
 
   const refresh = async (pg: PG = DEFAULT_PG) => {
     setAction(ACTION.RUNNING);
-    const { page, limit, sort } = pg;
-    await fetcher<Product>(Api.product, {
+    const { page, limit, sort, filter: searchValue } = pg;
+    await fetcher<CostCategory>(Api.cost_category, {
       page,
       limit,
       sort,
-      name: pg.filter,
-      type: CategoryType.COST,
+      ...(searchValue && { name: searchValue }),
     }).then((d) => {
-      console.log(d);
-      setProducts(d);
+      setCostCategories(d);
     });
     setAction(ACTION.DEFAULT);
   };
   const onSubmit = async <T,>(e: T) => {
     setAction(ACTION.RUNNING);
-    const body = e as ProductType;
+    const body = e as CostCategoryFormType;
     const { edit, ...payload } = body;
+
     const res = edit
-      ? await updateOne<IProduct>(Api.product, edit ?? "", {
-          type: CategoryType.COST,
-          ...payload,
-        } as IProduct)
-      : await create<IProduct>(Api.product, {
-          type: CategoryType.COST,
-          ...payload,
-        } as IProduct);
+      ? await updateOne<ICostCategory>(
+          Api.cost_category,
+          edit ?? "",
+          payload as unknown as ICostCategory,
+        )
+      : await create<ICostCategory>(
+          Api.cost_category,
+          payload as ICostCategory,
+        );
     if (res.success) {
       refresh();
       setOpen(false);
       form.reset(defaultValues);
-      showToast("success", edit ? "Мэдээлэл засагдсан." : "Амжилттай нэмлээ.");
+      showToast(
+        "success",
+        edit ? "Зардлын ангилал засагдсан." : "Зардлын ангилал нэмлээ.",
+      );
     } else {
       showToast("error", res.error ?? "");
     }
@@ -118,18 +113,23 @@ export const CostPage = ({
 
   return (
     <div className="">
-      <DynamicHeader count={products.count} />
+      <DynamicHeader count={costCategories?.count} />
 
       <div className="admin-container">
         <DataTable
           columns={columns}
-          count={products.count}
-          data={products.items}
+          count={costCategories?.count}
+          data={costCategories?.items ?? []}
           refresh={refresh}
           loading={action == ACTION.RUNNING}
           modalAdd={
             <Modal
-              name="Зардал нэмэх"
+              maw="md"
+              name={
+                form.watch("edit")
+                  ? "Зардлын ангилал засах"
+                  : "Зардлын ангилал нэмэх"
+              }
               submit={() => form.handleSubmit(onSubmit, onInvalid)()}
               open={open == true}
               setOpen={(v) => {
@@ -139,62 +139,15 @@ export const CostPage = ({
               loading={action == ACTION.RUNNING}
             >
               <FormProvider {...form}>
-                <div className="divide-y space-y-4">
-                  <div className="double-col pb-5">
-                    <FormItems
-                      control={form.control}
-                      name="category_id"
-                      label="Төрөл"
-                    >
-                      {(field) => {
-                        return (
-                          <ComboBox
-                            props={{ ...field }}
-                            items={categories.items.map((item) => {
-                              return {
-                                value: item.id,
-                                label: item.name,
-                              };
-                            })}
-                            className="min-w-79!"
-                          />
-                        );
-                      }}
-                    </FormItems>
-                  </div>
-                  <div className="space-y-4">
-                    {[
-                      {
-                        key: "name",
-                        label: "Нэр",
-                      },
-                      // {
-                      //   key: "color",
-                      //   label: "Өнгө",
-                      // },
-
-                      // {
-                      //   key: "size",
-                      //   label: "Хэмжээ  ",
-                      // },
-                    ].map((item, i) => {
-                      const name = item.key as keyof ProductType;
-                      const label = item.label as keyof ProductType;
-                      return (
-                        <FormItems
-                          label={label}
-                          control={form.control}
-                          name={name}
-                          key={i}
-                          className={item.key && "name"}
-                        >
-                          {(field) => {
-                            return <TextField props={{ ...field }} />;
-                          }}
-                        </FormItems>
-                      );
-                    })}
-                  </div>
+                <div className="space-y-4">
+                  <FormItems
+                    control={form.control}
+                    name="name"
+                    className="col-span-1"
+                    label="Ангиллын нэр"
+                  >
+                    {(field) => <TextField props={{ ...field }} />}
+                  </FormItems>
                 </div>
               </FormProvider>
             </Modal>

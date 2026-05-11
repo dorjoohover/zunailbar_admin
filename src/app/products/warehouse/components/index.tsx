@@ -307,7 +307,7 @@ export const ProductWarehousePage = ({
     return m;
   }, [productWarehouse?.items]);
   type ProductWithQty = SearchType<number> & { quantity?: number };
-
+console.log(warehouses)
   const groups: {
     key: keyof FilterType;
     label: string;

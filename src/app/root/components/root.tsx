@@ -1,15 +1,7 @@
 import { create, updateOne } from "@/app/(api)";
-import {
-  ACTION,
-  CategoryTypeValues,
-  getEnumValues,
-  VALUES,
-  ZValidator,
-} from "@/lib/constants";
-import { CategoryType } from "@/lib/enum";
+import { ACTION, VALUES, ZValidator } from "@/lib/constants";
 import { firstLetterUpper } from "@/lib/functions";
 import { IBrand, ICategory } from "@/models";
-import { ComboBox } from "@/shared/components/combobox";
 import { FormItems } from "@/shared/components/form.field";
 import { Modal } from "@/shared/components/modal";
 import { showToast } from "@/shared/components/showToast";
@@ -22,7 +14,6 @@ import z from "zod";
 const formSchema = z.object({
   category_name: ZValidator.category_name.nullable().optional(),
   brand_name: ZValidator.brand_name.nullable().optional(),
-  type: z.string().nullable().optional(),
   edit: z.string().nullable().optional(),
 });
 type ParentType = z.infer<typeof formSchema>;
@@ -33,7 +24,6 @@ export const RootModal = ({ refresh }: { refresh: () => void }) => {
     resolver: zodResolver(formSchema),
     defaultValues: {
       edit: undefined,
-      type: CategoryType.DEFAULT.toString(),
     },
   });
 
@@ -56,11 +46,9 @@ export const RootModal = ({ refresh }: { refresh: () => void }) => {
       res = edit
         ? await updateOne<ICategory>(Api.category, edit ?? "", {
             name: body.category_name ?? "",
-            type: +(body.type ?? CategoryType.DEFAULT),
           })
         : await create<ICategory>(Api.category, {
             name: body.category_name ?? "",
-            type: +(body.type ?? CategoryType.DEFAULT),
           });
     }
     if (res.success) {
@@ -109,26 +97,6 @@ export const RootModal = ({ refresh }: { refresh: () => void }) => {
             >
               {(field) => {
                 return <TextField props={{ ...field }} />;
-              }}
-            </FormItems>
-            <FormItems
-              label="Төрөл"
-              control={form.control}
-              name="type"
-              className={"col-span-1"}
-            >
-              {(field) => {
-                return (
-                  <ComboBox
-                    props={{ ...field }}
-                    items={getEnumValues(CategoryType).map((item) => {
-                      return {
-                        value: item.toString(),
-                        label: CategoryTypeValues[item],
-                      };
-                    })}
-                  />
-                );
               }}
             </FormItems>
           </div>

@@ -191,14 +191,27 @@ export function DayScheduleColumn({
       <div className="space-y-2 pt-3 border-t border-slate-200">
         <button
           onClick={() => {
-            if (isEditMode) setSend(true);
+            // Edit-горимоос гарахдаа хоосон цагтай бол хадгалуулахгүй (хоосон мөр үүсэхээс сэргийлнэ).
+            if (isEditMode) {
+              if (times.length > 0) {
+                setSend(true);
+              }
+            }
             setIsEditMode(!isEditMode);
           }}
+          disabled={isEditMode && times.length === 0}
           className={`w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-xs transition-colors ${
             isEditMode
-              ? "bg-teal-500 hover:bg-teal-600 text-white"
+              ? times.length === 0
+                ? "bg-slate-200 text-slate-400 cursor-not-allowed"
+                : "bg-teal-500 hover:bg-teal-600 text-white"
               : "bg-white hover:bg-slate-100 text-slate-700 border border-slate-200"
           }`}
+          title={
+            isEditMode && times.length === 0
+              ? "Цаг сонгож хадгална уу"
+              : undefined
+          }
         >
           {isEditMode ? <Check size={14} /> : <Edit3 size={14} />}
           <span>{isEditMode ? "Дуусгах" : "Засах"}</span>

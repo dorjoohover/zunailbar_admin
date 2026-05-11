@@ -1,10 +1,9 @@
 export interface ICost {
   id: string;
-  category_id: string;
+  cost_category_id: string;
+  cost_category_name: string;
   branch_id: string;
   branch_name: string;
-  product_id: string;
-  product_name: string;
   date: Date;
   price: number;
   paid_amount: number;
@@ -14,11 +13,10 @@ export interface ICost {
 }
 export interface Cost {
   id: string;
-  category_id: string;
+  cost_category_id: string;
+  cost_category_name: string;
   branch_id: string;
   branch_name: string;
-  product_id: string;
-  product_name: string;
   date: Date;
   price: number;
   paid_amount: number;

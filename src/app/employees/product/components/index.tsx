@@ -11,16 +11,13 @@ import {
   SearchType,
   VALUES,
   zNumOpt,
-  zStrOpt,
-} from "@/lib/constants";
+  zStrOpt } from "@/lib/constants";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
-  CategoryType,
   INPUT_TYPE,
   ROLE,
   UserProductStatus,
-  UserStatus,
-} from "@/lib/enum";
+  UserStatus } from "@/lib/enum";
 import z from "zod";
 
 import { Api } from "@/utils/api";
@@ -33,8 +30,7 @@ import {
   firstLetterUpper,
   objectCompact,
   searchProductFormatter,
-  searchUsernameFormatter,
-} from "@/lib/functions";
+  searchUsernameFormatter } from "@/lib/functions";
 import { FormItems } from "@/shared/components/form.field";
 import { Modal } from "@/shared/components/modal";
 import { TextField } from "@/shared/components/text.field";
@@ -53,27 +49,23 @@ type FilterType = {
 const formSchema = z.object({
   user_id: zStrOpt({
     allowNullable: false,
-    label: "Артист",
-  }),
+    label: "Артист" }),
 
   product_id: zStrOpt({
     allowNullable: false,
-    label: "Бүтээгдэхүүн",
-  }),
+    label: "Бүтээгдэхүүн" }),
   product_name: zStrOpt({}),
   user_name: zStrOpt({}),
   quantity: zNumOpt({
     allowNullable: false,
-    label: "Тоо ширхэг",
-  }),
+    label: "Тоо ширхэг" }),
   user_product_status: z
     .preprocess(
       (val) => (typeof val === "string" ? parseInt(val, 10) : val),
       z.nativeEnum(UserProductStatus).nullable()
     )
     .optional() as unknown as number,
-  edit: z.string().nullable().optional(),
-});
+  edit: z.string().nullable().optional() });
 const defaultValues: UserProductType = {
   user_id: undefined,
   product_id: undefined,
@@ -81,15 +73,13 @@ const defaultValues: UserProductType = {
   user_name: undefined,
   quantity: 0,
   user_product_status: UserProductStatus.Active,
-  edit: undefined,
-};
+  edit: undefined };
 type UserProductType = z.infer<typeof formSchema>;
 export const EmployeeProductPage = ({
   data,
   products,
   branches,
-  users,
-}: {
+  users }: {
   data: ListType<UserProduct>;
   branches: ListType<Branch>;
   users: SearchType<User>[];
@@ -99,13 +89,11 @@ export const EmployeeProductPage = ({
   const [open, setOpen] = useState<boolean | undefined>(false);
   const form = useForm<UserProductType>({
     resolver: zodResolver(formSchema),
-    defaultValues,
-  });
+    defaultValues });
   const [userProduct, setUserProduct] = useState<ListType<UserProduct>>(data);
   const [items, setItems] = useState({
     [Api.product]: products,
-    [Api.user]: users,
-  });
+    [Api.user]: users });
   const [productSearch, setProductSearch] = useState("");
   const productMap = useMemo(
     () => new Map(products.map((p) => [p.id, p.value])),
@@ -116,15 +104,12 @@ export const EmployeeProductPage = ({
     const query = value.length > 1 ? value : "";
     const result = await search<Product>(Api.product, {
       id: query,
-      type: CategoryType.DEFAULT,
       limit: 20,
-      page: 0,
-    });
+      page: 0 });
 
     setItems((prev) => ({
       ...prev,
-      [Api.product]: result.data,
-    }));
+      [Api.product]: result.data }));
   };
 
   const userProductFormatter = (data: ListType<UserProduct>) => {
@@ -190,8 +175,7 @@ export const EmployeeProductPage = ({
       user_id,
       product_id,
       user_product_status,
-      ...pg,
-    }).then((d) => {
+      ...pg }).then((d) => {
       userProductFormatter(d);
       // form.reset(undefined);
     });
@@ -206,13 +190,11 @@ export const EmployeeProductPage = ({
       quantity: e.quantity,
       user_id: e.user_id,
       user_product_status: e.user_product_status,
-      user_name: e.user_name,
-    });
+      user_name: e.user_name });
   };
   const setStatus = async (index: number, status: number) => {
     const res = await updateOne(Api.user_product, userProduct.items[index].id, {
-      user_product_status: status,
-    });
+      user_product_status: status });
     res.success
       ? showToast("success", "Амжилттай шинэчлэгдлээ.")
       : showToast("error", res.error ?? "");
@@ -226,8 +208,7 @@ export const EmployeeProductPage = ({
   };
   const columns = getColumns(edit, setStatus, deleteUserProduct);
   const [filter, setFilter] = useState<FilterType>({
-    status: UserProductStatus.Active,
-  });
+    status: UserProductStatus.Active });
 
   const changeFilter = (key: string, value: number | string) => {
     setFilter((prev) => ({ ...prev, [key]: value }));
@@ -248,8 +229,7 @@ export const EmployeeProductPage = ({
         {
           key: "branch",
           label: "Салбар",
-          items: branches.items.map((b) => ({ value: b.id, label: b.name })),
-        },
+          items: branches.items.map((b) => ({ value: b.id, label: b.name })) },
         {
           key: "user",
           label: "Артист",
@@ -257,10 +237,8 @@ export const EmployeeProductPage = ({
             const label = searchUsernameFormatter(b.value);
             return {
               value: b.id,
-              label: label,
-            };
-          }),
-        },
+              label: label };
+          }) },
         // {
         //   key: "product",
         //   label: "Бүтээгдэхүүн",
@@ -271,9 +249,7 @@ export const EmployeeProductPage = ({
           label: "Статус",
           items: getEnumValues(UserProductStatus).map((s) => ({
             value: s,
-            label: getValuesUserProductStatus[s].name,
-          })),
-        },
+            label: getValuesUserProductStatus[s].name })) },
       ],
       [branches.items]
     );
@@ -288,35 +264,30 @@ export const EmployeeProductPage = ({
 
     const payload =
       key === Api.product
-        ? { id: value, type: CategoryType.DEFAULT }
+        ? { id: value }
         : edit === undefined
         ? {
             id: value,
             role: ROLE.E_M,
-            user_status: UserStatus.ACTIVE,
-          }
+            user_status: UserStatus.ACTIVE }
         : {
             role: ROLE.E_M,
             user_status: UserStatus.ACTIVE,
 
-            value: v,
-          };
+            value: v };
     await search(key as any, {
       ...payload,
       limit: 20,
-      page: 0,
-    }).then((d) => {
+      page: 0 }).then((d) => {
       setItems((prev) => ({
         ...prev,
-        [key]: d.data,
-      }));
+        [key]: d.data }));
     });
   };
 
   const filterClear = () => {
     setFilter({
-      status: UserProductStatus.Active,
-    });
+      status: UserProductStatus.Active });
   };
   return (
     <div className="relative w-full">
@@ -339,15 +310,13 @@ export const EmployeeProductPage = ({
                       value={filter?.[key] ? String(filter[key]) : ""} //
                       items={item.items.map((it) => ({
                         value: String(it.value),
-                        label: it.label as string,
-                      }))}
+                        label: it.label as string }))}
                       props={{
                         value: filter?.[key] ? String(filter[key]) : "",
                         onChange: (val: string) => changeFilter(key, val),
                         onBlur: () => {},
                         name: key,
-                        ref: () => {},
-                      }}
+                        ref: () => {} }}
                     />
                   </label>
                 );
@@ -389,8 +358,7 @@ export const EmployeeProductPage = ({
                         items={items[Api.user].map((item) => {
                           return {
                             value: item.id,
-                            label: searchUsernameFormatter(item.value),
-                          };
+                            label: searchUsernameFormatter(item.value) };
                         })}
                       />
                     );
@@ -410,8 +378,7 @@ export const EmployeeProductPage = ({
                           items={items[Api.product].map((item) => {
                             return {
                               value: item.id,
-                              label: searchProductFormatter(item.value),
-                            };
+                              label: searchProductFormatter(item.value) };
                           })}
                         />
                       );
@@ -446,8 +413,7 @@ export const EmployeeProductPage = ({
                             (item) => {
                               return {
                                 value: item.toString(),
-                                label: getValuesUserProductStatus[item].name,
-                              };
+                                label: getValuesUserProductStatus[item].name };
                             }
                           )}
                         />
