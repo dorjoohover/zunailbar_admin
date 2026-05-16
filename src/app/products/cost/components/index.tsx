@@ -244,11 +244,11 @@ export const CostPage = ({
     if (v.length > 1) value = v;
     if (v.length == 1) return;
 
-    await search(key as any, {
-      id: value,
-      limit: 20,
-      page: 0,
-    }).then((d) => {
+    const payload: any = { id: value, limit: 20, page: 0 };
+    // Зардал бичилт зөвхөн leaf cost_category-д хийгдэнэ
+    if (key === Api.cost_category) payload.leaf = true;
+
+    await search(key as any, payload).then((d) => {
       setItems((prev) => ({
         ...prev,
         [key]: d.data,

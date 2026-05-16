@@ -7,7 +7,7 @@ export default async function Page() {
   const [res, branch, category] = await Promise.all([
     find<Cost>(Api.cost),
     find<Branch>(Api.branch, { limit: -1 }),
-    search<CostCategory>(Api.cost_category, { limit: -1 }),
+    search<CostCategory>(Api.cost_category, { limit: -1, leaf: true } as any),
   ]);
   return (
     <section>

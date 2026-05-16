@@ -19,8 +19,16 @@ export function getColumns(
     },
     {
       accessorKey: "name",
-      header: ({ column }) => 'Ангилал' 
-      
+      header: ({ column }) => 'Ангилал'
+
+    },
+    {
+      accessorKey: "parent_name",
+      header: () => "Эцэг ангилал",
+      cell: ({ row }) => {
+        const v = row.getValue("parent_name") as string | null | undefined;
+        return v ?? "-";
+      },
     },
 
     {

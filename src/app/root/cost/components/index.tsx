@@ -2,12 +2,13 @@
 
 import { DataTable } from "@/components/data-table";
 import { CostCategory, ICostCategory } from "@/models";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import {
   ListType,
   ACTION,
   PG,
   DEFAULT_PG,
+  SearchType,
   VALUES,
   ZValidator,
 } from "@/lib/constants";
@@ -16,8 +17,9 @@ import z from "zod";
 import { FormProvider, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Api } from "@/utils/api";
-import { create, deleteOne, updateOne } from "@/app/(api)";
+import { create, deleteOne, search, updateOne } from "@/app/(api)";
 import { FormItems } from "@/shared/components/form.field";
+import { ComboBox } from "@/shared/components/combobox";
 import { TextField } from "@/shared/components/text.field";
 import { fetcher } from "@/hooks/fetcher";
 import DynamicHeader from "@/components/dynamicHeader";
@@ -27,15 +29,23 @@ import { getColumns } from "./columns";
 
 const formSchema = z.object({
   name: ZValidator.name,
+  parent_id: z.string().nullable().optional(),
   edit: z.string().nullable().optional(),
 });
-const defaultValues = {
+const defaultValues: CostCategoryFormType = {
   name: "",
+  parent_id: null,
   edit: undefined,
 };
 type CostCategoryFormType = z.infer<typeof formSchema>;
 
-export const CostPage = ({ data }: { data: ListType<CostCategory> }) => {
+export const CostPage = ({
+  data,
+  parents,
+}: {
+  data: ListType<CostCategory>;
+  parents: SearchType<CostCategory>[];
+}) => {
   const [action, setAction] = useState(ACTION.DEFAULT);
   const [open, setOpen] = useState<undefined | boolean>(false);
   const form = useForm<CostCategoryFormType>({
@@ -44,6 +54,8 @@ export const CostPage = ({ data }: { data: ListType<CostCategory> }) => {
   });
   const [costCategories, setCostCategories] =
     useState<ListType<CostCategory>>(data);
+  const [parentOptions, setParentOptions] =
+    useState<SearchType<CostCategory>[]>(parents);
 
   const deleteCostCategory = async (index: number) => {
     const id = costCategories!.items[index].id;
@@ -53,7 +65,11 @@ export const CostPage = ({ data }: { data: ListType<CostCategory> }) => {
   };
   const edit = async (e: ICostCategory) => {
     setOpen(true);
-    form.reset({ ...e, edit: e.id });
+    form.reset({
+      name: e.name,
+      parent_id: e.parent_id ?? null,
+      edit: e.id,
+    });
   };
   const columns = getColumns(edit, deleteCostCategory);
 
@@ -73,7 +89,11 @@ export const CostPage = ({ data }: { data: ListType<CostCategory> }) => {
   const onSubmit = async <T,>(e: T) => {
     setAction(ACTION.RUNNING);
     const body = e as CostCategoryFormType;
-    const { edit, ...payload } = body;
+    const { edit, parent_id, ...rest } = body;
+    const payload = {
+      ...rest,
+      parent_id: parent_id ?? null,
+    };
 
     const res = edit
       ? await updateOne<ICostCategory>(
@@ -93,6 +113,11 @@ export const CostPage = ({ data }: { data: ListType<CostCategory> }) => {
         "success",
         edit ? "Зардлын ангилал засагдсан." : "Зардлын ангилал нэмлээ.",
       );
+      const p = await search<CostCategory>(Api.cost_category, {
+        limit: 50,
+        top_level: true,
+      } as any);
+      setParentOptions(p.data);
     } else {
       showToast("error", res.error ?? "");
     }
@@ -109,6 +134,28 @@ export const CostPage = ({ data }: { data: ListType<CostCategory> }) => {
       })
       .join(", ");
     showToast("info", error);
+  };
+
+  const editingId = form.watch("edit");
+  const parentItems = useMemo(
+    () =>
+      parentOptions
+        .filter((p) => p.id !== editingId)
+        .map((p) => ({
+          value: p.id,
+          label: p.value?.split("__")?.[0] ?? p.value,
+        })),
+    [parentOptions, editingId],
+  );
+
+  const parentSearch = async (v: string) => {
+    if (v.length === 1) return;
+    const res = await search<CostCategory>(Api.cost_category, {
+      limit: 50,
+      id: v.length > 1 ? v : "",
+      top_level: true,
+    } as any);
+    setParentOptions(res.data);
   };
 
   return (
@@ -147,6 +194,26 @@ export const CostPage = ({ data }: { data: ListType<CostCategory> }) => {
                     label="Ангиллын нэр"
                   >
                     {(field) => <TextField props={{ ...field }} />}
+                  </FormItems>
+                  <FormItems
+                    control={form.control}
+                    name="parent_id"
+                    className="col-span-1"
+                    label="Эцэг ангилал (заавал биш)"
+                  >
+                    {(field) => (
+                      <ComboBox
+                        pl="Эцэг ангилал"
+                        search={parentSearch}
+                        props={{
+                          ...field,
+                          value: field.value ?? "",
+                          onChange: (v: string) =>
+                            field.onChange(v === "" ? null : v),
+                        }}
+                        items={parentItems}
+                      />
+                    )}
                   </FormItems>
                 </div>
               </FormProvider>

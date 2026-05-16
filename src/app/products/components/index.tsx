@@ -206,7 +206,9 @@ export const ProductPage = ({
     if (v.length > 1) value = v;
     if (v.length == 1) return;
 
-    const payload = { id: value };
+    const payload: any = { id: value };
+    // Бараа нь зөвхөн хамгийн доод түвшний (leaf) ангилалд хамаарна
+    if (key === Api.category) payload.leaf = true;
 
     await search(key as any, {
       ...payload,

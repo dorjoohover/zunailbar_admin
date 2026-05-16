@@ -28,6 +28,14 @@ export function getColumns(
       ),
     },
     {
+      accessorKey: "parent_name",
+      header: () => "Эцэг ангилал",
+      cell: ({ row }) => {
+        const v = row.getValue("parent_name") as string | null | undefined;
+        return v ?? "-";
+      },
+    },
+    {
       accessorKey: "created_at",
       header: ({ column }) => (
         <Button
