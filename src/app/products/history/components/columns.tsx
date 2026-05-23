@@ -52,7 +52,7 @@ export function getColumns(
         ),
     },
     {
-      accessorKey: "price",
+      accessorKey: "unit_price",
       id: "unit_price",
       header: "Нэгжийн үнэ",
 
