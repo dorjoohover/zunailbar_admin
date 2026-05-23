@@ -63,7 +63,7 @@ const formSchema = z.object({
     (val) => (typeof val === "string" ? parseFloat(val) : val),
     z.number(),
   ) as unknown as number,
-  unit_price: z.preprocess(
+  price: z.preprocess(
     (val) => (typeof val === "string" ? parseFloat(val) : val),
     z.number().nonnegative(),
   ) as unknown as number,
@@ -86,7 +86,7 @@ const defaultValues: TransactionType = {
   product_id: "",
   date: mnDate() as any,
   quantity: 0,
-  unit_price: 0,
+  price: 0,
   total_amount: 0,
   user_id: "" };
 export const ProductTransactionPage = ({
@@ -113,7 +113,7 @@ export const ProductTransactionPage = ({
 
   const productId = form.watch("product_id");
   const quantity = form.watch("quantity");
-  const unit_price = form.watch("unit_price");
+  const unit_price = form.watch("price");
   useEffect(() => {
     const total = Number(quantity ?? 0) * Number(unit_price ?? 0);
     if (!Number.isNaN(total)) {
@@ -184,7 +184,7 @@ export const ProductTransactionPage = ({
       user_id: e.user_id ?? "",
       date: (e.date ? new Date(e.date as any) : mnDate()) as any,
       quantity: Number(e.quantity ?? 0),
-      unit_price: Number((e as any).price ?? e.unit_price ?? 0),
+      price: Number((e as any).price ?? e.unit_price ?? 0),
       total_amount: Number(e.total_amount ?? 0),
       edit: e.id });
   };
@@ -574,7 +574,7 @@ export const ProductTransactionPage = ({
                     <FormItems
                       label="Нэгжийн өртөг"
                       control={form.control}
-                      name="unit_price"
+                      name="price"
                     >
                       {(field) => (
                         <TextField props={{ ...field }} type={INPUT_TYPE.NUMBER} />

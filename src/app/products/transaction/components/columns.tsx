@@ -46,7 +46,7 @@ export function getColumns(
       header: () => "Нэгж үнэ",
       cell: ({ row }) => {
         const r = row.original as any;
-        const value = r?.price ?? r?.unit_price ?? 0;
+        const value = r?.price  ?? 0;
         return `${money(String(value))}₮`;
       },
     },
