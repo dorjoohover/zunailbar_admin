@@ -2,8 +2,6 @@ import { ColumnDef } from "@tanstack/react-table";
 import { money, parseDate } from "@/lib/functions";
 import { TableActionButtons } from "@/components/tableActionButtons";
 import { ICost } from "@/models";
-import { CostStatus } from "@/lib/enum";
-import { getValuesCostStatus } from "@/lib/constants";
 
 export function getColumns(
   onEdit: (item: ICost) => void,
@@ -14,6 +12,14 @@ export function getColumns(
       id: "select",
       header: () => <span>№</span>,
       cell: ({ row }) => <span className="">{row.index + 1}</span>,
+    },
+    {
+      accessorKey: "name",
+      header: () => "Нэр",
+      cell: ({ row }) => {
+        const name = row.getValue("name") as string | undefined;
+        return name && name.trim().length > 0 ? name : "-";
+      },
     },
     {
       accessorKey: "cost_category_name",
@@ -30,24 +36,8 @@ export function getColumns(
 
     {
       accessorKey: "price",
-      header: "Үнэ",
+      header: "Зардлын дүн",
       cell: ({ row }) => money(row.getValue("price"), "₮") ?? "-",
-    },
-    {
-      accessorKey: "paid_amount",
-      header: "Төлсөн",
-      cell: ({ row }) => money(row.getValue("paid_amount") ?? 0, "₮") ?? "-",
-    },
-    {
-      accessorKey: "cost_status",
-      header: "Статус",
-      cell: ({ row }) => {
-        const status =
-          getValuesCostStatus[
-            row.getValue<number>("cost_status") as CostStatus
-          ];
-        return <span className={status.color}>{status.name}</span>;
-      },
     },
     {
       accessorKey: "date",

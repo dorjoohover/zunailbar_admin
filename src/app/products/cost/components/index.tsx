@@ -10,8 +10,6 @@ import {
   PG,
   DEFAULT_PG,
   ListDefault,
-  getEnumValues,
-  getValuesCostStatus,
   Option,
   SearchType,
   VALUES,
@@ -22,12 +20,12 @@ import z from "zod";
 import { FormProvider, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Api } from "@/utils/api";
-import { create, deleteOne, search, updateOne } from "@/app/(api)";
+import { create, deleteOne, excel, search, updateOne } from "@/app/(api)";
 import { FormItems } from "@/shared/components/form.field";
 import { ComboBox } from "@/shared/components/combobox";
 import { TextField } from "@/shared/components/text.field";
 import { fetcher } from "@/hooks/fetcher";
-import { CostStatus, INPUT_TYPE } from "@/lib/enum";
+import { INPUT_TYPE } from "@/lib/enum";
 import {
   dateOnly,
   firstLetterUpper,
@@ -41,35 +39,27 @@ import { FilterPopover } from "@/components/layout/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { showToast } from "@/shared/components/showToast";
 
-const formSchema = z
-  .object({
-    cost_category_id: z.string().min(1, "Зардлын ангилал сонгоно уу"),
-    branch_id: ZValidator.branch,
-    date: z.preprocess(
-      (val) => (typeof val === "string" ? new Date(val) : val),
-      z.date()
-    ) as unknown as Date,
-    price: z.preprocess(
-      (val) => (typeof val === "string" ? parseFloat(val) : val),
-      z.number()
-    ) as unknown as number,
-    paid_amount: z.preprocess(
-      (val) => (typeof val === "string" ? parseFloat(val) : val),
-      z.number()
-    ) as unknown as number,
+const formSchema = z.object({
+  name: z.string().optional(),
+  cost_category_id: z.string().min(1, "Зардлын ангилал сонгоно уу"),
+  branch_id: ZValidator.branch,
+  date: z.preprocess(
+    (val) => (typeof val === "string" ? new Date(val) : val),
+    z.date()
+  ) as unknown as Date,
+  price: z.preprocess(
+    (val) => (typeof val === "string" ? parseFloat(val) : val),
+    z.number()
+  ) as unknown as number,
 
-    edit: z.string().nullable().optional(),
-  })
-  .refine((data) => (data?.paid_amount ?? 0) <= (data?.price ?? 0), {
-    message: "Төлсөн дүн нийт дүнгээс хэтэрч болохгүй",
-    path: ["paid_amount"],
-  });
+  edit: z.string().nullable().optional(),
+});
 const defaultValues = {
+  name: "",
   cost_category_id: "",
   branch_id: "",
   date: mnDateFormat(mnDate()),
   price: 0,
-  paid_amount: 0,
   edit: undefined,
 };
 type CostType = z.infer<typeof formSchema>;
@@ -78,7 +68,6 @@ type FilterType = {
   branch?: string;
   start?: Date;
   end?: Date;
-  status?: number;
 };
 export const CostPage = ({
   data,
@@ -146,7 +135,6 @@ export const CostPage = ({
     const { page, limit, sort } = pg;
     const branch_id = filter?.branch;
     const cost_category_id = filter?.category;
-    const cost_status = filter?.status;
     const start_date = filter?.start ? dateOnly(filter?.start) : undefined;
     const end_date = filter?.end ? dateOnly(filter?.end) : undefined;
     await fetcher<Cost>(Api.cost, {
@@ -156,13 +144,45 @@ export const CostPage = ({
       name: pg.filter,
       branch_id,
       cost_category_id,
-      cost_status,
       start_date,
       end_date,
       ...pg,
     }).then((d) => {
       costFormatter(d);
     });
+    setAction(ACTION.DEFAULT);
+  };
+
+  const downloadExcel = async (pg: PG = DEFAULT_PG) => {
+    setAction(ACTION.RUNNING);
+    const { sort } = pg;
+    const res = await excel(Api.cost, {
+      ...pg,
+      page: 0,
+      limit: -1,
+      sort: sort ?? DEFAULT_PG.sort,
+      name: pg.filter,
+      branch_id: filter?.branch,
+      cost_category_id: filter?.category,
+      start_date: filter?.start ? dateOnly(filter?.start) : undefined,
+      end_date: filter?.end ? dateOnly(filter?.end) : undefined,
+    });
+    if (res.success && res.data) {
+      const blob = new Blob([res.data], { type: "application/xlsx" });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute(
+        "download",
+        `cost_${mnDate().toISOString().slice(0, 10)}.xlsx`
+      );
+      document.body.appendChild(link);
+      link.click();
+      link.parentNode?.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } else {
+      showToast("error", res.message);
+    }
     setAction(ACTION.DEFAULT);
   };
   const onSubmit = async <T,>(e: T) => {
@@ -201,7 +221,6 @@ export const CostPage = ({
       objectCompact({
         branch_id: filter?.branch,
         cost_category_id: filter?.category,
-        cost_status: filter?.status,
         start_date: filter?.start ? dateOnly(filter?.start) : undefined,
         end_date: filter?.end ? dateOnly(filter?.end) : undefined,
         page: 0,
@@ -222,14 +241,6 @@ export const CostPage = ({
           items: categories.map((b) => ({
             value: b.id,
             label: searchFormatter(b.value),
-          })),
-        },
-        {
-          key: "status",
-          label: "Статус",
-          items: getEnumValues(CostStatus).map((s) => ({
-            value: s,
-            label: getValuesCostStatus[s].name,
           })),
         },
       ],
@@ -325,6 +336,7 @@ export const CostPage = ({
           count={costs?.count}
           data={costs?.items ?? []}
           refresh={refresh}
+          excel={downloadExcel}
           loading={action == ACTION.RUNNING}
           modalAdd={
             <Modal
@@ -341,6 +353,21 @@ export const CostPage = ({
               <FormProvider {...form}>
                 <div className="divide-y">
                   <div className="pb-5 space-y-4">
+                    <FormItems
+                      control={form.control}
+                      name="name"
+                      label="Нэр"
+                    >
+                      {(field) => {
+                        return (
+                          <TextField
+                            props={{ ...field }}
+                            
+                            type={INPUT_TYPE.TEXT}
+                          />
+                        );
+                      }}
+                    </FormItems>
                     <FormItems
                       control={form.control}
                       name="cost_category_id"
@@ -386,12 +413,7 @@ export const CostPage = ({
                     {[
                       {
                         key: "price",
-                        label: "Нийт төлбөр",
-                        type: INPUT_TYPE.MONEY,
-                      },
-                      {
-                        key: "paid_amount",
-                        label: "Төлсөн төлбөр",
+                        label: "Зардлын дүн",
                         type: INPUT_TYPE.MONEY,
                       },
                       {

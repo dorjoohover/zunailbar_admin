@@ -338,7 +338,7 @@ export const ProductTransactionPage = ({
     setAction(ACTION.RUNNING);
     const start_date = filter?.start ? dateOnly(filter.start) : undefined;
     const end_date = filter?.end ? dateOnly(filter.end) : undefined;
-    const res = await excel(Api.product_transaction_admin, {
+    const res = await excel(Api.product_transaction, {
       branch_id: filter?.branch,
       user_id: filter?.user,
       product_id: filter?.product,

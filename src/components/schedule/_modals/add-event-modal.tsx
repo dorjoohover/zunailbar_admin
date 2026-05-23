@@ -253,7 +253,7 @@ export default function AddEventModal({
     service: ListType<Service>;
   };
   loading?: boolean;
-  send: (order: IOrder) => void;
+  send: (order: IOrder) => void | boolean | Promise<void | boolean>;
   values?: IOrder | any;
   // CustomAddEventModal?: React.FC<{ register: any; errors: any }>;
 }) {
@@ -341,7 +341,10 @@ export default function AddEventModal({
   ) => {
     let result = artists;
     // 🟢 Service чадвартай artist
-    if (service_id) {
+    // userService mapping тухайн service-ийн хувьд ачаалагдсан үед л шүүнэ.
+    // Эс бөгөөс (mapping хараахан ирээгүй үед) бүх artist хоосон болж,
+    // дарааллаар 2 дахь artist сонгогдохгүй болдог байсан.
+    if (service_id && userService[service_id]) {
       const serviceArtistIds = new Set(userService[service_id]);
       result = result.filter((a) => serviceArtistIds.has(a.id));
     }
@@ -457,7 +460,7 @@ export default function AddEventModal({
     [Api.service]: false,
   });
 
-  const onSubmit: SubmitHandler<EventFormData> = (formData) => {
+  const onSubmit: SubmitHandler<EventFormData> = async (formData) => {
     const normalizedDetails = (formData.details ?? []).map((detail) => ({
       ...detail,
       price: normalizePriceValue(detail?.price),
@@ -508,9 +511,11 @@ export default function AddEventModal({
       edit: formData.edit ?? undefined,
       parallel: formData.parallel,
     } as IOrder;
-    send(newEvent);
-
-    setClose();
+    const result = await send(newEvent);
+    // Алдаа гарвал modal-ыг хааж, дата-г reset хийхгүй — оруулсан мэдээлэл хэвээр үлдэнэ.
+    if (result !== false) {
+      setClose();
+    }
   };
 
   const onInvalid = async <T,>(e: T) => {
@@ -647,6 +652,8 @@ export default function AddEventModal({
 
     const calculated = calculateDuration(details, parallel);
     getArtists();
+    // Үйлчилгээ/parallel өөрчлөгдөхөд боломжит цагийг (slots) шинэчилнэ.
+    if (branchId) getSlots();
     const current = Number(duration ?? 0);
     if (orderDuration != undefined) {
       return;

@@ -489,7 +489,7 @@ export const BranchServicePage = ({
                     }}
                   </FormItems>
 
-                  <FormItems
+                  {/* <FormItems
                     control={form.control}
                     name={"meta"}
                     label="Давхар эсэх"
@@ -510,7 +510,7 @@ export const BranchServicePage = ({
                         />
                       );
                     }}
-                  </FormItems>
+                  </FormItems> */}
 
                   {/* Тайлбар бүтэн мөр эзэлнэ */}
                   <FormItems

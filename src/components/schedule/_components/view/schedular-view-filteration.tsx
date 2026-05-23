@@ -164,7 +164,7 @@ export default function ({
   stopDayEventSummary?: boolean;
   CustomComponents?: any;
   classNames?: ClassNames;
-  send: (order: IOrder) => void;
+  send: (order: IOrder) => void | boolean | Promise<void | boolean>;
   action: ACTION;
   columns: ColumnDef<IOrder>[];
   levelConfig?: LevelConfig;

@@ -126,7 +126,7 @@ export const sidebar_items = [
             // icon: Milk,
           },
           {
-            title: "Хэрэглээний зардал",
+            title: "Зардлын бүртгэл",
             url: "/products/cost",
             // icon: Milk,
           },

@@ -283,6 +283,7 @@ export const OrderPage = ({
       });
     }
     setAction(ACTION.DEFAULT);
+    return res.success;
   };
 
   const downloadExcel = async (pg: PG = DEFAULT_PG) => {

@@ -532,7 +532,7 @@ export const ServicePage = ({
                           );
                         }}
                       </FormItems>
-                      <FormItems
+                      {/* <FormItems
                         control={form.control}
                         name={"parallel"}
                         label="Давхар эсэх"
@@ -551,7 +551,7 @@ export const ServicePage = ({
                             />
                           );
                         }}
-                      </FormItems>
+                      </FormItems> */}
                     </div>
                     <FormItems
                       control={form.control}

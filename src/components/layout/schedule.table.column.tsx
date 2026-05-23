@@ -53,7 +53,7 @@ export function DayScheduleColumn({
 
     const sortedTimes = [...nextTimes].sort();
     const lastStart = Math.max(...sortedTimes.map(timeToDecimal));
-    const minimumFinish = decimalToTime(lastStart + 0.5);
+    const minimumFinish = decimalToTime(lastStart + 2.5);
     const resolvedFinish = allowFinishTimeEdit
       ? nextFinishTime && timeToDecimal(nextFinishTime) > lastStart
         ? nextFinishTime
@@ -69,7 +69,7 @@ export function DayScheduleColumn({
   const minimumFinishTime = useMemo(() => {
     if (times.length === 0) return "";
     const lastStart = Math.max(...times.map(timeToDecimal));
-    return decimalToTime(lastStart + 0.5);
+    return decimalToTime(lastStart + 2.5);
   }, [times]);
 
   const toggleTime = (time: string) => {

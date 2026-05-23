@@ -119,11 +119,35 @@ export const ProductHistoryPage = ({
     defaultValues });
   const [transactions, setTransactions] =
     useState<ListType<IProductLog> | null>(null);
+  const [productList, setProductList] = useState<SearchType<Product>[]>(products);
 
   const productMap = useMemo(
-    () => new Map(products.map((p) => [p.id, p.value])),
-    [products],
+    () => new Map(productList.map((p) => [p.id, p.value])),
+    [productList],
   );
+
+  // Бараа устгах/нэмэх/засах үед үлдэгдэл өөрчлөгддөг тул жагсаалтыг дахин татна.
+  const refreshProducts = async () => {
+    const res = await search<Product>(Api.product, { limit: 20, page: 0 });
+    if (res?.data) setProductList(res.data as SearchType<Product>[]);
+  };
+
+  // productList шинэчлэгдэхэд харагдаж буй бичлэгүүдийн нэр (Үлд: X)-ийг дахин тооцно.
+  useEffect(() => {
+    setTransactions((prev) =>
+      prev
+        ? {
+            ...prev,
+            items: prev.items.map((item) => ({
+              ...item,
+              product_name:
+                searchProductFormatter(productMap.get(item.product_id) ?? "") ??
+                "",
+            })),
+          }
+        : prev,
+    );
+  }, [productMap]);
 
   const logFormatter = (data: ListType<ProductLog>) => {
     const items: IProductLog[] = data.items.map((item) => {
@@ -142,6 +166,7 @@ export const ProductHistoryPage = ({
   const deleteLog = async (index: number) => {
     const id = transactions!.items[index].id;
     const res = await deleteOne(Api.product_log, id);
+    await refreshProducts();
     refresh();
     return res.success;
   };
@@ -154,6 +179,7 @@ export const ProductHistoryPage = ({
       currency_amount: e.currency_amount,
       cargo: e.cargo,
       total_amount: +e.total_amount,
+      date: e.date ? new Date(e.date) : new Date(),
       edit: e.id });
   };
   const setStatus = async (index: number, status: number) => {
@@ -203,6 +229,7 @@ export const ProductHistoryPage = ({
           ...payload,
           cargo } as unknown as IProductLog);
     if (res.success) {
+      await refreshProducts();
       refresh();
       setOpen(false);
       form.reset(defaultValues);

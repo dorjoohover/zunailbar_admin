@@ -52,7 +52,8 @@ export function getColumns(
         ),
     },
     {
-      accessorKey: "unit_price",
+      accessorKey: "price",
+      id: "unit_price",
       header: "Нэгжийн үнэ",
 
       cell: ({ row }) => money(row.getValue("unit_price"), "₮"),
