@@ -34,7 +34,7 @@ import {
   ChevronLeft,
   ChevronRight,
   CircleX,
-  FileText,
+  Download,
   LoaderCircle,
   Search,
   X,
@@ -257,12 +257,14 @@ export function DataTable<TData, TValue>({
             <div className="flex items-center justify-end space-x-2">
               {excel && (
                 <Button
-                  variant={"ghost"}
+                  variant="outline"
+                  size="sm"
                   onClick={downloadExcel}
-                  className="bg-green-500 text-white hover:bg-green-500/80 gap-1 hover:text-white"
+                  disabled={loading}
+                  className="gap-2"
                 >
-                  <FileText />
-                  Excel
+                  <Download className="size-4" />
+                  Excel татах
                 </Button>
               )}
               {modalAdd && <div>{modalAdd}</div>}

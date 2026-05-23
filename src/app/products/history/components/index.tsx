@@ -129,37 +129,33 @@ export const ProductHistoryPage = ({
   // Бараа устгах/нэмэх/засах үед үлдэгдэл өөрчлөгддөг тул жагсаалтыг дахин татна.
   const refreshProducts = async () => {
     const res = await search<Product>(Api.product, { limit: 20, page: 0 });
-    if (res?.data) setProductList(res.data as SearchType<Product>[]);
+    if (res?.data) {
+      const data = res.data as SearchType<Product>[];
+      setProductList(data);
+      // Нэмэх/засах формын бүтээгдэхүүний combobox-ийн үлдэгдлийг ч шинэчилнэ.
+      setItems((prev) => ({ ...prev, [Api.product]: data }));
+    }
   };
-
-  // productList шинэчлэгдэхэд харагдаж буй бичлэгүүдийн нэр (Үлд: X)-ийг дахин тооцно.
-  useEffect(() => {
-    setTransactions((prev) =>
-      prev
-        ? {
-            ...prev,
-            items: prev.items.map((item) => ({
-              ...item,
-              product_name:
-                searchProductFormatter(productMap.get(item.product_id) ?? "") ??
-                "",
-            })),
-          }
-        : prev,
-    );
-  }, [productMap]);
 
   const logFormatter = (data: ListType<ProductLog>) => {
-    const items: IProductLog[] = data.items.map((item) => {
-      const product = productMap.get(item.product_id);
-
-      return {
-        ...item,
-        product_name: searchProductFormatter(product ?? "") ?? "" };
+    // Түүхий жагсаалтыг хадгална; нэр (Үлд: X)-ийг render үед productMap-аас тооцно.
+    setTransactions({
+      items: data.items as unknown as IProductLog[],
+      count: data.count,
     });
-
-    setTransactions({ items, count: data.count });
   };
+
+  // Харагдах мөрүүдийн product_name-ийг үргэлж хамгийн сүүлийн productMap-аас тооцно.
+  // Ингэснээр устгах/нэмэх/засах үед үлдэгдэл (Үлд: X) шууд шинэчлэгдэнэ.
+  const displayItems = useMemo(
+    () =>
+      (transactions?.items ?? []).map((item) => ({
+        ...item,
+        product_name:
+          searchProductFormatter(productMap.get(item.product_id) ?? "") ?? "",
+      })),
+    [transactions, productMap],
+  );
   useEffect(() => {
     logFormatter(data);
   }, [data]);
@@ -388,7 +384,7 @@ export const ProductHistoryPage = ({
           }
           columns={columns}
           count={transactions?.count}
-          data={transactions?.items ?? []}
+          data={displayItems}
           refresh={refresh}
           loading={action == ACTION.RUNNING}
           modalAdd={

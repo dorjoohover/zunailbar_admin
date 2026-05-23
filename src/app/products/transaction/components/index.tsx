@@ -47,7 +47,6 @@ import DynamicHeader from "@/components/dynamicHeader";
 import { showToast } from "@/shared/components/showToast";
 import { DatePicker } from "@/shared/components/date.picker";
 import { Button } from "@/components/ui/button";
-import { Download } from "lucide-react";
 
 const formSchema = z.object({
   branch_id: ZValidator.branch,
@@ -135,12 +134,20 @@ export const ProductTransactionPage = ({
           `purchase-prices/${productId}`,
         );
         if (!cancelled) {
-          setLastPrices(
-            (res.data ?? []).map((r: any) => ({
-              date: r.date ?? "",
-              unit_price: Number(r.unit_price ?? 0),
-              quantity: Number(r.quantity ?? 0) })),
-          );
+          const mapped = (res.data ?? []).map((r: any) => ({
+            date: r.date ?? "",
+            // unit_price багана хоосон/0 байж болох тул price дээр fallback хийнэ.
+            unit_price: Number(r.unit_price) || Number(r.price) || 0,
+            quantity: Number(r.quantity ?? 0) }));
+          setLastPrices(mapped);
+          // Шинээр нэмж байгаа (edit биш) үед хамгийн сүүлийн худалдан авалтын
+          // нэгжийн үнийг автоматаар оруулна. Худалдан авалт байхгүй бол 0 хэвээр.
+          if (!form.getValues("edit") && mapped.length > 0) {
+            form.setValue("price", mapped[0].unit_price, {
+              shouldValidate: true,
+              shouldDirty: true,
+            });
+          }
         }
       } catch {
         if (!cancelled) setLastPrices([]);
@@ -378,16 +385,6 @@ export const ProductTransactionPage = ({
               {money(String(summaryTotal))}₮
             </span>
           </div>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={downloadExcel}
-            disabled={action === ACTION.RUNNING}
-            className="gap-2"
-          >
-            <Download className="size-4" />
-            Excel татах
-          </Button>
         </div>
         <DataTable
           clear={() => setFilter(undefined)}
@@ -463,6 +460,7 @@ export const ProductTransactionPage = ({
           count={transactions?.count}
           data={transactions?.items ?? []}
           refresh={refresh}
+          excel={downloadExcel}
           loading={action == ACTION.RUNNING}
           modalAdd={
             <Modal
