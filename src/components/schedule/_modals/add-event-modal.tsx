@@ -652,8 +652,6 @@ export default function AddEventModal({
 
     const calculated = calculateDuration(details, parallel);
     getArtists();
-    // Үйлчилгээ/parallel өөрчлөгдөхөд боломжит цагийг (slots) шинэчилнэ.
-    if (branchId) getSlots();
     const current = Number(duration ?? 0);
     if (orderDuration != undefined) {
       return;
