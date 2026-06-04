@@ -101,6 +101,7 @@ const normalizePriceValue = (value?: unknown) => {
 const calculateVoucherDiscount = (
   subtotal: number,
   voucher?: Pick<Voucher, "type" | "value"> | null,
+  details?: Array<{ price?: unknown }>,
 ) => {
   if (!voucher) return 0;
 
@@ -110,7 +111,15 @@ const calculateVoucherDiscount = (
   if (total <= 0 || value <= 0) return 0;
 
   if (Number(voucher.type) === VOUCHER.Percent) {
-    return Math.min(total, Math.round((total * value) / 100));
+    // Хувийн хөнгөлөлт нь зөвхөн НЭГ үйлчилгээн дээр л үйлчилнэ — тиймээс
+    // хамгийн өндөр үнэтэй ганц үйлчилгээний үнэн дээрх хувиар л тооцно.
+    const prices = Array.isArray(details)
+      ? details
+          .map((d) => Number((d as any)?.price ?? 0))
+          .filter((p) => Number.isFinite(p) && p > 0)
+      : [];
+    const base = prices.length > 0 ? Math.max(...prices) : total;
+    return Math.min(base, Math.round((base * value) / 100));
   }
 
   return Math.min(total, value);
@@ -754,7 +763,7 @@ export default function AddEventModal({
     );
     setFormValueIfChanged(
       "discount",
-      calculateVoucherDiscount(detailSubtotal, selectedVoucher),
+      calculateVoucherDiscount(detailSubtotal, selectedVoucher, details),
     );
     setFormValueIfChanged("discount_type", selectedVoucher.type);
   }, [availableVouchers, details, form, voucher_id, voucherLoading]);
@@ -876,7 +885,7 @@ export default function AddEventModal({
       (item) => item.id === voucher_id,
     );
     const effectiveDiscount = selectedVoucher
-      ? calculateVoucherDiscount(serviceTotal, selectedVoucher)
+      ? calculateVoucherDiscount(serviceTotal, selectedVoucher, details)
       : normalizePriceValue(discount);
     const discountedDetails = normalizeOrderDetailPrices(
       details as DetailType[],
@@ -1106,7 +1115,11 @@ export default function AddEventModal({
                 {availableVouchers.map((voucher) => {
                   const selected = voucher.id === voucher_id;
                   const subtotal = sumPrices(details);
-                  const discount = calculateVoucherDiscount(subtotal, voucher);
+                  const discount = calculateVoucherDiscount(
+                    subtotal,
+                    voucher,
+                    details,
+                  );
                   const valueLabel =
                     Number(voucher.type) === VOUCHER.Percent
                       ? `${voucher.value ?? 0}%`
@@ -1306,23 +1319,53 @@ export default function AddEventModal({
         : "hover:bg-muted border-border"
     }`}
                         onClick={() => {
-                          if (
-                            (selected == undefined || selected == -1) &&
-                            details?.length == 2
-                          ) {
+                          // Хэрвээ дарсан үйлчилгээ нь аль хэдийн сонгогдсон бол хасна.
+                          if (selected !== undefined && selected !== -1) {
+                            updateDetail(selected, undefined);
+                            return;
+                          }
+
+                          // Шинэ үйлчилгээ сонгож байгаа тохиолдол.
+                          const sameCategoryIndex =
+                            details?.findIndex(
+                              (s) => s.category_id === service.category_id,
+                            ) ?? -1;
+
+                          // Ижил ангилалд аль хэдийн үйлчилгээ байгаа бол
+                          // одоо байгаа detail дээр шинэ үйлчилгээгээр сольж
+                          // өөрчилнө (id болон артистыг хадгална).
+                          if (sameCategoryIndex !== -1) {
+                            const currentDetails =
+                              form.getValues("details") || [];
+                            const existing = currentDetails[sameCategoryIndex];
+                            const updated = currentDetails.map((item, i) =>
+                              i === sameCategoryIndex
+                                ? {
+                                    ...item,
+                                    service_id: service.id,
+                                    service_name: service.name,
+                                    duration: service.duration,
+                                    category_id: service.category_id,
+                                    min_price: Number(service.min_price ?? 0),
+                                    max_price: Number(
+                                      service.max_price ??
+                                        service.min_price ??
+                                        0,
+                                    ),
+                                    price: undefined,
+                                    original_price: undefined,
+                                  }
+                                : item,
+                            );
+                            form.setValue("details", updated as any);
+                            return;
+                          }
+
+                          // 2-с олон үйлчилгээ нэмэх боломжгүй.
+                          if (details?.length === 2) {
                             showToast(
                               "info",
                               "2-с олон үйлчилгээ сонгох боломжгүй",
-                            );
-                            return;
-                          }
-                          const categorySelected = details?.some(
-                            (s) => s.category_id === service.category_id,
-                          );
-                          if (categorySelected && selected == -1) {
-                            showToast(
-                              "info",
-                              "Өөр ангилалын үйлчилгээ сонгоно уу",
                             );
                             return;
                           }

@@ -49,9 +49,16 @@ export function TableActionButtons<T>({
           onConfirm={async () => {
             try {
               const res = await onRemove(rowData);
-              showToast("success", `Амжилттай устгалаа!`);
-            } catch (error) {
-              showToast("error", "Устгах явцад алдаа гарлаа");
+              if (res === false) {
+                showToast("error", "Устгах явцад алдаа гарлаа");
+              } else {
+                showToast("success", `Амжилттай устгалаа!`);
+              }
+            } catch (error: any) {
+              showToast(
+                "error",
+                error?.message ?? "Устгах явцад алдаа гарлаа",
+              );
             }
             // const res = await onRemove(rowData);
             // toast.success(`Амжилттай устгалаа! ${res}`, {

@@ -106,6 +106,49 @@ type FilterType = {
 };
 
 type LogType = z.infer<typeof formSchema>;
+
+// Бутархайтай мөнгөн дүн оруулах талбар: цэгийг зөвшөөрнө.
+const DecimalAmountInput = ({
+  value,
+  onChange,
+}: {
+  value: number | string | undefined | null;
+  onChange: (val: number) => void;
+}) => {
+  const [display, setDisplay] = useState<string>(
+    value === undefined || value === null ? "" : String(value),
+  );
+  useEffect(() => {
+    if (value === undefined || value === null) {
+      setDisplay("");
+      return;
+    }
+    // Зөвхөн form-оор гаднаас солигдвол шинэчилнэ; хэрэглэгчийн "12." гэх типд саад болохгүй.
+    const next = String(value);
+    setDisplay((prev) => (Number(prev) === Number(next) ? prev : next));
+  }, [value]);
+  return (
+    <Input
+      type="text"
+      inputMode="decimal"
+      className="h-10 bg-white"
+      value={display}
+      onChange={(e) => {
+        let raw = (e.target.value ?? "").replace(/[^\d.]/g, "");
+        const firstDot = raw.indexOf(".");
+        if (firstDot !== -1) {
+          raw =
+            raw.slice(0, firstDot + 1) +
+            raw.slice(firstDot + 1).replace(/\./g, "");
+        }
+        setDisplay(raw);
+        // Form-д тоо хэлбэрээр хадгална; "12." гэх төлөвт NaN биш 12-г өгнө.
+        const numeric = raw === "" || raw === "." ? 0 : Number(raw);
+        onChange(Number.isFinite(numeric) ? numeric : 0);
+      }}
+    />
+  );
+};
 export const ProductHistoryPage = ({
   data,
   products }: {
@@ -168,12 +211,24 @@ export const ProductHistoryPage = ({
   };
   const edit = async (e: IProductLog) => {
     setOpen(true);
+    const savedCurrency = e.currency ?? "cny";
+    // Хадгалсан утга нь null/undefined байх тохиолдолд default 500-аар бүү
+    // дарж бичээрэй; валют MNT бол 1, бусдад 500 fallback ашиглана.
+    const savedCurrencyAmount =
+      e.currency_amount !== undefined && e.currency_amount !== null
+        ? Number(e.currency_amount)
+        : savedCurrency === "mnt"
+        ? 1
+        : 500;
     form.reset({
       ...e,
-      price: e.price,
-      quantity: e.quantity,
-      currency_amount: e.currency_amount,
-      cargo: e.cargo,
+      currency: savedCurrency,
+      price: Number(e.price ?? 0),
+      quantity: Number(e.quantity ?? 0),
+      currency_amount: savedCurrencyAmount,
+      cargo: Number(e.cargo ?? 0),
+      paid_amount: Number(e.paid_amount ?? 0),
+      unit_price: Number((e as any).unit_price ?? 0),
       total_amount: +e.total_amount,
       date: e.date ? new Date(e.date) : new Date(),
       edit: e.id });
@@ -211,11 +266,16 @@ export const ProductHistoryPage = ({
     setAction(ACTION.RUNNING);
     const body = e as LogType;
     let { edit, cargo, ...payload } = body;
+    // Үнийн дүн бутархай байж болно; тоо ширхэгийг л бүхэл тоонд шилжүүлнэ.
     payload = {
       ...payload,
-      price: round(+(payload.price ?? 0)),
-      unit_price: round(+(payload.unit_price ?? 0)),
-      total_amount: round(+(payload.total_amount ?? 0)) };
+      price: round(+(payload.price ?? 0), 4),
+      quantity: Math.round(+(payload.quantity ?? 0)),
+      unit_price: round(+(payload.unit_price ?? 0), 2),
+      paid_amount: round(+(payload.paid_amount ?? 0), 2),
+      currency_amount: round(+(payload.currency_amount ?? 0), 4),
+      total_amount: round(+(payload.total_amount ?? 0), 2) };
+    cargo = round(+(cargo ?? 0), 2) as any;
 
     const res = edit
       ? await updateOne<IProductLog>(Api.product_log, edit ?? "", {
@@ -250,11 +310,21 @@ export const ProductHistoryPage = ({
   const cargo = form.watch("cargo") ?? 0;
 
   useEffect(() => {
-    const unit_price = round((Number(price) || 0) * +(currency ?? 1));
-    let total = (Number(qty) || 0) * unit_price + +(cargo ?? 0);
+    // Тоо ширхэг л бүхэл тоо; бусад үнэ бутархайтай байж болно.
+    const qtyNum = Math.max(0, Math.trunc(Number(qty) || 0));
+    const priceNum = Number(price) || 0;
+    const cargoNum = Number(cargo) || 0;
+    const rate = +(currency ?? 1) || 1;
+    const base = priceNum * rate;
+    // Карго төлбөрийг нэгжийн үнэ дээр жигд хуваан нэмнэ.
+    const unit_price = round(
+      qtyNum > 0 ? base + cargoNum / qtyNum : base + cargoNum,
+      2,
+    );
+    let total = round(qtyNum * unit_price, 2);
     const paid = +(form.getValues("paid_amount") ?? 0);
     if (Math.abs(paid - total) < 100) total = paid;
-    form.setValue("total_amount", total, {
+    form.setValue("total_amount", round(total, 2), {
       shouldValidate: true,
       shouldDirty: true });
     form.setValue("unit_price", unit_price, {
@@ -435,8 +505,24 @@ export const ProductHistoryPage = ({
                             <div className="relative">
                               <div className="relative h-10">
                                 <Input
-                                  onChange={(e) => field.onChange(e)}
+                                  onChange={(e) => {
+                                    // Бутархай зөвшөөрнө; зөвхөн нэг цэг үлдээнэ.
+                                    let raw = (e.target.value ?? "").replace(
+                                      /[^\d.]/g,
+                                      "",
+                                    );
+                                    const firstDot = raw.indexOf(".");
+                                    if (firstDot !== -1) {
+                                      raw =
+                                        raw.slice(0, firstDot + 1) +
+                                        raw
+                                          .slice(firstDot + 1)
+                                          .replace(/\./g, "");
+                                    }
+                                    field.onChange(raw);
+                                  }}
                                   value={field.value as string | undefined}
+                                  inputMode="decimal"
                                   type="text"
                                   className="h-full pr-10"
                                 />
@@ -479,28 +565,28 @@ export const ProductHistoryPage = ({
                     {[
                       {
                         key: "cargo",
-                        type: INPUT_TYPE.MONEY,
+                        decimal: true,
                         label: "Kargo" },
                       {
                         key: "quantity",
-                        type: INPUT_TYPE.NUMBER,
+                        decimal: false,
                         label: "Тоо ширхэг" },
 
                       {
                         key: "price",
-                        type: INPUT_TYPE.NUMBER,
+                        decimal: true,
                         label: "Үнэ (Тухайн вальютаар)" },
                       {
                         key: "unit_price",
-                        type: INPUT_TYPE.MONEY,
+                        decimal: true,
                         label: "Нэгжийн үнэ" },
                       {
                         key: "total_amount",
-                        type: INPUT_TYPE.MONEY,
+                        decimal: true,
                         label: "Нийт дүн" },
                       {
                         key: "paid_amount",
-                        type: INPUT_TYPE.MONEY,
+                        decimal: true,
                         label: "Төлсөн дүн" },
                     ].map((item, i) => {
                       const name = item.key as keyof LogType;
@@ -514,10 +600,18 @@ export const ProductHistoryPage = ({
                           className={item.key === "name" ? "col-span-2" : ""}
                         >
                           {(field) => {
+                            if (item.decimal) {
+                              return (
+                                <DecimalAmountInput
+                                  value={field.value as any}
+                                  onChange={field.onChange}
+                                />
+                              );
+                            }
                             return (
                               <TextField
                                 props={{ ...field }}
-                                type={item.type}
+                                type={INPUT_TYPE.NUMBER}
                               />
                             );
                           }}
