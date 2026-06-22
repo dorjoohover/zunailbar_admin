@@ -61,6 +61,9 @@ const defaultValues = {
   total_amount: 0,
   pre_amount: 0,
   paid_amount: 0,
+  card_amount: 0,
+  bank_amount: 0,
+  cash_amount: 0,
   method: undefined,
   pre_method: undefined,
   voucher_id: null,
@@ -489,10 +492,15 @@ export default function AddEventModal({
       rawPreAmount,
       normalizedTotalAmount,
     );
-    const normalizedPaidAmount = Math.max(
-      normalizedTotalAmount - normalizedPreAmount,
-      0,
-    );
+    const cardAmount = normalizePriceValue(formData.card_amount ?? 0);
+    const bankAmount = normalizePriceValue(formData.bank_amount ?? 0);
+    const cashAmount = normalizePriceValue(formData.cash_amount ?? 0);
+    const perMethodTotal = cardAmount + bankAmount + cashAmount;
+    // Use per-method total if any were entered, otherwise fall back to auto-computed
+    const normalizedPaidAmount = perMethodTotal > 0
+      ? perMethodTotal
+      : Math.max(normalizedTotalAmount - normalizedPreAmount, 0);
+
     const newEvent = {
       branch_id: formData.branch_id,
       details: normalizedDetails,
@@ -505,15 +513,15 @@ export default function AddEventModal({
       order_status: formData.order_status as OrderStatus | undefined,
       total_amount: normalizedTotalAmount,
       paid_amount: normalizedPaidAmount,
+      card_amount: cardAmount || undefined,
+      bank_amount: bankAmount || undefined,
+      cash_amount: cashAmount || undefined,
       pre_amount: normalizedPreAmount,
       voucher_id: formData.voucher_id ?? null,
       voucher_name: formData.voucher_name ?? undefined,
       voucher_value: Number(formData.voucher_value ?? 0) || undefined,
       discount: normalizedDiscount,
       discount_type: formData.discount_type ?? undefined,
-      method: formData.method
-        ? +formData.method.toString().slice(0, 2)
-        : undefined,
       pre_method: formData.pre_method
         ? +formData.pre_method.toString().slice(0, 2)
         : undefined,
@@ -1211,21 +1219,6 @@ export default function AddEventModal({
             </FormItems>
             <FormItems
               control={form.control}
-              name="paid_amount"
-              label="Гүйцээж төлсөн төлбөр"
-            >
-              {(field) => {
-                return (
-                  <TextField
-                    disabled={true}
-                    type={INPUT_TYPE.MONEY}
-                    props={{ ...field }}
-                  />
-                );
-              }}
-            </FormItems>
-            <FormItems
-              control={form.control}
               name="pre_method"
               label="Урьдчилгааны хэлбэр"
             >
@@ -1251,33 +1244,26 @@ export default function AddEventModal({
                 );
               }}
             </FormItems>
-            <FormItems
-              control={form.control}
-              name="method"
-              label="Үлдэгдэл төлбөрийн хэлбэр"
-            >
-              {(field) => {
-                field.value = field.value
-                  ? +field.value?.toString().slice(0, 2)
-                  : field.value;
-                return (
-                  <ComboBox
-                    props={{ ...field }}
-                    items={[
-                      PaymentMethod.QPAY,
-                      PaymentMethod.BANK,
-                      PaymentMethod.CARD,
-                      PaymentMethod.CASH,
-                    ].map((item) => {
-                      return {
-                        value: item.toString(),
-                        label: getMethodValue[item],
-                      };
-                    })}
-                  />
-                );
-              }}
-            </FormItems>
+            <div className="col-span-2">
+              <p className="text-sm font-medium mb-1">Үлдэгдэл төлбөр (хэлбэрээр)</p>
+              <div className="grid grid-cols-3 gap-2">
+                <FormItems control={form.control} name="card_amount" label="Карт">
+                  {(field) => (
+                    <TextField type={INPUT_TYPE.MONEY} props={{ ...field }} />
+                  )}
+                </FormItems>
+                <FormItems control={form.control} name="bank_amount" label="Данс">
+                  {(field) => (
+                    <TextField type={INPUT_TYPE.MONEY} props={{ ...field }} />
+                  )}
+                </FormItems>
+                <FormItems control={form.control} name="cash_amount" label="Бэлэн">
+                  {(field) => (
+                    <TextField type={INPUT_TYPE.MONEY} props={{ ...field }} />
+                  )}
+                </FormItems>
+              </div>
+            </div>
           </div>
         </div>
 

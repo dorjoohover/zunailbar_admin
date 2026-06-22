@@ -1,6 +1,6 @@
 "use client";
 import { Branch, IOrder, Order, Schedule, Service, User } from "@/models";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import {
   ListType,
   ACTION,
@@ -28,6 +28,9 @@ import { Slot } from "@/models/slot.model";
 import { ArtistLeave } from "@/models/artist.leaves.model";
 import { BranchLeave } from "@/models/branch.leaves.model";
 import { LevelConfig } from "@/lib/level-config";
+import { useModal } from "@/providers/modal-context";
+import AddEventModal from "@/components/schedule/_modals/add-event-modal";
+import CustomModal from "@/components/ui/custom-modal";
 
 const getTodayRange = (): DateRange => {
   const today = mnDate(new Date());
@@ -45,6 +48,43 @@ export type FilterType = {
   list?: boolean;
   mobile?: string;
 };
+
+/** Opens AddEventModal for editing an existing order from the list view.
+ *  Must be rendered inside SchedulerProvider (which includes ModalProvider). */
+function OrderEditBridge({
+  target,
+  onClear,
+  send,
+  values,
+}: {
+  target: IOrder | null;
+  onClear: () => void;
+  send: (order: IOrder) => void | boolean | Promise<void | boolean>;
+  values: any;
+}) {
+  const { setOpen } = useModal();
+  useEffect(() => {
+    if (!target) return;
+    setOpen(
+      <CustomModal title="Захиалга засах" contentClass="max-w-3xl">
+        <AddEventModal
+          send={send}
+          items={values}
+          values={{
+            ...target,
+            parallel:
+              target.parallel ??
+              new Set(target.details?.map((d: any) => d.user_id)).size > 1,
+            edit: target.id,
+          }}
+        />
+      </CustomModal>,
+      async () => ({ ...target }),
+    );
+    onClear();
+  }, [target]);
+  return null;
+}
 
 export const OrderPage = ({
   branches,
@@ -154,7 +194,7 @@ export const OrderPage = ({
     });
     const map = new Map<string, SearchType<User>>();
 
-    data.items.forEach((order) => {
+    (data?.items ?? []).forEach((order) => {
       (order.details ?? []).forEach((detail: any) => {
         const id = detail.user_id ?? detail.artist_id;
         if (!id || map.has(id)) return;
@@ -182,14 +222,15 @@ export const OrderPage = ({
     getOrderArtists();
   }, [filter?.date, filter?.artist, filter?.branch, filter?.status]);
 
-  const orderFormatter = (data: ListType<Order>) => {
-    const items: Order[] = data.items.map((item) => {
+  const orderFormatter = (data: ListType<Order> | undefined) => {
+    if (!data) return;
+    const items: Order[] = (data.items ?? []).map((item) => {
       return {
         ...item,
       };
     });
 
-    setOrders({ items, count: data.count });
+    setOrders({ items, count: data.count ?? 0 });
   };
   useEffect(() => {
     const interval = setInterval(
@@ -256,34 +297,39 @@ export const OrderPage = ({
   const onSubmit = async <T,>(e: T) => {
     setAction(ACTION.RUNNING);
     const { edit, ...body } = e as any;
-
     const payload = { ...body };
-    const res = edit
-      ? await updateOne<Order>(
-          Api.order,
-          edit ?? "",
-          {
+    try {
+      const res = edit
+        ? await updateOne<Order>(
+            Api.order,
+            edit ?? "",
+            {
+              ...payload,
+              // order_date: mnDate(payload.order_date),
+            } as unknown as Order,
+            "update",
+          )
+        : await create(Api.order, {
             ...payload,
-            // order_date: mnDate(payload.order_date),
-          } as unknown as Order,
-          "update",
-        )
-      : await create(Api.order, {
-          ...payload,
-        } as unknown as Order);
-    if (res.success) {
-      refresh();
-      showToast(
-        "success",
-        edit ? "Мэдээлэл шинэчиллээ!" : "Амжилттай нэмэгдлээ!",
-      );
-    } else {
-      showToast("info", res.error ?? "Алдаа гарлаа!", {
-        duration: 5000,
-      });
+          } as unknown as Order);
+      if (res.success) {
+        refresh();
+        showToast(
+          "success",
+          edit ? "Мэдээлэл шинэчиллээ!" : "Амжилттай нэмэгдлээ!",
+        );
+      } else {
+        showToast("info", res.error ?? "Алдаа гарлаа!", {
+          duration: 5000,
+        });
+      }
+      return res.success;
+    } catch (err: any) {
+      showToast("info", err?.message ?? "Алдаа гарлаа!", { duration: 5000 });
+      return false;
+    } finally {
+      setAction(ACTION.DEFAULT);
     }
-    setAction(ACTION.DEFAULT);
-    return res.success;
   };
 
   const downloadExcel = async (pg: PG = DEFAULT_PG) => {
@@ -330,11 +376,10 @@ export const OrderPage = ({
     refresh();
     return res.success;
   };
-  const edit = async (e: IOrder) => {
-    // setOpen(true);
-    // console.log(e);
-    // form.reset({ ...e, date: e.date?.toString().slice(0, 10), edit: e.id });
-  };
+  const [editTarget, setEditTarget] = useState<IOrder | null>(null);
+  const edit = useCallback((e: IOrder) => {
+    setEditTarget(e);
+  }, []);
 
   const confirmOrders = async () => {
     const from = dateFormat(mnDate(filter?.date?.from ?? new Date()));
@@ -343,20 +388,25 @@ export const OrderPage = ({
     );
 
     setAction(ACTION.RUNNING);
-    const res = await create(Api.order, { from, to } as any, "confirm");
-    const processed = Number((res?.data as any)?.payload?.count ?? 0);
-    const success = processed > 0;
+    try {
+      const res = await create(Api.order, { from, to } as any, "confirm");
+      const processed = Number((res?.data as any)?.payload?.count ?? 0);
+      const success = processed > 0;
 
-    showToast(
-      success ? "success" : "info",
-      success
-        ? from === to
-          ? `${from} өдрийн ${processed} захиалга бодогдлоо`
-          : `${from} - ${to} хоорондын ${processed} захиалга бодогдлоо`
-        : "Бодох захиалга олдсонгүй",
-    );
-    setAction(ACTION.DEFAULT);
-    rerunCurrentDateRange();
+      showToast(
+        success ? "success" : "info",
+        success
+          ? from === to
+            ? `${from} өдрийн ${processed} захиалга бодогдлоо`
+            : `${from} - ${to} хоорондын ${processed} захиалга бодогдлоо`
+          : "Бодох захиалга олдсонгүй",
+      );
+      rerunCurrentDateRange();
+    } catch (err: any) {
+      showToast("info", err?.message ?? "Алдаа гарлаа!", { duration: 5000 });
+    } finally {
+      setAction(ACTION.DEFAULT);
+    }
   };
   const columns = getColumns(edit, deleteOrders);
   useEffect(() => {
@@ -375,6 +425,19 @@ export const OrderPage = ({
       <div className="admin-container relative">
         <div className="bg-white rounded-xl shadow-light border-light p-0 md:p-5">
           <SchedulerProvider weekStartsOn="monday">
+            <OrderEditBridge
+              target={editTarget}
+              onClear={() => setEditTarget(null)}
+              send={onSubmit}
+              values={{
+                branch: branches,
+                customer: customers,
+                service: services,
+                user: users,
+                artists: artists,
+                filterArtists: orderArtists,
+              }}
+            />
             <SchedulerViewFilteration
               loading={action == ACTION.RUNNING}
               send={onSubmit}

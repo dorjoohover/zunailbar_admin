@@ -49,6 +49,7 @@ export type FilterType = {
   old_order_status?: OrderStatus;
   user?: string;
   date?: Date;
+  customer_mobile?: string;
 };
 
 export const OrderLogPage = ({
@@ -104,6 +105,7 @@ export const OrderLogPage = ({
     filter?.user,
     filter?.old_order_status,
     filter?.new_order_status,
+    filter?.customer_mobile,
   ]);
   const searchField = async (v: string, key: Api, edit?: boolean) => {
     if (v.length <= 1) return;
@@ -136,6 +138,7 @@ export const OrderLogPage = ({
         sort: sort ?? DEFAULT_PG.sort,
         changed_at: date,
         changed_by: filter?.user,
+        customer_mobile: filter?.customer_mobile,
         old_order_status: filter?.old_order_status,
         new_order_status: filter?.new_order_status,
         new_status: filter?.new_status,
@@ -221,6 +224,16 @@ export const OrderLogPage = ({
             search={false}
             filter={
               <>
+                <label>
+                  <span className="filter-label">Хэрэглэгчийн дугаар</span>
+                  <input
+                    type="text"
+                    className="max-w-50 w-full text-xs border rounded px-2 py-1.5"
+                    placeholder="Утасны дугаар"
+                    value={filter?.customer_mobile ?? ""}
+                    onChange={(e) => changeFilter("customer_mobile", e.target.value || undefined)}
+                  />
+                </label>
                 {groups.map((item, i) => {
                   const { key, type } = item;
                   if (type == "date") {

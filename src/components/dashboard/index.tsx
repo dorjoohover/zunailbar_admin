@@ -69,6 +69,7 @@ export const DashboardClient = ({ branches }: { branches: Branch[] }) => {
     profit: 0,
     profitPercent: 0,
   });
+  const [chartItems, setChartItems] = useState<any[]>([]);
 
   const fromYMD = useMemo(() => toYMD(startDate), [startDate]);
   const toYMDValue = useMemo(() => toYMD(endDate), [endDate]);
@@ -148,8 +149,7 @@ export const DashboardClient = ({ branches }: { branches: Branch[] }) => {
           order_count: 0,
           profit_percent: 0,
         };
-        console.log(summary)
-
+        setChartItems(res.data?.items ?? []);
         setStats({
           orderCount: Number(summary.order_count ?? 0),
           revenue: Number(summary.revenue ?? 0),
@@ -265,10 +265,14 @@ export const DashboardClient = ({ branches }: { branches: Branch[] }) => {
           <h1 className="font-semibold">График үзүүлэлтүүд</h1>
           <div className="double-col">
             <div className="bg-white rounded-2xl border border-slate-200">
-              <EChart />
+              <EChart items={chartItems} />
             </div>
             <div className="bg-white rounded-2xl border border-slate-200">
-              <EChartPie />
+              <EChartPie
+                salary={stats.salary}
+                costTotal={stats.costTotal}
+                productTotal={stats.productTotal}
+              />
             </div>
           </div>
         </div>

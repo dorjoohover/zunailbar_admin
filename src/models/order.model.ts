@@ -20,6 +20,9 @@ export interface IOrder {
   edit?: string;
   total_amount?: number;
   paid_amount?: number;
+  card_amount?: number;
+  bank_amount?: number;
+  cash_amount?: number;
   pre_amount?: number;
   duration?: number;
   is_pre_amount_paid?: boolean;
@@ -37,6 +40,7 @@ export interface IOrder {
   voucher_value?: number | null;
   discount?: number;
   discount_type?: number | null;
+  parallel?: boolean | null;
 }
 export interface Order {
   id: string;

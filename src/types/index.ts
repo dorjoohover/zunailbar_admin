@@ -184,6 +184,9 @@ export const eventSchema = z
       label: "Гүйцээж төлсөн төлбөр",
       allowNullable: true,
     }),
+    card_amount: zNumOpt({ value: 0, label: "Картаар", allowNullable: true }),
+    bank_amount: zNumOpt({ value: 0, label: "Дансаар", allowNullable: true }),
+    cash_amount: zNumOpt({ value: 0, label: "Бэлнээр", allowNullable: true }),
     voucher_id: z.string().nullable().optional(),
     voucher_name: z.string().nullable().optional(),
     voucher_value: zNumOpt({
@@ -217,13 +220,7 @@ export const eventSchema = z
       });
     }
 
-    if (paidAmount > 0 && !data.method) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ["method"],
-        message: "Үлдэгдэл төлбөрийн хэлбэр сонгоно уу",
-      });
-    }
+    // method validation removed — payment split into card/bank/cash fields
   });
 
 export type EventFormData = z.infer<typeof eventSchema>;

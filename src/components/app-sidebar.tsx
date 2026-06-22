@@ -145,7 +145,10 @@ export const sidebar_items = [
           {
             title: "Захиалгын лог",
             url: "/order_logs",
-            // icon: Milk,
+          },
+          {
+            title: "SMS лог",
+            url: "/sms_logs",
           },
         ],
       },
