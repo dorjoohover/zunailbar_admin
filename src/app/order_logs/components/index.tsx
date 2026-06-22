@@ -68,10 +68,10 @@ export const OrderLogPage = ({
   );
   const orderLogsFormatter = (data: ListType<OrderLog>) => {
     const items: OrderLog[] = data.items.map((item) => {
-      const user = item.changed_by ? userMap.get(item.changed_by) : null;
       return {
         ...item,
-        changed_user: user ? searchUsernameFormatter(user) : "",
+        changed_user_name: item.changed_user_name ?? "",
+        changed_user_mobile: item.changed_user_mobile ?? "",
         branch_name: item.branch_name ?? "",
         artist_names: item.artist_names ?? "",
         customer_mobile: item.customer_mobile ?? "",

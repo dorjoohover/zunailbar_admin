@@ -3,13 +3,21 @@
 import React, { useEffect, useRef } from "react";
 import * as echarts from "echarts";
 
-type SummaryProps = {
-  salary?: number;
-  costTotal?: number;
-  productTotal?: number;
+type CategoryItem = {
+  category: string;
+  total: number;
 };
 
-export default function EChartPie({ salary = 0, costTotal = 0, productTotal = 0 }: SummaryProps) {
+type Props = {
+  categories?: CategoryItem[];
+};
+
+const COLORS = [
+  "#f97316", "#3b82f6", "#a855f7", "#10b981", "#f43f5e",
+  "#eab308", "#06b6d4", "#84cc16", "#ec4899", "#6366f1",
+];
+
+export default function EChartPie({ categories = [] }: Props) {
   const chartRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -17,20 +25,20 @@ export default function EChartPie({ salary = 0, costTotal = 0, productTotal = 0 
 
     const chart = echarts.init(chartRef.current);
 
-    const total = salary + costTotal + productTotal;
-    const hasData = total > 0;
+    const filtered = categories.filter((c) => c.total > 0);
+    const hasData = filtered.length > 0;
 
     const data = hasData
-      ? [
-          { value: salary, name: "Цалин", itemStyle: { color: "#a855f7" } },
-          { value: costTotal, name: "Зардал", itemStyle: { color: "#3b82f6" } },
-          { value: productTotal, name: "Бүтээгдэхүүн", itemStyle: { color: "#f97316" } },
-        ].filter((d) => d.value > 0)
+      ? filtered.map((c, i) => ({
+          value: c.total,
+          name: c.category,
+          itemStyle: { color: COLORS[i % COLORS.length] },
+        }))
       : [{ value: 1, name: "Мэдээлэл байхгүй" }];
 
     chart.setOption({
       title: {
-        text: "Нийт зардлын эзлэх хувь",
+        text: "Зардлын ангиллаар",
         left: "left",
         textStyle: { fontSize: 14, fontWeight: "bold" },
       },
@@ -43,6 +51,10 @@ export default function EChartPie({ salary = 0, costTotal = 0, productTotal = 0 
         orient: "vertical",
         left: "left",
         top: "middle",
+        formatter: (name: string) => {
+          const item = filtered.find((c) => c.category === name);
+          return item ? `${name}: ${Number(item.total).toLocaleString()}₮` : name;
+        },
       },
       series: [
         {
@@ -69,7 +81,6 @@ export default function EChartPie({ salary = 0, costTotal = 0, productTotal = 0 
           },
         },
       ],
-      color: ["#a855f7", "#3b82f6", "#f97316"],
     });
 
     const resizeObserver = new ResizeObserver(() => {
@@ -81,7 +92,7 @@ export default function EChartPie({ salary = 0, costTotal = 0, productTotal = 0 
       chart.dispose();
       resizeObserver.disconnect();
     };
-  }, [salary, costTotal, productTotal]);
+  }, [categories]);
 
   return <div ref={chartRef} className="w-full h-[400px] p-4" />;
 }

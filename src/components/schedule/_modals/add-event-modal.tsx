@@ -1079,8 +1079,8 @@ export default function AddEventModal({
             }}
           </FormItems>
         </div>
-        {/* <div className="border-t ">
-          <p className="my-4">Төлбөр</p>
+        <div className="border-t ">
+          {/* <p className="my-4">Төлбөр</p>
           <div className="mb-4 rounded-xl border bg-slate-50 p-4">
             <div className="mb-3 flex items-center justify-between gap-3">
               <div>
@@ -1185,7 +1185,7 @@ export default function AddEventModal({
                 })}
               </div>
             )}
-          </div>
+          </div> */}
           <div className="double-col">
             <FormItems
               control={form.control}
@@ -1265,7 +1265,7 @@ export default function AddEventModal({
               </div>
             </div>
           </div>
-        </div> */}
+        </div>
 
         <div className="border p-2 rounded-md">
           <p className="my-2 font-bold">Үйлчилгээ</p>

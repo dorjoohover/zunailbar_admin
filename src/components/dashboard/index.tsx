@@ -39,6 +39,20 @@ type StatNumbers = {
   profitPercent: number;
 };
 
+type PrevYear = {
+  revenue: number;
+  expense: number;
+  cost_total: number;
+  product_total: number;
+  salary: number;
+  profit: number;
+};
+
+type CategoryItem = {
+  category: string;
+  total: number;
+};
+
 const ALL_BRANCHES = "__ALL__";
 
 const monthStart = () => {
@@ -70,9 +84,22 @@ export const DashboardClient = ({ branches }: { branches: Branch[] }) => {
     profitPercent: 0,
   });
   const [chartItems, setChartItems] = useState<any[]>([]);
+  const [costCategories, setCostCategories] = useState<CategoryItem[]>([]);
+  const [prevYear, setPrevYear] = useState<PrevYear>({
+    revenue: 0, expense: 0, cost_total: 0, product_total: 0, salary: 0, profit: 0,
+  });
 
   const fromYMD = useMemo(() => toYMD(startDate), [startDate]);
   const toYMDValue = useMemo(() => toYMD(endDate), [endDate]);
+
+  // Bar chart-д тухайн жилийн бүх датаг харуулна (startDate-с жил авна)
+  const chartYear = useMemo(
+    () => (startDate ? startDate.getFullYear() : new Date().getFullYear()),
+    [startDate],
+  );
+  const yearStart = useMemo(() => `${chartYear}-01-01`, [chartYear]);
+  const yearEnd = useMemo(() => `${chartYear}-12-31`, [chartYear]);
+
   const [backfilling, setBackfilling] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
 
@@ -109,6 +136,7 @@ export const DashboardClient = ({ branches }: { branches: Branch[] }) => {
     }
   };
 
+  // 1. Stats / pie chart: filterтай огноогоор (startDate..endDate)
   useEffect(() => {
     if (!fromYMD || !toYMDValue) return;
     const branchFilter =
@@ -135,21 +163,20 @@ export const DashboardClient = ({ branches }: { branches: Branch[] }) => {
             order_count: number;
             profit_percent: number;
           };
+          prev_year?: PrevYear;
+          cost_categories?: CategoryItem[];
         }>(Api.dashboard, params);
 
         if (cancelled) return;
 
         const summary = res.data?.summary ?? {
-          revenue: 0,
-          expense: 0,
-          cost_total: 0,
-          product_total: 0,
-          salary: 0,
-          profit: 0,
-          order_count: 0,
-          profit_percent: 0,
+          revenue: 0, expense: 0, cost_total: 0, product_total: 0,
+          salary: 0, profit: 0, order_count: 0, profit_percent: 0,
         };
-        setChartItems(res.data?.items ?? []);
+        setCostCategories(res.data?.cost_categories ?? []);
+        setPrevYear(res.data?.prev_year ?? {
+          revenue: 0, expense: 0, cost_total: 0, product_total: 0, salary: 0, profit: 0,
+        });
         setStats({
           orderCount: Number(summary.order_count ?? 0),
           revenue: Number(summary.revenue ?? 0),
@@ -161,18 +188,36 @@ export const DashboardClient = ({ branches }: { branches: Branch[] }) => {
           profitPercent: Number(summary.profit_percent ?? 0),
         });
       } catch (err) {
-        if (!cancelled) {
-          showToast("info", (err as Error).message ?? "Алдаа гарлаа");
-        }
+        if (!cancelled) showToast("info", (err as Error).message ?? "Алдаа гарлаа");
       } finally {
         if (!cancelled) setLoading(false);
       }
     })();
-
-    return () => {
-      cancelled = true;
-    };
+    return () => { cancelled = true; };
   }, [branchId, fromYMD, toYMDValue, refreshKey]);
+
+  // 2. Bar chart: тухайн жилийн бүх сарын датаг тусдаа fetch хийнэ
+  useEffect(() => {
+    const branchFilter =
+      branchId && branchId !== ALL_BRANCHES ? branchId : undefined;
+    let cancelled = false;
+    (async () => {
+      try {
+        const params: Record<string, any> = {
+          start_date: yearStart,
+          end_date: yearEnd,
+        };
+        if (branchFilter) params.branch_id = branchFilter;
+
+        const res = await findRaw<{ items: any[] }>(Api.dashboard, params);
+        if (cancelled) return;
+        setChartItems(res.data?.items ?? []);
+      } catch {
+        // bar chart алдаа дуугарахгүй
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [branchId, yearStart, yearEnd, refreshKey]);
 
   return (
     <section>
@@ -263,21 +308,90 @@ export const DashboardClient = ({ branches }: { branches: Branch[] }) => {
         </div>
         <div className="space-y-4 py-4 border-b">
           <h1 className="font-semibold">График үзүүлэлтүүд</h1>
+          <PrevYearComparison current={stats} prevYear={prevYear} loading={loading} />
           <div className="double-col">
             <div className="bg-white rounded-2xl border border-slate-200">
               <EChart items={chartItems} />
             </div>
             <div className="bg-white rounded-2xl border border-slate-200">
-              <EChartPie
-                salary={stats.salary}
-                costTotal={stats.costTotal}
-                productTotal={stats.productTotal}
-              />
+              <EChartPie categories={costCategories} />
             </div>
           </div>
         </div>
       </div>
     </section>
+  );
+};
+
+const pctChange = (current: number, prev: number) => {
+  if (prev === 0) return null;
+  return Math.round(((current - prev) / prev) * 100 * 10) / 10;
+};
+
+const PrevYearComparison = ({
+  current,
+  prevYear,
+  loading,
+}: {
+  current: StatNumbers;
+  prevYear: PrevYear;
+  loading: boolean;
+}) => {
+  const revPct = pctChange(current.revenue, prevYear.revenue);
+  const expPct = pctChange(
+    current.costTotal + current.productTotal,
+    prevYear.cost_total + prevYear.product_total,
+  );
+  const profitPct = pctChange(current.profit, prevYear.profit);
+
+  const items = [
+    { label: "Орлого", current: current.revenue, prev: prevYear.revenue, pct: revPct },
+    {
+      label: "Зардал",
+      current: current.costTotal + current.productTotal,
+      prev: prevYear.cost_total + prevYear.product_total,
+      pct: expPct,
+    },
+    { label: "Ашиг", current: current.profit, prev: prevYear.profit, pct: profitPct },
+  ];
+
+  return (
+    <div className="flex flex-wrap gap-3">
+      {items.map((item) => (
+        <div
+          key={item.label}
+          className="flex-1 min-w-[160px] bg-white border border-slate-200 rounded-xl px-4 py-3"
+        >
+          <p className="text-xs text-muted-foreground mb-1">{item.label} — өмнөх онтой харьцуулбал</p>
+          {loading ? (
+            <p className="text-sm font-semibold text-slate-400">...</p>
+          ) : item.pct === null ? (
+            <p className="text-sm text-slate-400">Мэдээлэл байхгүй</p>
+          ) : (
+            <div className="flex items-center gap-2">
+              <span
+                className={`text-xl font-bold ${
+                  item.pct > 0
+                    ? item.label === "Зардал"
+                      ? "text-rose-500"
+                      : "text-emerald-600"
+                    : item.pct < 0
+                    ? item.label === "Зардал"
+                      ? "text-emerald-600"
+                      : "text-rose-500"
+                    : "text-slate-600"
+                }`}
+              >
+                {item.pct > 0 ? "▲" : item.pct < 0 ? "▼" : "─"} {Math.abs(item.pct)}%
+              </span>
+              <span className="text-xs text-slate-400">
+                {money(String(item.prev))}₮ → {money(String(item.current))}₮
+              </span>
+            </div>
+          )}
+        </div>
+      ))}
+    </div>
   );
 };
 

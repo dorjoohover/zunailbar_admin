@@ -51,7 +51,6 @@ export enum Api {
   brand = "brand",
   upload = "upload",
   dashboard = "dashboard",
-  sms_logs = "sms_logs",
 }
 
 export const API = {
@@ -91,7 +90,6 @@ export const API = {
   [Api.cost_category]: BASE + "cost_category",
   [Api.user_salaries]: BASE + "user_salaries",
   [Api.dashboard]: BASE + "dashboard",
-  [Api.sms_logs]: BASE + "sms-logs",
 };
 
 // export const baseUrl =

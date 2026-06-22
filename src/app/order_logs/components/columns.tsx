@@ -61,12 +61,14 @@ export function getColumns(
     },
 
     {
-      accessorKey: "changed_user",
+      accessorKey: "changed_user_name",
       header: ({ table }) => <span>Өөрчлөлт оруулсан</span>,
-
       cell: ({ row }) => (
-        <div>
-          <span> {row.getValue("changed_user") as string}</span>
+        <div className="text-xs">
+          <div>{displayText(row.getValue("changed_user_name") as string)}</div>
+          <div className="text-muted-foreground">
+            {mobileFormatter((row.original as any).changed_user_mobile ?? "")}
+          </div>
         </div>
       ),
     },

@@ -122,6 +122,8 @@ export interface OrderLog {
   artist_names?: string;
   customer_mobile?: string;
   customer_name?: string;
+  changed_user_name?: string;
+  changed_user_mobile?: string;
   old_status: STATUS;
   new_status: STATUS;
   old_order_status: OrderStatus;

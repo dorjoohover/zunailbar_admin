@@ -7,7 +7,6 @@ type SnapshotItem = {
   date: string;
   revenue: number;
   expense: number;
-  salary: number;
 };
 
 type Props = {
@@ -20,14 +19,13 @@ function formatMonth(dateStr: string) {
 }
 
 function groupByMonth(items: SnapshotItem[]) {
-  const map = new Map<string, { revenue: number; expense: number; salary: number }>();
+  const map = new Map<string, { revenue: number; expense: number }>();
   for (const item of items) {
     const key = formatMonth(item.date);
-    const prev = map.get(key) ?? { revenue: 0, expense: 0, salary: 0 };
+    const prev = map.get(key) ?? { revenue: 0, expense: 0 };
     map.set(key, {
       revenue: prev.revenue + Number(item.revenue ?? 0),
       expense: prev.expense + Number(item.expense ?? 0),
-      salary: prev.salary + Number(item.salary ?? 0),
     });
   }
   const keys = Array.from(map.keys()).sort();
@@ -35,7 +33,6 @@ function groupByMonth(items: SnapshotItem[]) {
     labels: keys,
     revenue: keys.map((k) => map.get(k)!.revenue),
     expense: keys.map((k) => map.get(k)!.expense),
-    salary: keys.map((k) => map.get(k)!.salary),
   };
 }
 
@@ -46,14 +43,14 @@ export default function EChart({ items = [] }: Props) {
     if (!chartRef.current) return;
 
     const chart = echarts.init(chartRef.current);
-    const { labels, revenue, expense, salary } = groupByMonth(items);
+    const { labels, revenue, expense } = groupByMonth(items);
 
     const hasData = labels.length > 0;
     const xLabels = hasData ? labels : ["Мэдээлэл байхгүй"];
 
     chart.setOption({
       title: {
-        text: "Орлого / Зардал",
+        text: "Орлого / Зардал (сараар)",
         left: "left",
         textStyle: { fontSize: 14, fontWeight: "bold" },
       },
@@ -66,7 +63,7 @@ export default function EChart({ items = [] }: Props) {
             .join("<br/>"),
       },
       legend: {
-        data: ["Орлого", "Зардал", "Цалин"],
+        data: ["Орлого", "Зардал"],
         top: 0,
         right: 0,
       },
@@ -95,12 +92,6 @@ export default function EChart({ items = [] }: Props) {
           type: "bar",
           data: hasData ? expense : [],
           itemStyle: { color: "#3b82f6" },
-        },
-        {
-          name: "Цалин",
-          type: "bar",
-          data: hasData ? salary : [],
-          itemStyle: { color: "#a855f7" },
         },
       ],
     });
