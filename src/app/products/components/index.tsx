@@ -11,7 +11,8 @@ import {
   Option,
   SearchType,
   VALUES,
-  zStrOpt } from "@/lib/constants";
+  zStrOpt,
+  zNumOpt } from "@/lib/constants";
 import { Modal } from "@/shared/components/modal";
 import z from "zod";
 import { FormProvider, useForm } from "react-hook-form";
@@ -35,7 +36,7 @@ const formSchema = z.object({
   name: zStrOpt({
     allowNullable: false,
     label: "Нэр" }),
-  quantity: z.coerce.number().optional(),
+  quantity: zNumOpt(),
   edit: z.string().nullable().optional() });
 
 type FilterType = {
@@ -346,7 +347,7 @@ export const ProductPage = ({
                       >
                         {(field) => (
                           <TextField
-                            props={{ ...field, type: "number", min: 0 }}
+                            props={{ ...(field as any), type: "number", min: 0 }}
                           />
                         )}
                       </FormItems>
