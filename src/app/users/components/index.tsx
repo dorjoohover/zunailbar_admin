@@ -275,20 +275,16 @@ export const UserPage = ({
     refresh();
   }, [userFilter]);
   useEffect(() => {
-    let mounted = true;
+    const requestId = ++visitCountRequestRef.current;
 
     const hydrateInitialUsers = async () => {
       const enriched = await withVisitCounts(data);
-      if (mounted) {
+      if (requestId === visitCountRequestRef.current) {
         setUsers(enriched);
       }
     };
 
     void hydrateInitialUsers();
-
-    return () => {
-      mounted = false;
-    };
   }, [data]);
   const changeFilter = (key: string, value: number | string) => {
     setFilter((prev) => ({ ...prev, [key]: value }));

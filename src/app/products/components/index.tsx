@@ -35,7 +35,7 @@ const formSchema = z.object({
   name: zStrOpt({
     allowNullable: false,
     label: "Нэр" }),
-
+  quantity: z.coerce.number().optional(),
   edit: z.string().nullable().optional() });
 
 type FilterType = {
@@ -47,7 +47,8 @@ const defaultValues = {
   edit: undefined,
   brand_id: "",
   category_id: "",
-  name: "" };
+  name: "",
+  quantity: undefined };
 export const ProductPage = ({
   data,
   categories,
@@ -337,6 +338,19 @@ export const ProductPage = ({
                         </FormItems>
                       );
                     })}
+                    {form.watch("edit") && (
+                      <FormItems
+                        control={form.control}
+                        name="quantity"
+                        label={"Тоо ширхэг" as any}
+                      >
+                        {(field) => (
+                          <TextField
+                            props={{ ...field, type: "number", min: 0 }}
+                          />
+                        )}
+                      </FormItems>
+                    )}
                   </div>
                 </div>
               </FormProvider>
