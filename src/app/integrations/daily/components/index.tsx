@@ -16,7 +16,6 @@ import { find } from "@/app/(api)";
 import { fetcher } from "@/hooks/fetcher";
 import { ACTION, ListType } from "@/lib/constants";
 import { dateOnly, money, parseDate } from "@/lib/functions";
-import { getTransactionTypeValue } from "@/lib/constants";
 import {
   Branch,
   PaymentDailyBreakdownItem,
@@ -149,18 +148,6 @@ const getDateRangeKeys = (from?: string, to?: string) => {
 
   return dates;
 };
-
-const getPaymentTypeLabel = (value?: string) =>
-  getTransactionTypeValue[
-    (String(value ?? "").toUpperCase() ||
-      "BANK") as keyof typeof getTransactionTypeValue
-  ] ?? "Дансаар";
-
-const isCashPayment = (value?: string) =>
-  String(value ?? "").toUpperCase() === "CASH";
-
-const isCardPayment = (value?: string) =>
-  String(value ?? "").toUpperCase() === "CARD";
 
 const paymentAmount = (amount?: number, label?: string) => {
   const value = numberValue(amount);
@@ -337,17 +324,11 @@ export function DailySummaryPage({
         cash_amount: 0,
         total_amount: 0,
       };
-      const paidAmount = numberValue(item.paid_amount);
-
       current.pre_amount += numberValue(item.pre_amount);
       current.total_amount += numberValue(item.amount);
-      if (paidAmount > 0 && isCashPayment(item.transaction_type)) {
-        current.cash_amount += paidAmount;
-      } else if (paidAmount > 0 && isCardPayment(item.transaction_type)) {
-        current.card_amount += paidAmount;
-      } else {
-        current.bank_amount += paidAmount;
-      }
+      current.card_amount += numberValue(item.card_amount);
+      current.bank_amount += numberValue(item.bank_amount);
+      current.cash_amount += numberValue(item.cash_amount);
 
       grouped.set(date, current);
     }
@@ -387,17 +368,12 @@ export function DailySummaryPage({
 
   const detailSummary = detailRows.reduce(
     (acc, item) => {
-      const paidAmount = numberValue(item.paid_amount);
       acc.pre_amount += numberValue(item.pre_amount);
       acc.discount_amount += numberValue(item.discount_amount);
       acc.total_amount += numberValue(item.amount);
-      if (paidAmount > 0 && isCashPayment(item.transaction_type)) {
-        acc.cash_amount += paidAmount;
-      } else if (paidAmount > 0 && isCardPayment(item.transaction_type)) {
-        acc.card_amount += paidAmount;
-      } else {
-        acc.bank_amount += paidAmount;
-      }
+      acc.card_amount += numberValue(item.card_amount);
+      acc.bank_amount += numberValue(item.bank_amount);
+      acc.cash_amount += numberValue(item.cash_amount);
       return acc;
     },
     {
@@ -692,10 +668,19 @@ export function DailySummaryPage({
                         )}
                       </TableCell>
                       <TableCell>
-                        {paymentAmount(
-                          item.paid_amount,
-                          getPaymentTypeLabel(item.transaction_type),
+                        {numberValue(item.card_amount) > 0 && (
+                          <div>{paymentAmount(item.card_amount, "Карт")}</div>
                         )}
+                        {numberValue(item.bank_amount) > 0 && (
+                          <div>{paymentAmount(item.bank_amount, "Данс")}</div>
+                        )}
+                        {numberValue(item.cash_amount) > 0 && (
+                          <div>{paymentAmount(item.cash_amount, "Бэлэн")}</div>
+                        )}
+                        {numberValue(item.card_amount) === 0 &&
+                          numberValue(item.bank_amount) === 0 &&
+                          numberValue(item.cash_amount) === 0 &&
+                          "-"}
                       </TableCell>
                       <TableCell>
                         {money(String(item.order_total_amount ?? 0), "₮")}
