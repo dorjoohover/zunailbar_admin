@@ -1,0 +1,24 @@
+export interface ICost {
+  id: string;
+  name: string;
+  cost_category_id: string;
+  cost_category_name: string;
+  branch_id: string;
+  branch_name: string;
+  date: Date;
+  price: number;
+  status: number;
+  created_at?: Date;
+}
+export interface Cost {
+  id: string;
+  name: string;
+  cost_category_id: string;
+  cost_category_name: string;
+  branch_id: string;
+  branch_name: string;
+  date: Date;
+  price: number;
+  status: number;
+  created_at?: Date;
+}

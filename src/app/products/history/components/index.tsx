@@ -1,0 +1,648 @@
+"use client";
+import { DataTable } from "@/components/data-table";
+import { IProductLog, Product, ProductLog } from "@/models";
+import { useEffect, useMemo, useState } from "react";
+import {
+  ListType,
+  ACTION,
+  PG,
+  DEFAULT_PG,
+  getEnumValues,
+  getValuesProductLogStatus,
+  Option,
+  VALUES,
+  SearchType,
+  ZValidator,
+  zNumOpt,
+  zStrOpt } from "@/lib/constants";
+import { Modal } from "@/shared/components/modal";
+import z from "zod";
+import { FormProvider, useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Api } from "@/utils/api";
+import { create, deleteOne, search, updateOne } from "@/app/(api)";
+import { FormItems } from "@/shared/components/form.field";
+import { ComboBox } from "@/shared/components/combobox";
+import { TextField } from "@/shared/components/text.field";
+import { fetcher } from "@/hooks/fetcher";
+import { getColumns } from "./columns";
+import { INPUT_TYPE, ProductLogStatus } from "@/lib/enum";
+import { DatePicker } from "@/shared/components/date.picker";
+import DynamicHeader from "@/components/dynamicHeader";
+import {
+  dateOnly,
+  firstLetterUpper,
+  objectCompact,
+  parseDate,
+  round,
+  searchProductFormatter } from "@/lib/functions";
+import { FilterPopover } from "@/components/layout/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue } from "@/components/ui/select";
+import { showToast } from "@/shared/components/showToast";
+
+const formSchema = z
+  .object({
+    product_id: zStrOpt({
+      allowNullable: false,
+      label: "Бүтээгдэхүүн" }),
+
+    quantity: zNumOpt({
+      label: "Тоо ширхэг",
+      allowNullable: false }),
+    price: zNumOpt({
+      label: "Үнэ(Тухайн вальютаар)",
+      allowNullable: false }),
+    currency: zStrOpt({
+      allowNullable: false,
+      label: "Ханш" }),
+    total_amount: zNumOpt({
+      label: "Нийт үнэ",
+      allowNullable: false }),
+    unit_price: zNumOpt({
+      label: "Нэгж үнэ",
+      allowNullable: false }),
+    paid_amount: zNumOpt({
+      label: "Төлсөн үнэ",
+      allowNullable: false }),
+    cargo: zNumOpt({
+      label: "Карго",
+      allowNullable: false }),
+    currency_amount: zNumOpt({
+      label: "Валютын ханш",
+      allowNullable: false }),
+    edit: z.string().nullable().optional(),
+    date: z.preprocess(
+      (val) => (typeof val === "string" ? new Date(val) : val),
+      z.date(),
+    ) as unknown as Date })
+  .refine((data) => (data?.paid_amount ?? 0) <= (data?.total_amount ?? 0), {
+    message: "Төлсөн дүн нийт дүнгээс хэтэрч болохгүй",
+    path: ["paid_amount"], // алдаа paid_amount дээр харагдана
+  });
+const defaultValues = {
+  currency: "cny",
+  currency_amount: 500,
+  product_id: "",
+  cargo: 0,
+  quantity: 0,
+  total_amount: 0,
+  paid_amount: 0,
+  unit_price: 0,
+  date: new Date(),
+  product_log_status: ProductLogStatus.Bought };
+type FilterType = {
+  product?: string;
+  status?: number;
+  start?: Date;
+  end?: Date;
+};
+
+type LogType = z.infer<typeof formSchema>;
+
+// Бутархайтай мөнгөн дүн оруулах талбар: цэгийг зөвшөөрнө.
+const DecimalAmountInput = ({
+  value,
+  onChange,
+}: {
+  value: number | string | undefined | null;
+  onChange: (val: number) => void;
+}) => {
+  const [display, setDisplay] = useState<string>(
+    value === undefined || value === null ? "" : String(value),
+  );
+  useEffect(() => {
+    if (value === undefined || value === null) {
+      setDisplay("");
+      return;
+    }
+    // Зөвхөн form-оор гаднаас солигдвол шинэчилнэ; хэрэглэгчийн "12." гэх типд саад болохгүй.
+    const next = String(value);
+    setDisplay((prev) => (Number(prev) === Number(next) ? prev : next));
+  }, [value]);
+  return (
+    <Input
+      type="text"
+      inputMode="decimal"
+      className="h-10 bg-white"
+      value={display}
+      onChange={(e) => {
+        let raw = (e.target.value ?? "").replace(/[^\d.]/g, "");
+        const firstDot = raw.indexOf(".");
+        if (firstDot !== -1) {
+          raw =
+            raw.slice(0, firstDot + 1) +
+            raw.slice(firstDot + 1).replace(/\./g, "");
+        }
+        setDisplay(raw);
+        // Form-д тоо хэлбэрээр хадгална; "12." гэх төлөвт NaN биш 12-г өгнө.
+        const numeric = raw === "" || raw === "." ? 0 : Number(raw);
+        onChange(Number.isFinite(numeric) ? numeric : 0);
+      }}
+    />
+  );
+};
+export const ProductHistoryPage = ({
+  data,
+  products }: {
+  data: ListType<ProductLog>;
+  products: SearchType<Product>[];
+}) => {
+  const [action, setAction] = useState(ACTION.DEFAULT);
+  const [open, setOpen] = useState<undefined | boolean>(false);
+  const form = useForm<LogType>({
+    resolver: zodResolver(formSchema),
+    defaultValues });
+  const [transactions, setTransactions] =
+    useState<ListType<IProductLog> | null>(null);
+  const [productList, setProductList] = useState<SearchType<Product>[]>(products);
+
+  const productMap = useMemo(
+    () => new Map(productList.map((p) => [p.id, p.value])),
+    [productList],
+  );
+
+  // Бараа устгах/нэмэх/засах үед үлдэгдэл өөрчлөгддөг тул жагсаалтыг дахин татна.
+  const refreshProducts = async () => {
+    const res = await search<Product>(Api.product, { limit: 20, page: 0 });
+    if (res?.data) {
+      const data = res.data as SearchType<Product>[];
+      setProductList(data);
+      // Нэмэх/засах формын бүтээгдэхүүний combobox-ийн үлдэгдлийг ч шинэчилнэ.
+      setItems((prev) => ({ ...prev, [Api.product]: data }));
+    }
+  };
+
+  const logFormatter = (data: ListType<ProductLog>) => {
+    // Түүхий жагсаалтыг хадгална; нэр (Үлд: X)-ийг render үед productMap-аас тооцно.
+    setTransactions({
+      items: data.items as unknown as IProductLog[],
+      count: data.count,
+    });
+  };
+
+  // Харагдах мөрүүдийн product_name-ийг үргэлж хамгийн сүүлийн productMap-аас тооцно.
+  // Ингэснээр устгах/нэмэх/засах үед үлдэгдэл (Үлд: X) шууд шинэчлэгдэнэ.
+  const displayItems = useMemo(
+    () =>
+      (transactions?.items ?? []).map((item) => ({
+        ...item,
+        product_name:
+          searchProductFormatter(productMap.get(item.product_id) ?? "") ?? "",
+      })),
+    [transactions, productMap],
+  );
+  useEffect(() => {
+    logFormatter(data);
+  }, [data]);
+  const deleteLog = async (index: number) => {
+    const id = transactions!.items[index].id;
+    const res = await deleteOne(Api.product_log, id);
+    await refreshProducts();
+    refresh();
+    return res.success;
+  };
+  const edit = async (e: IProductLog) => {
+    setOpen(true);
+    const savedCurrency = e.currency ?? "cny";
+    // Хадгалсан утга нь null/undefined байх тохиолдолд default 500-аар бүү
+    // дарж бичээрэй; валют MNT бол 1, бусдад 500 fallback ашиглана.
+    const savedCurrencyAmount =
+      e.currency_amount !== undefined && e.currency_amount !== null
+        ? Number(e.currency_amount)
+        : savedCurrency === "mnt"
+        ? 1
+        : 500;
+    form.reset({
+      ...e,
+      currency: savedCurrency,
+      price: Number(e.price ?? 0),
+      quantity: Number(e.quantity ?? 0),
+      currency_amount: savedCurrencyAmount,
+      cargo: Number(e.cargo ?? 0),
+      paid_amount: Number(e.paid_amount ?? 0),
+      unit_price: Number((e as any).unit_price ?? 0),
+      total_amount: +e.total_amount,
+      date: e.date ? new Date(e.date) : new Date(),
+      edit: e.id });
+  };
+  const setStatus = async (index: number, status: number) => {
+    if (transactions?.items != null) {
+      await updateOne(Api.product_log, transactions?.items[index].id, {
+        product_log_status: status });
+      refresh();
+    }
+  };
+  const columns = getColumns(edit, deleteLog, setStatus);
+
+  const refresh = async (pg: PG = DEFAULT_PG) => {
+    setAction(ACTION.RUNNING);
+    const { page, limit, sort, filter: searchValue } = pg;
+    const product_id = filter?.product;
+    const product_log_status = filter?.status;
+    const start_date = filter?.start ? dateOnly(filter?.start) : undefined;
+    const end_date = filter?.end ? dateOnly(filter?.end) : undefined;
+    await fetcher<ProductLog>(Api.product_log, {
+      page: page ?? DEFAULT_PG.page,
+      limit: limit ?? DEFAULT_PG.limit,
+      sort: sort ?? DEFAULT_PG.sort,
+      product_id,
+      product_log_status,
+      start_date,
+      end_date,
+      ...(searchValue && { name: searchValue }) }).then((d) => {
+      logFormatter(d);
+    });
+    setAction(ACTION.DEFAULT);
+  };
+  const onSubmit = async <T,>(e: T) => {
+    setAction(ACTION.RUNNING);
+    const body = e as LogType;
+    let { edit, cargo, ...payload } = body;
+    // Үнийн дүн бутархай байж болно; тоо ширхэгийг л бүхэл тоонд шилжүүлнэ.
+    payload = {
+      ...payload,
+      price: round(+(payload.price ?? 0), 4),
+      quantity: Math.round(+(payload.quantity ?? 0)),
+      unit_price: round(+(payload.unit_price ?? 0), 2),
+      paid_amount: round(+(payload.paid_amount ?? 0), 2),
+      currency_amount: round(+(payload.currency_amount ?? 0), 4),
+      total_amount: round(+(payload.total_amount ?? 0), 2) };
+    cargo = round(+(cargo ?? 0), 2) as any;
+
+    const res = edit
+      ? await updateOne<IProductLog>(Api.product_log, edit ?? "", {
+          ...payload,
+          cargo } as unknown as IProductLog)
+      : await create<IProductLog>(Api.product_log, {
+          ...payload,
+          cargo } as unknown as IProductLog);
+    if (res.success) {
+      await refreshProducts();
+      refresh();
+      setOpen(false);
+      form.reset(defaultValues);
+    }
+    setAction(ACTION.DEFAULT);
+  };
+  const onInvalid = async <T,>(e: T) => {
+    const error = Object.entries(e as any)
+      .map(([er, v], i) => {
+        if ((v as any)?.message) {
+          return (v as any)?.message;
+        }
+        const value = VALUES[er];
+        return i == 0 ? firstLetterUpper(value) : value;
+      })
+      .join(", ");
+    showToast("info", error);
+  };
+  const qty = form.watch("quantity") ?? 0;
+  const price = form.watch("price") ?? 0;
+  const currency = form.watch("currency_amount") ?? 0;
+  const cargo = form.watch("cargo") ?? 0;
+
+  useEffect(() => {
+    // Тоо ширхэг л бүхэл тоо; бусад үнэ бутархайтай байж болно.
+    const qtyNum = Math.max(0, Math.trunc(Number(qty) || 0));
+    const priceNum = Number(price) || 0;
+    const cargoNum = Number(cargo) || 0;
+    const rate = +(currency ?? 1) || 1;
+    const base = priceNum * rate;
+    // Карго төлбөрийг нэгжийн үнэ дээр жигд хуваан нэмнэ.
+    const unit_price = round(
+      qtyNum > 0 ? base + cargoNum / qtyNum : base + cargoNum,
+      2,
+    );
+    let total = round(qtyNum * unit_price, 2);
+    const paid = +(form.getValues("paid_amount") ?? 0);
+    if (Math.abs(paid - total) < 100) total = paid;
+    form.setValue("total_amount", round(total, 2), {
+      shouldValidate: true,
+      shouldDirty: true });
+    form.setValue("unit_price", unit_price, {
+      shouldValidate: true,
+      shouldDirty: true });
+  }, [qty, price, form, currency, cargo]);
+
+  const [filter, setFilter] = useState<FilterType>();
+  const changeFilter = (key: string, value: number | string) => {
+    setFilter((prev) => ({ ...prev, [key]: value }));
+  };
+
+  useEffect(() => {
+    refresh(
+      objectCompact({
+        product_id: filter?.product,
+        product_log_status: filter?.status,
+        start_date: filter?.start ? dateOnly(filter?.start) : undefined,
+        end_date: filter?.end ? dateOnly(filter?.end) : undefined,
+
+        page: 0 }),
+    );
+  }, [filter]);
+  const groups: { key: keyof FilterType; label: string; items: Option[] }[] =
+    useMemo(
+      () => [
+        {
+          key: "product",
+          label: "Бүтээгдэхүүн",
+          items: products.map((b) => ({
+            value: b.id,
+            label: searchProductFormatter(b.value) })) },
+
+        {
+          key: "status",
+          label: "Статус",
+          items: getEnumValues(ProductLogStatus).map((s) => ({
+            value: s,
+            label: getValuesProductLogStatus[s].name })) },
+      ],
+      [products],
+    );
+  const [items, setItems] = useState({
+    [Api.product]: products });
+  const searchField = async (v: string, key: Api, edit?: boolean) => {
+    let value = "";
+    if (v.length > 1) value = v;
+    if (v.length == 1) return;
+
+    const payload = { id: value };
+
+    await search(key as any, {
+      ...payload,
+      limit: 20,
+      page: 0 }).then((d) => {
+      console.log(key, d.data);
+      setItems((prev) => ({
+        ...prev,
+        [key]: d.data }));
+    });
+  };
+  return (
+    <div className="">
+      <DynamicHeader count={transactions?.count} />
+
+      <div className="admin-container">
+        <DataTable
+          clear={() => setFilter(undefined)}
+          filter={
+            <>
+              {groups.map((item, i) => {
+                const { key } = item;
+                return (
+                  <label key={i}>
+                    <span className="filter-label">{item.label as string}</span>
+                    <ComboBox
+                      pl={item.label}
+                      name={item.label}
+                      className="max-w-36 text-xs!"
+                      value={filter?.[key] ? String(filter[key]) : ""} //
+                      items={item.items.map((it) => ({
+                        value: String(it.value),
+                        label: it.label as string }))}
+                      props={{
+                        value: filter?.[key] ? String(filter[key]) : "",
+                        onChange: (val: string) => changeFilter(key, val),
+                        onBlur: () => {},
+                        name: key,
+                        ref: () => {} }}
+                    />
+                  </label>
+                );
+              })}
+              <FilterPopover
+                content={
+                  <div className="flex flex-col gap-2">
+                    <Calendar
+                      mode="single"
+                      selected={filter?.start}
+                      onSelect={(e) =>
+                        setFilter((prev) => ({ ...prev, start: e }))
+                      }
+                    />
+                  </div>
+                }
+                value={
+                  filter?.start ? parseDate(filter.start, false) : undefined
+                }
+                label={"Эхлэх огноо"}
+              />
+              <FilterPopover
+                content={
+                  <div className="flex flex-col gap-2">
+                    <Calendar
+                      mode="single"
+                      selected={filter?.end}
+                      onSelect={(e) =>
+                        setFilter((prev) => ({ ...prev, end: e }))
+                      }
+                    />
+                  </div>
+                }
+                value={filter?.end ? parseDate(filter.end, false) : undefined}
+                label={"Дуусах огноо"}
+              />
+            </>
+          }
+          columns={columns}
+          count={transactions?.count}
+          data={displayItems}
+          refresh={refresh}
+          loading={action == ACTION.RUNNING}
+          modalAdd={
+            <Modal
+              // w="2xl"
+              maw="xl"
+              name="Худалдан авалт нэмэх"
+              submit={() => form.handleSubmit(onSubmit, onInvalid)()}
+              open={open == true}
+              setOpen={(v) => {
+                setOpen(v);
+                form.reset(defaultValues);
+              }}
+              loading={action == ACTION.RUNNING}
+            >
+              <FormProvider {...form}>
+                <div className="">
+                  <FormItems
+                    label="Бүтээгдэхүүн"
+                    control={form.control}
+                    name="product_id"
+                  >
+                    {(field) => {
+                      return (
+                        <ComboBox
+                          search={(e) => searchField(e, Api.product)}
+                          props={{ ...field }}
+                          items={items[Api.product].map((item) => {
+                            return {
+                              value: item.id,
+                              label: searchProductFormatter(item.value) };
+                          })}
+                        />
+                      );
+                    }}
+                  </FormItems>
+                  <div className="divide-x-gray"></div>
+
+                  <div className="double-col">
+                    <div className="relative">
+                      <FormItems
+                        label="Currency Value"
+                        control={form.control}
+                        name="currency_amount"
+                      >
+                        {(field) => {
+                          return (
+                            <div className="relative">
+                              <div className="relative h-10">
+                                <Input
+                                  onChange={(e) => {
+                                    // Бутархай зөвшөөрнө; зөвхөн нэг цэг үлдээнэ.
+                                    let raw = (e.target.value ?? "").replace(
+                                      /[^\d.]/g,
+                                      "",
+                                    );
+                                    const firstDot = raw.indexOf(".");
+                                    if (firstDot !== -1) {
+                                      raw =
+                                        raw.slice(0, firstDot + 1) +
+                                        raw
+                                          .slice(firstDot + 1)
+                                          .replace(/\./g, "");
+                                    }
+                                    field.onChange(raw);
+                                  }}
+                                  value={field.value as string | undefined}
+                                  inputMode="decimal"
+                                  type="text"
+                                  className="h-full pr-10"
+                                />
+                              </div>
+                            </div>
+                          );
+                        }}
+                      </FormItems>
+                      <FormItems
+                        control={form.control}
+                        name="currency"
+                        className="absolute bottom-0.5 right-0.5"
+                      >
+                        {(field) => {
+                          return (
+                            <Select
+                              value={field.value as string | undefined}
+                              onValueChange={(e) => field.onChange(e)}
+                            >
+                              <SelectTrigger className="text-xs font-semibold border-0">
+                                <SelectValue placeholder="Currency" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectGroup>
+                                  <SelectItem value="cny" defaultChecked={true}>
+                                    CNY
+                                  </SelectItem>
+                                  <SelectItem value="mnt">MNT</SelectItem>
+                                  <SelectItem value="krw">KRW</SelectItem>
+                                  <SelectItem value="usd">USD</SelectItem>
+                                  <SelectItem value="eur">EUR</SelectItem>
+                                </SelectGroup>
+                              </SelectContent>
+                            </Select>
+                          );
+                        }}
+                      </FormItems>
+                    </div>
+
+                    {[
+                      {
+                        key: "cargo",
+                        decimal: true,
+                        label: "Kargo" },
+                      {
+                        key: "quantity",
+                        decimal: false,
+                        label: "Тоо ширхэг" },
+
+                      {
+                        key: "price",
+                        decimal: true,
+                        label: "Үнэ (Тухайн вальютаар)" },
+                      {
+                        key: "unit_price",
+                        decimal: true,
+                        label: "Нэгжийн үнэ" },
+                      {
+                        key: "total_amount",
+                        decimal: true,
+                        label: "Нийт дүн" },
+                      {
+                        key: "paid_amount",
+                        decimal: true,
+                        label: "Төлсөн дүн" },
+                    ].map((item, i) => {
+                      const name = item.key as keyof LogType;
+                      const label = item.label as keyof LogType;
+                      return (
+                        <FormItems
+                          control={form.control}
+                          name={name}
+                          key={i}
+                          label={label}
+                          className={item.key === "name" ? "col-span-2" : ""}
+                        >
+                          {(field) => {
+                            if (item.decimal) {
+                              return (
+                                <DecimalAmountInput
+                                  value={field.value as any}
+                                  onChange={field.onChange}
+                                />
+                              );
+                            }
+                            return (
+                              <TextField
+                                props={{ ...field }}
+                                type={INPUT_TYPE.NUMBER}
+                              />
+                            );
+                          }}
+                        </FormItems>
+                      );
+                    })}
+                    <div className="">
+                      <FormItems
+                        label="Огноо"
+                        control={form.control}
+                        name="date"
+                      >
+                        {(field) => {
+                          return (
+                            <DatePicker
+                              mode="single"
+                              value={field.value as any}
+                              onChange={(date) => field.onChange(date)}
+                            />
+                          );
+                        }}
+                      </FormItems>
+                    </div>
+                  </div>
+                  <div className="divide-x-gray"></div>
+                </div>
+              </FormProvider>
+            </Modal>
+          }
+        />
+      </div>
+    </div>
+  );
+};
