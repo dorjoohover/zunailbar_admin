@@ -26,6 +26,9 @@ interface AdminWeekScheduleManagerProps {
   branchByDate?: Record<string, string | undefined>;
   onBranchChange?: (date: string, branchId: string | undefined) => void;
   homeBranchId?: string;
+  /** Салбар нь өөрчлөгдөөд хараахан хадгалагдаагүй өдрүүд. */
+  dirtyBranchDates?: Set<string>;
+  onSaveBranch?: (date: string) => void;
 }
 
 export function AdminWeekScheduleManager({
@@ -38,6 +41,8 @@ export function AdminWeekScheduleManager({
   branchByDate,
   onBranchChange,
   homeBranchId,
+  dirtyBranchDates,
+  onSaveBranch,
 }: AdminWeekScheduleManagerProps) {
   const copyPrevious = (dateIndex: number) => {
     if (dateIndex === 0) return;
@@ -62,18 +67,29 @@ export function AdminWeekScheduleManager({
           return (
             <div key={date} className="flex flex-col gap-2">
               {branches && branches.length > 0 && (
-                <select
-                  value={branchByDate?.[date] ?? homeBranchId ?? ""}
-                  onChange={(e) => onBranchChange?.(date, e.target.value)}
-                  className="w-full rounded-lg border border-slate-200 px-2 py-1.5 text-xs text-slate-600 focus:border-teal-500 focus:outline-none"
-                  title="Тухайн өдөр ажиллах салбар"
-                >
-                  {branches.map((b) => (
-                    <option key={b.id} value={b.id}>
-                      {b.id === homeBranchId ? `${b.name} (үндсэн)` : b.name}
-                    </option>
-                  ))}
-                </select>
+                <div className="flex flex-col gap-1">
+                  <select
+                    value={branchByDate?.[date] ?? homeBranchId ?? ""}
+                    onChange={(e) => onBranchChange?.(date, e.target.value)}
+                    className="w-full rounded-lg border border-slate-200 px-2 py-1.5 text-xs text-slate-600 focus:border-teal-500 focus:outline-none"
+                    title="Тухайн өдөр ажиллах салбар"
+                  >
+                    {branches.map((b) => (
+                      <option key={b.id} value={b.id}>
+                        {b.id === homeBranchId ? `${b.name} (үндсэн)` : b.name}
+                      </option>
+                    ))}
+                  </select>
+                  {dirtyBranchDates?.has(date) && (
+                    <button
+                      onClick={() => onSaveBranch?.(date)}
+                      disabled={loading}
+                      className="w-full rounded-lg bg-teal-500 px-2 py-1.5 text-xs text-white hover:bg-teal-600 disabled:opacity-50"
+                    >
+                      Хадгалах
+                    </button>
+                  )}
+                </div>
               )}
               <DayScheduleColumn
                 loading={loading}

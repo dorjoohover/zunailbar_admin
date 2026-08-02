@@ -118,6 +118,9 @@ export const SchedulePage = ({
   const [branchByDate, setBranchByDate] = useState<
     Record<string, string | undefined>
   >({});
+  const [dirtyBranchDates, setDirtyBranchDates] = useState<Set<string>>(
+    new Set(),
+  );
 
   const refresh = async () => {
     if (!selectedUser) return;
@@ -135,6 +138,7 @@ export const SchedulePage = ({
   useEffect(() => {
     setScheduleData(toWeekScheduleData(schedules?.items ?? []));
     setBranchByDate(toBranchByDate(schedules?.items ?? []));
+    setDirtyBranchDates(new Set());
   }, [schedules?.items]);
 
   const removeDay = async (date: string) => {
@@ -214,6 +218,15 @@ export const SchedulePage = ({
       ...prev,
       [date]: day,
     }));
+  };
+
+  const saveBranch = async (date: string) => {
+    await saveDay(date, scheduleData[date] ?? { times: [], finish_time: null });
+    setDirtyBranchDates((prev) => {
+      const next = new Set(prev);
+      next.delete(date);
+      return next;
+    });
   };
 
   const generateNow = async () => {
@@ -348,10 +361,13 @@ export const SchedulePage = ({
                 name: b.name,
               }))}
               branchByDate={branchByDate}
-              onBranchChange={(date, branchId) =>
-                setBranchByDate((prev) => ({ ...prev, [date]: branchId }))
-              }
+              onBranchChange={(date, branchId) => {
+                setBranchByDate((prev) => ({ ...prev, [date]: branchId }));
+                setDirtyBranchDates((prev) => new Set(prev).add(date));
+              }}
               homeBranchId={homeBranchId}
+              dirtyBranchDates={dirtyBranchDates}
+              onSaveBranch={saveBranch}
             />
           </div>
         )}
