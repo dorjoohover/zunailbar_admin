@@ -40,7 +40,7 @@ import {
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
 import Image from "next/image";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 
@@ -334,9 +334,12 @@ export const sidebar_items = [
 
 export function AppSidebar() {
   const pathname = usePathname();
-  const router = useRouter();
   const logout = async () => {
-    await fetch("/api/logout").then((d) => router.push("/login"));
+    // Cookie устгасны дараа router.push (soft navigation) ашиглавал Next.js
+    // Router Cache-с шалтгаалан заримдаа шууд гарахгүй, /login хуудас шинэ
+    // biш хуучин cache-даа үлдэж харагддаг байсан тул бодит full-reload хийнэ.
+    await fetch("/api/logout");
+    window.location.href = "/login";
   };
   const { value, setValue } = useSidebarStore();
   // const [openIndex, setOpenIndex] = useState(null)

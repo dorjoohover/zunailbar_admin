@@ -2,7 +2,7 @@
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { ROLE } from "@/lib/enum";
 import { API } from "@/utils/api";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { useEffect } from "react";
 
 export default function Template({
@@ -13,11 +13,13 @@ export default function Template({
   token?: string;
 }) {
   const pathname = usePathname();
-  const router = useRouter();
   const deleteCookie = async () => {
     try {
       if (pathname != "/login") {
-        await fetch("/api/logout").then((d) => router.push("/login"));
+        // router.push (soft navigation) Router Cache-с шалтгаалан заримдаа
+        // шууд гарахгүй үлддэг тул бодит full-reload хийж /login рүү явна.
+        await fetch("/api/logout");
+        window.location.href = "/login";
       }
     } catch (error) {
       console.error(error);

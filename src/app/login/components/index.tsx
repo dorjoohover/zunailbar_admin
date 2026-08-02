@@ -17,7 +17,6 @@ import {
 import { Input } from "@/components/ui/input";
 import { ILoginUser } from "@/models";
 import { login } from "@/app/(api)/auth";
-import { useRouter } from "next/navigation";
 import { PasswordField } from "@/shared/components/password.field";
 import { useState } from "react";
 import { showToast } from "@/shared/components/showToast";
@@ -45,7 +44,6 @@ export function LoginForm() {
       password: "",
     },
   });
-  const router = useRouter();
   const save = async (token: string, branch: string, merchant: string) => {
     await fetch("/api/login", {
       method: "POST",
@@ -58,8 +56,11 @@ export function LoginForm() {
         merchant,
       }),
     });
-    window.location.replace(window.location.href);
-    router.push('/')
+    // Cookie тавигдсаны дараа шууд "/" рүү бодит navigation хийнэ (жагсаалт
+    // дахин ачаалагдаж middleware шинэ cookie-г таньж эхэлнэ) — /login-г
+    // дахин ачаалж middleware-ийн redirect-д найдахад заримдаа гараар
+    // refresh хийх шаардлагатай болдог байсан тул шууд очих URL руу нь явна.
+    window.location.href = "/";
   };
   const onSubmit = async (value: ILoginUser) => {
     setLoading(true);
