@@ -37,7 +37,11 @@ export default function Template({
         });
         const data = await res.json();
         if (!res.ok) {
-          // deleteCookie();
+          // Токены хугацаа дуусах/буруу болох (401) үед автоматаар гаргана.
+          // Бусад алдаа (сервер тасалдал гэх мэт)-д хэрэглэгчийг гаргахгүй.
+          if (res.status === 401) {
+            void deleteCookie();
+          }
         } else {
           if (data.payload.user.role > ROLE.ADMIN) {
             void deleteCookie();
