@@ -316,7 +316,15 @@ export const OrderPage = ({
             ...payload,
           } as unknown as Order);
       if (res.success) {
-        refresh();
+        if (edit) {
+          // Засварласны дараа зөвхөн soft refresh (fetcher) хийвэл заримдаа
+          // хуучин утга (жишээ нь салбар) хэвээр харагддаг байсан тул
+          // login/logout-той адил бодит full-reload хийж баталгаатай шинэ
+          // өгөгдлийг татна.
+          window.location.reload();
+        } else {
+          refresh();
+        }
         showToast(
           "success",
           edit ? "Мэдээлэл шинэчиллээ!" : "Амжилттай нэмэгдлээ!",
