@@ -329,14 +329,14 @@ export const SchedulePage = ({
           </div>
         </div>
 
-        {!isList && (
+        {/* {!isList && (
           <p className="px-1 text-xs text-slate-500">
             Тавьсан долоо хоногоос хойшхи өдрүүдийг admin өгөөгүй бол систем
             автоматаар өмнөх долоо хоногийн ижил гарагийн хуваарийг хуулна
             (app_config.availability_days-аар тодорхойлогдсон цонхийн хэмжээгээр,
             өнөөдрөөс хойш). Тавьсан даруйдаа хадгалагдана.
           </p>
-        )}
+        )} */}
 
         {isList ? (
           <DataTable
