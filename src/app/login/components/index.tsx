@@ -45,17 +45,25 @@ export function LoginForm() {
     },
   });
   const save = async (token: string, branch: string, merchant: string) => {
-    await fetch("/api/login", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        token,
-        branch,
-        merchant,
-      }),
-    });
+    try {
+      await fetch("/api/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          token,
+          branch,
+          merchant,
+        }),
+      });
+    } catch (error) {
+      // /api/login хүсэлт (сүлжээ, redirect follow гэх мэт шалтгаанаар)
+      // амжилтгүй болсон ч доорх navigation барагтаа явагдаж, хэрэглэгч
+      // /login дээрээ "гацахгүй" — cookie аль хэдийн тавигдсан бол middleware
+      // "/" рүү зөв оруулна, тавигдаагүй бол дахин /login рүү буцаана.
+      console.error("⛔ /api/login failed:", error);
+    }
     // Cookie тавигдсаны дараа шууд "/" рүү бодит navigation хийнэ (жагсаалт
     // дахин ачаалагдаж middleware шинэ cookie-г таньж эхэлнэ) — /login-г
     // дахин ачаалж middleware-ийн redirect-д найдахад заримдаа гараар

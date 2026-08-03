@@ -304,13 +304,13 @@ export const SchedulePage = ({
               >
                 Энэ долоо хоног
               </button>
-              <button
+              {/* <button
                 onClick={generateNow}
                 className="rounded-lg bg-teal-500 px-3 py-2 text-xs text-white hover:bg-teal-600"
                 title="app_config.availability_days цонхыг гараар шинэчлэх"
               >
                 Автоматаар үргэлжлүүлэх
-              </button>
+              </button> */}
             </div>
           )}
 
