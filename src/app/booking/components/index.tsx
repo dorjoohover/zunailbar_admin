@@ -1,22 +1,15 @@
 "use client";
 import { Branch, IBooking, Booking } from "@/models";
 import { useEffect, useMemo, useRef, useState } from "react";
-import {
-  ListType,
-  ACTION,
-  PG,
-  DEFAULT_PG,
-  ScheduleData,
-} from "@/lib/constants";
-import z from "zod";
+import { ListType, ACTION } from "@/lib/constants";
+import { EmployeeStatus } from "@/lib/enum";
 import { Api } from "@/utils/api";
-import { create, deleteOne, updateOne } from "@/app/(api)";
+import { create, deleteOne } from "@/app/(api)";
 import { fetcher } from "@/hooks/fetcher";
-import { AdminScheduleManager } from "@/components/layout/schedule.table";
+import { formatTime, toYMD } from "@/lib/functions";
 import DynamicHeader from "@/components/dynamicHeader";
-import { formatTime, toTimeString } from "@/lib/functions";
 import { showToast } from "@/shared/components/showToast";
-import { MapPin } from "lucide-react";
+import { MapPin, ChevronLeft, ChevronRight } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -25,24 +18,42 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  AdminWeekScheduleManager,
+  WeekScheduleData,
+} from "@/components/layout/schedule.week";
 
-const hourLine = z.string();
-const limit = 7;
-const formSchema = z.object({
-  dates: z.array(hourLine).length(7), // 7 хоног
-  edit: z.string().nullable().optional(),
-});
-const defaultValues: BookingType = {
-  dates: ["", "", "", "", "", "", ""],
-  edit: undefined,
-};
-type BookingType = z.infer<typeof formSchema>;
+function getMonday(d: Date): Date {
+  const date = new Date(d);
+  date.setHours(0, 0, 0, 0);
+  const day = date.getDay();
+  const diff = (day === 0 ? -6 : 1) - day;
+  date.setDate(date.getDate() + diff);
+  return date;
+}
+function addDaysStr(ymd: string, days: number): string {
+  const d = new Date(`${ymd}T00:00:00`);
+  d.setDate(d.getDate() + days);
+  return toYMD(d);
+}
 
-const toScheduleData = (items: Booking[] = []): ScheduleData =>
-  items.reduce<ScheduleData>((acc, item) => {
-    acc[item.index] = {
+const BRANCH_LEAVE_OPTIONS = [
+  { status: EmployeeStatus.VACATION, label: "Хаах" },
+];
+
+const toWeekScheduleData = (items: Booking[] = []): WeekScheduleData =>
+  items.reduce<WeekScheduleData>((acc, item) => {
+    if (!item.date) return acc;
+    const dateKey = toYMD(new Date(item.date));
+    acc[dateKey] = {
       times: item.times?.split("|") ?? [],
-      finish_time: item.finish_time ? formatTime(String(item.finish_time)) : null,
+      finish_time: item.finish_time
+        ? formatTime(String(item.finish_time))
+        : null,
+      // Салбарт зөвхөн нэг "хаалттай" төлөв байдаг тул is_leave-г
+      // VACATION статус болгож дүрсэлнэ (branch-level toggle нэг л сонголттой).
+      leave_status: item.is_leave ? EmployeeStatus.VACATION : null,
+      leave_description: item.leave_description ?? null,
     };
     return acc;
   }, {});
@@ -50,69 +61,88 @@ const toScheduleData = (items: Booking[] = []): ScheduleData =>
 export const BookingPage = ({
   data,
   branches,
+  initialWeekStart,
 }: {
   data: ListType<Booking>;
   branches: ListType<Branch>;
+  initialWeekStart: string;
 }) => {
   const [action, setAction] = useState(ACTION.DEFAULT);
   const [selectedBranch, setSelectedBranch] = useState(
-    branches.items?.[0] ?? null
+    branches.items?.[0] ?? null,
+  );
+  const [weekStart, setWeekStart] = useState(
+    initialWeekStart || toYMD(getMonday(new Date())),
+  );
+  const weekDates = useMemo(
+    () => Array.from({ length: 7 }, (_, i) => addDaysStr(weekStart, i)),
+    [weekStart],
   );
 
   const [bookings, setBookings] = useState<ListType<Booking> | null>(null);
-  const branchMap = useMemo(
-    () => new Map(branches.items.map((b) => [b.id, b])),
-    [branches.items]
-  );
-
-  const bookingFormatter = (data: ListType<Booking>) => {
-    const items: Booking[] = data.items.map((item) => {
-      const branch = branchMap.get(item.branch_id);
-
-      return {
-        ...item,
-        branch_name: branch?.name ?? "",
-      };
-    });
-
-    setBookings({ items, count: data.count });
-  };
   useEffect(() => {
-    bookingFormatter(data);
+    setBookings(data);
   }, [data]);
 
-  const refresh = async (pg: PG = DEFAULT_PG) => {
+  const [scheduleData, setScheduleData] = useState<WeekScheduleData>({});
+  useEffect(() => {
+    setScheduleData(toWeekScheduleData(bookings?.items ?? []));
+  }, [bookings?.items]);
+
+  const refresh = async () => {
+    if (!selectedBranch) return;
     setAction(ACTION.RUNNING);
     await fetcher<Booking>(
       Api.booking,
-      {
-        page: 0,
-        limit,
-        sort: false,
-        branch_id: selectedBranch.id,
-        //   name: pg.filter,
-      },
-      "employee"
+      {},
+      `week/${selectedBranch.id}/${weekStart}`,
     ).then((d) => {
-      bookingFormatter(d);
+      setBookings(d);
     });
     setAction(ACTION.DEFAULT);
   };
-  const add = async (index: number, day: ScheduleData[number], isAdd: boolean) => {
+
+  const removeDay = async (date: string) => {
+    if (!selectedBranch) return;
+    setAction(ACTION.RUNNING);
+    const res = await deleteOne(
+      Api.booking,
+      `${selectedBranch.id}/${date}`,
+      "date",
+    );
+    if (res.success) {
+      await refresh();
+      showToast("success", "Амжилттай устгалаа.");
+    } else {
+      showToast("error", res.error ?? "");
+    }
+    setAction(ACTION.DEFAULT);
+  };
+
+  const saveDay = async (date: string, day: WeekScheduleData[string]) => {
+    if (!selectedBranch) return;
+    if (!day.times || day.times.length === 0) {
+      const existing = bookings?.items?.find(
+        (b) => b.date && toYMD(new Date(b.date)) === date,
+      );
+      if (existing) {
+        await removeDay(date);
+      } else {
+        showToast("info", "Цаг сонгоогүй байна.");
+      }
+      return;
+    }
+
     setAction(ACTION.RUNNING);
     const payload = {
-      index: index,
-      times: day.times.length == 0 ? undefined : day.times.map((time) => time),
-      finish_time: day.times.length == 0 ? null : day.finish_time ?? null,
+      date,
+      times: day.times,
+      finish_time: day.finish_time ?? null,
       branch_id: selectedBranch.id,
     };
-
-    const id = bookings?.items?.filter((b) => b.index == index)?.[0]?.id;
-    const res = isAdd
-      ? await create<IBooking>(Api.booking, payload)
-      : await updateOne<IBooking>(Api.booking, id!, payload);
+    const res = await create<IBooking>(Api.booking, payload as any);
     if (res.success) {
-      refresh();
+      await refresh();
       showToast("success", "Амжилттай шинэчиллээ.");
     } else {
       showToast("error", res.error ?? "");
@@ -120,17 +150,47 @@ export const BookingPage = ({
     setAction(ACTION.DEFAULT);
   };
 
-  const remove = async (index: number) => {
-    setAction(ACTION.RUNNING);
+  const updateSchedule = async (
+    date: string,
+    day: WeekScheduleData[string],
+    action: number,
+  ) => {
+    if (action == 4) {
+      await removeDay(date);
+    } else if (action == 0 || action == 2) {
+      await saveDay(date, day);
+    }
+    setScheduleData((prev) => ({ ...prev, [date]: day }));
+  };
 
-    const res = await deleteOne(
+  const setLeave = async (date: string) => {
+    if (!selectedBranch) return;
+    setAction(ACTION.RUNNING);
+    const res = await create<any>(
       Api.booking,
-      selectedBranch.id + `/${index}`,
-      "index"
+      { branch_id: selectedBranch.id, dates: [date], is_leave: true },
+      "leave",
     );
     if (res.success) {
-      refresh();
-      showToast("success", "Амжилттай шинэчиллээ.");
+      await refresh();
+      showToast("success", "Салбар амарна.");
+    } else {
+      showToast("error", res.error ?? "");
+    }
+    setAction(ACTION.DEFAULT);
+  };
+
+  const clearLeave = async (date: string) => {
+    if (!selectedBranch) return;
+    setAction(ACTION.RUNNING);
+    const res = await deleteOne(
+      Api.booking,
+      `${selectedBranch.id}/${date}`,
+      "leave",
+    );
+    if (res.success) {
+      await refresh();
+      showToast("success", "Амралт цуцлагдлаа.");
     } else {
       showToast("error", res.error ?? "");
     }
@@ -140,31 +200,11 @@ export const BookingPage = ({
   const mounted = useRef(false);
   useEffect(() => {
     mounted.current ? refresh() : (mounted.current = true);
-  }, [selectedBranch]);
-  const [scheduleData, setScheduleData] = useState<ScheduleData>({});
-  useEffect(() => {
-    setScheduleData(toScheduleData(bookings?.items ?? []));
-  }, [bookings?.items]);
-  const updateBranchSchedule = async (
-    dayIndex: number,
-    day: ScheduleData[number],
-    action: number
-  ) => {
-    if (action == 4) await remove(dayIndex);
-    if (action == 0)
-      await add(dayIndex, day, !(scheduleData[dayIndex]?.times?.length ?? 0));
-    if (action == 2)
-      await add(
-        dayIndex,
-        day,
-        !(toScheduleData(bookings?.items ?? [])[dayIndex]?.times?.length ?? 0)
-      );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedBranch, weekStart]);
 
-    setScheduleData((prev) => ({
-      ...prev,
-      [dayIndex]: day,
-    }));
-  };
+  const weekLabel = `${weekDates[0]} — ${weekDates[6]}`;
+
   return (
     <div className="">
       <DynamicHeader count={bookings?.count} />
@@ -172,7 +212,6 @@ export const BookingPage = ({
         <div className="bg-white rounded-xl shadow-sm p-5 border border-slate-200">
           <div className="flex flex-col md:flex-row md:items-end gap-4 md:justify-between">
             <div>
-              {" "}
               <label className="text-slate-700 text-sm mb-3 block">
                 Салбар сонгох
               </label>
@@ -200,31 +239,54 @@ export const BookingPage = ({
               </div>
             </div>
 
-            <div className="mt-3 flex items-center gap-2 text-slate-500 text-sm">
-              <MapPin size={16} />
-              <span>
-                {selectedBranch.name} {selectedBranch.address && "-"}{" "}
-                {selectedBranch.address}
-              </span>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setWeekStart((w) => addDaysStr(w, -7))}
+                className="flex items-center justify-center rounded-lg border border-slate-200 p-2 text-slate-600 hover:bg-slate-100"
+                title="Өмнөх долоо хоног"
+              >
+                <ChevronLeft size={16} />
+              </button>
+              <div className="text-sm text-slate-700 min-w-[190px] text-center">
+                {weekLabel}
+              </div>
+              <button
+                onClick={() => setWeekStart((w) => addDaysStr(w, 7))}
+                className="flex items-center justify-center rounded-lg border border-slate-200 p-2 text-slate-600 hover:bg-slate-100"
+                title="Дараагийн долоо хоног"
+              >
+                <ChevronRight size={16} />
+              </button>
+              <button
+                onClick={() => setWeekStart(toYMD(getMonday(new Date())))}
+                className="rounded-lg border border-slate-200 px-3 py-2 text-xs text-slate-600 hover:bg-slate-100"
+              >
+                Энэ долоо хоног
+              </button>
             </div>
 
-            {/* <button
-              onClick={() => {}}
-              className="flex items-center gap-2 px-4 py-2.5 bg-teal-500 hover:bg-teal-600 text-white rounded-lg transition-colors shadow-sm hover:shadow-md"
-            >
-              <Copy size={18} />
-              <span>Бүх салбарт хэрэглэх</span>
-            </button> */}
+            {selectedBranch && (
+              <div className="mt-3 flex items-center gap-2 text-slate-500 text-sm">
+                <MapPin size={16} />
+                <span>
+                  {selectedBranch.name} {selectedBranch.address && "-"}{" "}
+                  {selectedBranch.address}
+                </span>
+              </div>
+            )}
           </div>
         </div>
 
         <div>
-          <AdminScheduleManager
+          <AdminWeekScheduleManager
+            weekDates={weekDates}
             schedule={scheduleData}
-            onUpdateSchedule={(dayIndex, day, action) =>
-              updateBranchSchedule(dayIndex, day, action)
-            }
+            onUpdateDay={(date, day, act) => updateSchedule(date, day, act)}
             loading={action != ACTION.DEFAULT}
+            allowLeaveEdit
+            onSetLeave={(date) => setLeave(date)}
+            onClearLeave={clearLeave}
+            leaveOptions={BRANCH_LEAVE_OPTIONS}
           />
         </div>
       </div>

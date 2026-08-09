@@ -201,6 +201,9 @@ export interface ListType<T> {
 export interface ScheduleDayData {
   times: string[];
   finish_time?: string | null;
+  /** NULL/undefined = амралтгүй. Утгатай бол EmployeeStatus enum (жишээ VACATION/DEKIRIT). */
+  leave_status?: number | null;
+  leave_description?: string | null;
 }
 export interface ScheduleData {
   [day: number]: ScheduleDayData;

@@ -409,6 +409,42 @@ export const IntegrationsPage = ({
     showToast("error", res.message ?? "Экспорт хийхэд алдаа гарлаа");
   };
 
+  const downloadDetailExcel = async () => {
+    if (!selectedRow?.artist_id) return;
+
+    const res = await excel(
+      Api.order_detail,
+      {
+        page: 0,
+        limit: -1,
+        sort: false,
+        user_id: selectedRow.artist_id,
+        from: selectedRow.from || undefined,
+        to: selectedRow.to || selectedRow.from || undefined,
+      } as any,
+      "report",
+    );
+
+    if (res.success && res.data) {
+      const blob = new Blob([res.data], { type: "application/xlsx" });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+
+      link.href = url;
+      link.setAttribute(
+        "download",
+        `salary_order_breakdown_${new Date().toISOString().slice(0, 10)}.xlsx`,
+      );
+      document.body.appendChild(link);
+      link.click();
+      link.parentNode?.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      return;
+    }
+
+    showToast("error", res.message ?? "Экспорт хийхэд алдаа гарлаа");
+  };
+
   const clearReportFilter = () => {
     setReportFilter({
       from: undefined,
@@ -631,6 +667,18 @@ export const IntegrationsPage = ({
                 </div>
               </div>
             )}
+
+            <div className="flex justify-end">
+              <Button
+                variant="ghost"
+                onClick={downloadDetailExcel}
+                disabled={!selectedRow?.artist_id || !detailRows.length}
+                className="bg-green-500 text-white hover:bg-green-500/80 hover:text-white"
+              >
+                <Download />
+                Экспорт
+              </Button>
+            </div>
 
             <Table>
               <TableHeader>

@@ -1,166 +1,111 @@
-"use client";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { ColumnDef } from "@tanstack/react-table";
-import { IUser } from "@/models/user.model";
-import { ArrowUpDown, Hammer, Trash2, UserRoundCog } from "lucide-react";
+import { Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { IBranch } from "@/models";
-import { mobileFormatter, parseDate } from "@/lib/functions";
-import { EmployeeStatus, ROLE, UserStatus } from "@/lib/enum";
-import {
-  EmployeeStatusValue,
-  getEnumValues,
-  roleIconMap,
-  RoleValue,
-} from "@/lib/constants";
-import Image from "next/image";
-import TooltipWrapper from "@/components/tooltipWrapper";
-import { TableActionButtons } from "@/components/tableActionButtons";
-import { cn } from "@/lib/utils";
-import { getUserColor } from "@/lib/colors";
 import { AppAlertDialog } from "@/components/AlertDialog";
-import { toast } from "sonner";
-import { IArtistLeave } from "@/models/artist.leaves.model";
+import { parseDate } from "@/lib/functions";
+import { Schedule } from "@/models";
+import TooltipWrapper from "@/components/tooltipWrapper";
+import { EmployeeStatusValue } from "@/lib/constants";
+import { EmployeeStatus } from "@/lib/enum";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
-export const getColumns = (
-  onEdit: (product: IArtistLeave) => void,
-  setStatus: (index: number, status: EmployeeStatus) => void,
+export function getColumns(
+  updateStatus: (index: number, status: EmployeeStatus) => void,
   remove: (index: number) => Promise<boolean>,
-): ColumnDef<IArtistLeave>[] => [
-  {
-    id: "select",
-    header: ({ table }) => <span>№</span>,
-    cell: ({ row }) => <span className="">{row.index + 1}</span>,
-  },
-
-  // {
-  //   accessorKey: "user_name",
-  //   header: "Нэр",
-  //   cell: ({ row }) => {
-  //     return <p>{row.getValue("user_name")}</p>;
-  //   },
-  // },
-  {
-    accessorKey: "branch_name",
-    header: "Салбар",
-    cell: ({ row }) => {
-      const branch = row.getValue("branch_name");
-      return branch || "-";
+): ColumnDef<Schedule>[] {
+  return [
+    {
+      id: "select",
+      header: () => <span>№</span>,
+      cell: ({ row }) => <span>{row.index + 1}</span>,
     },
-  },
-
-  {
-    accessorKey: "date",
-    header: "Огноо",
-    cell: ({ row }) => {
-      const date = parseDate(new Date(row.getValue("date")), false);
-      return <p>{date}</p>;
+    {
+      accessorFn: (row) => row.meta?.nickname ?? "",
+      id: "nickname",
+      header: "Артист",
+      cell: ({ row }) => {
+        const value = row.getValue("nickname") as string;
+        return <span className="font-bold">{value || "-"}</span>;
+      },
     },
-  },
-  {
-    accessorKey: "status",
-    header: "Статус",
-    cell: ({ row }) => {
-      const status =
-        EmployeeStatusValue[row.getValue<number>("status") as UserStatus];
-      return <span className={cn(`${status.color} badge`)}>{status.name}</span>;
+    {
+      accessorKey: "date",
+      header: "Огноо",
+      cell: ({ row }) => {
+        const date = row.getValue("date") as string | undefined;
+        return date ? parseDate(new Date(date), false) : "-";
+      },
     },
-  },
-  {
-    accessorKey: "start_time",
-    header: "Эхлэх цаг",
-    cell: ({ row }) => {
-      const date = row.getValue("start_time");
-      return date || "-";
+    {
+      accessorKey: "leave_status",
+      header: "Төрөл",
+      cell: ({ row }) => {
+        const status = row.getValue("leave_status") as number;
+        const value = EmployeeStatusValue[status as EmployeeStatus];
+        return (
+          <Select
+            value={String(status)}
+            onValueChange={(val) => updateStatus(row.index, +val as EmployeeStatus)}
+          >
+            <SelectTrigger className="w-[140px] text-xs!">
+              <SelectValue>{value?.name ?? "-"}</SelectValue>
+            </SelectTrigger>
+            <SelectContent>
+              <SelectGroup>
+                {[EmployeeStatus.VACATION, EmployeeStatus.DEKIRIT].map((s) => (
+                  <SelectItem key={s} value={String(s)}>
+                    {EmployeeStatusValue[s].name}
+                  </SelectItem>
+                ))}
+              </SelectGroup>
+            </SelectContent>
+          </Select>
+        );
+      },
     },
-  },
-  {
-    accessorKey: "end_time",
-    header: "Дуусах цаг",
-    cell: ({ row }) => {
-      const date = row.getValue("end_time");
-      return date || "-";
+    {
+      accessorKey: "leave_description",
+      header: "Тайлбар",
+      cell: ({ row }) => {
+        const value = row.getValue("leave_description") as string | null;
+        return value || "-";
+      },
     },
-  },
-  {
-    accessorKey: "creater_name",
-    header: "Бүртгэсэн",
-    cell: ({ row }) => {
-      const date = row.getValue("creater_name");
-      return date || "-";
+    {
+      id: "creator",
+      header: "Тавьсан",
+      cell: ({ row }) => {
+        const s: any = row.original;
+        return s.creator_nickname || s.creator_lastname || s.creator_firstname
+          ? `${s.creator_nickname ?? `${s.creator_lastname ?? ""} ${s.creator_firstname ?? ""}`}`
+          : "-";
+      },
     },
-  },
-  {
-    accessorKey: "description",
-    header: "Тайлбар",
-    cell: ({ row }) => {
-      const date = row.getValue("description");
-      return date || "-";
+    {
+      id: "actions",
+      header: "Устгах",
+      cell: ({ row }) => (
+        <TooltipWrapper tooltip="Амралт цуцлах">
+          <AppAlertDialog
+            title="Амралт цуцлах уу?"
+            description="Тухайн өдрийн амралт цуцлагдана."
+            confirmText="Цуцлах"
+            trigger={
+              <Button variant="ghost" size="icon">
+                <Trash2 className="w-4 h-4 text-red-500" />
+              </Button>
+            }
+            onConfirm={() => remove(row.index)}
+          />
+        </TooltipWrapper>
+      ),
     },
-  },
-
-  {
-    id: "actions",
-    header: "Үйлдэл",
-    cell: ({ row }) => {
-      return (
-        <TableActionButtons
-          rowData={row.original}
-          edit={false}
-          onEdit={(data) => onEdit(data)}
-        >
-          <DropdownMenu>
-            <TooltipWrapper tooltip="Статус солих">
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon">
-                  <UserRoundCog className="size-4" />
-                </Button>
-              </DropdownMenuTrigger>
-            </TooltipWrapper>
-
-            <DropdownMenuContent>
-              <DropdownMenuLabel>Статус солих</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              {getEnumValues(EmployeeStatus)
-                .splice(1, 2)
-                .map((item, i) => {
-                  const status = EmployeeStatusValue[item];
-                  return (
-                    <DropdownMenuItem
-                      key={i}
-                      onClick={() => setStatus(row.index, item)}
-                    >
-                      <span className={cn(status.color, "w-full text-center")}>
-                        {status.name}
-                      </span>
-                    </DropdownMenuItem>
-                  );
-                })}
-            </DropdownMenuContent>
-          </DropdownMenu>
-          <TooltipWrapper tooltip="Устгах">
-            <AppAlertDialog
-              title="Итгэлтэй байна уу?"
-              description="Бүр устгана шүү."
-              onConfirm={() => {
-                remove(row.index);
-              }}
-              trigger={
-                <Button variant="ghost" size="icon">
-                  <Trash2 className="w-4 h-4 text-red-500" />
-                </Button>
-              }
-            />
-          </TooltipWrapper>
-        </TableActionButtons>
-      );
-    },
-  },
-];
+  ];
+}

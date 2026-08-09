@@ -1,5 +1,6 @@
 "use client";
 import { ScheduleDayData } from "@/lib/constants";
+import { EmployeeStatus } from "@/lib/enum";
 import { DayScheduleColumn } from "./schedule.table.column";
 import { getDayName } from "@/lib/functions";
 
@@ -29,6 +30,11 @@ interface AdminWeekScheduleManagerProps {
   /** Салбар нь өөрчлөгдөөд хараахан хадгалагдаагүй өдрүүд. */
   dirtyBranchDates?: Set<string>;
   onSaveBranch?: (date: string) => void;
+  /** Амралт тавих/цуцлах боломжтой эсэх (өгөхгүй бол toggle харагдахгүй). */
+  allowLeaveEdit?: boolean;
+  onSetLeave?: (date: string, status: EmployeeStatus) => void;
+  onClearLeave?: (date: string) => void;
+  leaveOptions?: { status: EmployeeStatus; label: string }[];
 }
 
 export function AdminWeekScheduleManager({
@@ -43,6 +49,10 @@ export function AdminWeekScheduleManager({
   homeBranchId,
   dirtyBranchDates,
   onSaveBranch,
+  allowLeaveEdit = false,
+  onSetLeave,
+  onClearLeave,
+  leaveOptions,
 }: AdminWeekScheduleManagerProps) {
   const copyPrevious = (dateIndex: number) => {
     if (dateIndex === 0) return;
@@ -99,6 +109,14 @@ export function AdminWeekScheduleManager({
                 day={schedule[date] || { times: [], finish_time: null }}
                 onUpdateDay={(value, action) => onUpdateDay(date, value, action)}
                 onCopyPrevious={index > 0 ? () => copyPrevious(index) : undefined}
+                allowLeaveEdit={allowLeaveEdit}
+                onSetLeave={
+                  onSetLeave ? (status) => onSetLeave(date, status) : undefined
+                }
+                onClearLeave={
+                  onClearLeave ? () => onClearLeave(date) : undefined
+                }
+                leaveOptions={leaveOptions}
               />
             </div>
           );

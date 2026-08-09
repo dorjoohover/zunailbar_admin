@@ -237,6 +237,17 @@ export const UserPage = ({
     } else {
       delete payload.password;
     }
+    if (typeof payload.nickname === "string") {
+      // trim + давхар зайг нэгтгэх (сервер талд бас sanitize хийгддэг ч
+      // frontend талд хэрэглэгчид шууд харагдах эцсийн үр дүнг цэвэрлэнэ).
+      payload.nickname = payload.nickname
+        .replace(/[^\p{L}\s\-']/gu, "")
+        .trim()
+        .replace(/\s+/g, " ");
+    }
+    if (typeof payload.mobile === "string") {
+      payload.mobile = payload.mobile.trim();
+    }
 
     const res = edit
       ? await updateOne<User>(
@@ -517,11 +528,11 @@ export const UserPage = ({
                 <div className="space-y-4">
                   {[
                     {
+                      pattern: true,
                       key: "nickname",
                       label: "Нэр",
                     },
                     {
-                      pattern: true,
                       key: "mobile",
                       label: "Утас",
                       type: "number",
@@ -539,11 +550,29 @@ export const UserPage = ({
                         className={item.key === "name" ? "col-span-2" : ""}
                       >
                         {(field) => {
+                          // Нэрэнд үсэг, зай, зураас, апострофоос өөр
+                          // тэмдэгт (тоо, тусгай тэмдэгт г.м.) бичихийг блоклоно.
                           const blockRe: RegExp | undefined = item.pattern
                             ? /[^\p{L}\s\-']/gu
                             : undefined;
+                          const wrappedField = blockRe
+                            ? {
+                                ...field,
+                                onChange: (value: unknown) =>
+                                  field.onChange(
+                                    typeof value === "string"
+                                      ? value.replace(blockRe, "")
+                                      : value,
+                                  ),
+                              }
+                            : field;
 
-                          return <TextField props={{ ...field }} />;
+                          return (
+                            <TextField
+                              props={wrappedField}
+                              type={item.type as any}
+                            />
+                          );
                         }}
                       </FormItems>
                     );

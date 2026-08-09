@@ -96,6 +96,17 @@ export function DataTable<TData, TValue>({
   fitContainer = false,
 }: DataTableProps<TData, TValue>) {
   const [globalFilter, setGlobalFilter] = useState("");
+  // Хайлтын input-д бичих бүрт шууд refresh дуудахгүй, харин бичихээ
+  // зогсоосны дараа (debounce) 1 удаа л хайлтын хүсэлт илгээнэ. Debounce-гүй
+  // үед үсэг бүрийн дараа request явж, сүлжээний хугацаанаас шалтгаалан хожуу
+  // ирсэн (өмнөх, богино) хайлтын хариу сүүлийн үр дүнг дарж бичих race
+  // condition үүсгэдэг байсан — хайлт "дутуу ажилладаг" мэт харагдах шалтгаан.
+  const [debouncedFilter, setDebouncedFilter] = useState("");
+  useEffect(() => {
+    const handle = setTimeout(() => setDebouncedFilter(globalFilter), 350);
+    return () => clearTimeout(handle);
+  }, [globalFilter]);
+
   const [pagination, setPagination] = useState({
     pageIndex: 0,
     pageSize: limit,
@@ -113,19 +124,12 @@ export function DataTable<TData, TValue>({
       refresh({
         page: pagination.pageIndex,
         limit: pagination.pageSize,
-        filter: globalFilter,
+        filter: debouncedFilter,
       });
     } else {
       mounted.current = true;
     }
-    // mounted.current
-    //   ? globalFilter.length > 1 || globalFilter.length == 0 refresh({
-    //       page: pagination.pageIndex,
-    //       limit: pagination.pageSize,
-    //       filter: globalFilter,
-    //     })
-    //   : (mounted.current = true);
-  }, [pagination.pageIndex, pagination.pageSize, globalFilter]);
+  }, [pagination.pageIndex, pagination.pageSize, debouncedFilter]);
   const table = useReactTable({
     data,
     columns,

@@ -1,5 +1,5 @@
 "use client";
-import { Branch, IOrder, Order, Schedule, Service, User } from "@/models";
+import { Booking, Branch, IOrder, Order, Schedule, Service, User } from "@/models";
 import { useEffect, useRef, useState, useCallback } from "react";
 import {
   ListType,
@@ -25,8 +25,6 @@ import { Check } from "lucide-react";
 import { AppAlertDialog } from "@/components/AlertDialog";
 import { DateRange } from "react-day-picker";
 import { Slot } from "@/models/slot.model";
-import { ArtistLeave } from "@/models/artist.leaves.model";
-import { BranchLeave } from "@/models/branch.leaves.model";
 import { LevelConfig } from "@/lib/level-config";
 import { useModal } from "@/providers/modal-context";
 import AddEventModal from "@/components/schedule/_modals/add-event-modal";
@@ -47,6 +45,7 @@ export type FilterType = {
   branch?: string;
   list?: boolean;
   mobile?: string;
+  channel?: string;
 };
 
 /** Opens AddEventModal for editing an existing order from the list view.
@@ -137,15 +136,21 @@ export const OrderPage = ({
     index = index == -1 ? 6 : index;
     const [schedule, artistLeaves, branchLeaves] = await Promise.all([
       search<Schedule>(Api.schedule, { index }),
-      find<ArtistLeave>(Api.artist_leaves, {
+      // Хуучин `artist_leaves`/`branch_leaves` API-ийн оронд амралтыг
+      // шууд schedules.leave_status / bookings.is_leave-ээс (тухайн
+      // огноогоор) уншина.
+      find<Schedule>(Api.schedule, {
         limit: -1,
         date: selectedDateText,
       }),
-      find<BranchLeave>(Api.branch_leaves, {
-        limit: -1,
-        start_date: selectedDateText,
-        end_date: selectedDateText,
-      }),
+      find<Booking>(
+        Api.booking,
+        {
+          limit: -1,
+          date: selectedDateText,
+        },
+        "employee",
+      ),
     ]);
     const scheduleItems = (schedule.data ?? []).filter((item) =>
       Boolean(item.value && `${item.value}`.trim()),
@@ -154,10 +159,16 @@ export const OrderPage = ({
       scheduleItems.map((s) => s.user_id).filter(Boolean),
     );
     const artistLeaveIds = new Set(
-      (artistLeaves.data?.items ?? []).map((item) => item.artist_id).filter(Boolean),
+      (artistLeaves.data?.items ?? [])
+        .filter((item) => item.leave_status != null)
+        .map((item) => item.user_id)
+        .filter(Boolean),
     );
     const branchLeaveIds = new Set(
-      (branchLeaves.data?.items ?? []).map((item) => item.branch_id).filter(Boolean),
+      (branchLeaves.data?.items ?? [])
+        .filter((item) => item.is_leave)
+        .map((item) => item.branch_id)
+        .filter(Boolean),
     );
 
     setArtists(
@@ -193,6 +204,7 @@ export const OrderPage = ({
       date: start,
       order_status: filter?.status,
       branch_id: filter?.branch,
+      channel: filter?.channel,
       friend: filter?.status != OrderStatus.Friend ? undefined : 0,
     });
     const map = new Map<string, SearchType<User>>();
@@ -223,7 +235,13 @@ export const OrderPage = ({
     refresh();
     getAristSchedules();
     getOrderArtists();
-  }, [filter?.date, filter?.artist, filter?.branch, filter?.status]);
+  }, [
+    filter?.date,
+    filter?.artist,
+    filter?.branch,
+    filter?.status,
+    filter?.channel,
+  ]);
 
   const orderFormatter = (data: ListType<Order> | undefined) => {
     if (!data) return;
@@ -288,6 +306,7 @@ export const OrderPage = ({
       order_status: filter?.status,
       user_id: filter?.artist,
       branch_id: filter?.branch,
+      channel: filter?.channel,
       friend: filter?.status != OrderStatus.Friend ? undefined : 0,
       ...(pg.filter && { customer: pg.filter }),
       //   name: pg.filter,
@@ -359,6 +378,7 @@ export const OrderPage = ({
       order_status: filter?.status,
       user_id: filter?.artist,
       branch_id: filter?.branch,
+      channel: filter?.channel,
       friend: filter?.status != OrderStatus.Friend ? undefined : 0,
     });
     if (res.success && res.data) {

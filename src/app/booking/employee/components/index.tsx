@@ -2,7 +2,7 @@
 import { ISchedule, User, Schedule, Branch } from "@/models";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ListType, ACTION } from "@/lib/constants";
-import { ScheduleType } from "@/lib/enum";
+import { EmployeeStatus, ScheduleType } from "@/lib/enum";
 import { Api } from "@/utils/api";
 import { create, deleteOne } from "@/app/(api)";
 import { fetcher } from "@/hooks/fetcher";
@@ -55,6 +55,8 @@ const toWeekScheduleData = (items: Schedule[] = []): WeekScheduleData =>
       finish_time: item.finish_time
         ? formatTime(String(item.finish_time))
         : null,
+      leave_status: item.leave_status ?? null,
+      leave_description: item.leave_description ?? null,
     };
     return acc;
   }, {});
@@ -229,6 +231,40 @@ export const SchedulePage = ({
     });
   };
 
+  const setLeave = async (date: string, status: EmployeeStatus) => {
+    if (!selectedUser) return;
+    setAction(ACTION.RUNNING);
+    const res = await create<any>(Api.schedule, {
+      user_id: selectedUser.id,
+      dates: [date],
+      leave_status: status,
+    }, "leave");
+    if (res.success) {
+      await refresh();
+      showToast("success", "Амралт тавигдлаа.");
+    } else {
+      showToast("error", res.error ?? "");
+    }
+    setAction(ACTION.DEFAULT);
+  };
+
+  const clearLeave = async (date: string) => {
+    if (!selectedUser) return;
+    setAction(ACTION.RUNNING);
+    const res = await deleteOne(
+      Api.schedule,
+      `${selectedUser.id}/${date}`,
+      "leave",
+    );
+    if (res.success) {
+      await refresh();
+      showToast("success", "Амралт цуцлагдлаа.");
+    } else {
+      showToast("error", res.error ?? "");
+    }
+    setAction(ACTION.DEFAULT);
+  };
+
   const generateNow = async () => {
     setAction(ACTION.RUNNING);
     const res = await create<any>(Api.schedule, {}, "generate");
@@ -368,6 +404,9 @@ export const SchedulePage = ({
               homeBranchId={homeBranchId}
               dirtyBranchDates={dirtyBranchDates}
               onSaveBranch={saveBranch}
+              allowLeaveEdit
+              onSetLeave={setLeave}
+              onClearLeave={clearLeave}
             />
           </div>
         )}

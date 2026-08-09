@@ -41,6 +41,7 @@ export interface IOrder {
   discount?: number;
   discount_type?: number | null;
   parallel?: boolean | null;
+  channel?: string | null;
 }
 export interface Order {
   id: string;
@@ -72,6 +73,7 @@ export interface Order {
   voucher_value?: number | null;
   discount?: number;
   discount_type?: number | null;
+  channel?: string | null;
 }
 
 export interface IOrderDetail {

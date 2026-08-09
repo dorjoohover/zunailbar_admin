@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
-import { Copy, RotateCcw, Edit3, Check } from "lucide-react";
-import { ScheduleDayData } from "@/lib/constants";
+import { Copy, RotateCcw, Edit3, Check, Moon, X } from "lucide-react";
+import { EmployeeStatusValue, ScheduleDayData } from "@/lib/constants";
+import { EmployeeStatus } from "@/lib/enum";
 import { TimeSlotPill } from "./schedule.table.time.slot";
 import { LoaderMini } from "../loader";
 import { AppAlertDialog } from "@/components/AlertDialog";
@@ -13,7 +14,22 @@ interface DayScheduleColumnProps {
   allowFinishTimeEdit?: boolean;
   onUpdateDay: (day: ScheduleDayData, action: number) => void;
   onCopyPrevious?: () => void;
+  /** Амралт тавих/цуцлах боломжтой эсэх (артист/салбарын хуваарийн грид дээр true). */
+  allowLeaveEdit?: boolean;
+  onSetLeave?: (status: EmployeeStatus) => void;
+  onClearLeave?: () => void;
+  /**
+   * Амралт тавих товчнуудын сонголт. Артистад анхдагчаар VACATION/DEKIRIT
+   * хоёул харагдана; салбарын (нэг л "хаалттай" төлөвтэй) грид дээр нэг л
+   * товчтой (жишээ "Хаах") болгож дамжуулж болно.
+   */
+  leaveOptions?: { status: EmployeeStatus; label: string }[];
 }
+
+const DEFAULT_LEAVE_OPTIONS = [
+  { status: EmployeeStatus.VACATION, label: "Амарна" },
+  { status: EmployeeStatus.DEKIRIT, label: "Декирит" },
+];
 
 export function DayScheduleColumn({
   dayName,
@@ -22,6 +38,10 @@ export function DayScheduleColumn({
   allowFinishTimeEdit = true,
   onUpdateDay,
   onCopyPrevious,
+  allowLeaveEdit = false,
+  onSetLeave,
+  onClearLeave,
+  leaveOptions = DEFAULT_LEAVE_OPTIONS,
 }: DayScheduleColumnProps) {
   const [isEditMode, setIsEditMode] = useState(false);
   const [send, setSend] = useState(false);
@@ -117,11 +137,33 @@ export function DayScheduleColumn({
     }
   }, [send, times, finishTime]);
 
+  const leaveStatus = day.leave_status ?? null;
+  const isOnLeave = leaveStatus != null;
+  const leaveValue = isOnLeave
+    ? EmployeeStatusValue[leaveStatus as EmployeeStatus]
+    : undefined;
+
   return (
-    <div className="flex flex-col border border-slate-200 rounded-xl p-4 bg-slate-50/50 hover:shadow-md transition-shadow">
+    <div
+      className={`flex flex-col border rounded-xl p-4 hover:shadow-md transition-shadow ${
+        isOnLeave
+          ? "border-amber-200 bg-amber-50/60"
+          : "border-slate-200 bg-slate-50/50"
+      }`}
+    >
       {/* Header */}
       <div className="mb-4 pb-3 border-b border-slate-200">
-        <div className="text-slate-800 mb-1 text-sm">{dayName}</div>
+        <div className="flex items-center justify-between gap-2">
+          <div className="text-slate-800 mb-1 text-sm">{dayName}</div>
+          {isOnLeave && leaveValue && (
+            <span
+              className="rounded-full px-2 py-0.5 text-[10px] whitespace-nowrap"
+              style={{ backgroundColor: leaveValue.bg, color: leaveValue.text }}
+            >
+              {leaveValue.name}
+            </span>
+          )}
+        </div>
         <div className="text-teal-600 text-xs mt-1">
           {times.length} цаг идэвхтэй
         </div>
@@ -137,7 +179,7 @@ export function DayScheduleColumn({
           <div className="space-y-3">
             <div className="rounded-lg border border-slate-200 bg-white p-3">
               <label className="mb-2 block text-[11px] text-slate-500">
-                Тарах цаг
+                Дуусах цаг
               </label>
               {allowFinishTimeEdit ? (
                 <input
@@ -163,7 +205,7 @@ export function DayScheduleColumn({
               <p className="mt-2 text-[11px] leading-4 text-slate-500">
                 {allowFinishTimeEdit
                   ? `Энэ цаг нь үйлчилгээ хамгийн оройдоо хэдэн цагт дуусахыг заана. Хамгийн багадаа ${minimumFinishTime || "--"} байна.`
-                  : "Тарах цагийг зөвхөн admin талаас онооно."}
+                  : "Дуусах цагийг зөвхөн admin талаас онооно."}
               </p>
             </div>
 
@@ -202,7 +244,7 @@ export function DayScheduleColumn({
               <div className="rounded-lg border border-dashed border-slate-200 bg-white px-3 py-2 text-xs text-slate-500">
                 <div>Сүүлийн авах цаг: {times[times.length - 1]}</div>
                 <div>
-                  Тарах цаг:{" "}
+                  Дуусах цаг:{" "}
                   {finishTime ?? (allowFinishTimeEdit ? "-" : "Admin оноогоогүй")}
                 </div>
               </div>
@@ -266,6 +308,36 @@ export function DayScheduleColumn({
                 }
                 onConfirm={resetDay}
               />
+            )}
+
+            {allowLeaveEdit && (
+              <div className="pt-2 mt-1 border-t border-slate-200">
+                {isOnLeave ? (
+                  <button
+                    onClick={onClearLeave}
+                    disabled={loading}
+                    className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-white hover:bg-slate-100 text-slate-600 border border-slate-200 rounded-lg text-xs transition-colors disabled:opacity-50"
+                  >
+                    <X size={12} />
+                    <span>Амралт цуцлах</span>
+                  </button>
+                ) : (
+                  <div className="flex gap-1.5">
+                    {leaveOptions.map((opt) => (
+                      <button
+                        key={opt.status}
+                        onClick={() => onSetLeave?.(opt.status)}
+                        disabled={loading}
+                        title={EmployeeStatusValue[opt.status]?.name ?? opt.label}
+                        className="flex-1 flex items-center justify-center gap-1.5 px-2 py-2 bg-white hover:bg-amber-50 text-amber-700 border border-slate-200 hover:border-amber-200 rounded-lg text-[11px] transition-colors disabled:opacity-50"
+                      >
+                        <Moon size={12} />
+                        <span>{opt.label}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
             )}
           </>
         )}

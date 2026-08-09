@@ -13,6 +13,8 @@ import { Schedule } from "@/models";
 import TooltipWrapper from "@/components/tooltipWrapper";
 import { getUserColor } from "@/lib/colors";
 import { cn } from "@/lib/utils";
+import { EmployeeStatusValue } from "@/lib/constants";
+import { EmployeeStatus } from "@/lib/enum";
 
 export function getColumns(
   onEdit: (product: Schedule) => void,
@@ -70,7 +72,7 @@ export function getColumns(
     },
     {
       accessorKey: "finish_time",
-      header: "Тарах цаг",
+      header: "Дуусах цаг",
       cell: ({ row }) => {
         const time = row.getValue("finish_time") as string;
         return time ? formatTime(time) : "-";
@@ -83,6 +85,25 @@ export function getColumns(
       cell: ({ row }) => {
         const time = row.getValue("times") as string;
         return `${time ? time?.split("|").join(", ") : "-"}`;
+      },
+    },
+
+    {
+      accessorKey: "leave_status",
+      header: "Амралт",
+      cell: ({ row }) => {
+        const status = row.getValue("leave_status") as number | null;
+        if (status == null) return "-";
+        const value = EmployeeStatusValue[status as EmployeeStatus];
+        if (!value) return "-";
+        return (
+          <span
+            className="rounded-full px-2 py-0.5 text-[11px] whitespace-nowrap"
+            style={{ backgroundColor: value.bg, color: value.text }}
+          >
+            {value.name}
+          </span>
+        );
       },
     },
 
