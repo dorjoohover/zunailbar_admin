@@ -11,7 +11,7 @@ import {
 } from "@/lib/constants";
 import z from "zod";
 import { Api } from "@/utils/api";
-import { create, deleteOne, excel, find, search, updateOne } from "@/app/(api)";
+import { create, deleteOne, excel, find, updateOne } from "@/app/(api)";
 import { fetcher } from "@/hooks/fetcher";
 import SchedulerViewFilteration from "@/components/schedule/_components/view/schedular-view-filteration";
 import { SchedulerProvider } from "@/providers/schedular-provider";
@@ -131,14 +131,19 @@ export const OrderPage = ({
   const getAristSchedules = async () => {
     const selectedDate = mnDate(filter?.date?.from ?? new Date());
     const selectedDateText = dateFormat(selectedDate);
-    const date = selectedDate;
-    let index = date.getDay() - 1;
-    index = index == -1 ? 6 : index;
-    const [schedule, artistLeaves, branchLeaves] = await Promise.all([
-      search<Schedule>(Api.schedule, { index }),
-      // Хуучин `artist_leaves`/`branch_leaves` API-ийн оронд амралтыг
-      // шууд schedules.leave_status / bookings.is_leave-ээс (тухайн
-      // огноогоор) уншина.
+    // Хуучин `artist_leaves`/`branch_leaves` API-ийн оронд амралтыг
+    // шууд schedules.leave_status / bookings.is_leave-ээс (тухайн
+    // огноогоор) уншина.
+    //
+    // ⚠️ Өмнө нь артистын ажиллах цагийг `index`-ээр (7 хоногийн 0-6
+    // ерөнхий индекс) хайдаг байсан (`search<Schedule>(Api.schedule,
+    // { index })`). `schedules` хүснэгт date-based болсон тул (нэг
+    // артистад ойрын ~30 хоногт өдөр бүр өөр мөр байдаг) энэ query
+    // сонгосон өдрөөс үл хамааран тухайн гарагт таарах ЯМАР Ч мөрийг
+    // (өөр долоо хоногийнх ч байсан) буцааж, буруу/хуучин цаг харагдах
+    // алдаа гаргаж байсан. Одоо доор аль хэдийн татаж байгаа тухайн
+    // өдрийн (яг `date`-ээр шүүсэн) `daySchedules`-ийг л ашиглана.
+    const [daySchedules, branchLeaves] = await Promise.all([
       find<Schedule>(Api.schedule, {
         limit: -1,
         date: selectedDateText,
@@ -152,14 +157,17 @@ export const OrderPage = ({
         "employee",
       ),
     ]);
-    const scheduleItems = (schedule.data ?? []).filter((item) =>
-      Boolean(item.value && `${item.value}`.trim()),
+    const dayItems = daySchedules.data?.items ?? [];
+    const scheduleItems = dayItems.filter(
+      (item) =>
+        item.leave_status == null &&
+        Boolean(item.times && `${item.times}`.trim()),
     );
     const scheduledUserIds = new Set(
       scheduleItems.map((s) => s.user_id).filter(Boolean),
     );
     const artistLeaveIds = new Set(
-      (artistLeaves.data?.items ?? [])
+      dayItems
         .filter((item) => item.leave_status != null)
         .map((item) => item.user_id)
         .filter(Boolean),
@@ -183,7 +191,7 @@ export const OrderPage = ({
         })
         .map((u) => ({
           ...u,
-          item: scheduleItems.find((a) => a.user_id == u.id)?.value,
+          item: scheduleItems.find((a) => a.user_id == u.id)?.times,
         })),
     );
   };

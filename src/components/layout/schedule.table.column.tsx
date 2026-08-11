@@ -164,8 +164,12 @@ export function DayScheduleColumn({
             </span>
           )}
         </div>
-        <div className="text-teal-600 text-xs mt-1">
-          {times.length} цаг идэвхтэй
+        <div
+          className={`text-xs mt-1 ${isOnLeave ? "text-amber-600" : "text-teal-600"}`}
+        >
+          {isOnLeave
+            ? `Амарсан${times.length > 0 ? ` — ${times.length} цаг хадгалагдсан (захиалгад харагдахгүй)` : ""}`
+            : `${times.length} цаг идэвхтэй`}
         </div>
       </div>
 
@@ -237,6 +241,7 @@ export function DayScheduleColumn({
                   key={time}
                   time={time}
                   onRemove={() => toggleTime(time)}
+                  muted={isOnLeave}
                 />
               ))
             )}
