@@ -215,6 +215,11 @@ export interface SearchType<T> {
   value: string;
   item?: T | string;
   quantity?: number;
+  /** Тухайн (сонгосон өдрийн) хуваарийн бодит салбар — админд артист
+   * тухайн өдөр аль салбарт ажиллахыг харуулахад ашиглана (өдрөөр
+   * өөр салбарт шилжсэн байж болно, users.branch_id үндсэн салбараас
+   * ялгаатай байж болно). */
+  branch_id?: string;
 }
 
 export enum ACTION {

@@ -261,10 +261,17 @@ export default function ({
   };
   const scheduledArtists = values.artists
     .map((user) => {
-      const [mobile, nickname, , color] = user.value?.split("__");
+      const [mobile, nickname, defaultBranchId, color] =
+        user.value?.split("__") ?? [];
       const scheduleBlocks = getArtistScheduleBlocks(
         typeof user.item === "string" ? user.item : undefined,
       );
+      // Тухайн өдрийн бодит (шилжсэн байж болзошгүй) салбар — байхгүй бол
+      // артистын үндсэн салбар руу буцна.
+      const branchId = user.branch_id || defaultBranchId;
+      const branchName = branchId
+        ? values.branch.find((b) => b.id === branchId)?.value
+        : undefined;
 
       return {
         user,
@@ -272,6 +279,7 @@ export default function ({
         scheduleBlocks,
         formattedMobile: mobileFormatter(mobile ?? ""),
         displayName: firstLetterUpper(nickname ?? ""),
+        branchName,
       };
     })
     .filter((artist) => artist.scheduleBlocks.length > 0);
@@ -562,6 +570,7 @@ export default function ({
                       scheduleBlocks,
                       formattedMobile,
                       displayName,
+                      branchName,
                     }) => (
                       <div
                         className="flex h-full flex-col gap-3 rounded-xl border border-slate-200 bg-slate-50/80 p-3"
@@ -583,6 +592,11 @@ export default function ({
                             {formattedMobile && (
                               <p className="text-xs text-slate-500">
                                 {formattedMobile}
+                              </p>
+                            )}
+                            {branchName && (
+                              <p className="text-xs text-slate-500">
+                                Салбар: {branchName}
                               </p>
                             )}
                           </div>

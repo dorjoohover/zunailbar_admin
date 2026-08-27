@@ -189,10 +189,18 @@ export const OrderPage = ({
             !branchLeaveIds.has(branchId)
           );
         })
-        .map((u) => ({
-          ...u,
-          item: scheduleItems.find((a) => a.user_id == u.id)?.times,
-        })),
+        .map((u) => {
+          const daySchedule = scheduleItems.find((a) => a.user_id == u.id);
+          const [, , defaultBranchId = ""] = u.value?.split("__") ?? [];
+          return {
+            ...u,
+            item: daySchedule?.times,
+            // Тухайн өдрийн бодит салбар (артист тухайн өдөр өөр салбарт
+            // шилжсэн бол schedule.branch_id нь users.branch_id-ээс өөр
+            // байж болно) — олдохгүй бол артистын үндсэн салбар руу буцна.
+            branch_id: daySchedule?.branch_id || defaultBranchId || undefined,
+          };
+        }),
     );
   };
   const getOrderArtists = async () => {
