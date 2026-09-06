@@ -41,7 +41,7 @@ import { ComboBox } from "@/shared/components/combobox";
 import { DatePicker } from "@/shared/components/date.picker";
 import { Modal } from "@/shared/components/modal";
 import { showToast } from "@/shared/components/showToast";
-import { excel, find } from "@/app/(api)";
+import { create, excel, find } from "@/app/(api)";
 import { getColumns } from "./columns";
 import { SalarySectionNav } from "../_components/section-nav";
 
@@ -352,7 +352,9 @@ export const IntegrationsPage = ({
   const processAllSalaries = async () => {
     setAction(ACTION.RUNNING);
     const { from, to } = getFilterParams();
-    const res = await find(
+    // `POST /order/confirm` — GET маршрут байхгүй тул `find()` (GET) ашиглавал
+    // 404 буцаад цалин огт бодогдохгүй өнгөрдөг байсан.
+    const res = await create(
       Api.order,
       {
         ...(from ? { from } : {}),
@@ -360,7 +362,7 @@ export const IntegrationsPage = ({
       } as any,
       "confirm",
     );
-    const processed = Number((res?.data as any)?.count ?? 0);
+    const processed = Number((res?.data as any)?.payload?.count ?? 0);
 
     showToast(
       processed > 0 ? "success" : "info",
