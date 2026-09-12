@@ -33,7 +33,12 @@ import { FormProvider, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import { TextField } from "@/shared/components/text.field";
-import { firstLetterUpper, objectCompact, textValue } from "@/lib/functions";
+import {
+  dateOnly,
+  firstLetterUpper,
+  objectCompact,
+  textValue,
+} from "@/lib/functions";
 import { DatePicker } from "@/shared/components/date.picker";
 import { create, deleteOne, updateOne } from "@/app/(api)";
 import { Api } from "@/utils/api";
@@ -165,16 +170,31 @@ export const EmployeePage = ({
     }
     const formData = new FormData();
     let payload = {};
+    // Төрсөн өдрийг локал (UB) хуанлийн өдрөөр нь илгээнэ. Date объектыг
+    // шууд JSON болгоход toISOString() → UTC болж, UTC+8 бүсэд нэг өдрөөр
+    // хоцорч хадгалагддаг (DATE багана тул UTC-ийн өдрөөр таслагдана).
+    const normalizedBody = {
+      ...(body as IUser),
+      ...(body?.birthday
+        ? {
+            birthday: dateOnly(
+              body.birthday instanceof Date
+                ? body.birthday
+                : new Date(body.birthday as unknown as string),
+            ) as unknown as Date,
+          }
+        : {}),
+    };
     if (file != null) {
       formData.append("files", file);
       const uploadResult = await imageUploader(formData);
       payload = {
-        ...(body as IUser),
+        ...normalizedBody,
         profile_img: uploadResult[0],
       };
     } else {
       payload = {
-        ...(body as IUser),
+        ...normalizedBody,
       };
     }
     if (password) {

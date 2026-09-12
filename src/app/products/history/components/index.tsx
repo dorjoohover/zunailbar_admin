@@ -266,9 +266,20 @@ export const ProductHistoryPage = ({
     setAction(ACTION.RUNNING);
     const body = e as LogType;
     let { edit, cargo, ...payload } = body;
+    // Огноог локал (UB) хуанлийн өдрөөр нь "YYYY-MM-DD" болгож илгээнэ.
+    // Date объектыг шууд JSON болгоход `toISOString()` → UTC болдог тул
+    // UTC+8 бүсэд нэг өдрөөр хоцорч хадгалагддаг байсан
+    // (09/10 сонгоход 09/09 болно).
+    const pickedDate =
+      payload.date instanceof Date
+        ? payload.date
+        : new Date(payload.date as unknown as string);
     // Үнийн дүн бутархай байж болно; тоо ширхэгийг л бүхэл тоонд шилжүүлнэ.
     payload = {
       ...payload,
+      date: (Number.isNaN(pickedDate.getTime())
+        ? dateOnly(new Date())
+        : dateOnly(pickedDate)) as unknown as Date,
       price: round(+(payload.price ?? 0), 4),
       quantity: Math.round(+(payload.quantity ?? 0)),
       unit_price: round(+(payload.unit_price ?? 0), 2),

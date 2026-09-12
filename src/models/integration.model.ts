@@ -59,7 +59,14 @@ export interface SalaryCalculationRow {
   date?: Date | string;
   created_at?: Date | string;
   income_amount: number;
+  /** Тухайн хугацааны орлогоос бодогдсон цалин (reconciliation). */
   salary_amount: number;
+  /**
+   * Цалингийн логт (integrations) бүртгэлтэй дүн. Логийн `date` нь ОЛГОХ
+   * огноо тул шүүлтүүрийн хугацаатай тэнцүү биш — иймд `salary_amount`-той
+   * хольж нийлбэрлэхгүй, зөвхөн лавлагаа болгон тусад нь харуулна.
+   */
+  log_salary_amount?: number;
   order_count: number;
   transferred_amount: number;
   balance_amount: number;

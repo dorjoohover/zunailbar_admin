@@ -234,12 +234,15 @@ export const IntegrationsPage = ({
             filterParams.from ??
             "",
           income_amount: Number(reconciliationItem?.income_amount ?? 0),
-          salary_amount: Number(
-            reconciliationItem?.salary_amount ?? salary?.salary_amount ?? 0,
-          ),
-          order_count: Number(
-            reconciliationItem?.order_count ?? salary?.order_count ?? 0,
-          ),
+          // Цалин/захиалгын тоог ЗӨВХӨН тухайн хугацааны бодолтоос (хаагдсан
+          // захиалгын орлого × хувь) авна. Өмнө нь мөр байхгүй үед цалингийн
+          // логоос (`salary?.salary_amount`) татдаг байсан нь алдаатай:
+          // логийн `date` бол ОЛГОХ огноо тул өөр мөчлөгийн цалин (жишээ нь
+          // 08-23-ны олголт = 08-09..08-23-ны захиалгууд) орлого нь 0 мөрөнд
+          // нэмэгдээд "Ашиг"-ийг гажуудуулдаг байсан.
+          salary_amount: Number(reconciliationItem?.salary_amount ?? 0),
+          log_salary_amount: Number(salary?.salary_amount ?? 0),
+          order_count: Number(reconciliationItem?.order_count ?? 0),
           transferred_amount: Number(
             reconciliationItem?.transferred_amount ?? 0,
           ),
