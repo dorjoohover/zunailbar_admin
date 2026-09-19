@@ -6,7 +6,20 @@ import { Branch, Schedule, User } from "@/models";
 import { ROLE, STATUS, UserStatus } from "@/lib/enum";
 import { Slot } from "@/models/slot.model";
 
-export default async function Page() {
+type PageProps = {
+  searchParams?: Promise<{
+    date?: string | string[];
+    to?: string | string[];
+    list?: string | string[];
+  }>;
+};
+
+const getValue = (value?: string | string[]) =>
+  Array.isArray(value) ? value[0] : value;
+
+export default async function Page({ searchParams }: PageProps) {
+  // Сонгосон өдөр (?date=YYYY-MM-DD) — refresh хийхэд тухайн өдөр дээрээ үлдэнэ.
+  const params = (await searchParams) ?? {};
   const [branch, user, services, level] = await Promise.all([
     search<Branch>(Api.branch, { limit: -1 }),
     search<User>(Api.user, {
@@ -33,6 +46,11 @@ export default async function Page() {
         users={user.data}
         customers={client.data}
         services={services.data}
+        initialQuery={{
+          date: getValue(params.date),
+          to: getValue(params.to),
+          list: getValue(params.list),
+        }}
         level={levelConfig as any}
       />
       {/* </div> */}

@@ -83,7 +83,8 @@ export const ProductPage = ({
 
   const refresh = async (pg: PG = DEFAULT_PG) => {
     setAction(ACTION.RUNNING);
-    const { page, limit, sort } = pg;
+    let { page, limit, sort } = pg;
+    sort = true
     const brand_id = filter?.brand;
     const category_id = filter?.category;
     await fetcher<Product>(Api.product, {
