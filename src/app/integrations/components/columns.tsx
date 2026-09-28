@@ -46,20 +46,21 @@ export function getColumns(
         </span>
       ),
     },
-    {
-      // Цалингийн логийн дүн — `date` нь ОЛГОХ огноо тул шүүсэн хугацааны
-      // орлоготой шууд тэнцэхгүй. Зөвхөн лавлагаа, нийлбэрт ордоггүй.
-      accessorKey: "log_salary_amount",
-      header: "Логийн цалин",
-      cell: ({ row }) => {
-        const value = row.getValue<number>("log_salary_amount") ?? 0;
-        return (
-          <span className="text-slate-500">
-            {value ? money(String(value), "₮") : "-"}
-          </span>
-        );
-      },
-    },
+    // Логийн цалин багана нуусан (дата хэвээр, буцааж идэвхжүүлэхэд uncomment хийнэ)
+    // {
+    //   // Цалингийн логийн дүн — `date` нь ОЛГОХ огноо тул шүүсэн хугацааны
+    //   // орлоготой шууд тэнцэхгүй. Зөвхөн лавлагаа, нийлбэрт ордоггүй.
+    //   accessorKey: "log_salary_amount",
+    //   header: "Логийн цалин",
+    //   cell: ({ row }) => {
+    //     const value = row.getValue<number>("log_salary_amount") ?? 0;
+    //     return (
+    //       <span className="text-slate-500">
+    //         {value ? money(String(value), "₮") : "-"}
+    //       </span>
+    //     );
+    //   },
+    // },
       {
       accessorKey: "created_at",
       header: "Үүсгэсэн",
