@@ -62,6 +62,7 @@ const formSchema = z
     pre: zNumOpt(),
     view: zNumOpt(),
     index: zNumOpt(),
+    reminder: zBoolOpt,
 
     edit: z.string().nullable().optional(),
     file: z
@@ -101,6 +102,7 @@ const defaultValues: ServiceType = {
   pre: 0,
   view: ServiceView.DEFAULT,
   index: undefined,
+  reminder: true,
   edit: undefined,
   file: undefined,
 };
@@ -432,6 +434,19 @@ export const ServicePage = ({
                         />
                       );
                     }}
+                  </FormItems>
+                  <FormItems
+                    control={form.control}
+                    name={"reminder"}
+                    label="Дахин авах хугацааг SMS-ээр сануулах"
+                    className={"col-span-4"}
+                  >
+                    {(field) => (
+                      <Switch
+                        checked={field.value ?? true}
+                        onCheckedChange={field.onChange}
+                      />
+                    )}
                   </FormItems>
                 </div>
                 <div className="flex gap-4">

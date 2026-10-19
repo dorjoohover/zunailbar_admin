@@ -28,6 +28,7 @@ export interface IService {
   view?: number;
   index?: number;
   meta?: ServiceCategoryMeta;
+  reminder?: boolean;
   min: Discounted;
   max?: Discounted;
 }
@@ -49,6 +50,7 @@ export interface Service {
   view?: number;
   index?: number;
   meta?: ServiceCategoryMeta;
+  reminder?: boolean;
   min: Discounted;
   max?: Discounted;
 }
