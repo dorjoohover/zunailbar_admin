@@ -54,14 +54,29 @@ export const normalizeLevelConfig = (value: any): LevelConfig => ({
     },
     {} as Partial<Record<UserLevel, LevelConfigItem>>,
   ),
-  employee: EMPLOYEE_USER_LEVELS.reduce(
+  // Backend-ээс ирсэн бүх артистын түвшин (2-оос олон байж болно).
+  employee: [
+    ...new Set([
+      ...EMPLOYEE_USER_LEVELS,
+      ...Object.keys(value?.employee ?? {}).map(Number),
+    ]),
+  ].reduce(
     (acc, level) => {
-      acc[level] = normalizeItem(value?.employee?.[level], level, false);
+      acc[level as UserLevel] = normalizeItem(
+        value?.employee?.[level],
+        level as UserLevel,
+        false,
+      );
       return acc;
     },
     {} as Partial<Record<UserLevel, LevelConfigItem>>,
   ),
 });
+
+export const getEmployeeLevels = (config: LevelConfig) =>
+  Object.keys(config.employee)
+    .map(Number)
+    .sort((a, b) => a - b) as UserLevel[];
 
 export const getLevelName = (
   config: LevelConfig,

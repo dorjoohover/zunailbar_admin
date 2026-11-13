@@ -197,6 +197,37 @@ export const BookingPage = ({
     setAction(ACTION.DEFAULT);
   };
 
+  // Өмнөх 7 хоногийн хуваарийг харагдаж буй 7 хоног руу хуулна (хаалттай өдрийг хөндөхгүй).
+  const copyPrevWeek = async () => {
+    if (!selectedBranch) return;
+    setAction(ACTION.RUNNING);
+    const prev = await fetcher<Booking>(
+      Api.booking,
+      {},
+      `week/${selectedBranch.id}/${addDaysStr(weekStart, -7)}`,
+    );
+    const days = (prev.items ?? []).filter(
+      (b) => b.date && b.times && !b.is_leave,
+    );
+    if (!days.length) showToast("info", "Өмнөх 7 хоногт хуваарь алга.");
+    for (const b of days) {
+      const date = addDaysStr(toYMD(new Date(b.date!)), 7);
+      if (scheduleData[date]?.leave_status) continue;
+      const res = await create<IBooking>(Api.booking, {
+        date,
+        times: b.times.split("|"),
+        finish_time: b.finish_time ? formatTime(String(b.finish_time)) : null,
+        branch_id: selectedBranch.id,
+      } as any);
+      if (!res.success) {
+        showToast("error", res.error ?? "");
+        break;
+      }
+    }
+    if (days.length) showToast("success", "Өмнөх 7 хоногийн хуваарь хуулагдлаа.");
+    await refresh();
+  };
+
   const mounted = useRef(false);
   useEffect(() => {
     mounted.current ? refresh() : (mounted.current = true);
@@ -262,6 +293,13 @@ export const BookingPage = ({
                 className="rounded-lg border border-slate-200 px-3 py-2 text-xs text-slate-600 hover:bg-slate-100"
               >
                 Энэ долоо хоног
+              </button>
+              <button
+                onClick={copyPrevWeek}
+                disabled={action != ACTION.DEFAULT}
+                className="rounded-lg bg-teal-500 px-3 py-2 text-xs text-white hover:bg-teal-600 disabled:opacity-50"
+              >
+                Өмнөх 7 хоногийг хуулах
               </button>
             </div>
 

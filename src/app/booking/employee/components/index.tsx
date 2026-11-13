@@ -265,6 +265,39 @@ export const SchedulePage = ({
     setAction(ACTION.DEFAULT);
   };
 
+  // Өмнөх 7 хоногийн хуваарийг харагдаж буй 7 хоног руу хуулна (амралттай өдрийг хөндөхгүй).
+  const copyPrevWeek = async () => {
+    if (!selectedUser) return;
+    setAction(ACTION.RUNNING);
+    const prev = await fetcher<Schedule>(
+      Api.schedule,
+      {},
+      `week/${selectedUser.id}/${addDaysStr(weekStart, -7)}`,
+    );
+    const days = (prev.items ?? []).filter(
+      (s) => s.date && s.times && !s.leave_status,
+    );
+    if (!days.length) showToast("info", "Өмнөх 7 хоногт хуваарь алга.");
+    for (const s of days) {
+      const date = addDaysStr(toYMD(new Date(s.date!)), 7);
+      if (scheduleData[date]?.leave_status) continue;
+      const res = await create<ISchedule>(Api.schedule, {
+        date,
+        times: s.times!.split("|"),
+        finish_time: s.finish_time ? formatTime(String(s.finish_time)) : null,
+        user_id: selectedUser.id,
+        type: ScheduleType.Free,
+        branch_id: s.branch_id,
+      } as any);
+      if (!res.success) {
+        showToast("error", res.error ?? "");
+        break;
+      }
+    }
+    if (days.length) showToast("success", "Өмнөх 7 хоногийн хуваарь хуулагдлаа.");
+    await refresh();
+  };
+
   const generateNow = async () => {
     setAction(ACTION.RUNNING);
     const res = await create<any>(Api.schedule, {}, "generate");
@@ -339,6 +372,13 @@ export const SchedulePage = ({
                 className="rounded-lg border border-slate-200 px-3 py-2 text-xs text-slate-600 hover:bg-slate-100"
               >
                 Энэ долоо хоног
+              </button>
+              <button
+                onClick={copyPrevWeek}
+                disabled={action != ACTION.DEFAULT}
+                className="rounded-lg bg-teal-500 px-3 py-2 text-xs text-white hover:bg-teal-600 disabled:opacity-50"
+              >
+                Өмнөх 7 хоногийг хуулах
               </button>
               {/* <button
                 onClick={generateNow}

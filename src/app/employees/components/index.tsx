@@ -24,7 +24,6 @@ import {
   EmployeeStatus,
   INPUT_TYPE,
   ROLE,
-  UserLevel,
   UserStatus,
 } from "@/lib/enum";
 import { PasswordField } from "@/shared/components/password.field";
@@ -56,6 +55,7 @@ import { COLOR_HEX } from "@/lib/colors";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import {
+  getEmployeeLevels,
   getLevelName,
   LevelConfig,
   normalizeLevelConfig,
@@ -118,7 +118,7 @@ const formSchema = z.object({
   level: z
     .preprocess(
       (val) => (typeof val === "string" ? parseInt(val, 10) : val),
-      z.nativeEnum(UserLevel).nullable(),
+      z.number().nullable(),
     )
     .optional() as unknown as number,
 });
@@ -388,16 +388,38 @@ export const EmployeePage = ({
               >
                 <div className="space-y-4">
                   <p className="text-sm text-muted-foreground">
-                    Junior/Senior зэрэг артистын түвшний нэрийг эндээс солино.
+                    Junior/Senior зэрэг артистын түвшний нэрийг эндээс солино,
+                    шинэ түвшин нэмнэ.
                   </p>
-                  {EMPLOYEE_USER_LEVELS.map((key) => {
+                  {getEmployeeLevels(levelValue).map((key) => {
                     const value = levelValue.employee[key] ?? {
                       name: getLevelName(levelValue, "employee", key),
                     };
 
+                    const removable = !(
+                      EMPLOYEE_USER_LEVELS as readonly number[]
+                    ).includes(key);
                     return (
                       <div key={key}>
-                        <label className="mb-1 block text-sm">Нэр</label>
+                        <label className="mb-1 flex items-center justify-between text-sm">
+                          Нэр
+                          {removable && (
+                            <button
+                              type="button"
+                              aria-label="Түвшин хасах"
+                              className="text-muted-foreground hover:text-red-500"
+                              onClick={() =>
+                                setLevelValue((prev) => {
+                                  const employee = { ...prev.employee };
+                                  delete employee[key];
+                                  return { ...prev, employee };
+                                })
+                              }
+                            >
+                              <X size={14} />
+                            </button>
+                          )}
+                        </label>
                         <TextField
                           props={{
                             name: `${key}_employee_name`,
@@ -420,6 +442,25 @@ export const EmployeePage = ({
                       </div>
                     );
                   })}
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() =>
+                      setLevelValue((prev) => {
+                        const next =
+                          Math.max(...getEmployeeLevels(prev)) + 10;
+                        return {
+                          ...prev,
+                          employee: {
+                            ...prev.employee,
+                            [next]: { name: `Түвшин ${getEmployeeLevels(prev).length + 1}` },
+                          },
+                        };
+                      })
+                    }
+                  >
+                    + Түвшин нэмэх
+                  </Button>
                 </div>
               </Modal>
             </>
@@ -727,7 +768,7 @@ export const EmployeePage = ({
                         return (
                           <ComboBox
                             props={{ ...field }}
-                            items={EMPLOYEE_USER_LEVELS.map((item) => {
+                            items={getEmployeeLevels(levelValue).map((item) => {
                               return {
                                 value: item.toString(),
                                 label: getLevelName(
