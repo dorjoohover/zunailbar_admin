@@ -8,7 +8,6 @@ import {
   PG,
   DEFAULT_PG,
   CUSTOMER_USER_LEVELS,
-  EMPLOYEE_USER_LEVELS,
   getEnumValues,
   Option,
   UserStatusValue,
@@ -34,6 +33,7 @@ import { showToast } from "@/shared/components/showToast";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import {
+  getEmployeeLevels,
   getLevelName,
   LevelConfig,
   normalizeLevelConfig,
@@ -443,7 +443,7 @@ export const UserPage = ({
                   </div>
                   <div className="space-y-3">
                     <h3 className="font-semibold">Артистын түвшин</h3>
-                    {EMPLOYEE_USER_LEVELS.map((key) => {
+                    {getEmployeeLevels(levelValue).map((key) => {
                       const value = levelValue.employee[key] ?? {
                         name: getLevelName(levelValue, "employee", key),
                       };

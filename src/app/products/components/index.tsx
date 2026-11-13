@@ -37,6 +37,9 @@ const formSchema = z.object({
     allowNullable: false,
     label: "Нэр" }),
   quantity: zNumOpt(),
+  // Олноор нэмэх: "Будаг" + 1..40 → "Будаг 1" ... "Будаг 40"
+  num_from: z.union([z.string(), z.number()]).optional(),
+  num_to: z.union([z.string(), z.number()]).optional(),
   edit: z.string().nullable().optional() });
 
 type FilterType = {
@@ -49,6 +52,8 @@ const defaultValues = {
   brand_id: "",
   category_id: "",
   name: "",
+  num_from: "",
+  num_to: "",
   quantity: undefined };
 export const ProductPage = ({
   data,
@@ -102,10 +107,29 @@ export const ProductPage = ({
   const onSubmit = async <T,>(e: T) => {
     setAction(ACTION.RUNNING);
     const body = e as ProductType;
-    const { edit, ...payload } = body;
-    const res = edit
-      ? await updateOne<IProduct>(Api.product, edit ?? "", payload as IProduct)
-      : await create<IProduct>(Api.product, e as IProduct);
+    const { edit, num_from, num_to, ...payload } = body;
+    const from = parseInt(String(num_from ?? ""), 10);
+    const to = parseInt(String(num_to ?? ""), 10);
+    const names =
+      !edit && from <= to
+        ? Array.from({ length: to - from + 1 }, (_, i) => `${payload.name} ${from + i}`)
+        : [payload.name];
+    if (names.length > 100) {
+      showToast("error", "Нэг удаад 100-аас ихгүй бүтээгдэхүүн нэмнэ үү.");
+      setAction(ACTION.DEFAULT);
+      return;
+    }
+    let res;
+    if (edit) {
+      res = await updateOne<IProduct>(Api.product, edit, payload as IProduct);
+    } else {
+      // Дараалан үүсгэнэ — backend ref кодыг count-оор үүсгэдэг тул зэрэг явуулбал давхцана.
+      for (const name of names) {
+        res = await create<IProduct>(Api.product, { ...payload, name } as IProduct);
+        if (!res.success) break;
+      }
+    }
+    if (!res) return setAction(ACTION.DEFAULT);
     if (res.success) {
       refresh(
         objectCompact({
@@ -340,6 +364,25 @@ export const ProductPage = ({
                         </FormItems>
                       );
                     })}
+                    {!form.watch("edit") &&
+                      (["num_from", "num_to"] as const).map((key) => (
+                        <FormItems
+                          key={key}
+                          control={form.control}
+                          name={key}
+                          label={
+                            (key === "num_from"
+                              ? "Дугаар эхлэх (заавал биш)"
+                              : "Дугаар дуусах (заавал биш)") as any
+                          }
+                        >
+                          {(field) => (
+                            <TextField
+                              props={{ ...(field as any), type: "number", min: 0 }}
+                            />
+                          )}
+                        </FormItems>
+                      ))}
                     {form.watch("edit") && (
                       <FormItems
                         control={form.control}
