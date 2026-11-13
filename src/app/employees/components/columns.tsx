@@ -194,7 +194,7 @@ export const getColumns = (
       const status = getUserLevelValue[level] as unknown as any;
 
       return (
-        <span className={cn(`${status?.color ?? ""} badge`)}>
+        <span className={cn(`${status?.color ?? "slate-badge"} badge`)}>
           {getLevelName(levelConfig, "employee", level)}
         </span>
       );
